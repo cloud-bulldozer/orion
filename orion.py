@@ -52,7 +52,7 @@ def orion(config, debug, output):
         logger.error("An error occurred: %s", e)
         sys.exit(1)
     for test in data["tests"]:
-        metadata = get_metadata(test)
+        metadata = get_metadata(test, logger)
         logger.info("The test %s has started", test["name"])
         match = Matcher(index="perf_scale_ci", level=level)
         uuids = match.get_uuid_by_metadata(metadata)
@@ -108,7 +108,7 @@ def orion(config, debug, output):
         match.save_results(merged_df, csv_file_path=output)
 
 
-def get_metadata(test):
+def get_metadata(test,logger):
     """Gets metadata of the run from each test
 
     Args:
@@ -117,21 +117,26 @@ def get_metadata(test):
     Returns:
         dict: dictionary of the metadata
     """
-    metadata_columns = [
-        "platform",
-        "masterNodesType",
-        "masterNodesCount",
-        "workerNodesType",
-        "workerNodesCount",
-        "benchmark",
-        "ocpVersion",
-        "networkType",
-        "encrypted",
-        "fips",
-        "ipsec",
-    ]
-    metadata = {key: test[key] for key in metadata_columns if key in test}
+    # metadata_columns = [
+    #     "platform",
+    #     "masterNodesType",
+    #     "masterNodesCount",
+    #     "workerNodesType",
+    #     "workerNodesCount",
+    #     "benchmark",
+    #     "ocpVersion",
+    #     "networkType",
+    #     "encrypted",
+    #     "fips",
+    #     "ipsec",
+    # ]
+    metadata = {}
+    for k,v in test.items(): 
+        if k == "metrics" or k == "name": 
+            continue
+        metadata[k] = v
     metadata["ocpVersion"] = str(metadata["ocpVersion"])
+    logger.debug('metadata' + str(metadata))
     return metadata
 
 
