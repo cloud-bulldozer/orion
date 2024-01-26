@@ -119,7 +119,7 @@ def get_metadata(test,logger):
     """
     metadata = {}
     for k,v in test.items(): 
-        if k == "metrics" or k == "name": 
+        if k in ["metrics","name"]: 
             continue
         metadata[k] = v
     metadata["ocpVersion"] = str(metadata["ocpVersion"])
