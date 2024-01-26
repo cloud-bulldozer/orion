@@ -117,19 +117,6 @@ def get_metadata(test,logger):
     Returns:
         dict: dictionary of the metadata
     """
-    # metadata_columns = [
-    #     "platform",
-    #     "masterNodesType",
-    #     "masterNodesCount",
-    #     "workerNodesType",
-    #     "workerNodesCount",
-    #     "benchmark",
-    #     "ocpVersion",
-    #     "networkType",
-    #     "encrypted",
-    #     "fips",
-    #     "ipsec",
-    # ]
     metadata = {}
     for k,v in test.items(): 
         if k == "metrics" or k == "name": 
