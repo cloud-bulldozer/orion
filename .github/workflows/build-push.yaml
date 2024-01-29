@@ -1,0 +1,30 @@
+name: Build and Push Image
+on: [ push ]
+
+jobs:
+  build:
+    name: Build and push image
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build Orion Image
+      id: build-orion
+      uses: redhat-actions/buildah-build@v2
+      with:
+        image: orion 
+        context: orion 
+        tags: latest ${{ github.sha }}
+        containerfiles: |
+          ./Dockerfile
+
+    - name: Push frontend image to quay.io
+      id: push-front-to-quay
+      uses: redhat-actions/push-to-registry@v2
+      with:
+        image: ${{ steps.build-orion.outputs.image }}
+        tags: ${{ steps.build-orion.outputs.tags }}
+        registry: quay.io/cloud-bulldozer
+        username: ${{ secrets.QUAY_USER }}
+        password: ${{ secrets.QUAY_TOKEN }}
