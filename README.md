@@ -19,20 +19,43 @@ tests :
     # ipsec: false
 
     metrics : 
-    - metric : podReadyLatency
-      metricType : latency
+    - name:  podReadyLatency
+      metricName: podLatencyQuantilesMeasurement
+      quantileName: Ready
+      metric_of_interest: P99
+      not: 
+      - jobConfig.name: "garbage-collection"
       
-    - metric : apiserverCPU
-      metricType : cpu
-      namespace: openshift-kube-apiserver
+    - name:  apiserverCPU
+      metricName : containerCPU
+      labels.namespace: openshift-kube-apiserver
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
 
-    - metric: ovnCPU
-      metricType: cpu
-      namespace: openshift-ovn-kubernetes
+    - name:  ovnCPU
+      metricName : containerCPU
+      labels.namespace: openshift-ovn-kubernetes
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+
+    - name:  etcdCPU
+      metricName : containerCPU
+      labels.namespace: openshift-etcd
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
     
-    - metric: etcdCPU
-      metricType: cpu
-      namespace: openshift-ovn-kubernetes
+    - name:  etcdDisck
+      metricName : 99thEtcdDiskBackendCommitDurationSeconds
+      metric_of_interest: value
+      agg:
+        value: duration
+        agg_type: avg
 
 
 ```

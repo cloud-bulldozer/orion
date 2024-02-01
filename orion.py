@@ -19,7 +19,6 @@ def cli():
     cli function to group commands
     """
 
-
 # pylint: disable=too-many-locals
 @click.command()
 @click.option("--config", default="config.yaml", help="Path to the configuration file")
@@ -60,46 +59,19 @@ def orion(config, debug, output):
             print("No UUID present for given metadata")
             sys.exit()
 
-        runs = match.match_kube_burner(uuids)
-        ids = match.filter_runs(runs, runs)
+        if metadata["benchmark"] == "k8s-netperf" :
+            index = "k8s-netperf"
+            ids = uuids
+        elif metadata["benchmark"] == "ingress-perf" :
+            index = "ingress-performance"
+            ids = uuids
+        else:
+            index = "ripsaw-kube-burner"
+            runs = match.match_kube_burner(uuids)
+            ids = match.filter_runs(runs, runs)
+
         metrics = test["metrics"]
-        dataframe_list = []
-
-        for metric in metrics:
-            logger.info("Collecting %s", metric["metric"])
-            if metric["metricType"] == "latency":
-                if metric["metric"] == "podReadyLatency":
-                    try:
-                        podl = match.burner_results("", ids, "ripsaw-kube-burner*")
-                        podl_df = match.convert_to_df(
-                            podl, columns=["uuid", "timestamp", "P99"]
-                        )
-                        dataframe_list.append(podl_df)
-                        logger.debug(podl_df)
-                    except Exception as e:  # pylint: disable=broad-exception-caught
-                        logger.error(
-                            "The namespace %s does not exist, exception %s",
-                            metric["namespace"],
-                            e,
-                        )
-
-            elif metric["metricType"] == "cpu":
-                try:
-                    cpu = match.burner_cpu_results(
-                        ids, metric["namespace"], "ripsaw-kube-burner*"
-                    )
-                    cpu_df = match.convert_to_df(cpu, columns=["uuid", "cpu_avg"])
-                    cpu_df = cpu_df.rename(
-                        columns={"cpu_avg": metric["metric"] + "_cpu_avg"}
-                    )
-                    dataframe_list.append(cpu_df)
-                    logger.debug(cpu_df)
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    logger.error(
-                        "The namespace %s does not exist, exception %s",
-                        metric["namespace"],
-                        e,
-                    )
+        dataframe_list = get_metric_data(ids, index, metrics, match, logger)
 
         merged_df = reduce(
             lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
@@ -107,6 +79,62 @@ def orion(config, debug, output):
         )
         match.save_results(merged_df, csv_file_path=output)
 
+
+def get_metric_data(ids, index, metrics, match, logger):
+    """Gets details metrics basked on metric yaml list
+
+    Args:
+        ids (list): list of all uuids
+        index (dict): index in es of where to find data
+        metrics (dict): metrics to gather data on
+        match (Matcher): current matcher instance
+        logger (logger): log data to one output
+
+    Returns:
+        dataframe_list: dataframe of the all metrics
+    """
+    dataframe_list = []
+    for metric in metrics:
+        metric_name = metric['name']
+        logger.info("Collecting %s", metric_name)
+        metric_of_interest = metric['metric_of_interest']
+
+        if "agg" in metric.keys():
+            try:
+                cpu = match.get_agg_metric_query(
+                    ids, index, metric
+                )
+                agg_value = metric['agg']['value']
+                agg_type = metric['agg']['agg_type']
+                agg_name = agg_value + "_" + agg_type
+                cpu_df = match.convert_to_df(cpu, columns=["uuid", agg_name])
+                cpu_df = cpu_df.rename(
+                    columns={agg_name: metric_name+ "_" +  agg_name}
+                )
+                dataframe_list.append(cpu_df)
+                logger.debug(cpu_df)
+
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.error(
+                    "Couldn't get agg metrics %s, exception %s",
+                    metric_name,
+                    e,
+                )
+        else:
+            try:
+                podl = match.getResults("", ids, index, metric)
+                podl_df = match.convert_to_df(
+                    podl, columns=["uuid", "timestamp", metric_of_interest]
+                )
+                dataframe_list.append(podl_df)
+                logger.debug(podl_df)
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.error(
+                    "Couldn't get metrics %s, exception %s",
+                    metric_name,
+                    e,
+                )
+    return dataframe_list
 
 def get_metadata(test,logger):
     """Gets metadata of the run from each test
