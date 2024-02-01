@@ -43,8 +43,65 @@ def run_hunter_analyze(merged_df,test):
     output = report.produce_report(test_name="test",report_type=ReportType.LOG)
     print(output)
 
+# pylint: disable=too-many-locals
+def get_metric_data(ids, index, metrics, match, logger):
+    """Gets details metrics basked on metric yaml list
 
-def get_metadata(test):
+    Args:
+        ids (list): list of all uuids
+        index (dict): index in es of where to find data
+        metrics (dict): metrics to gather data on
+        match (Matcher): current matcher instance
+        logger (logger): log data to one output
+
+    Returns:
+        dataframe_list: dataframe of the all metrics
+    """
+    dataframe_list = []
+    for metric in metrics:
+        metric_name = metric['name']
+        logger.info("Collecting %s", metric_name)
+        metric_of_interest = metric['metric_of_interest']
+
+        if "agg" in metric.keys():
+            try:
+                cpu = match.get_agg_metric_query(
+                    ids, index, metric
+                )
+                agg_value = metric['agg']['value']
+                agg_type = metric['agg']['agg_type']
+                agg_name = agg_value + "_" + agg_type
+                cpu_df = match.convert_to_df(cpu, columns=["uuid", agg_name])
+                cpu_df = cpu_df.rename(
+                    columns={agg_name: metric_name+ "_" +  agg_name}
+                )
+                dataframe_list.append(cpu_df)
+                logger.debug(cpu_df)
+
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.error(
+                    "Couldn't get agg metrics %s, exception %s",
+                    metric_name,
+                    e,
+                )
+        else:
+            try:
+                podl = match.getResults("", ids, index, metric)
+                podl_df = match.convert_to_df(
+                    podl, columns=["uuid", "timestamp", metric_of_interest]
+                )
+                dataframe_list.append(podl_df)
+                logger.debug(podl_df)
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.error(
+                    "Couldn't get metrics %s, exception %s",
+                    metric_name,
+                    e,
+                )
+    return dataframe_list
+
+
+def get_metadata(test,logger):
     """Gets metadata of the run from each test
 
     Args:
@@ -53,23 +110,15 @@ def get_metadata(test):
     Returns:
         dict: dictionary of the metadata
     """
-    metadata_columns = [
-        "platform",
-        "masterNodesType",
-        "masterNodesCount",
-        "workerNodesType",
-        "workerNodesCount",
-        "benchmark",
-        "ocpVersion",
-        "networkType",
-        "encrypted",
-        "fips",
-        "ipsec",
-        "infraNodesCount"
-    ]
-    metadata = {key: test[key] for key in metadata_columns if key in test}
+    metadata = {}
+    for k,v in test.items():
+        if k in ["metrics","name"]:
+            continue
+        metadata[k] = v
     metadata["ocpVersion"] = str(metadata["ocpVersion"])
+    logger.debug('metadata' + str(metadata))
     return metadata
+
 
 
 def set_logging(level, logger):
