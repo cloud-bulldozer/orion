@@ -4,6 +4,7 @@ setup.py for orion cli tool
 """
 from setuptools import setup, find_packages
 
+
 setup(
     name='orion',
     version='1.0',

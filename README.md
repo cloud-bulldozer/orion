@@ -88,8 +88,6 @@ Activate Orion's regression detection tool for performance-scale CPT runs effort
 
 Additionally, users can specify a custom path for the output CSV file using the ```--output``` flag, providing control over the location where the generated CSV will be stored.
 
-
-
 Orion's seamless integration with metadata and hunter ensures a robust regression detection tool for perf-scale CPT runs.
 
 

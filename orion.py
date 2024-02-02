@@ -54,6 +54,7 @@ def orion(config, debug, output,hunter_analyze):
         metadata = get_metadata(test, logger)
         logger.info("The test %s has started", test["name"])
         match = Matcher(index="perf_scale_ci", level=level, ES_URL=ES_URL)
+
         uuids = match.get_uuid_by_metadata(metadata)
         if len(uuids) == 0:
             print("No UUID present for given metadata")
@@ -77,6 +78,7 @@ def orion(config, debug, output,hunter_analyze):
             lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
             dataframe_list,
         )
+
         match.save_results(merged_df, csv_file_path=output.split(".")[0]+"-"+test['name']+".csv")
 
         if hunter_analyze:
