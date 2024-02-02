@@ -2,7 +2,7 @@
 """
 setup.py for orion cli tool
 """
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='orion',
@@ -17,6 +17,8 @@ setup(
             'orion = orion:orion',
         ],
     },
+    packages=find_packages(),
+    package_data={'utils': ['utils.py'],'hunter': ['*.py']},
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
