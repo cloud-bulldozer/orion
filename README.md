@@ -84,7 +84,11 @@ Orion provides flexibility in configuring its behavior by allowing users to set 
 
 For enhanced troubleshooting and debugging, Orion supports the ```--debug``` flag, enabling the generation of detailed debug logs. 
 
+Activate Orion's regression detection tool for performance-scale CPT runs effortlessly with the ```--hunter-analyze``` command. This seamlessly integrates with metadata and hunter, ensuring a robust and efficient regression detection process.
+
 Additionally, users can specify a custom path for the output CSV file using the ```--output``` flag, providing control over the location where the generated CSV will be stored.
+
+
 
 Orion's seamless integration with metadata and hunter ensures a robust regression detection tool for perf-scale CPT runs.
 
