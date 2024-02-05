@@ -4,8 +4,8 @@ elastic-transport==8.11.0
 elasticsearch==8.11.1
 elasticsearch7==7.13.0
 fmatch==0.0.4
-numpy==1.26.3
-pandas==2.1.4
+numpy
+pandas
 python-dateutil==2.8.2
 pytz==2023.3.post1
 PyYAML==6.0.1
