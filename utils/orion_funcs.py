@@ -116,6 +116,48 @@ def get_metadata(test,logger):
     return metadata
 
 
+def filter_metadata(uuid,match,logger):
+    """Gets metadata of the run from each test
+
+    Args:
+        uuid (str): str of uuid ot find metadata of
+        match: the fmatch instance
+        
+
+    Returns:
+        dict: dictionary of the metadata
+    """
+
+    test= match.get_metadata_by_uuid(uuid)
+    metadata = {
+        'platform': '', 
+        'clusterType': '', 
+        'masterNodesCount': 0,
+        'workerNodesCount': 0,
+        'infraNodesCount': 0,
+        'masterNodesType': '',
+        'workerNodesType': '',
+        'infraNodesType': '',
+        'totalNodesCount': 0,
+        'ocpVersion': '',
+        'networkType': '',
+        'ipsec': '',
+        'fips': '',
+        'encrypted': '',
+        'publish': '',
+        'computeArch': '', 
+        'controlPlaneArch': ''
+    }
+    for k,v in test.items():
+        if k not in metadata:
+            continue
+        metadata[k] = v
+    metadata['benchmark.keyword'] = test['benchmark']
+    metadata["ocpVersion"] = str(metadata["ocpVersion"])
+    logger.debug('metadata' + str(metadata))
+    return metadata
+
+
 
 def set_logging(level, logger):
     """sets log level and format
