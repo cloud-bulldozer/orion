@@ -63,6 +63,10 @@ tests :
 ## Build Orion
 Building Orion is a straightforward process. Follow these commands:
 
+**Note: Orion Compatibility**
+
+Orion currently supports Python versions `3.8.x`, `3.9.x`, `3.10.x`, and `3.11.x`. Please be aware that using other Python versions might lead to dependency conflicts caused by hunter, creating a challenging situation known as "dependency hell." It's crucial to highlight that Python `3.12.x` may result in errors due to the removal of distutils, a dependency used by numpy. This information is essential to ensure a smooth experience with Orion and avoid potential compatibility issues.
+
 Clone the current repository using git clone.
 
 ```
