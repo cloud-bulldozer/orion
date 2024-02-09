@@ -63,6 +63,10 @@ tests :
 ## Build Orion
 Building Orion is a straightforward process. Follow these commands:
 
+**Note: Orion Compatibility**
+
+Orion currently supports Python versions `3.8.x`, `3.9.x`, `3.10.x`, and `3.11.x`. Please be aware that using other Python versions might lead to dependency conflicts caused by hunter, creating a challenging situation known as "dependency hell." It's crucial to highlight that Python `3.12.x` may result in errors due to the removal of distutils, a dependency used by numpy. This information is essential to ensure a smooth experience with Orion and avoid potential compatibility issues.
+
 Clone the current repository using git clone.
 
 ```
@@ -84,7 +88,11 @@ Orion provides flexibility in configuring its behavior by allowing users to set 
 
 For enhanced troubleshooting and debugging, Orion supports the ```--debug``` flag, enabling the generation of detailed debug logs. 
 
+Activate Orion's regression detection tool for performance-scale CPT runs effortlessly with the ```--hunter-analyze``` command. This seamlessly integrates with metadata and hunter, ensuring a robust and efficient regression detection process.
+
 Additionally, users can specify a custom path for the output CSV file using the ```--output``` flag, providing control over the location where the generated CSV will be stored.
+
+
 
 Orion's seamless integration with metadata and hunter ensures a robust regression detection tool for perf-scale CPT runs.
 

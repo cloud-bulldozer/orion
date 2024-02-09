@@ -1,11 +1,10 @@
+hunter @ git+https://github.com/datastax-labs/hunter.git@8ff166979d000780ad548e49f006ef2a15d54123
 certifi==2023.11.17
 click==8.1.7
 elastic-transport==8.11.0
 elasticsearch==8.11.1
 elasticsearch7==7.13.0
 fmatch==0.0.4
-numpy==1.26.3
-pandas==2.1.4
 python-dateutil==2.8.2
 pytz==2023.3.post1
 PyYAML==6.0.1
