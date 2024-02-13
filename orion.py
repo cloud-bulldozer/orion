@@ -1,6 +1,7 @@
 """
 This is the cli file for orion, tool to detect regressions using hunter
 """
+
 # pylint: disable = import-error
 import sys
 from functools import reduce
@@ -11,8 +12,13 @@ import click
 import pandas as pd
 
 from fmatch.matcher import Matcher
-from utils.orion_funcs import run_hunter_analyze, get_metadata, \
-                                set_logging, load_config, get_metric_data
+from utils.orion_funcs import (
+    run_hunter_analyze,
+    get_metadata,
+    set_logging,
+    load_config,
+    get_metric_data,
+)
 
 
 @click.group()
@@ -21,13 +27,14 @@ def cli():
     cli function to group commands
     """
 
+
 # pylint: disable=too-many-locals
 @click.command()
 @click.option("--config", default="config.yaml", help="Path to the configuration file")
 @click.option("--output", default="output.csv", help="Path to save the output csv file")
 @click.option("--debug", is_flag=True, help="log level ")
-@click.option("--hunter-analyze",is_flag=True, help="run hunter analyze")
-def orion(config, debug, output,hunter_analyze):
+@click.option("--hunter-analyze", is_flag=True, help="run hunter analyze")
+def orion(config, debug, output, hunter_analyze):
     """Orion is the cli tool to detect regressions over the runs
 
     Args:
@@ -38,14 +45,14 @@ def orion(config, debug, output,hunter_analyze):
     level = logging.DEBUG if debug else logging.INFO
     logger = logging.getLogger("Orion")
     logger = set_logging(level, logger)
-    data = load_config(config,logger)
-    ES_URL=None
+    data = load_config(config, logger)
+    ES_URL = None
 
     if "ES_SERVER" in data.keys():
-        ES_URL = data['ES_SERVER']
+        ES_URL = data["ES_SERVER"]
     else:
-        if 'ES_SERVER' in os.environ:
-            ES_URL=os.environ.get("ES_SERVER")
+        if "ES_SERVER" in os.environ:
+            ES_URL = os.environ.get("ES_SERVER")
         else:
             logger.error("ES_SERVER environment variable/config variable not set")
             sys.exit(1)
@@ -77,12 +84,29 @@ def orion(config, debug, output,hunter_analyze):
             lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
             dataframe_list,
         )
-        match.save_results(merged_df, csv_file_path=output.split(".")[0]+"-"+test['name']+".csv")
+        match.save_results(
+            merged_df, csv_file_path=output.split(".")[0] + "-" + test["name"] + ".csv"
+        )
 
         if hunter_analyze:
-            run_hunter_analyze(merged_df,test)
-
-
+            change_points = run_hunter_analyze(merged_df, test)
+            change_uuids = []
+            for changepoint in change_points:
+                if changepoint.prev_attributes["uuid"] not in change_uuids:
+                    change_uuids.append(changepoint.prev_attributes["uuid"])
+                if changepoint.attributes["uuid"] not in change_uuids:
+                    change_uuids.append(changepoint.attributes["uuid"])
+            change_runs = [
+                (run, match.get_metadata_by_uuid(run)["buildUrl"])
+                for run in change_uuids
+            ]
+            print("\n")
+            print(
+                "\n\n".join(
+                    f"{run}=======>\033]8;;{buildUrl}\033\\click here for build URL\033]8;;\033\\"
+                    for run, buildUrl in change_runs
+                )
+            )
 
 
 if __name__ == "__main__":
