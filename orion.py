@@ -1,6 +1,7 @@
 """
 This is the cli file for orion, tool to detect regressions using hunter
 """
+
 # pylint: disable = import-error
 import sys
 from functools import reduce
@@ -21,6 +22,7 @@ def cli(max_content_width=120):
     """
     cli function to group commands
     """
+
 
 # pylint: disable=too-many-locals
 @click.command()
@@ -50,10 +52,10 @@ def orion(**kwargs):
     ES_URL=None
 
     if "ES_SERVER" in data.keys():
-        ES_URL = data['ES_SERVER']
+        ES_URL = data["ES_SERVER"]
     else:
-        if 'ES_SERVER' in os.environ:
-            ES_URL=os.environ.get("ES_SERVER")
+        if "ES_SERVER" in os.environ:
+            ES_URL = os.environ.get("ES_SERVER")
         else:
             logger.error("ES_SERVER environment variable/config variable not set")
             sys.exit(1)

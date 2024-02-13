@@ -42,6 +42,7 @@ def run_hunter_analyze(merged_df,test):
     report=Report(series,change_points)
     output = report.produce_report(test_name="test",report_type=ReportType.LOG)
     print(output)
+    return change_points
 
 # pylint: disable=too-many-locals
 def get_metric_data(ids, index, metrics, match, logger):
