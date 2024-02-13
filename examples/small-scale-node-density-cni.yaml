@@ -1,0 +1,56 @@
+tests :
+  - name : aws-small-scale-node-density-cni
+    metadata:
+      platform: AWS
+      masterNodesType: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType: m6a.xlarge
+      workerNodesCount: 6
+      infraNodesCount: 3
+      benchmark: node-density-cni
+      ocpVersion: 4.15
+      networkType: OVNKubernetes
+      infraNodesType: r5.2xlarge
+    # encrypted: true
+    # fips: false
+    # ipsec: false
+
+    metrics : 
+    - name:  podReadyLatency
+      metricName: podLatencyQuantilesMeasurement
+      quantileName: Ready
+      metric_of_interest: P99
+      not: 
+      - jobConfig.name: "garbage-collection"
+      
+    - name:  apiserverCPU
+      metricName : containerCPU
+      labels.namespace: openshift-kube-apiserver
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+
+    - name:  ovnCPU
+      metricName : containerCPU
+      labels.namespace: openshift-ovn-kubernetes
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+
+    - name:  etcdCPU
+      metricName : containerCPU
+      labels.namespace: openshift-etcd
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+    
+    - name:  etcdDisck
+      metricName : 99thEtcdDiskBackendCommitDurationSeconds
+      metric_of_interest: value
+      agg:
+        value: duration
+        agg_type: avg
+
