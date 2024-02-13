@@ -6,14 +6,15 @@ Below is an illustrative example of the config and metadata that Orion can handl
 ```
 tests :
   - name : aws-small-scale-cluster-density-v2
-    platform: AWS
-    masterNodesType: m6a.xlarge
-    masterNodesCount: 3
-    workerNodesType: m6a.xlarge
-    workerNodesCount: 24
-    benchmark: cluster-density-v2
-    ocpVersion: 4.15
-    networkType: OVNKubernetes
+    metadata:
+      platform: AWS
+      masterNodesType: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType: m6a.xlarge
+      workerNodesCount: 24
+      benchmark: cluster-density-v2
+      ocpVersion: 4.15
+      networkType: OVNKubernetes
     # encrypted: true
     # fips: false
     # ipsec: false
@@ -56,8 +57,7 @@ tests :
       agg:
         value: duration
         agg_type: avg
-
-
+        
 ```
 
 ## Build Orion
