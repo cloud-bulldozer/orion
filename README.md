@@ -12,7 +12,7 @@ tests :
       masterNodesCount: 3
       workerNodesType: m6a.xlarge
       workerNodesCount: 24
-      benchmark: cluster-density-v2
+      benchmark.keyword: cluster-density-v2
       ocpVersion: 4.15
       networkType: OVNKubernetes
     # encrypted: true
@@ -25,11 +25,11 @@ tests :
       quantileName: Ready
       metric_of_interest: P99
       not: 
-      - jobConfig.name: "garbage-collection"
+        jobConfig.name: "garbage-collection"
       
     - name:  apiserverCPU
       metricName : containerCPU
-      labels.namespace: openshift-kube-apiserver
+      labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
         value: cpu
@@ -37,7 +37,7 @@ tests :
 
     - name:  ovnCPU
       metricName : containerCPU
-      labels.namespace: openshift-ovn-kubernetes
+      labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
         value: cpu
@@ -45,7 +45,7 @@ tests :
 
     - name:  etcdCPU
       metricName : containerCPU
-      labels.namespace: openshift-etcd
+      labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
         value: cpu

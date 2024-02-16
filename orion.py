@@ -59,10 +59,10 @@ def orion(config, debug, output,hunter_analyze):
             print("No UUID present for given metadata")
             sys.exit()
 
-        if metadata["benchmark"] == "k8s-netperf" :
+        if metadata["benchmark.keyword"] == "k8s-netperf" :
             index = "k8s-netperf"
             ids = uuids
-        elif metadata["benchmark"] == "ingress-perf" :
+        elif metadata["benchmark.keyword"] == "ingress-perf" :
             index = "ingress-performance"
             ids = uuids
         else:
