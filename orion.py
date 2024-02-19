@@ -32,9 +32,18 @@ def cli(max_content_width=120):
 @click.option("--uuid", default="", help="UUID to use as base for comparisons")
 @click.option("--baseline", default="", help="Baseline UUID(s) to to compare against uuid")
 @click.option("--config", default="config.yaml", help="Path to the configuration file")
-@click.option("--output", default="output.csv", help="Path to save the output csv file")
+@click.option(
+    "--output-path", default="output.csv", help="Path to save the output csv file"
+)
 @click.option("--debug", is_flag=True, help="log level ")
-@click.option("--hunter-analyze",is_flag=True, help="run hunter analyze")
+@click.option("--hunter-analyze", is_flag=True, help="run hunter analyze")
+@click.option(
+    "-o",
+    "--output",
+    type=click.Choice(["json", "text"]),
+    default="text",
+    help="Choose output format (json or text)",
+)
 def orion(**kwargs):
     """Orion is the cli tool to detect regressions over the runs
 
