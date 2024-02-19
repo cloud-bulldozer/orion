@@ -128,7 +128,7 @@ def orion(**kwargs):
         )
 
         if kwargs["hunter_analyze"]:
-            _ = orion_funcs.run_hunter_analyze(merged_df,test)
+            orion_funcs.run_hunter_analyze(merged_df,test, kwargs["output"])
 
 
 if __name__ == "__main__":
