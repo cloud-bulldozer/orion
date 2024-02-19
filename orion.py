@@ -43,7 +43,7 @@ def cli():
     default="text",
     help="Choose output format (json or text)",
 )
-def orion(config, debug, output_path, hunter_analyze):
+def orion(config, debug, output_path, hunter_analyze,output):
     """Orion is the cli tool to detect regressions over the runs
 
     Args:
@@ -99,7 +99,7 @@ def orion(config, debug, output_path, hunter_analyze):
         )
 
         if hunter_analyze:
-            run_hunter_analyze(merged_df, test)
+            run_hunter_analyze(merged_df, test, output)
 
 
 if __name__ == "__main__":
