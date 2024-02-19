@@ -45,7 +45,7 @@ tests :
         value: cpu
         agg_type: avg
     
-    - name:  etcdDisck
+    - name:  etcdDisk
       metricName : 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
