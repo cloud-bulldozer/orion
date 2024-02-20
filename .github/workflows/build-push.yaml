@@ -14,12 +14,12 @@ jobs:
       uses: redhat-actions/buildah-build@v2
       with:
         image: orion 
-        context: orion 
+        context: .
         tags: latest ${{ github.sha }}
         containerfiles: |
           ./Dockerfile
 
-    - name: Push frontend image to quay.io
+    - name: Push orion image to quay.io
       id: push-front-to-quay
       uses: redhat-actions/push-to-registry@v2
       with:
