@@ -15,7 +15,7 @@ from hunter.report import Report, ReportType
 from hunter.series import Metric, Series
 
 
-def run_hunter_analyze(merged_df,test,output):
+def run_hunter_analyze(merged_df, test, output):
     """Start hunter analyze function
 
     Args:
@@ -38,44 +38,55 @@ def run_hunter_analyze(merged_df,test,output):
         time=list(merged_df["timestamp"]),
         metrics=metrics,
         data=data,
-        attributes=attributes
+        attributes=attributes,
     )
-    #print(dumps(loads(merged_df.to_json(orient="records")),indent=4))
-    change_points=series.analyze().change_points_by_time
+    # print(dumps(loads(merged_df.to_json(orient="records")),indent=4))
+    change_points = series.analyze().change_points_by_time
     print(series.analyze().change_points)
-    report=Report(series,change_points)
-<<<<<<< HEAD
-    output = report.produce_report(test_name="test",report_type=ReportType.LOG)
-    print(output)
-    return change_points
-=======
-    if output=="text":
-        output_table = report.produce_report(test_name="test",report_type=ReportType.LOG)
+    report = Report(series, change_points)
+    if output == "text":
+        output_table = report.produce_report(
+            test_name="test", report_type=ReportType.LOG
+        )
         print(output_table)
-    elif output=="json":
-        change_points_by_metric=series.analyze().change_points
-        output_json=parse_json_output(merged_df,change_points_by_metric)
-        print(json.dumps(output_json,indent=4))
+    elif output == "json":
+        change_points_by_metric = series.analyze().change_points
+        output_json = parse_json_output(merged_df, change_points_by_metric)
+        print(json.dumps(output_json, indent=4))
 
 
-def parse_json_output(merged_df,change_points_by_metric):
-    df_json=merged_df.to_json(orient="records")
-    df_json=json.loads(df_json)
+def parse_json_output(merged_df, change_points_by_metric):
+    """json output generator function
+
+    Args:
+        merged_df (pd.Dataframe): the dataframe to be converted to json
+        change_points_by_metric (_type_): different change point
+
+    Returns:
+        _type_: _description_
+    """
+    df_json = merged_df.to_json(orient="records")
+    df_json = json.loads(df_json)
 
     for index, entry in enumerate(df_json):
-        entry["metrics"] = {key: {"value" :entry.pop(key), "percentage_change":0} for key in entry.keys() - {"uuid", "timestamp"}}
-        entry["is_changepoint"]=False
-    
+        entry["metrics"] = {
+            key: {"value": entry.pop(key), "percentage_change": 0}
+            for key in entry.keys() - {"uuid", "timestamp"}
+        }
+        entry["is_changepoint"] = False
+
     for key in change_points_by_metric.keys():
         for change_point in change_points_by_metric[key]:
-            index=change_point.index
-            percentage_change= ((change_point.stats.mean_2 - change_point.stats.mean_1)/change_point.stats.mean_1)*100
-            df_json[index]["metrics"][key]["percentage_change"]=percentage_change
-            df_json[index]["is_changepoint"]=True
+            index = change_point.index
+            percentage_change = (
+                (change_point.stats.mean_2 - change_point.stats.mean_1)
+                / change_point.stats.mean_1
+            ) * 100
+            df_json[index]["metrics"][key]["percentage_change"] = percentage_change
+            df_json[index]["is_changepoint"] = True
 
     return df_json
-    
->>>>>>> bc6af70 (json output)
+
 
 # pylint: disable=too-many-locals
 def get_metric_data(ids, index, metrics, match, logger):
@@ -93,17 +104,15 @@ def get_metric_data(ids, index, metrics, match, logger):
     """
     dataframe_list = []
     for metric in metrics:
-        metric_name = metric['name']
+        metric_name = metric["name"]
         logger.info("Collecting %s", metric_name)
-        metric_of_interest = metric['metric_of_interest']
+        metric_of_interest = metric["metric_of_interest"]
 
         if "agg" in metric.keys():
             try:
-                cpu = match.get_agg_metric_query(
-                    ids, index, metric
-                )
-                agg_value = metric['agg']['value']
-                agg_type = metric['agg']['agg_type']
+                cpu = match.get_agg_metric_query(ids, index, metric)
+                agg_value = metric["agg"]["value"]
+                agg_type = metric["agg"]["agg_type"]
                 agg_name = agg_value + "_" + agg_type
                 cpu_df = match.convert_to_df(cpu, columns=["uuid","timestamp", agg_name])
                 cpu_df = cpu_df.rename(
@@ -135,7 +144,7 @@ def get_metric_data(ids, index, metrics, match, logger):
     return dataframe_list
 
 
-def get_metadata(test,logger):
+def get_metadata(test, logger):
     """Gets metadata of the run from each test
 
     Args:
@@ -144,9 +153,9 @@ def get_metadata(test,logger):
     Returns:
         dict: dictionary of the metadata
     """
-    metadata=test['metadata']
+    metadata = test["metadata"]
     metadata["ocpVersion"] = str(metadata["ocpVersion"])
-    logger.debug('metadata' + str(metadata))
+    logger.debug("metadata" + str(metadata))
     return metadata
 
 
@@ -234,7 +243,8 @@ def set_logging(level, logger):
     logger.addHandler(handler)
     return logger
 
-def load_config(config,logger):
+
+def load_config(config, logger):
     """Loads config file
 
     Args:
