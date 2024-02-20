@@ -1,0 +1,54 @@
+tests :
+  - name : aws-small-scale-cluster-density-v2
+    metadata:
+      platform: AWS
+      masterNodesType: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType: m6a.xlarge
+      workerNodesCount: 24
+      benchmark.keyword: cluster-density-v2
+      ocpVersion: 4.15
+      networkType: OVNKubernetes
+    # encrypted: true
+    # fips: false
+    # ipsec: false
+
+    metrics : 
+    - name:  podReadyLatency
+      metricName: podLatencyQuantilesMeasurement
+      quantileName: Ready
+      metric_of_interest: P99
+      not: 
+        jobConfig.name: "garbage-collection"
+      
+    - name:  apiserverCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-kube-apiserver
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+
+    - name:  ovnCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+
+    - name:  etcdCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-etcd
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+    
+    - name:  etcdDisk
+      metricName : 99thEtcdDiskBackendCommitDurationSeconds
+      metric_of_interest: value
+      agg:
+        value: duration
+        agg_type: avg
+

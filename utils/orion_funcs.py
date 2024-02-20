@@ -110,11 +110,7 @@ def get_metadata(test,logger):
     Returns:
         dict: dictionary of the metadata
     """
-    metadata = {}
-    for k,v in test.items():
-        if k in ["metrics","name"]:
-            continue
-        metadata[k] = v
+    metadata=test['metadata']
     metadata["ocpVersion"] = str(metadata["ocpVersion"])
     logger.debug('metadata' + str(metadata))
     return metadata
