@@ -40,9 +40,7 @@ def run_hunter_analyze(merged_df, test, output):
         data=data,
         attributes=attributes,
     )
-    # print(dumps(loads(merged_df.to_json(orient="records")),indent=4))
     change_points = series.analyze().change_points_by_time
-    print(series.analyze().change_points)
     report = Report(series, change_points)
     if output == "text":
         output_table = report.produce_report(
