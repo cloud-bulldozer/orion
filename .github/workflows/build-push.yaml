@@ -21,6 +21,7 @@ jobs:
 
     - name: Push orion image to quay.io
       id: push-front-to-quay
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: redhat-actions/push-to-registry@v2
       with:
         image: ${{ steps.build-orion.outputs.image }}
