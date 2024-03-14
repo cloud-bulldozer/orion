@@ -16,7 +16,8 @@ from utils.orion_funcs import run_hunter_analyze, get_metadata, \
 
 
 @click.group()
-def cli():
+# pylint: disable=unused-argument
+def cli(max_content_width=120):
     """
     cli function to group commands
     """
@@ -28,8 +29,10 @@ def cli():
 @click.option("--debug", is_flag=True, help="log level ")
 @click.option("--hunter-analyze",is_flag=True, help="run hunter analyze")
 def orion(config, debug, output,hunter_analyze):
-    """Orion is the cli tool to detect regressions over the runs
+    """
+    Orion is the cli tool to detect regressions over the runs
 
+    \b
     Args:
         config (str): path to the config file
         debug (bool): lets you log debug mode
@@ -86,5 +89,9 @@ def orion(config, debug, output,hunter_analyze):
 
 
 if __name__ == "__main__":
-    cli.add_command(orion)
-    cli()
+    if len(sys.argv) <= 1:
+        cli.main(['--help'])
+    else:
+        print(len(sys.argv))
+        cli.add_command(orion)
+        cli()
