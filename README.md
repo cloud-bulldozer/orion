@@ -1,5 +1,5 @@
 # Orion - CLI tool to find regressions
-Orion stands as a powerful command-line tool designed for identifying regressions within perf-scale CPT runs, leveraging metadata provided during the process. The detection mechanism relies on [hunter](https://github.com/datastax-labs/hunter).
+Orion stands as a powerful command-line tool/Daemon designed for identifying regressions within perf-scale CPT runs, leveraging metadata provided during the process. The detection mechanism relies on [hunter](https://github.com/datastax-labs/hunter).
 
 Below is an illustrative example of the config and metadata that Orion can handle:
 
@@ -78,9 +78,12 @@ Clone the current repository using git clone.
 >> pip install .
 ```
 ## Run Orion
-Executing Orion is as simple as building it. After following the build steps, run the following:
+Executing Orion is as seamless as its building it. With the latest enhancements, Orion introduces a versatile command-line option and a Daemon mode, empowering users to select the mode that aligns perfectly with their requirements.
+
+### Command-line mode
+Running Orion in command-line Mode is straightforward. Simply follow these instructions:
 ```
->> orion
+>> orion cmd-mode
 ```
 At the moment, 
 
@@ -91,6 +94,45 @@ For enhanced troubleshooting and debugging, Orion supports the ```--debug``` fla
 Activate Orion's regression detection tool for performance-scale CPT runs effortlessly with the ```--hunter-analyze``` command. This seamlessly integrates with metadata and hunter, ensuring a robust and efficient regression detection process.
 
 Additionally, users can specify a custom path for the output CSV file using the ```--output``` flag, providing control over the location where the generated CSV will be stored.
+
+### Daemon mode
+The core purpose of Daemon mode is to operate Orion as a self-contained server, dedicated to handling incoming requests. By sending a POST request accompanied by a configuration file, users can trigger change point detection on the provided metadata and metrics. Following the processing, the response is formatted in JSON, providing a structured output for seamless integration and analysis. To trigger daemon mode just use the following commands
+
+```
+>> orion daemon-mode
+```
+
+Below is a sample output structure: the top level of the JSON contains the test name, while within each test, runs are organized into arrays. Each run includes succinct metadata alongside corresponding metrics for comprehensive analysis.
+```
+{
+    "aws-small-scale-cluster-density-v2": [
+        {
+            "uuid": "4cb3efec-609a-4ac5-985d-4cbbcbb11625",
+            "timestamp": 1704889895,
+            "metrics": {
+                "etcdCPU_cpu_avg": {
+                    "value": 8.7663162253,
+                    "percentage_change": 0
+                },
+                "ovnCPU_cpu_avg": {
+                    "value": 2.8503958847,
+                    "percentage_change": 0
+                },
+                "P99": {
+                    "value": 13000,
+                    "percentage_change": 0
+                },
+                "apiserverCPU_cpu_avg": {
+                    "value": 10.2344511574,
+                    "percentage_change": 0
+                }
+            },
+            "buildUrl": "https://prow.ci.openshift.org/view/gs/origin-ci-test/logs/periodic-ci-openshift-qe-ocp-qe-perfscale-ci-main-aws-4.16-nightly-x86-control-plane-24nodes/1745037917119582208",
+            "is_changepoint": false
+        },
+    ]
+}
+```
 
 
 
