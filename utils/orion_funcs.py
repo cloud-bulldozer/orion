@@ -128,7 +128,7 @@ def filter_metadata(uuid,match,logger):
         dict: dictionary of the metadata
     """
 
-    test= match.get_metadata_by_uuid(uuid)
+    test = match.get_metadata_by_uuid(uuid)
     metadata = {
         'platform': '', 
         'clusterType': '', 
@@ -154,8 +154,11 @@ def filter_metadata(uuid,match,logger):
         metadata[k] = v
     metadata['benchmark.keyword'] = test['benchmark']
     metadata["ocpVersion"] = str(metadata["ocpVersion"])
-    logger.debug('metadata' + str(metadata))
-    return metadata
+
+    #Remove any keys that have blank values
+    no_blank_meta = {k: v for k, v in metadata.items() if v}
+    logger.debug('No blank metadata dict: ' + str(no_blank_meta))
+    return no_blank_meta
 
 
 

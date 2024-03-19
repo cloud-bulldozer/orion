@@ -74,9 +74,7 @@ def orion(**kwargs):
                 logging.info("No UUID present for given metadata")
                 sys.exit()
         else:
-            print("baseline" + str(baseline))
             uuids = re.split(' |,',baseline)
-            print("uuids" + str(uuids))
             uuids.append(uuid)
         if metadata["benchmark.keyword"] == "k8s-netperf" :
             index = "k8s-netperf"
@@ -99,8 +97,10 @@ def orion(**kwargs):
             lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
             dataframe_list,
         )
+
+        csv_name = kwargs["output"].split(".")[0]+"-"+test['name']+".csv"
         match.save_results(
-            merged_df, csv_file_path=kwargs["output"].split(".")[0]+"-"+test['name']+".csv"
+            merged_df, csv_file_path=csv_name
         )
 
         if kwargs["hunter_analyze"]:

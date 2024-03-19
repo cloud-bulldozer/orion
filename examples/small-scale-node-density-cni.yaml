@@ -7,7 +7,7 @@ tests :
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
       infraNodesCount: 3
-      benchmar.keyword: node-density-cni
+      benchmark.keyword: node-density-cni
       ocpVersion: 4.15
       networkType: OVNKubernetes
       infraNodesType: r5.2xlarge
