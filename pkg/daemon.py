@@ -1,6 +1,7 @@
 """
 Module to run orion in daemon mode
 """
+import logging
 import shutil
 import os
 
@@ -10,11 +11,11 @@ from pkg.logrus import SingletonLogger
 from . import runTest
 
 app = FastAPI()
-logger_instance = SingletonLogger(debug=False).logger
+logger_instance = SingletonLogger(debug=logging.INFO).logger
 
 
 @app.post("/daemon")
-async def daemon(file: UploadFile = File(...)):
+async def daemon(file: UploadFile = File(...), uuid: str = "", baseline: str = ""):
     """starts listening on port 8000 on url /daemon
 
     Args:
@@ -27,7 +28,15 @@ async def daemon(file: UploadFile = File(...)):
     new_file_name = f"{file_name}_copy{file_extension}"
     with open(new_file_name, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    result = runTest.run(new_file_name, "output.csv", True, "json")
+    argDict={
+        'config': new_file_name,
+        'output_path': "output.csv",
+        'hunter_analyze': True,
+        'output_format': "json",
+        'uuid':uuid,
+        'baseline':baseline,
+    }
+    result = runTest.run(**argDict)
     try:
         os.remove(new_file_name)
     except OSError as e:
