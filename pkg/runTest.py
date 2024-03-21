@@ -36,4 +36,5 @@ def run(**kwargs):
                 result, test, output=kwargs["output_format"], matcher=match
             )
             result_output[testname] = result_data
+        del match
     return result_output

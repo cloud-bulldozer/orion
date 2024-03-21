@@ -101,6 +101,31 @@ The core purpose of Daemon mode is to operate Orion as a self-contained server, 
 ```
 >> orion daemon-mode
 ```
+**Querying a Request to the Daemon Service**
+
+To interact with the Daemon Service, you can send a POST request using `curl` with specific parameters. This allows you to submit a file along with additional information for processing.
+
+*Request URL*
+
+```
+POST http://127.0.0.1:8000/daemon
+```
+
+*Parameters*
+
+- uuid (optional): The uuid of the run you want to compare with similar runs.
+- baseline (optional): The runs you want to compare.
+
+*Request Body*
+
+The request body should contain the file you want to submit for processing. Ensure that the file is in the proper format (e.g., YAML).
+
+Example
+```
+curl -X POST 'http://127.0.0.1:8000/daemon?uuid=4cb3efec-609a-4ac5-985d-4cbbcbb11625' \
+--form 'file=@"/path/to/your/config.yaml"'
+```
+
 
 Below is a sample output structure: the top level of the JSON contains the test name, while within each test, runs are organized into arrays. Each run includes succinct metadata alongside corresponding metrics for comprehensive analysis.
 ```

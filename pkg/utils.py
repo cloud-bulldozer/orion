@@ -118,11 +118,11 @@ def get_metric_data(ids, index, metrics, match):
     Returns:
         dataframe_list: dataframe of the all metrics
     """
-    logger= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger(debug=logging.INFO).logger
     dataframe_list = []
     for metric in metrics:
         metric_name = metric["name"]
-        logger.info("Collecting %s", metric_name)
+        logger_instance.info("Collecting %s", metric_name)
         metric_of_interest = metric["metric_of_interest"]
 
         if "agg" in metric.keys():
@@ -134,10 +134,10 @@ def get_metric_data(ids, index, metrics, match):
                 cpu_df = match.convert_to_df(cpu, columns=["uuid", agg_name])
                 cpu_df = cpu_df.rename(columns={agg_name: metric_name + "_" + agg_name})
                 dataframe_list.append(cpu_df)
-                logger.debug(cpu_df)
+                logger_instance.debug(cpu_df)
 
             except Exception as e:  # pylint: disable=broad-exception-caught
-                logger.error(
+                logger_instance.error(
                     "Couldn't get agg metrics %s, exception %s",
                     metric_name,
                     e,
@@ -149,9 +149,9 @@ def get_metric_data(ids, index, metrics, match):
                     podl, columns=["uuid", "timestamp", metric_of_interest]
                 )
                 dataframe_list.append(podl_df)
-                logger.debug(podl_df)
+                logger_instance.debug(podl_df)
             except Exception as e:  # pylint: disable=broad-exception-caught
-                logger.error(
+                logger_instance.error(
                     "Couldn't get metrics %s, exception %s",
                     metric_name,
                     e,
@@ -168,10 +168,10 @@ def get_metadata(test):
     Returns:
         dict: dictionary of the metadata
     """
-    logger= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger(debug=logging.INFO).logger
     metadata = test["metadata"]
     metadata["ocpVersion"] = str(metadata["ocpVersion"])
-    logger.debug("metadata" + str(metadata))
+    logger_instance.debug("metadata" + str(metadata))
     return metadata
 
 
@@ -185,16 +185,16 @@ def load_config(config):
     Returns:
         dict: dictionary of the config file
     """
-    logger= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger(debug=logging.INFO).logger
     try:
         with open(config, "r", encoding="utf-8") as file:
             data = yaml.safe_load(file)
-            logger.debug("The %s file has successfully loaded", config)
+            logger_instance.debug("The %s file has successfully loaded", config)
     except FileNotFoundError as e:
-        logger.error("Config file not found: %s", e)
+        logger_instance.error("Config file not found: %s", e)
         sys.exit(1)
     except Exception as e:  # pylint: disable=broad-exception-caught
-        logger.error("An error occurred: %s", e)
+        logger_instance.error("An error occurred: %s", e)
         sys.exit(1)
     return data
 
@@ -209,12 +209,12 @@ def get_es_url(data):
     Returns:
         str: es url
     """
-    logger= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger(debug=logging.INFO).logger
     if "ES_SERVER" in data.keys():
         return data["ES_SERVER"]
     if "ES_SERVER" in os.environ:
         return os.environ.get("ES_SERVER")
-    logger.error("ES_SERVER environment variable/config variable not set")
+    logger_instance.error("ES_SERVER environment variable/config variable not set")
     sys.exit(1)
 
 
@@ -254,17 +254,17 @@ def process_test(test, match, output, uuid, baseline):
     Returns:
         _type_: merged dataframe
     """
-    logger= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger(debug=logging.INFO).logger
     if uuid in ('', None):
         metadata = get_metadata(test)
     else:
         metadata = filter_metadata(uuid,match)
-    logger.info("The test %s has started", test["name"])
+    logger_instance.info("The test %s has started", test["name"])
     uuids = match.get_uuid_by_metadata(metadata)
     if baseline in ('', None):
         uuids = match.get_uuid_by_metadata(metadata)
         if len(uuids) == 0:
-            logger.error("No UUID present for given metadata")
+            logger_instance.error("No UUID present for given metadata")
             sys.exit()
     else:
         uuids = re.split(' |,',baseline)
@@ -294,7 +294,7 @@ def filter_metadata(uuid,match):
     Returns:
         dict: dictionary of the metadata
     """
-    logger= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger(debug=logging.INFO).logger
     test = match.get_metadata_by_uuid(uuid)
     metadata = {
         'platform': '', 
@@ -324,5 +324,5 @@ def filter_metadata(uuid,match):
 
     #Remove any keys that have blank values
     no_blank_meta = {k: v for k, v in metadata.items() if v}
-    logger.debug('No blank metadata dict: ' + str(no_blank_meta))
+    logger_instance.debug('No blank metadata dict: ' + str(no_blank_meta))
     return no_blank_meta
