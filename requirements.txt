@@ -12,3 +12,4 @@ tzdata==2023.4
 urllib3==1.26.18
 fastapi==0.110.0
 python-multipart==0.0.9
+uvicorn==0.28.0
