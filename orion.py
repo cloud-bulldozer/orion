@@ -58,11 +58,6 @@ def cmd_analysis(**kwargs):
         print("="*len(test_name))
         print(result_table)
 
-        csv_name = kwargs["output"].split(".")[0]+"-"+test['name']+".csv"
-        match.save_results(
-            merged_df, csv_file_path=csv_name
-        )
-
 @cli.command(name="daemon-mode")
 @click.option("--debug", default=False, is_flag=True, help="log level")
 def rundaemon(debug):
