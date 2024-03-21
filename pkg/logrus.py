@@ -1,8 +1,10 @@
 """
 Logger for orion
 """
+
 import logging
 import sys
+
 
 class SingletonLogger:
     """Singleton logger to set logging at one single place
@@ -10,9 +12,10 @@ class SingletonLogger:
     Returns:
         _type_: _description_
     """
+
     _instance = None
 
-    def __new__(cls, debug=False):
+    def __new__(cls, debug):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._logger = cls._initialize_logger(debug)
@@ -20,13 +23,13 @@ class SingletonLogger:
 
     @staticmethod
     def _initialize_logger(debug):
-        level = logging.DEBUG if debug else logging.INFO
+        level = debug  # if debug else logging.INFO
         logger = logging.getLogger("Orion")
         logger.setLevel(level)
         handler = logging.StreamHandler(sys.stdout)
         handler.setLevel(level)
         formatter = logging.Formatter(
-            "%(asctime)s - %(filename)s-%(lineno)d - %(name)s - %(levelname)s - %(message)s"
+            "%(asctime)s - %(name)s - %(levelname)s - file: %(filename)s - line: %(lineno)d - %(message)s" # pylint: disable = line-too-long
         )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
@@ -39,4 +42,4 @@ class SingletonLogger:
         Returns:
             _type_: _description_
         """
-        return self._logger # pylint: disable = no-member
+        return self._logger  # pylint: disable = no-member

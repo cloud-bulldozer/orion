@@ -6,7 +6,9 @@ module for all utility functions orion uses
 
 from functools import reduce
 import json
+import logging
 import os
+import re
 import sys
 
 import yaml
@@ -14,6 +16,11 @@ import pandas as pd
 
 from hunter.report import Report, ReportType
 from hunter.series import Metric, Series
+
+from pkg.logrus import SingletonLogger
+
+
+
 
 
 def run_hunter_analyze(merged_df, test, output, matcher):
@@ -71,7 +78,6 @@ def parse_json_output(merged_df, change_points_by_metric,matcher):
     Returns:
         _type_: _description_
     """
-
     df_json = merged_df.to_json(orient="records")
     df_json = json.loads(df_json)
 
@@ -99,7 +105,7 @@ def parse_json_output(merged_df, change_points_by_metric,matcher):
 
 
 # pylint: disable=too-many-locals
-def get_metric_data(ids, index, metrics, match, logger):
+def get_metric_data(ids, index, metrics, match):
     """Gets details metrics basked on metric yaml list
 
     Args:
@@ -112,6 +118,7 @@ def get_metric_data(ids, index, metrics, match, logger):
     Returns:
         dataframe_list: dataframe of the all metrics
     """
+    logger= SingletonLogger(debug=logging.INFO).logger
     dataframe_list = []
     for metric in metrics:
         metric_name = metric["name"]
@@ -152,7 +159,7 @@ def get_metric_data(ids, index, metrics, match, logger):
     return dataframe_list
 
 
-def get_metadata(test, logger):
+def get_metadata(test):
     """Gets metadata of the run from each test
 
     Args:
@@ -161,13 +168,14 @@ def get_metadata(test, logger):
     Returns:
         dict: dictionary of the metadata
     """
+    logger= SingletonLogger(debug=logging.INFO).logger
     metadata = test["metadata"]
     metadata["ocpVersion"] = str(metadata["ocpVersion"])
     logger.debug("metadata" + str(metadata))
     return metadata
 
 
-def load_config(config, logger):
+def load_config(config):
     """Loads config file
 
     Args:
@@ -177,6 +185,7 @@ def load_config(config, logger):
     Returns:
         dict: dictionary of the config file
     """
+    logger= SingletonLogger(debug=logging.INFO).logger
     try:
         with open(config, "r", encoding="utf-8") as file:
             data = yaml.safe_load(file)
@@ -190,7 +199,7 @@ def load_config(config, logger):
     return data
 
 
-def get_es_url(data, logger):
+def get_es_url(data):
     """Gets es url from config or env
 
     Args:
@@ -200,6 +209,7 @@ def get_es_url(data, logger):
     Returns:
         str: es url
     """
+    logger= SingletonLogger(debug=logging.INFO).logger
     if "ES_SERVER" in data.keys():
         return data["ES_SERVER"]
     if "ES_SERVER" in os.environ:
@@ -208,7 +218,7 @@ def get_es_url(data, logger):
     sys.exit(1)
 
 
-def get_index_and_ids(metadata, uuids, match):
+def get_index_and_ids(metadata, uuids, match, baseline):
     """returns the index to be used and runs as uuids
 
     Args:
@@ -224,11 +234,15 @@ def get_index_and_ids(metadata, uuids, match):
     if metadata["benchmark.keyword"] == "ingress-perf":
         return "ingress-performance", uuids
     index = "ripsaw-kube-burner"
-    runs = match.match_kube_burner(uuids)
-    return index, match.filter_runs(runs, runs)
+    if baseline == "":
+        runs = match.match_kube_burner(uuids)
+        ids = match.filter_runs(runs, runs)
+    else:
+        ids = uuids
+    return index, ids
 
 
-def process_test(test, match, logger, output):
+def process_test(test, match, output, uuid, baseline):
     """generate the dataframe for the test given
 
     Args:
@@ -240,17 +254,25 @@ def process_test(test, match, logger, output):
     Returns:
         _type_: merged dataframe
     """
-    metadata = get_metadata(test, logger)
+    logger= SingletonLogger(debug=logging.INFO).logger
+    if uuid in ('', None):
+        metadata = get_metadata(test)
+    else:
+        metadata = filter_metadata(uuid,match)
     logger.info("The test %s has started", test["name"])
     uuids = match.get_uuid_by_metadata(metadata)
-    if len(uuids) == 0:
-        print("No UUID present for given metadata")
-        sys.exit()
-
-    index, ids = get_index_and_ids(metadata, uuids, match)
+    if baseline in ('', None):
+        uuids = match.get_uuid_by_metadata(metadata)
+        if len(uuids) == 0:
+            logger.error("No UUID present for given metadata")
+            sys.exit()
+    else:
+        uuids = re.split(' |,',baseline)
+        uuids.append(uuid)
+    index, ids = get_index_and_ids(metadata, uuids, match, baseline)
 
     metrics = test["metrics"]
-    dataframe_list = get_metric_data(ids, index, metrics, match, logger)
+    dataframe_list = get_metric_data(ids, index, metrics, match)
 
     merged_df = reduce(
         lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
@@ -260,3 +282,47 @@ def process_test(test, match, logger, output):
     output_file_path = output.split(".")[0] + "-" + test["name"] + ".csv"
     match.save_results(merged_df, csv_file_path=output_file_path)
     return merged_df
+
+def filter_metadata(uuid,match):
+    """Gets metadata of the run from each test
+
+    Args:
+        uuid (str): str of uuid ot find metadata of
+        match: the fmatch instance
+        
+
+    Returns:
+        dict: dictionary of the metadata
+    """
+    logger= SingletonLogger(debug=logging.INFO).logger
+    test = match.get_metadata_by_uuid(uuid)
+    metadata = {
+        'platform': '', 
+        'clusterType': '', 
+        'masterNodesCount': 0,
+        'workerNodesCount': 0,
+        'infraNodesCount': 0,
+        'masterNodesType': '',
+        'workerNodesType': '',
+        'infraNodesType': '',
+        'totalNodesCount': 0,
+        'ocpVersion': '',
+        'networkType': '',
+        'ipsec': '',
+        'fips': '',
+        'encrypted': '',
+        'publish': '',
+        'computeArch': '', 
+        'controlPlaneArch': ''
+    }
+    for k,v in test.items():
+        if k not in metadata:
+            continue
+        metadata[k] = v
+    metadata['benchmark.keyword'] = test['benchmark']
+    metadata["ocpVersion"] = str(metadata["ocpVersion"])
+
+    #Remove any keys that have blank values
+    no_blank_meta = {k: v for k, v in metadata.items() if v}
+    logger.debug('No blank metadata dict: ' + str(no_blank_meta))
+    return no_blank_meta
