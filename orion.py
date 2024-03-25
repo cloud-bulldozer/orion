@@ -74,7 +74,7 @@ def orion(**kwargs):
                 logging.info("No UUID present for given metadata")
                 sys.exit()
         else:
-            uuids = re.split(' |,',baseline)
+            uuids = [uuid for uuid in re.split(' |,',baseline) if uuid]
             uuids.append(uuid)
         if metadata["benchmark.keyword"] == "k8s-netperf" :
             index = "k8s-netperf"
