@@ -8,6 +8,8 @@ from functools import reduce
 import logging
 import os
 import re
+from tabulate import tabulate
+import pyshorteners
 
 import click
 import pandas as pd
@@ -81,7 +83,7 @@ def orion(**kwargs):
         if metadata["benchmark.keyword"] == "k8s-netperf" :
             index = "k8s-netperf"
             ids = uuids
-        elif metadata["benchmark.keyword"] == "ingress-perf" :
+        elif metadata["benchmark.keyword"] == "ingress-perf":
             index = "ingress-performance"
             ids = uuids
         else:
@@ -106,7 +108,23 @@ def orion(**kwargs):
         )
 
         if kwargs["hunter_analyze"]:
-            orion_funcs.run_hunter_analyze(merged_df,test)
+            change_points = orion_funcs.run_hunter_analyze(merged_df,test)
+            change_uuids = []
+            for changepoint in change_points:
+                if changepoint.prev_attributes["uuid"] not in change_uuids:
+                    change_uuids.append(changepoint.prev_attributes["uuid"])
+                if changepoint.attributes["uuid"] not in change_uuids:
+                    change_uuids.append(changepoint.attributes["uuid"])
+            change_runs = [
+                (run, match.get_metadata_by_uuid(run)["buildUrl"])
+                for run in change_uuids
+            ]
+            shortener = pyshorteners.Shortener()
+            data = [
+                (item1, shortener.tinyurl.short(item2)) for item1, item2 in change_runs
+            ]
+            table = tabulate(data, headers=["uuid", "buildUrl"], tablefmt="grid")
+            logger.info("\n%s",table)
 
 
 if __name__ == "__main__":
