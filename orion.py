@@ -23,7 +23,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 
 
 # pylint: disable=too-many-locals
-@cli.command(name="cmd-mode")
+@cli.command(name="cmd")
 @click.option("--config", default="config.yaml", help="Path to the configuration file")
 @click.option(
     "--output-path", default="output.csv", help="Path to save the output csv file"
@@ -61,7 +61,7 @@ def cmd_analysis(**kwargs):
         print("="*len(test_name))
         print(result_table)
 
-@cli.command(name="daemon-mode")
+@cli.command(name="daemon")
 @click.option("--debug", default=False, is_flag=True, help="log level")
 def rundaemon(debug):
     """

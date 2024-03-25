@@ -229,10 +229,11 @@ def get_index_and_ids(metadata, uuids, match, baseline):
     Returns:
         _type_: index and uuids
     """
-    if metadata["benchmark.keyword"] == "k8s-netperf":
-        return "k8s-netperf", uuids
-    if metadata["benchmark.keyword"] == "ingress-perf":
-        return "ingress-performance", uuids
+    index_map={"k8s-netperf":"k8s-netperf",
+                "ingress-perf":"ingress-performance",
+                }
+    if metadata["benchmark.keyword"] in index_map.keys():
+        return index_map[metadata["benchmark.keyword"]], uuids
     index = "ripsaw-kube-burner"
     if baseline == "":
         runs = match.match_kube_burner(uuids)
