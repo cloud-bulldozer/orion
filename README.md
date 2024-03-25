@@ -1,5 +1,5 @@
 # Orion - CLI tool to find regressions
-Orion stands as a powerful command-line tool/Daemon designed for identifying regressions within perf-scale CPT runs, leveraging metadata provided during the process. The detection mechanism relies on [hunter](https://github.com/datastax-labs/hunter).
+Orion stands as a powerful command-line tool/daemon designed for identifying regressions within perf-scale CPT runs, leveraging metadata provided during the process. The detection mechanism relies on [hunter](https://github.com/datastax-labs/hunter).
 
 Below is an illustrative example of the config and metadata that Orion can handle:
 
@@ -114,7 +114,7 @@ POST http://127.0.0.1:8000/daemon
 *Parameters*
 
 - uuid (optional): The uuid of the run you want to compare with similar runs.
-- baseline (optional): The runs you want to compare.
+- baseline (optional): The runs you want to compare with.
 
 *Request Body*
 
