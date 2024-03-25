@@ -7,6 +7,8 @@ import sys
 from functools import reduce
 import logging
 import os
+from tabulate import tabulate
+import pyshorteners
 
 import click
 import pandas as pd
@@ -66,10 +68,10 @@ def orion(config, debug, output, hunter_analyze):
             print("No UUID present for given metadata")
             sys.exit()
 
-        if metadata["benchmark.keyword"] == "k8s-netperf" :
+        if metadata["benchmark.keyword"] == "k8s-netperf":
             index = "k8s-netperf"
             ids = uuids
-        elif metadata["benchmark.keyword"] == "ingress-perf" :
+        elif metadata["benchmark.keyword"] == "ingress-perf":
             index = "ingress-performance"
             ids = uuids
         else:
@@ -100,13 +102,12 @@ def orion(config, debug, output, hunter_analyze):
                 (run, match.get_metadata_by_uuid(run)["buildUrl"])
                 for run in change_uuids
             ]
-            print("\n")
-            print(
-                "\n\n".join(
-                    f"{run}=======>\033]8;;{buildUrl}\033\\click here for build URL\033]8;;\033\\"
-                    for run, buildUrl in change_runs
-                )
-            )
+            shortener = pyshorteners.Shortener()
+            data = [
+                (item1, shortener.tinyurl.short(item2)) for item1, item2 in change_runs
+            ]
+            table = tabulate(data, headers=["uuid", "buildUrl"], tablefmt="grid")
+            logger.info("\n%s",table)
 
 
 if __name__ == "__main__":
