@@ -232,7 +232,7 @@ def get_index_and_ids(metadata, uuids, match, baseline):
     index_map={"k8s-netperf":"k8s-netperf",
                 "ingress-perf":"ingress-performance",
                 }
-    if metadata["benchmark.keyword"] in index_map.keys():
+    if metadata["benchmark.keyword"] in index_map:
         return index_map[metadata["benchmark.keyword"]], uuids
     index = "ripsaw-kube-burner"
     if baseline == "":
