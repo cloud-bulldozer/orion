@@ -25,11 +25,12 @@ def run_hunter_analyze(merged_df,test):
     merged_df["timestamp"] = merged_df["timestamp"].astype(int) // 10**9
     metrics = {column: Metric(1, 1.0)
                for column in merged_df.columns
-               if column not in ["uuid","timestamp"]}
+               if column not in ["uuid","timestamp","buildUrl"]}
     data = {column: merged_df[column]
             for column in merged_df.columns
-            if column not in ["uuid","timestamp"]}
-    attributes={column: merged_df[column] for column in merged_df.columns if column in ["uuid"]}
+            if column not in ["uuid","timestamp","buildUrl"]}
+    attributes={column: merged_df[column]
+                for column in merged_df.columns if column in ["uuid","buildUrl"]}
     series=Series(
         test_name=test["name"],
         branch=None,

@@ -61,7 +61,7 @@ def orion(**kwargs):
         else:
             logger.error("ES_SERVER environment variable/config variable not set")
             sys.exit(1)
-
+    shortener = pyshorteners.Shortener()
     for test in data["tests"]:
         uuid = kwargs["uuid"]
         baseline = kwargs["baseline"]
