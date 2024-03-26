@@ -16,6 +16,7 @@ import pandas as pd
 
 from hunter.report import Report, ReportType
 from hunter.series import Metric, Series
+import pyshorteners
 
 from pkg.logrus import SingletonLogger
 
@@ -23,7 +24,7 @@ from pkg.logrus import SingletonLogger
 
 
 
-def run_hunter_analyze(merged_df, test, output, matcher):
+def run_hunter_analyze(merged_df, test, output):
     """Start hunter analyze function
 
     Args:
@@ -35,15 +36,15 @@ def run_hunter_analyze(merged_df, test, output, matcher):
     metrics = {
         column: Metric(1, 1.0)
         for column in merged_df.columns
-        if column not in ["uuid", "timestamp"]
+        if column not in ["uuid","timestamp","buildUrl"]
     }
     data = {
         column: merged_df[column]
         for column in merged_df.columns
-        if column not in ["uuid", "timestamp"]
+        if column not in ["uuid","timestamp","buildUrl"]
     }
     attributes = {
-        column: merged_df[column] for column in merged_df.columns if column in ["uuid"]
+        column: merged_df[column] for column in merged_df.columns if column in ["uuid","buildUrl"]
     }
     series = Series(
         test_name=test["name"],
@@ -63,12 +64,12 @@ def run_hunter_analyze(merged_df, test, output, matcher):
 
     if output == "json":
         change_points_by_metric = series.analyze().change_points
-        output_json = parse_json_output(merged_df, change_points_by_metric,matcher=matcher)
+        output_json = parse_json_output(merged_df, change_points_by_metric)
         return test["name"], output_json
     return None
 
 
-def parse_json_output(merged_df, change_points_by_metric,matcher):
+def parse_json_output(merged_df, change_points_by_metric):
     """json output generator function
 
     Args:
@@ -84,11 +85,8 @@ def parse_json_output(merged_df, change_points_by_metric,matcher):
     for index, entry in enumerate(df_json):
         entry["metrics"] = {
             key: {"value": entry.pop(key), "percentage_change": 0}
-            for key in entry.keys() - {"uuid", "timestamp"}
+            for key in entry.keys() - {"uuid", "timestamp", "buildUrl"}
         }
-        entry["buildUrl"] = matcher.get_metadata_by_uuid(entry.get("uuid")).get(
-            "buildUrl"
-        )
         entry["is_changepoint"] = False
 
     for key in change_points_by_metric.keys():
@@ -261,7 +259,9 @@ def process_test(test, match, output, uuid, baseline):
     else:
         metadata = filter_metadata(uuid,match)
     logger_instance.info("The test %s has started", test["name"])
-    uuids = match.get_uuid_by_metadata(metadata)
+    runs = match.get_uuid_by_metadata(metadata)
+    uuids = [run["uuid"] for run in runs]
+    buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
     if baseline in ('', None):
         uuids = match.get_uuid_by_metadata(metadata)
         if len(uuids) == 0:
@@ -279,7 +279,10 @@ def process_test(test, match, output, uuid, baseline):
         lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
         dataframe_list,
     )
-
+    shortener = pyshorteners.Shortener()
+    merged_df["buildUrl"] = merged_df["uuid"].apply(
+            lambda uuid: shortener.tinyurl.short(buildUrls[uuid]) #pylint: disable = cell-var-from-loop
+        )
     output_file_path = output.split(".")[0] + "-" + test["name"] + ".csv"
     match.save_results(merged_df, csv_file_path=output_file_path)
     return merged_df
