@@ -7,7 +7,6 @@ import sys
 from functools import reduce
 import logging
 import os
-from tabulate import tabulate
 import pyshorteners
 
 import click
@@ -58,12 +57,14 @@ def orion(config, debug, output, hunter_analyze):
         else:
             logger.error("ES_SERVER environment variable/config variable not set")
             sys.exit(1)
-
+    shortener = pyshorteners.Shortener()
     for test in data["tests"]:
         metadata = get_metadata(test, logger)
         logger.info("The test %s has started", test["name"])
         match = Matcher(index="perf_scale_ci", level=level, ES_URL=ES_URL)
-        uuids = match.get_uuid_by_metadata(metadata)
+        runs = match.get_uuid_by_metadata(metadata)
+        uuids = [run["uuid"] for run in runs]
+        buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
         if len(uuids) == 0:
             print("No UUID present for given metadata")
             sys.exit()
@@ -86,28 +87,16 @@ def orion(config, debug, output, hunter_analyze):
             lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
             dataframe_list,
         )
+
+        merged_df["buildUrl"] = merged_df["uuid"].apply(
+            lambda uuid: shortener.tinyurl.short(buildUrls[uuid]) #pylint: disable = cell-var-from-loop
+        )
         match.save_results(
             merged_df, csv_file_path=output.split(".")[0] + "-" + test["name"] + ".csv"
         )
 
         if hunter_analyze:
-            change_points = run_hunter_analyze(merged_df, test)
-            change_uuids = []
-            for changepoint in change_points:
-                if changepoint.prev_attributes["uuid"] not in change_uuids:
-                    change_uuids.append(changepoint.prev_attributes["uuid"])
-                if changepoint.attributes["uuid"] not in change_uuids:
-                    change_uuids.append(changepoint.attributes["uuid"])
-            change_runs = [
-                (run, match.get_metadata_by_uuid(run)["buildUrl"])
-                for run in change_uuids
-            ]
-            shortener = pyshorteners.Shortener()
-            data = [
-                (item1, shortener.tinyurl.short(item2)) for item1, item2 in change_runs
-            ]
-            table = tabulate(data, headers=["uuid", "buildUrl"], tablefmt="grid")
-            logger.info("\n%s",table)
+            _ = run_hunter_analyze(merged_df, test)
 
 
 if __name__ == "__main__":
