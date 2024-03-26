@@ -33,7 +33,7 @@ def run(**kwargs):
         )
         if kwargs["hunter_analyze"]:
             testname, result_data = run_hunter_analyze(
-                result, test, output=kwargs["output_format"], matcher=match
+                result, test, output=kwargs["output_format"]
             )
             result_output[testname] = result_data
     return result_output
