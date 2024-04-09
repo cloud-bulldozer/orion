@@ -5,7 +5,7 @@ run test
 import logging
 from fmatch.matcher import Matcher
 from pkg.logrus import SingletonLogger
-from pkg.utils import run_hunter_analyze, load_config, get_es_url, process_test
+from pkg.utils import run_hunter_analyze, get_es_url, process_test
 
 
 def run(**kwargs):
@@ -21,12 +21,13 @@ def run(**kwargs):
         _type_: _description_
     """
     logger_instance = SingletonLogger(debug=logging.INFO).logger
-    data = load_config(kwargs["config"])
+    data = kwargs["configMap"]
+
     ES_URL = get_es_url(data)
     result_output = {}
     for test in data["tests"]:
         match = Matcher(
-            index="perf_scale_ci", level=logger_instance.level, ES_URL=ES_URL
+            index=test["index"], level=logger_instance.level, ES_URL=ES_URL, verify_certs=False
         )
         result = process_test(
             test, match, kwargs["output_path"], kwargs["uuid"], kwargs["baseline"]

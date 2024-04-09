@@ -131,6 +131,7 @@ def get_metric_data(ids, index, metrics, match):
                 agg_name = agg_value + "_" + agg_type
                 cpu_df = match.convert_to_df(cpu, columns=["uuid", agg_name])
                 cpu_df = cpu_df.rename(columns={agg_name: metric_name + "_" + agg_name})
+                cpu_df = cpu_df.drop_duplicates()
                 dataframe_list.append(cpu_df)
                 logger_instance.debug(cpu_df)
 
@@ -146,6 +147,7 @@ def get_metric_data(ids, index, metrics, match):
                 podl_df = match.convert_to_df(
                     podl, columns=["uuid", "timestamp", metric_of_interest]
                 )
+                podl_df=podl_df.drop_duplicates()
                 dataframe_list.append(podl_df)
                 logger_instance.debug(podl_df)
             except Exception as e:  # pylint: disable=broad-exception-caught
@@ -227,14 +229,14 @@ def get_index_and_ids(metadata, uuids, match, baseline):
     Returns:
         _type_: index and uuids
     """
-    index_map={"k8s-netperf":"k8s-netperf",
-                "ingress-perf":"ingress-performance",
+    index_map={"k8s-netperf":"ospst-k8s-netperf",
+                "ingress-perf":"ospst-ingress-performance",
                 }
     if metadata["benchmark.keyword"] in index_map:
         return index_map[metadata["benchmark.keyword"]], uuids
-    index = "ripsaw-kube-burner"
+    index = "ospst-ripsaw-kube-burner*"
     if baseline == "":
-        runs = match.match_kube_burner(uuids)
+        runs = match.match_kube_burner(uuids,index)
         ids = match.filter_runs(runs, runs)
     else:
         ids = uuids

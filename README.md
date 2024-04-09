@@ -6,6 +6,7 @@ Below is an illustrative example of the config and metadata that Orion can handl
 ```
 tests :
   - name : aws-small-scale-cluster-density-v2
+    index: ospst-perf-scale-ci-*
     metadata:
       platform: AWS
       masterNodesType: m6a.xlarge

@@ -3,10 +3,10 @@ Module to run orion in daemon mode
 """
 
 import logging
-import shutil
-import os
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI
+from jinja2 import Template
+import yaml
 from pkg.logrus import SingletonLogger
 
 from . import runTest
@@ -17,7 +17,7 @@ logger_instance = SingletonLogger(debug=logging.INFO).logger
 
 @app.post("/daemon")
 async def daemon(
-    file: UploadFile = File(...),
+    version: str = "4.15",
     uuid: str = "",
     baseline: str = "",
     filter_changepoints="",
@@ -30,17 +30,18 @@ async def daemon(
     Returns:
         json: json object of the changepoints and metrics
     """
-    file_name, file_extension = os.path.splitext(file.filename)
-    new_file_name = f"{file_name}_copy{file_extension}"
-    with open(new_file_name, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    config_file_name="configs/small-scale-cluster-density.yml"
+    parameters={
+        "version": version
+    }
     argDict = {
-        "config": new_file_name,
+        "config": config_file_name,
         "output_path": "output.csv",
         "hunter_analyze": True,
         "output_format": "json",
         "uuid": uuid,
         "baseline": baseline,
+        "configMap": render_template(config_file_name, parameters)
     }
     filter_changepoints = (
         True if filter_changepoints == "true" else False # pylint: disable = R1719
@@ -49,8 +50,21 @@ async def daemon(
     if filter_changepoints:
         for key, value in result.items():
             result[key] = list(filter(lambda x: x.get("is_changepoint", False), value))
-    try:
-        os.remove(new_file_name)
-    except OSError as e:
-        logger_instance.error("error %s", e.strerror)
     return result
+
+def render_template(file_name, parameters):
+    """replace parameters in the config file
+
+    Args:
+        file_name (str): the config file
+        parameters (dict): parameters to be replaces
+
+    Returns:
+        dict: configMap in dict
+    """
+    with open(file_name, 'r', encoding="utf-8") as template_file:
+        template_content = template_file.read()
+    template = Template(template_content)
+    rendered_config_yaml = template.render(parameters)
+    rendered_config = yaml.safe_load(rendered_config_yaml)
+    return rendered_config
