@@ -4,11 +4,11 @@ This is the cli file for orion, tool to detect regressions using hunter
 
 # pylint: disable = import-error
 import sys
+import warnings
 from functools import reduce
 import logging
 import os
 import re
-from tabulate import tabulate
 import pyshorteners
 
 import click
@@ -17,6 +17,7 @@ import pandas as pd
 from fmatch.matcher import Matcher
 from utils import orion_funcs
 
+warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 
 @click.group()
 # pylint: disable=unused-argument
@@ -26,7 +27,7 @@ def cli(max_content_width=120):
     """
 
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals, too-many-statements
 @click.command()
 @click.option("--uuid", default="", help="UUID to use as base for comparisons")
 @click.option("--baseline", default="", help="Baseline UUID(s) to to compare against uuid")
@@ -65,7 +66,8 @@ def orion(**kwargs):
     for test in data["tests"]:
         uuid = kwargs["uuid"]
         baseline = kwargs["baseline"]
-        match = Matcher(index="perf_scale_ci", level=level, ES_URL=ES_URL)
+        match = Matcher(index="ospst-perf-scale-ci-*",
+                        level=level, ES_URL=ES_URL, verify_certs=False)
         if uuid == "":
             metadata = orion_funcs.get_metadata(test, logger)
         else:
@@ -73,23 +75,25 @@ def orion(**kwargs):
 
         logger.info("The test %s has started", test["name"])
         if baseline == "":
-            uuids = match.get_uuid_by_metadata(metadata)
+            runs = match.get_uuid_by_metadata(metadata)
+            uuids = [run["uuid"] for run in runs]
+            buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
             if len(uuids) == 0:
                 logging.info("No UUID present for given metadata")
                 sys.exit()
         else:
             uuids = [uuid for uuid in re.split(' |,',baseline) if uuid]
             uuids.append(uuid)
-        if metadata["benchmark.keyword"] == "k8s-netperf" :
+        if metadata["benchmark.keyword"] == "ospst-k8s-netperf" :
             index = "k8s-netperf"
             ids = uuids
-        elif metadata["benchmark.keyword"] == "ingress-perf":
+        elif metadata["benchmark.keyword"] == "ospst-ingress-perf":
             index = "ingress-performance"
             ids = uuids
         else:
-            index = "ripsaw-kube-burner"
+            index = "ospst-ripsaw-kube-burner*"
             if baseline == "":
-                runs = match.match_kube_burner(uuids)
+                runs = match.match_kube_burner(uuids, index)
                 ids = match.filter_runs(runs, runs)
             else:
                 ids = uuids
@@ -102,29 +106,16 @@ def orion(**kwargs):
             dataframe_list,
         )
 
+        shortener = pyshorteners.Shortener()
+        merged_df["buildUrl"] = merged_df["uuid"].apply(
+            lambda uuid: shortener.tinyurl.short(buildUrls[uuid])) #pylint: disable = cell-var-from-loop
         csv_name = kwargs["output"].split(".")[0]+"-"+test['name']+".csv"
         match.save_results(
             merged_df, csv_file_path=csv_name
         )
 
         if kwargs["hunter_analyze"]:
-            change_points = orion_funcs.run_hunter_analyze(merged_df,test)
-            change_uuids = []
-            for changepoint in change_points:
-                if changepoint.prev_attributes["uuid"] not in change_uuids:
-                    change_uuids.append(changepoint.prev_attributes["uuid"])
-                if changepoint.attributes["uuid"] not in change_uuids:
-                    change_uuids.append(changepoint.attributes["uuid"])
-            change_runs = [
-                (run, match.get_metadata_by_uuid(run)["buildUrl"])
-                for run in change_uuids
-            ]
-            shortener = pyshorteners.Shortener()
-            data = [
-                (item1, shortener.tinyurl.short(item2)) for item1, item2 in change_runs
-            ]
-            table = tabulate(data, headers=["uuid", "buildUrl"], tablefmt="grid")
-            logger.info("\n%s",table)
+            _ = orion_funcs.run_hunter_analyze(merged_df,test)
 
 
 if __name__ == "__main__":
