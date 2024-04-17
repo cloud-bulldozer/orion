@@ -84,11 +84,11 @@ def orion(**kwargs):
         else:
             uuids = [uuid for uuid in re.split(' |,',baseline) if uuid]
             uuids.append(uuid)
-        if metadata["benchmark.keyword"] == "ospst-k8s-netperf" :
-            index = "k8s-netperf"
+        if metadata["benchmark.keyword"] == "k8s-netperf" :
+            index = "*k8s-netperf*"
             ids = uuids
-        elif metadata["benchmark.keyword"] == "ospst-ingress-perf":
-            index = "ingress-performance"
+        elif metadata["benchmark.keyword"] == "ingress-perf":
+            index = "*ingress-perf*"
             ids = uuids
         else:
             index = "ospst-ripsaw-kube-burner*"
