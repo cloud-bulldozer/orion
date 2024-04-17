@@ -64,6 +64,7 @@ def orion(**kwargs):
             sys.exit(1)
     shortener = pyshorteners.Shortener()
     for test in data["tests"]:
+        benchmarkIndex=test['benchmarkIndex']
         uuid = kwargs["uuid"]
         baseline = kwargs["baseline"]
         match = Matcher(index="ospst-perf-scale-ci-*",
@@ -84,14 +85,10 @@ def orion(**kwargs):
         else:
             uuids = [uuid for uuid in re.split(' |,',baseline) if uuid]
             uuids.append(uuid)
-        if metadata["benchmark.keyword"] == "k8s-netperf" :
-            index = "*k8s-netperf*"
-            ids = uuids
-        elif metadata["benchmark.keyword"] == "ingress-perf":
-            index = "*ingress-perf*"
+        index=benchmarkIndex
+        if metadata["benchmark.keyword"] in ["ingress-perf","k8s-netperf"] :
             ids = uuids
         else:
-            index = "ospst-ripsaw-kube-burner*"
             if baseline == "":
                 runs = match.match_kube_burner(uuids, index)
                 ids = match.filter_runs(runs, runs)
