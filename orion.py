@@ -98,6 +98,10 @@ def orion(**kwargs):
         metrics = test["metrics"]
         dataframe_list = orion_funcs.get_metric_data(ids, index, metrics, match, logger)
 
+        for i, df in enumerate(dataframe_list):
+            if i != 0:
+                dataframe_list[i] = df.drop(columns=['timestamp'])
+
         merged_df = reduce(
             lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
             dataframe_list,

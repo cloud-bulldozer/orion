@@ -73,7 +73,7 @@ def get_metric_data(ids, index, metrics, match, logger):
                 agg_value = metric['agg']['value']
                 agg_type = metric['agg']['agg_type']
                 agg_name = agg_value + "_" + agg_type
-                cpu_df = match.convert_to_df(cpu, columns=["uuid", agg_name])
+                cpu_df = match.convert_to_df(cpu, columns=["uuid","timestamp", agg_name])
                 cpu_df = cpu_df.rename(
                     columns={agg_name: metric_name+ "_" +  agg_name}
                 )
