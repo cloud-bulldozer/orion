@@ -3,10 +3,11 @@ certifi==2023.11.17
 click==8.1.7
 elastic-transport==8.11.0
 elasticsearch==7.13.0
-fmatch==0.0.5
+fmatch==0.0.7
 python-dateutil==2.8.2
 pytz==2023.3.post1
 PyYAML==6.0.1
 six==1.16.0
 tzdata==2023.4
 urllib3==1.26.18
+pyshorteners==1.0.1

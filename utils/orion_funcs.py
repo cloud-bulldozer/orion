@@ -25,11 +25,12 @@ def run_hunter_analyze(merged_df,test):
     merged_df["timestamp"] = merged_df["timestamp"].astype(int) // 10**9
     metrics = {column: Metric(1, 1.0)
                for column in merged_df.columns
-               if column not in ["uuid","timestamp"]}
+               if column not in ["uuid","timestamp","buildUrl"]}
     data = {column: merged_df[column]
             for column in merged_df.columns
-            if column not in ["uuid","timestamp"]}
-    attributes={column: merged_df[column] for column in merged_df.columns if column in ["uuid"]}
+            if column not in ["uuid","timestamp","buildUrl"]}
+    attributes={column: merged_df[column]
+                for column in merged_df.columns if column in ["uuid","buildUrl"]}
     series=Series(
         test_name=test["name"],
         branch=None,
@@ -42,6 +43,7 @@ def run_hunter_analyze(merged_df,test):
     report=Report(series,change_points)
     output = report.produce_report(test_name="test",report_type=ReportType.LOG)
     print(output)
+    return change_points
 
 # pylint: disable=too-many-locals
 def get_metric_data(ids, index, metrics, match, logger):
@@ -71,7 +73,7 @@ def get_metric_data(ids, index, metrics, match, logger):
                 agg_value = metric['agg']['value']
                 agg_type = metric['agg']['agg_type']
                 agg_name = agg_value + "_" + agg_type
-                cpu_df = match.convert_to_df(cpu, columns=["uuid", agg_name])
+                cpu_df = match.convert_to_df(cpu, columns=["uuid","timestamp", agg_name])
                 cpu_df = cpu_df.rename(
                     columns={agg_name: metric_name+ "_" +  agg_name}
                 )
