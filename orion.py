@@ -67,7 +67,7 @@ def orion(**kwargs):
         benchmarkIndex=test['benchmarkIndex']
         uuid = kwargs["uuid"]
         baseline = kwargs["baseline"]
-        match = Matcher(index="ospst-perf-scale-ci-*",
+        match = Matcher(index="ospst-perf-scale-ci*",
                         level=level, ES_URL=ES_URL, verify_certs=False)
         if uuid == "":
             metadata = orion_funcs.get_metadata(test, logger)
@@ -85,18 +85,11 @@ def orion(**kwargs):
         else:
             uuids = [uuid for uuid in re.split(' |,',baseline) if uuid]
             uuids.append(uuid)
+            buildUrls = orion_funcs.get_build_urls(uuids,match)
         index=benchmarkIndex
-        if metadata["benchmark.keyword"] in ["ingress-perf","k8s-netperf"] :
-            ids = uuids
-        else:
-            if baseline == "":
-                runs = match.match_kube_burner(uuids, index)
-                ids = match.filter_runs(runs, runs)
-            else:
-                ids = uuids
 
         metrics = test["metrics"]
-        dataframe_list = orion_funcs.get_metric_data(ids, index, metrics, match, logger)
+        dataframe_list = orion_funcs.get_metric_data(uuids, index, metrics, match, logger)
 
         for i, df in enumerate(dataframe_list):
             if i != 0:
