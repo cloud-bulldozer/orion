@@ -85,7 +85,6 @@ def orion(**kwargs):
         else:
             uuids = [uuid for uuid in re.split(' |,',baseline) if uuid]
             uuids.append(uuid)
-            buildUrls = orion_funcs.get_build_urls(uuids,match)
         index=benchmarkIndex
 
         metrics = test["metrics"]
