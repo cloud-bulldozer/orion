@@ -258,10 +258,12 @@ def process_test(
     shortener = pyshorteners.Shortener(timeout=10)
     merged_df["buildUrl"] = merged_df["uuid"].apply(
         lambda uuid: (
-            shortener.tinyurl.short(buildUrls[uuid])
+            shorten_url(shortener, buildUrls[uuid])
             if options["convert_tinyurl"]
             else buildUrls[uuid]
-        )  # pylint: disable = cell-var-from-loop
+        )
+
+        # pylint: disable = cell-var-from-loop
     )
     merged_df=merged_df.reset_index(drop=True)
     #save the dataframe
@@ -269,6 +271,21 @@ def process_test(
     match.save_results(merged_df, csv_file_path=output_file_path)
     return merged_df, metrics_config
 
+def shorten_url(shortener: any, uuids: str) -> str:
+    """Shorten url if there is a list of buildUrls
+
+    Args:
+        shortener (any): shortener object to use tinyrl.short on
+        uuids (List[str]): List of uuids to shorten
+
+    Returns:
+        str: a combined string of shortened urls
+    """
+    short_url_list = []
+    for buildUrl in uuids.split(","):
+        short_url_list.append(shortener.tinyurl.short(buildUrl))
+    short_url = ','.join(short_url_list)
+    return short_url
 
 def get_metadata_with_uuid(uuid: str, match: Matcher) -> Dict[Any, Any]:
     """Gets metadata of the run from each test
