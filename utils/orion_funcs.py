@@ -24,15 +24,19 @@ def run_hunter_analyze(merged_df, test, output):
     """
     merged_df["timestamp"] = pd.to_datetime(merged_df["timestamp"])
     merged_df["timestamp"] = merged_df["timestamp"].astype(int) // 10**9
-    metrics = {column: Metric(1, 1.0)
-               for column in merged_df.columns
-               if column not in ["uuid","timestamp","buildUrl"]}
-    data = {column: merged_df[column]
-            for column in merged_df.columns
-            if column not in ["uuid","timestamp","buildUrl"]}
+    metrics = {
+        column: Metric(1, 1.0)
+        for column in merged_df.columns
+        if column not in ["uuid","timestamp","buildUrl"]
+    }
+    data = {
+        column: merged_df[column]
+        for column in merged_df.columns
+        if column not in ["uuid","timestamp","buildUrl"]
+    }
     attributes={column: merged_df[column]
                 for column in merged_df.columns if column in ["uuid","buildUrl"]}
-    series=Series(
+    series = Series(
         test_name=test["name"],
         branch=None,
         time=list(merged_df["timestamp"]),
@@ -69,7 +73,7 @@ def parse_json_output(merged_df, change_points_by_metric):
     for index, entry in enumerate(df_json):
         entry["metrics"] = {
             key: {"value": entry.pop(key), "percentage_change": 0}
-            for key in entry.keys() - {"uuid", "timestamp"}
+            for key in entry.keys() - {"uuid", "timestamp", "buildUrl"}
         }
         entry["is_changepoint"] = False
 
@@ -112,10 +116,9 @@ def get_metric_data(ids, index, metrics, match, logger):
                 agg_value = metric["agg"]["value"]
                 agg_type = metric["agg"]["agg_type"]
                 agg_name = agg_value + "_" + agg_type
-                cpu_df = match.convert_to_df(cpu, columns=["uuid","timestamp", agg_name])
-                cpu_df = cpu_df.rename(
-                    columns={agg_name: metric_name+ "_" +  agg_name}
-                )
+                cpu_df = match.convert_to_df(cpu, columns=["uuid", "timestamp", agg_name])
+                cpu_df= cpu_df.drop_duplicates(subset=['uuid'],keep='first')
+                cpu_df = cpu_df.rename(columns={agg_name: metric_name + "_" + agg_type})
                 dataframe_list.append(cpu_df)
                 logger.debug(cpu_df)
 
@@ -131,6 +134,9 @@ def get_metric_data(ids, index, metrics, match, logger):
                 podl_df = match.convert_to_df(
                     podl, columns=["uuid", "timestamp", metric_of_interest]
                 )
+                podl_df= podl_df.drop_duplicates(subset=['uuid'],keep='first')
+                podl_df = podl_df.rename(columns={metric_of_interest:
+                                                    metric_name + "_" + metric_of_interest})
                 dataframe_list.append(podl_df)
                 logger.debug(podl_df)
             except Exception as e:  # pylint: disable=broad-exception-caught
@@ -156,6 +162,22 @@ def get_metadata(test, logger):
     logger.debug("metadata" + str(metadata))
     return metadata
 
+def get_build_urls(index, uuids,match):
+    """Gets metadata of the run from each test 
+        to get the build url
+
+    Args:
+        uuids (list): str list of uuid to find build urls of
+        match: the fmatch instance
+        
+
+    Returns:
+        dict: dictionary of the metadata
+    """
+
+    test = match.getResults("",uuids,index,{})
+    buildUrls = {run["uuid"]: run["buildUrl"] for run in test}
+    return buildUrls
 
 def get_build_urls(index, uuids,match):
     """Gets metadata of the run from each test 
