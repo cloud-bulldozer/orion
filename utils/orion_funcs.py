@@ -179,24 +179,6 @@ def get_build_urls(index, uuids,match):
     buildUrls = {run["uuid"]: run["buildUrl"] for run in test}
     return buildUrls
 
-def get_build_urls(index, uuids,match):
-    """Gets metadata of the run from each test 
-        to get the build url
-
-    Args:
-        uuids (list): str list of uuid to find build urls of
-        match: the fmatch instance
-        
-
-    Returns:
-        dict: dictionary of the metadata
-    """
-
-    test = match.getResults("",uuids,index,{})
-    buildUrls = {run["uuid"]: run["buildUrl"] for run in test}
-    return buildUrls
-
-
 def filter_metadata(uuid,match,logger):
     """Gets metadata of the run from each test
 
