@@ -111,10 +111,6 @@ def orion(**kwargs):
             if i != 0 and ('timestamp' in df.columns):
                 dataframe_list[i] = df.drop(columns=['timestamp'])
 
-        for i, df in enumerate(dataframe_list):
-            if i != 0:
-                dataframe_list[i] = df.drop(columns=['timestamp'])
-
         merged_df = reduce(
             lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
             dataframe_list,
