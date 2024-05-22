@@ -32,9 +32,16 @@ def cli(max_content_width=120):
 @click.option("--uuid", default="", help="UUID to use as base for comparisons")
 @click.option("--baseline", default="", help="Baseline UUID(s) to to compare against uuid")
 @click.option("--config", default="config.yaml", help="Path to the configuration file")
-@click.option("--output", default="output.csv", help="Path to save the output csv file")
+@click.option("--output-path", default="output.csv", help="Path to save the output csv file")
 @click.option("--debug", is_flag=True, help="log level ")
 @click.option("--hunter-analyze",is_flag=True, help="run hunter analyze")
+@click.option(
+    "-o",
+    "--output",
+    type=click.Choice(["json", "text"]),
+    default="text",
+    help="Choose output format (json or text)",
+)
 def orion(**kwargs):
     """Orion is the cli tool to detect regressions over the runs
 
@@ -67,8 +74,8 @@ def orion(**kwargs):
         benchmarkIndex=test['benchmarkIndex']
         uuid = kwargs["uuid"]
         baseline = kwargs["baseline"]
-        index = "ospst-perf-scale-ci-*"
-        match = Matcher(index=index,
+        fingerprint_index = test["index"]
+        match = Matcher(index=fingerprint_index,
                         level=level, ES_URL=ES_URL, verify_certs=False)
         if uuid == "":
             metadata = orion_funcs.get_metadata(test, logger)
@@ -86,23 +93,22 @@ def orion(**kwargs):
         else:
             uuids = [uuid for uuid in re.split(' |,',baseline) if uuid]
             uuids.append(uuid)
-            buildUrls = orion_funcs.get_build_urls(index, uuids,match)
+            buildUrls = orion_funcs.get_build_urls(fingerprint_index, uuids,match)
 
-        index=benchmarkIndex
+        fingerprint_index=benchmarkIndex
         if metadata["benchmark.keyword"] in ["ingress-perf","k8s-netperf"] :
             ids = uuids
         else:
             if baseline == "":
-                runs = match.match_kube_burner(uuids, index)
+                runs = match.match_kube_burner(uuids, fingerprint_index)
                 ids = match.filter_runs(runs, runs)
             else:
                 ids = uuids
-
         metrics = test["metrics"]
-        dataframe_list = orion_funcs.get_metric_data(ids, index, metrics, match, logger)
+        dataframe_list = orion_funcs.get_metric_data(ids, fingerprint_index, metrics, match, logger)
 
         for i, df in enumerate(dataframe_list):
-            if i != 0:
+            if i != 0 and ('timestamp' in df.columns):
                 dataframe_list[i] = df.drop(columns=['timestamp'])
 
         merged_df = reduce(
@@ -113,13 +119,13 @@ def orion(**kwargs):
         shortener = pyshorteners.Shortener()
         merged_df["buildUrl"] = merged_df["uuid"].apply(
             lambda uuid: shortener.tinyurl.short(buildUrls[uuid])) #pylint: disable = cell-var-from-loop
-        csv_name = kwargs["output"].split(".")[0]+"-"+test['name']+".csv"
+        csv_name = kwargs["output_path"].split(".")[0]+"-"+test['name']+".csv"
         match.save_results(
             merged_df, csv_file_path=csv_name
         )
 
         if kwargs["hunter_analyze"]:
-            _ = orion_funcs.run_hunter_analyze(merged_df,test)
+            orion_funcs.run_hunter_analyze(merged_df,test,kwargs["output"])
 
 
 if __name__ == "__main__":
