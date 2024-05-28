@@ -19,8 +19,7 @@ setup(
     },
     packages=find_packages(),
     package_data={'pkg': ['utils.py',"runTest.py","daemon.py","logrus.py"],
-                  'hunter': ['*.py'],
-                  'configs':['*.yml']},
+                  'configs':['*.yml','*.yaml']},
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',

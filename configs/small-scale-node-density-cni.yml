@@ -10,7 +10,7 @@ tests :
       workerNodesCount: 6
       infraNodesCount: 3
       benchmark.keyword: node-density-cni
-      ocpVersion: 4.14
+      ocpVersion: {{ version }}
       networkType: OVNKubernetes
       infraNodesType: r5.2xlarge
     # encrypted: true

@@ -84,7 +84,7 @@ Executing Orion is as seamless as its building it. With the latest enhancements,
 ### Command-line mode
 Running Orion in command-line Mode is straightforward. Simply follow these instructions:
 ```
->> orion cmd-mode
+>> orion cmd --hunter-analyze
 ```
 At the moment, 
 
@@ -97,14 +97,14 @@ Activate Orion's regression detection tool for performance-scale CPT runs effort
 Additionally, users can specify a custom path for the output CSV file using the ```--output``` flag, providing control over the location where the generated CSV will be stored.
 
 ### Daemon mode
-The core purpose of Daemon mode is to operate Orion as a self-contained server, dedicated to handling incoming requests. By sending a POST request accompanied by a configuration file, users can trigger change point detection on the provided metadata and metrics. Following the processing, the response is formatted in JSON, providing a structured output for seamless integration and analysis. To trigger daemon mode just use the following commands
+The core purpose of Daemon mode is to operate Orion as a self-contained server, dedicated to handling incoming requests. By sending a POST request accompanied by a test name of predefined tests, users can trigger change point detection on the provided metadata and metrics. Following the processing, the response is formatted in JSON, providing a structured output for seamless integration and analysis. To trigger daemon mode just use the following commands
 
 ```
->> orion daemon-mode
+>> orion daemon
 ```
-**Querying a Request to the Daemon Service**
+**Querying a Test Request to the Daemon Service**
 
-To interact with the Daemon Service, you can send a POST request using `curl` with specific parameters. This allows you to submit a file along with additional information for processing.
+To interact with the Daemon Service, you can send a POST request using `curl` with specific parameters.
 
 *Request URL*
 
@@ -116,15 +116,14 @@ POST http://127.0.0.1:8000/daemon
 
 - uuid (optional): The uuid of the run you want to compare with similar runs.
 - baseline (optional): The runs you want to compare with.
+- version (optional): The ocpVersion you want to use for metadata defaults to `4.15`
+- filter_changepoints (optional): set to `true` if you only want changepoints to show up in the response
+- test_name (optional): name of the test you want to perform defaults to `small-scale-cluster-density`
 
-*Request Body*
-
-The request body should contain the file you want to submit for processing. Ensure that the file is in the proper format (e.g., YAML).
 
 Example
 ```
-curl -X POST 'http://127.0.0.1:8000/daemon?uuid=4cb3efec-609a-4ac5-985d-4cbbcbb11625' \
---form 'file=@"/path/to/your/config.yaml"'
+curl -L -X POST 'http://127.0.0.1:8000/daemon?filter_changepoints=true&version=4.14&test_name=small-scale-node-density-cni'
 ```
 
 
@@ -135,25 +134,25 @@ Below is a sample output structure: the top level of the JSON contains the test 
         {
             "uuid": "4cb3efec-609a-4ac5-985d-4cbbcbb11625",
             "timestamp": 1704889895,
+            "buildUrl": "https://tinyurl.com/2ya4ka9z",
             "metrics": {
-                "etcdCPU_cpu_avg": {
-                    "value": 8.7663162253,
+                "ovnCPU_avg": {
+                    "value": 2.8503958847,
                     "percentage_change": 0
                 },
-                "ovnCPU_cpu_avg": {
-                    "value": 2.8503958847,
+                "apiserverCPU_avg": {
+                    "value": 10.2344511574,
+                    "percentage_change": 0
+                },
+                "etcdCPU_avg": {
+                    "value": 8.7663162253,
                     "percentage_change": 0
                 },
                 "P99": {
                     "value": 13000,
                     "percentage_change": 0
-                },
-                "apiserverCPU_cpu_avg": {
-                    "value": 10.2344511574,
-                    "percentage_change": 0
                 }
             },
-            "buildUrl": "https://prow.ci.openshift.org/view/gs/origin-ci-test/logs/periodic-ci-openshift-qe-ocp-qe-perfscale-ci-main-aws-4.16-nightly-x86-control-plane-24nodes/1745037917119582208",
             "is_changepoint": false
         },
     ]
@@ -161,6 +160,34 @@ Below is a sample output structure: the top level of the JSON contains the test 
 ```
 
 
+**Querying List of Tests Available to the Daemon Service**
+
+To list the tests available, you can send a GET request using `curl`. 
+
+*Request URL*
+
+```
+GET http://127.0.0.1:8000/daemon/options
+```
+
+*Request Body*
+
+The request body should contain the file you want to submit for processing. Ensure that the file is in the proper format (e.g., YAML).
+
+Example
+```
+curl -L 'http://127.0.0.1:8000/daemon/options'
+```
+
+Below is a sample output structure: It contains the opinionated approach list of files available
+```
+{
+    "options": [
+        "small-scale-cluster-density",
+        "small-scale-node-density-cni"
+    ]
+}
+```
 
 Orion's seamless integration with metadata and hunter ensures a robust regression detection tool for perf-scale CPT runs.
 
@@ -179,5 +206,7 @@ tests :
         agg_type: avg
 ```
 
-Orion provides flexibility if you know the comparison uuid you want to compare among, use the ```--baseline``` flag. This should only be used in conjunction when setting uuid. Similar to the uuid section mentioned above, you'll have to set a metrics section to specify the data points you want to collect on
+Orion provides flexibility if you know the comparison uuid you want to compare among, use the ```--baseline``` flag. This should only be used in conjunction when setting uuid. Similar to the uuid section mentioned above, you'll have to set a metrics section to specify the data points you want to collect on.
+
+`--uuid` and `--baseline` options are available both in cmd and daemon mode
 

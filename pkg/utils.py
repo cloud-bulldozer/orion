@@ -43,9 +43,8 @@ def run_hunter_analyze(merged_df, test, output):
         for column in merged_df.columns
         if column not in ["uuid","timestamp","buildUrl"]
     }
-    attributes = {
-        column: merged_df[column] for column in merged_df.columns if column in ["uuid","buildUrl"]
-    }
+    attributes={column: merged_df[column]
+                for column in merged_df.columns if column in ["uuid","buildUrl"]}
     series = Series(
         test_name=test["name"],
         branch=None,
@@ -60,7 +59,7 @@ def run_hunter_analyze(merged_df, test, output):
         output_table = report.produce_report(
             test_name=test["name"], report_type=ReportType.LOG
         )
-        return test["name"],output_table
+        return test["name"], output_table
 
     if output == "json":
         change_points_by_metric = series.analyze().change_points
@@ -129,9 +128,9 @@ def get_metric_data(ids, index, metrics, match):
                 agg_value = metric["agg"]["value"]
                 agg_type = metric["agg"]["agg_type"]
                 agg_name = agg_value + "_" + agg_type
-                cpu_df = match.convert_to_df(cpu, columns=["uuid", agg_name])
-                cpu_df = cpu_df.rename(columns={agg_name: metric_name + "_" + agg_name})
-                cpu_df = cpu_df.drop_duplicates()
+                cpu_df = match.convert_to_df(cpu, columns=["uuid", "timestamp", agg_name])
+                cpu_df= cpu_df.drop_duplicates(subset=['uuid'],keep='first')
+                cpu_df = cpu_df.rename(columns={agg_name: metric_name + "_" + agg_type})
                 dataframe_list.append(cpu_df)
                 logger_instance.debug(cpu_df)
 
@@ -147,6 +146,8 @@ def get_metric_data(ids, index, metrics, match):
                 podl_df = match.convert_to_df(
                     podl, columns=["uuid", "timestamp", metric_of_interest]
                 )
+                podl_df = podl_df.rename(
+                    columns={metric_of_interest: metric_name+"_"+metric_of_interest})
                 podl_df=podl_df.drop_duplicates()
                 dataframe_list.append(podl_df)
                 logger_instance.debug(podl_df)
@@ -218,7 +219,7 @@ def get_es_url(data):
     sys.exit(1)
 
 
-def get_index_and_ids(metadata, uuids, match, baseline):
+def get_ids_from_index(metadata, fingerprint_index, uuids, match, baseline):
     """returns the index to be used and runs as uuids
 
     Args:
@@ -229,18 +230,31 @@ def get_index_and_ids(metadata, uuids, match, baseline):
     Returns:
         _type_: index and uuids
     """
-    index_map={"k8s-netperf":"ospst-k8s-netperf",
-                "ingress-perf":"ospst-ingress-performance",
-                }
-    if metadata["benchmark.keyword"] in index_map:
-        return index_map[metadata["benchmark.keyword"]], uuids
-    index = "ospst-ripsaw-kube-burner*"
+    if metadata["benchmark.keyword"] in ["ingress-perf","k8s-netperf"] :
+        return uuids
     if baseline == "":
-        runs = match.match_kube_burner(uuids,index)
+        runs = match.match_kube_burner(uuids,fingerprint_index)
         ids = match.filter_runs(runs, runs)
     else:
         ids = uuids
-    return index, ids
+    return ids
+
+def get_build_urls(index, uuids,match):
+    """Gets metadata of the run from each test 
+        to get the build url
+
+    Args:
+        uuids (list): str list of uuid to find build urls of
+        match: the fmatch instance
+        
+
+    Returns:
+        dict: dictionary of the metadata
+    """
+
+    test = match.getResults("",uuids,index,{})
+    buildUrls = {run["uuid"]: run["buildUrl"] for run in test}
+    return buildUrls
 
 
 def process_test(test, match, output, uuid, baseline):
@@ -256,6 +270,8 @@ def process_test(test, match, output, uuid, baseline):
         _type_: merged dataframe
     """
     logger_instance= SingletonLogger(debug=logging.INFO).logger
+    benchmarkIndex=test['benchmarkIndex']
+    fingerprint_index=test['index']
     if uuid in ('', None):
         metadata = get_metadata(test)
     else:
@@ -265,17 +281,25 @@ def process_test(test, match, output, uuid, baseline):
     uuids = [run["uuid"] for run in runs]
     buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
     if baseline in ('', None):
-        uuids = match.get_uuid_by_metadata(metadata)
+        runs = match.get_uuid_by_metadata(metadata)
+        uuids = [run["uuid"] for run in runs]
+        buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
         if len(uuids) == 0:
             logger_instance.error("No UUID present for given metadata")
-            sys.exit()
+            return None
     else:
-        uuids = re.split(' |,',baseline)
+        uuids = [uuid for uuid in re.split(' |,',baseline) if uuid]
         uuids.append(uuid)
-    index, ids = get_index_and_ids(metadata, uuids, match, baseline)
+        buildUrls = get_build_urls(fingerprint_index, uuids,match)
+    fingerprint_index=benchmarkIndex
+    ids = get_ids_from_index(metadata, fingerprint_index, uuids, match, baseline)
 
     metrics = test["metrics"]
-    dataframe_list = get_metric_data(ids, index, metrics, match)
+    dataframe_list = get_metric_data(ids, fingerprint_index, metrics, match)
+
+    for i, df in enumerate(dataframe_list):
+        if i != 0 and ('timestamp' in df.columns):
+            dataframe_list[i] = df.drop(columns=['timestamp'])
 
     merged_df = reduce(
         lambda left, right: pd.merge(left, right, on="uuid", how="inner"),

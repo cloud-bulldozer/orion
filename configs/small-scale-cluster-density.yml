@@ -1,6 +1,7 @@
 tests :
   - name : aws-small-scale-cluster-density-v2
     index: ospst-perf-scale-ci-*
+    benchmarkIndex: ospst-ripsaw-kube-burner*
     metadata:
       platform: AWS
       masterNodesType: m6a.xlarge
@@ -45,4 +46,10 @@ tests :
       agg:
         value: cpu
         agg_type: avg
-    
+
+    - name:  etcdDisk
+      metricName : 99thEtcdDiskBackendCommitDurationSeconds
+      metric_of_interest: value
+      agg:
+        value: duration
+        agg_type: avg

@@ -32,6 +32,8 @@ def run(**kwargs):
         result = process_test(
             test, match, kwargs["output_path"], kwargs["uuid"], kwargs["baseline"]
         )
+        if result is None:
+            return None
         if kwargs["hunter_analyze"]:
             testname, result_data = run_hunter_analyze(
                 result, test, output=kwargs["output_format"]

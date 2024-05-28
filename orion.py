@@ -15,12 +15,10 @@ from pkg.utils import load_config
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 
 
-warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
-
 @click.group()
 def cli(max_content_width=120):  # pylint: disable=unused-argument
     """
-    cli function to group commands
+    Orion is a tool which can run change point detection for set of runs using statistical models
     """
 
 
@@ -40,29 +38,26 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
     help="Choose output format (json or text)",
 )
 @click.option("--uuid", default="", help="UUID to use as base for comparisons")
-@click.option("--baseline", default="", help="Baseline UUID(s) to to compare against uuid")
+@click.option(
+    "--baseline", default="", help="Baseline UUID(s) to to compare against uuid"
+)
 def cmd_analysis(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
-
-    \b
-    Args:
-        uuid (str): gather metrics based on uuid
-        baseline (str): baseline uuid to compare against uuid (uuid must be set when using baseline)
-        config (str): path to the config file
-        debug (bool): lets you log debug mode
-        output (str): path to the output csv file
-        hunter_analyze (bool): turns on hunter analysis of gathered uuid(s) data
     """
-    level = logging.DEBUG if kwargs['debug'] else logging.INFO
+    level = logging.DEBUG if kwargs["debug"] else logging.INFO
     logger_instance = SingletonLogger(debug=level).logger
     logger_instance.info("🏹 Starting Orion in command-line mode")
-    kwargs['configMap']=load_config(kwargs["config"])
+    kwargs["configMap"] = load_config(kwargs["config"])
     output = run(**kwargs)
+    if output is None:
+        logger_instance.error("Terminating test")
+        sys.exit(0)
     for test_name, result_table in output.items():
         print(test_name)
-        print("="*len(test_name))
+        print("=" * len(test_name))
         print(result_table)
+
 
 @cli.command(name="daemon")
 @click.option("--debug", default=False, is_flag=True, help="log level")

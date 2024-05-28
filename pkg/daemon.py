@@ -3,9 +3,11 @@ Module to run orion in daemon mode
 """
 
 import logging
+import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from jinja2 import Template
+import pkg_resources
 import yaml
 from pkg.logrus import SingletonLogger
 
@@ -21,6 +23,7 @@ async def daemon(
     uuid: str = "",
     baseline: str = "",
     filter_changepoints="",
+    test_name="small-scale-cluster-density",
 ):
     """starts listening on port 8000 on url /daemon
 
@@ -30,10 +33,8 @@ async def daemon(
     Returns:
         json: json object of the changepoints and metrics
     """
-    config_file_name="configs/small-scale-cluster-density.yml"
-    parameters={
-        "version": version
-    }
+    parameters = {"version": version}
+    config_file_name=test_name+".yml"
     argDict = {
         "config": config_file_name,
         "output_path": "output.csv",
@@ -41,18 +42,48 @@ async def daemon(
         "output_format": "json",
         "uuid": uuid,
         "baseline": baseline,
-        "configMap": render_template(config_file_name, parameters)
+        "configMap": render_template(config_file_name, parameters),
     }
     filter_changepoints = (
-        True if filter_changepoints == "true" else False # pylint: disable = R1719
+        True if filter_changepoints == "true" else False  # pylint: disable = R1719
     )
     result = runTest.run(**argDict)
+    if result is None:
+        return {"Error":"No UUID with given metadata"}
     if filter_changepoints:
         for key, value in result.items():
             result[key] = list(filter(lambda x: x.get("is_changepoint", False), value))
     return result
 
-def render_template(file_name, parameters):
+
+@app.get("/daemon/options")
+async def get_options():
+    """Lists all the tests available in daemon mode
+
+    Raises:
+        HTTPException: Config not found
+        HTTPException: cannot find files for config
+
+    Returns:
+        config: list of files
+    """
+    config_dir = pkg_resources.resource_filename("configs", "")
+    if not os.path.isdir(config_dir):
+        raise HTTPException(status_code=404, detail="Config directory not found")
+    try:
+        files = [
+            os.path.splitext(file)[0]
+            for file in os.listdir(config_dir)
+            if file != "__init__.py"
+            and not file.endswith(".pyc")
+            and file != "__pycache__"
+        ]
+        return {"options": files}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+def render_template(test_name, parameters):
     """replace parameters in the config file
 
     Args:
@@ -62,7 +93,8 @@ def render_template(file_name, parameters):
     Returns:
         dict: configMap in dict
     """
-    with open(file_name, 'r', encoding="utf-8") as template_file:
+    config_path = pkg_resources.resource_filename("configs", test_name)
+    with open(config_path, "r", encoding="utf-8") as template_file:
         template_content = template_file.read()
     template = Template(template_content)
     rendered_config_yaml = template.render(parameters)
