@@ -1,0 +1,241 @@
+tests :
+  - name : node-density-heavy-24nodes
+    index: ospst-perf-scale-ci*
+    benchmarkIndex: ospst-ripsaw-kube-burner*
+    metadata:
+      ocpVersion: 4.15
+      platform: AWS
+      clusterType: rosa
+      benchmark.keyword: node-density-heavy
+      masterNodesCount: 3
+      workerNodesCount: 24
+      infraNodesCount: 3
+      masterNodesType: m5.2xlarge
+      workerNodesType: m5.xlarge
+      infraNodesType: r5.xlarge
+      totalNodesCount: 30
+      networkType: OVNKubernetes
+      ipsec: false
+      encrypted: true
+      fips: false
+      publish: External
+      computeArch: amd64
+      controlPlaneArch: amd64
+
+    metrics : 
+    - name:  cpu-kubelet
+      metricName.keyword: cpu-kubelet
+      metric_of_interest: value
+      agg:
+        value: cpu-kubelet
+        agg_type: avg
+    - name:  max-memory-kubelet
+      metricName.keyword: max-memory-kubelet
+      metric_of_interest: value
+      agg:
+        value: max-memory-kubelet
+        agg_type: avg
+    - name:  cpu-crio
+      metricName.keyword: cpu-crio
+      metric_of_interest: value
+      agg:
+        value: cpu-crio
+        agg_type: avg
+    - name:  max-memory-crio
+      metricName.keyword: max-memory-crio
+      metric_of_interest: value
+      agg:
+        value: max-memory-crio
+        agg_type: avg
+
+  - name : node-density-24nodes
+    index: ospst-perf-scale-ci*
+    benchmarkIndex: ospst-ripsaw-kube-burner*
+    metadata:
+      ocpVersion: 4.15
+      platform: AWS
+      clusterType: rosa
+      benchmark.keyword: node-density
+      masterNodesCount: 3
+      workerNodesCount: 24
+      infraNodesCount: 3
+      masterNodesType: m5.2xlarge
+      workerNodesType: m5.xlarge
+      infraNodesType: r5.xlarge
+      totalNodesCount: 30
+      networkType: OVNKubernetes
+      ipsec: false
+      encrypted: true
+      fips: false
+      publish: External
+      computeArch: amd64
+      controlPlaneArch: amd64
+
+    metrics : 
+    - name:  P99
+      metricName.keyword: podLatencyQuantilesMeasurement
+      quantileName.keyword: Ready
+      metric_of_interest: P99
+      agg:
+        value: P99
+        agg_type: avg
+
+  - name : node-density-120nodes
+    index: ospst-perf-scale-ci*
+    benchmarkIndex: ospst-ripsaw-kube-burner*
+    metadata:
+      ocpVersion: 4.15
+      platform: AWS
+      clusterType: rosa
+      benchmark.keyword: node-density
+      masterNodesCount: 3
+      workerNodesCount: 120
+      infraNodesCount: 3
+      masterNodesType: m5.8xlarge
+      workerNodesType: m5.xlarge
+      infraNodesType: r5.4xlarge
+      totalNodesCount: 126
+      networkType: OVNKubernetes
+      ipsec: false
+      encrypted: true
+      fips: false
+      publish: External
+      computeArch: amd64
+      controlPlaneArch: amd64
+
+    metrics : 
+    - name:  P99
+      metricName.keyword: podLatencyQuantilesMeasurement
+      quantileName.keyword: Ready
+      metric_of_interest: P99
+      agg:
+        value: P99
+        agg_type: avg
+
+  - name : node-density-249nodes
+    index: ospst-perf-scale-ci*
+    benchmarkIndex: ospst-ripsaw-kube-burner*
+    metadata:
+      ocpVersion: 4.15
+      platform: AWS
+      clusterType: rosa
+      benchmark.keyword: node-density
+      masterNodesCount: 3
+      workerNodesCount: 249
+      infraNodesCount: 3
+      masterNodesType: m5.8xlarge
+      workerNodesType: m5.xlarge
+      infraNodesType: r5.4xlarge
+      totalNodesCount: 255
+      networkType: OVNKubernetes
+      ipsec: false
+      encrypted: true
+      fips: false
+      publish: External
+      computeArch: amd64
+      controlPlaneArch: amd64
+
+    metrics : 
+    - name:  P99
+      metricName.keyword: podLatencyQuantilesMeasurement
+      quantileName.keyword: Ready
+      metric_of_interest: P99
+      agg:
+        value: P99
+        agg_type: avg
+
+  - name : node-density-cni-24nodes
+    index: ospst-perf-scale-ci*
+    benchmarkIndex: ospst-ripsaw-kube-burner*
+    metadata:
+      ocpVersion: 4.15
+      platform: AWS
+      clusterType: rosa
+      benchmark.keyword: node-density-cni
+      masterNodesCount: 3
+      workerNodesCount: 24
+      infraNodesCount: 3
+      masterNodesType: m5.2xlarge
+      workerNodesType: m5.xlarge
+      infraNodesType: r5.xlarge
+      totalNodesCount: 30
+      networkType: OVNKubernetes
+      ipsec: false
+      encrypted: true
+      fips: false
+      publish: External
+      computeArch: amd64
+      controlPlaneArch: amd64
+
+    metrics : 
+    - name:  P99
+      metricName.keyword: podLatencyQuantilesMeasurement
+      quantileName.keyword: Ready
+      metric_of_interest: P99
+      agg:
+        value: P99
+        agg_type: avg
+
+  - name : node-density-cni-120nodes
+    index: ospst-perf-scale-ci*
+    benchmarkIndex: ospst-ripsaw-kube-burner*
+    metadata:
+      ocpVersion: 4.15
+      platform: AWS
+      clusterType: rosa
+      benchmark.keyword: node-density-cni
+      masterNodesCount: 3
+      workerNodesCount: 120
+      infraNodesCount: 3
+      masterNodesType: m5.8xlarge
+      workerNodesType: m5.xlarge
+      infraNodesType: r5.4xlarge
+      totalNodesCount: 126
+      networkType: OVNKubernetes
+      ipsec: false
+      encrypted: true
+      fips: false
+      publish: External
+      computeArch: amd64
+      controlPlaneArch: amd64
+
+    metrics : 
+    - name:  P99
+      metricName.keyword: podLatencyQuantilesMeasurement
+      quantileName.keyword: Ready
+      metric_of_interest: P99
+      agg:
+        value: P99
+        agg_type: avg
+
+  - name : node-density-cni-249nodes
+    index: ospst-perf-scale-ci*
+    benchmarkIndex: ospst-ripsaw-kube-burner*
+    metadata:
+      ocpVersion: 4.15
+      platform: AWS
+      clusterType: rosa
+      benchmark.keyword: node-density-cni
+      masterNodesCount: 3
+      workerNodesCount: 249
+      infraNodesCount: 3
+      masterNodesType: m5.8xlarge
+      workerNodesType: m5.xlarge
+      infraNodesType: r5.4xlarge
+      totalNodesCount: 255
+      networkType: OVNKubernetes
+      ipsec: false
+      encrypted: true
+      fips: false
+      publish: External
+      computeArch: amd64
+      controlPlaneArch: amd64
+
+    metrics : 
+    - name:  P99
+      metricName.keyword: podLatencyQuantilesMeasurement
+      quantileName.keyword: Ready
+      metric_of_interest: P99
+      agg:
+        value: P99
+        agg_type: avg
