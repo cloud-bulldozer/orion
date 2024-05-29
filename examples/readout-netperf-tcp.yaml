@@ -1,0 +1,330 @@
+tests :
+  - name : k8s-netperf-tcp
+    metadata:
+      ocpVersion: 4.15
+      platform: AWS
+      clusterType: rosa
+      benchmark.keyword: k8s-netperf
+      masterNodesCount: 3
+      workerNodesCount: 9
+      infraNodesCount: 3
+      masterNodesType: m5.2xlarge
+      workerNodesType: m5.xlarge
+      infraNodesType: r5.xlarge
+      totalNodesCount: 15
+      networkType: OVNKubernetes
+      encrypted: true
+      fips: false
+      ipsec: false
+
+    metrics : 
+    - name:  n2n-tput-64-1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 64
+      driver.keyword: netperf
+      hostNetwork: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  n2n-tput-64-2p
+      parallelism: 2
+      profile: TCP_STREAM
+      messageSize: 64
+      driver.keyword: netperf
+      hostNetwork: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  n2n-tput-1024-1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+
+    - name:  n2n-tput-1024-2p
+      parallelism: 2
+      profile: TCP_STREAM
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  n2n-tput-4096-1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 4096
+      driver.keyword: netperf
+      hostNetwork: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  n2n-tput-4096-2p
+      parallelism: 2
+      profile: TCP_STREAM
+      messageSize: 4096
+      driver.keyword: netperf
+      hostNetwork: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  n2n-tput-8192-1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 8192
+      driver.keyword: netperf
+      hostNetwork: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  n2n-tput-8192-2p
+      parallelism: 2
+      profile: TCP_STREAM
+      messageSize: 8192
+      driver.keyword: netperf
+      hostNetwork: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  n2n-ltcy-1024-1p
+      parallelism: 1
+      profile: TCP_RR
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: true
+      acrossAZ: false
+      metric_of_interest: latency
+      agg:
+        value: latency
+        agg_type: avg
+
+    - name:  n2n-ltcy-1024-2p
+      parallelism: 2
+      profile: TCP_RR
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: true
+      acrossAZ: false
+      metric_of_interest: latency
+      agg:
+        value: latency
+        agg_type: avg
+
+
+# p2p
+    - name:  p2p-tput-64-1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 64
+      driver.keyword: netperf
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  p2p-tput-64-2p
+      parallelism: 2
+      profile: TCP_STREAM
+      messageSize: 64
+      driver.keyword: netperf
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  p2p-tput-1024-1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+
+    - name:  p2p-tput-1024-2p
+      parallelism: 2
+      profile: TCP_STREAM
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  p2p-tput-4096-1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 4096
+      driver.keyword: netperf
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  p2p-tput-4096-2p
+      parallelism: 2
+      profile: TCP_STREAM
+      messageSize: 4096
+      driver.keyword: netperf
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  p2p-tput-8192-1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 8192
+      driver.keyword: netperf
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  p2p-tput-8192-2p
+      parallelism: 2
+      profile: TCP_STREAM
+      messageSize: 8192
+      driver.keyword: netperf
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  p2p-ltcy-1024-1p
+      parallelism: 1
+      profile: TCP_RR
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: latency
+      agg:
+        value: latency
+        agg_type: avg
+
+    - name:  p2p-ltcy-1024-2p
+      parallelism: 2
+      profile: TCP_RR
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: latency
+      agg:
+        value: latency
+        agg_type: avg
+
+
+#p2s
+    - name:  p2s-tput-64-1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 64
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  p2s-tput-1024-1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  p2s-tput-4096-1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 4096
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  p2s-tput-8192-1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 8192
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name:  p2s-ltcy-1024-1p
+      parallelism: 1
+      profile: TCP_RR
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: latency
+      agg:
+        value: latency
+        agg_type: avg
