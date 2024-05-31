@@ -7,6 +7,7 @@ Below is an illustrative example of the config and metadata that Orion can handl
 tests :
   - name : aws-small-scale-cluster-density-v2
     index: ospst-perf-scale-ci-*
+    benchmarkIndex: ospst-ripsaw-kube-burner*
     metadata:
       platform: AWS
       masterNodesType: m6a.xlarge
@@ -14,7 +15,7 @@ tests :
       workerNodesType: m6a.xlarge
       workerNodesCount: 24
       benchmark.keyword: cluster-density-v2
-      ocpVersion: 4.15
+      ocpVersion: {{ version }}
       networkType: OVNKubernetes
     # encrypted: true
     # fips: false
@@ -51,14 +52,14 @@ tests :
       agg:
         value: cpu
         agg_type: avg
-    
-    - name:  etcdDisck
+
+    - name:  etcdDisk
       metricName : 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
         value: duration
         agg_type: avg
-        
+
 ```
 
 ## Build Orion
@@ -66,13 +67,13 @@ Building Orion is a straightforward process. Follow these commands:
 
 **Note: Orion Compatibility**
 
-Orion currently supports Python versions `3.8.x`, `3.9.x`, `3.10.x`, and `3.11.x`. Please be aware that using other Python versions might lead to dependency conflicts caused by hunter, creating a challenging situation known as "dependency hell." It's crucial to highlight that Python `3.12.x` may result in errors due to the removal of distutils, a dependency used by numpy. This information is essential to ensure a smooth experience with Orion and avoid potential compatibility issues.
+Orion currently supports Python version `3.11.x`. Please be aware that using other Python versions might lead to dependency conflicts caused by hunter, creating a challenging situation known as "dependency hell." It's crucial to highlight that Python `3.12.x` may result in errors due to the removal of distutils, a dependency used by numpy. This information is essential to ensure a smooth experience with Orion and avoid potential compatibility issues.
 
 Clone the current repository using git clone.
 
 ```
 >> git clone <repository_url>
->> pip install venv
+>> python3 -m venv venv
 >> source venv/bin/activate
 >> pip install -r requirements.txt
 >> export ES_SERVER = <es_server_url>
@@ -196,7 +197,9 @@ Orion's seamless integration with metadata and hunter ensures a robust regressio
 
 ```
 tests :
-  - name : current-uuid-etcd-duration
+  - name : aws-small-scale-cluster-density-v2
+    index: ospst-perf-scale-ci-*
+    benchmarkIndex: ospst-ripsaw-kube-burner*
     metrics : 
     - name:  etcdDisck
       metricName : 99thEtcdDiskBackendCommitDurationSeconds
