@@ -1,5 +1,6 @@
+# This is a template file
 tests :
-  - name : aws-small-scale-node-density-cni
+  - name : aws-small-scale-cluster-density-v2
     index: ospst-perf-scale-ci-*
     benchmarkIndex: ospst-ripsaw-kube-burner*
     metadata:
@@ -7,12 +8,10 @@ tests :
       masterNodesType: m6a.xlarge
       masterNodesCount: 3
       workerNodesType: m6a.xlarge
-      workerNodesCount: 6
-      infraNodesCount: 3
-      benchmark.keyword: node-density-cni
-      ocpVersion: 4.14
+      workerNodesCount: 24
+      benchmark.keyword: cluster-density-v2
+      ocpVersion: {{ version }}
       networkType: OVNKubernetes
-      infraNodesType: r5.2xlarge
     # encrypted: true
     # fips: false
     # ipsec: false
@@ -48,11 +47,10 @@ tests :
       agg:
         value: cpu
         agg_type: avg
-    
+
     - name:  etcdDisk
       metricName : 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
         value: duration
         agg_type: avg
-

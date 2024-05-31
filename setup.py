@@ -14,11 +14,12 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'orion = orion:orion',
+            'orion = orion:cli',
         ],
     },
     packages=find_packages(),
-    package_data={'utils': ['utils.py'],'hunter': ['*.py']},
+    package_data={'pkg': ['utils.py',"runTest.py","daemon.py","logrus.py"],
+                  'configs':['*.yml','*.yaml']},
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
