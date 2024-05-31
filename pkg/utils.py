@@ -305,7 +305,7 @@ def process_test(test, match, output, uuid, baseline):
         lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
         dataframe_list,
     )
-    shortener = pyshorteners.Shortener()
+    shortener = pyshorteners.Shortener(timeout=10)
     merged_df["buildUrl"] = merged_df["uuid"].apply(
             lambda uuid: shortener.tinyurl.short(buildUrls[uuid]) #pylint: disable = cell-var-from-loop
         )
