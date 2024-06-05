@@ -61,15 +61,16 @@ def cmd_analysis(**kwargs):
 
 @cli.command(name="daemon")
 @click.option("--debug", default=False, is_flag=True, help="log level")
-def rundaemon(debug):
+@click.option("--port", default=8080, help="set port")
+def rundaemon(debug, port):
     """
-    Orion runs on daemon mode on port 8000
+    Orion runs on daemon mode
     \b
     """
     level = logging.DEBUG if debug else logging.INFO
     logger_instance = SingletonLogger(debug=level).logger
     logger_instance.info("🏹 Starting Orion in Daemon mode")
-    uvicorn.run("pkg.daemon:app", port=8000)
+    uvicorn.run("pkg.daemon:app", port=port)
 
 
 if __name__ == "__main__":
