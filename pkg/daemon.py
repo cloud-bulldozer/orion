@@ -17,8 +17,8 @@ app = FastAPI()
 logger_instance = SingletonLogger(debug=logging.INFO).logger
 
 
-@app.post("/daemon")
-async def daemon(
+@app.get("/daemon/changepoint")
+async def daemon_changepoint(
     version: str = "4.15",
     uuid: str = "",
     baseline: str = "",
@@ -35,10 +35,11 @@ async def daemon(
     """
     parameters = {"version": version}
     config_file_name=test_name+".yml"
-    argDict = {
+    test_arguments = {
         "config": config_file_name,
         "output_path": "output.csv",
         "hunter_analyze": True,
+        "anomaly_detection": False,
         "output_format": "json",
         "uuid": uuid,
         "baseline": baseline,
@@ -47,7 +48,7 @@ async def daemon(
     filter_changepoints = (
         True if filter_changepoints == "true" else False  # pylint: disable = R1719
     )
-    result = runTest.run(**argDict)
+    result = runTest.run(**test_arguments)
     if result is None:
         return {"Error":"No UUID with given metadata"}
     if filter_changepoints:
@@ -81,6 +82,45 @@ async def get_options():
         return {"options": files}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+@app.get("/daemon/anomaly")
+async def daemon_anomaly(
+    version: str = "4.15",
+    uuid: str = "",
+    baseline: str = "",
+    filter_changepoints="",
+    test_name="small-scale-cluster-density",
+):
+    """starts listening on port 8000 on url /daemon
+
+    Args:
+        file (UploadFile, optional): config file for the test. Defaults to File(...).
+
+    Returns:
+        json: json object of the changepoints and metrics
+    """
+    parameters = {"version": version}
+    config_file_name=test_name+".yml"
+    test_arguments = {
+        "config": config_file_name,
+        "output_path": "output.csv",
+        "hunter_analyze": False,
+        "anomaly_detection": True,
+        "output_format": "json",
+        "uuid": uuid,
+        "baseline": baseline,
+        "configMap": render_template(config_file_name, parameters),
+    }
+    filter_changepoints = (
+        True if filter_changepoints == "true" else False  # pylint: disable = R1719
+    )
+    result = runTest.run(**test_arguments)
+    if result is None:
+        return {"Error":"No UUID with given metadata"}
+    if filter_changepoints:
+        for key, value in result.items():
+            result[key] = list(filter(lambda x: x.get("is_changepoint", False), value))
+    return result
 
 
 def render_template(test_name, parameters):

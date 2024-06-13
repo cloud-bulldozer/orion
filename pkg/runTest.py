@@ -4,8 +4,9 @@ run test
 
 import logging
 from fmatch.matcher import Matcher
+from pkg.algorithmFactory import AlgorithmFactory
 from pkg.logrus import SingletonLogger
-from pkg.utils import run_hunter_analyze, get_es_url, process_test
+from pkg.utils import get_es_url, process_test
 
 
 def run(**kwargs):
@@ -27,16 +28,29 @@ def run(**kwargs):
     result_output = {}
     for test in data["tests"]:
         match = Matcher(
-            index=test["index"], level=logger_instance.level, ES_URL=ES_URL, verify_certs=False
+            index=test["index"],
+            level=logger_instance.level,
+            ES_URL=ES_URL,
+            verify_certs=False,
         )
-        result = process_test(
+        result_dataframe = process_test(
             test, match, kwargs["output_path"], kwargs["uuid"], kwargs["baseline"]
         )
-        if result is None:
+        if result_dataframe is None:
             return None
+        result_dataframe = result_dataframe.reset_index(drop=True)
         if kwargs["hunter_analyze"]:
-            testname, result_data = run_hunter_analyze(
-                result, test, output=kwargs["output_format"]
+            algorithmFactory = AlgorithmFactory()
+            algorithm = algorithmFactory.instantiate_algorithm(
+                "EDivisive", match, result_dataframe, test
             )
+            testname, result_data = algorithm.output(kwargs["output_format"])
+            result_output[testname] = result_data
+        elif kwargs["anomaly_detection"]:
+            algorithmFactory = AlgorithmFactory()
+            algorithm = algorithmFactory.instantiate_algorithm(
+                "IsolationForest", match, result_dataframe, test
+            )
+            testname, result_data = algorithm.output(kwargs["output_format"])
             result_output[testname] = result_data
     return result_output
