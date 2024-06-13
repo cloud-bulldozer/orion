@@ -5,7 +5,6 @@ module for all utility functions orion uses
 # pylint: disable = import-error
 
 from functools import reduce
-import json
 import logging
 import os
 import re
@@ -14,91 +13,9 @@ import sys
 import yaml
 import pandas as pd
 
-from hunter.report import Report, ReportType
-from hunter.series import Metric, Series
 import pyshorteners
 
 from pkg.logrus import SingletonLogger
-
-
-
-
-
-def run_hunter_analyze(merged_df, test, output):
-    """Start hunter analyze function
-
-    Args:
-        merged_df (Dataframe): merged dataframe of all the metrics
-        test (dict): test dictionary with the each test information
-    """
-    merged_df["timestamp"] = pd.to_datetime(merged_df["timestamp"])
-    merged_df["timestamp"] = merged_df["timestamp"].astype(int) // 10**9
-    metrics = {
-        column: Metric(1, 1.0)
-        for column in merged_df.columns
-        if column not in ["uuid","timestamp","buildUrl"]
-    }
-    data = {
-        column: merged_df[column]
-        for column in merged_df.columns
-        if column not in ["uuid","timestamp","buildUrl"]
-    }
-    attributes={column: merged_df[column]
-                for column in merged_df.columns if column in ["uuid","buildUrl"]}
-    series = Series(
-        test_name=test["name"],
-        branch=None,
-        time=list(merged_df["timestamp"]),
-        metrics=metrics,
-        data=data,
-        attributes=attributes,
-    )
-    change_points = series.analyze().change_points_by_time
-    report = Report(series, change_points)
-    if output == "text":
-        output_table = report.produce_report(
-            test_name=test["name"], report_type=ReportType.LOG
-        )
-        return test["name"], output_table
-
-    if output == "json":
-        change_points_by_metric = series.analyze().change_points
-        output_json = parse_json_output(merged_df, change_points_by_metric)
-        return test["name"], output_json
-    return None
-
-
-def parse_json_output(merged_df, change_points_by_metric):
-    """json output generator function
-
-    Args:
-        merged_df (pd.Dataframe): the dataframe to be converted to json
-        change_points_by_metric (_type_): different change point
-
-    Returns:
-        _type_: _description_
-    """
-    df_json = merged_df.to_json(orient="records")
-    df_json = json.loads(df_json)
-
-    for index, entry in enumerate(df_json):
-        entry["metrics"] = {
-            key: {"value": entry.pop(key), "percentage_change": 0}
-            for key in entry.keys() - {"uuid", "timestamp", "buildUrl"}
-        }
-        entry["is_changepoint"] = False
-
-    for key in change_points_by_metric.keys():
-        for change_point in change_points_by_metric[key]:
-            index = change_point.index
-            percentage_change = (
-                (change_point.stats.mean_2 - change_point.stats.mean_1)
-                / change_point.stats.mean_1
-            ) * 100
-            df_json[index]["metrics"][key]["percentage_change"] = percentage_change
-            df_json[index]["is_changepoint"] = True
-
-    return df_json
 
 
 # pylint: disable=too-many-locals
