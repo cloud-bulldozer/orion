@@ -2,6 +2,8 @@
 """The implementation module for Isolation forest and weighted mean"""
 import json
 import logging
+import xml.etree.ElementTree as ET
+import xml.dom.minidom
 from typing import List
 from sklearn.ensemble import IsolationForest
 import pandas as pd
@@ -9,6 +11,8 @@ from tabulate import tabulate
 from pkg.algorithm import Algorithm
 from pkg.logrus import SingletonLogger
 from pkg.types import OptionMap
+from pkg.utils import Metrics
+
 
 class IsolationForestWeightedMean(Algorithm):
     """Isolation forest with weighted mean
@@ -54,6 +58,32 @@ class IsolationForestWeightedMean(Algorithm):
         tabulated_df = tabulate(data_list, headers=column_names)
         formatted_table = self.format_dataframe(tabulated_df, anomalies_df, dataframe)
         return self.test["name"], formatted_table
+    
+    def output_junit(self):
+        test_name, data_json = self.output_json()
+        data_junit = self._json_to_junit(test_name=test_name, data_json=data_json)
+        return test_name, data_junit
+    
+    def _json_to_junit(self, test_name, data_json):
+        testsuites = ET.Element("testsuites")
+        testsuite = ET.SubElement(testsuites, "testsuite", name=f"{test_name} nightly compare")
+        for run in data_json:
+            run_data = {str(key): str(value).lower() for key, value in run.items() if key in ["uuid","timestamp", "buildUrl"]}
+            for metric, value in run["metrics"].items():
+                failure = "false"
+                if not value["percentage_change"] == 0:
+                    failure = "true"
+                testcase = ET.SubElement(testsuite, "testcase", 
+                                         name=f"{test_name} {' '.join(Metrics.metrics[metric]['labels'])} {metric} regression detection",
+                                         attrib=run_data, failure=failure)
+                if failure=="true":
+                    properties=ET.SubElement(testcase, "properties")
+                    value={str(k):str(v) for k,v in value.items()}
+                    ET.SubElement(properties, "property", name=metric, attrib=value)
+        xml_str = ET.tostring(testsuites, encoding='utf8', method='xml').decode()
+        dom = xml.dom.minidom.parseString(xml_str)
+        pretty_xml_as_string = dom.toprettyxml()
+        return pretty_xml_as_string
 
     def analyze(self, dataframe: pd.DataFrame):
         """Analyzing the data

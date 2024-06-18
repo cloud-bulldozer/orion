@@ -71,7 +71,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @cli.command(name="cmd")
 @click.option("--config", default="config.yaml", help="Path to the configuration file")
 @click.option(
-    "--output-path", default="output.csv", help="Path to save the output csv file"
+    "--save-data-path", default="data.csv", help="Path to save the output csv file"
 )
 @click.option("--debug", default=False, is_flag=True, help="log level")
 @click.option(
@@ -97,6 +97,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
     default=cnsts.TEXT,
     help="Choose output format (json or text)",
 )
+@click.option("--save-output-path", default="output.txt")
 @click.option("--uuid", default="", help="UUID to use as base for comparisons")
 @click.option(
     "--baseline", default="", help="Baseline UUID(s) to to compare against uuid"
@@ -118,6 +119,11 @@ def cmd_analysis(**kwargs):
         print(test_name)
         print("=" * len(test_name))
         print(result_table)
+
+        output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{kwargs['save_output_path'].split('.')[1]}"
+        with open(output_file_name, 'w') as file:
+            file.write(str(result_table))
+
 
 
 @cli.command(name="daemon")
