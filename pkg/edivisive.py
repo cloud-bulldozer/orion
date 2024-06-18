@@ -1,10 +1,13 @@
 """EDivisive Algorithm from hunter"""
 
 import json
+import xml.etree.ElementTree as ET
+import xml.dom.minidom
 import pandas as pd
 from hunter.report import Report, ReportType
 from hunter.series import Metric, Series
 from pkg.algorithm import Algorithm
+from pkg.utils import Metrics
 
 
 class EDivisive(Algorithm):
@@ -22,7 +25,7 @@ class EDivisive(Algorithm):
         for index, entry in enumerate(dataframe_json):
             entry["metrics"] = {
                 key: {"value": entry.pop(key), "percentage_change": 0}
-                for key in entry.keys() - {"uuid", "timestamp", "buildUrl"}
+                for key in Metrics.metrics.keys()
             }
             entry["is_changepoint"] = False
 
@@ -46,19 +49,44 @@ class EDivisive(Algorithm):
             test_name=self.test["name"], report_type=ReportType.LOG
         )
         return self.test["name"], output_table
+    
+    def output_junit(self):
+        test_name, data_json = self.output_json()
+        data_junit = self._json_to_junit(test_name=test_name, data_json=data_json)
+        return test_name, data_junit
+    
+    def _json_to_junit(self, test_name, data_json):
+        testsuites = ET.Element("testsuites")
+        testsuite = ET.SubElement(testsuites, "testsuite", name=f"{test_name} nightly compare")
+        for run in data_json:
+            run_data = {str(key): str(value).lower() for key, value in run.items() if key in ["uuid","timestamp", "buildUrl"]}
+            for metric, value in run["metrics"].items():
+                failure = "false"
+                if not value["percentage_change"] == 0:
+                    failure = "true"
+                testcase = ET.SubElement(testsuite, "testcase", 
+                                         name=f"{test_name} {' '.join(Metrics.metrics[metric]['labels'])} {metric} regression detection",
+                                         attrib=run_data, failure=failure)
+                if failure=="true":
+                    properties=ET.SubElement(testcase, "properties")
+                    value={str(k):str(v) for k,v in value.items()}
+                    ET.SubElement(properties, "property", name=metric, attrib=value)
+
+        xml_str = ET.tostring(testsuites, encoding='utf8', method='xml').decode()
+        dom = xml.dom.minidom.parseString(xml_str)
+        pretty_xml_as_string = dom.toprettyxml()
+        return pretty_xml_as_string
 
     def _analyze(self):
         self.dataframe["timestamp"] = pd.to_datetime(self.dataframe["timestamp"])
         self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int) // 10**9
         metrics = {
             column: Metric(1, 1.0)
-            for column in self.dataframe.columns
-            if column not in ["uuid", "timestamp", "buildUrl"]
+            for column in Metrics.metrics.keys()
         }
         data = {
             column: self.dataframe[column]
-            for column in self.dataframe.columns
-            if column not in ["uuid", "timestamp", "buildUrl"]
+            for column in Metrics.metrics.keys()
         }
         attributes = {
             column: self.dataframe[column]

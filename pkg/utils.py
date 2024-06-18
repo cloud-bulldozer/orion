@@ -5,6 +5,7 @@ module for all utility functions orion uses
 # pylint: disable = import-error
 
 from functools import reduce
+import json
 import logging
 import os
 import re
@@ -16,6 +17,10 @@ import pandas as pd
 import pyshorteners
 
 from pkg.logrus import SingletonLogger
+
+class Metrics:
+    metrics={}
+
 
 
 # pylint: disable=too-many-locals
@@ -35,6 +40,7 @@ def get_metric_data(ids, index, metrics, match):
     logger_instance= SingletonLogger(debug=logging.INFO).logger
     dataframe_list = []
     for metric in metrics:
+        labels=metric.pop("labels",None)
         metric_name = metric["name"]
         logger_instance.info("Collecting %s", metric_name)
         metric_of_interest = metric["metric_of_interest"]
@@ -47,7 +53,10 @@ def get_metric_data(ids, index, metrics, match):
                 agg_name = agg_value + "_" + agg_type
                 cpu_df = match.convert_to_df(cpu, columns=["uuid", "timestamp", agg_name])
                 cpu_df= cpu_df.drop_duplicates(subset=['uuid'],keep='first')
-                cpu_df = cpu_df.rename(columns={agg_name: metric_name + "_" + agg_type})
+                metric_dataframe_name= f"{metric_name}_{agg_type}"
+                cpu_df = cpu_df.rename(columns={agg_name: metric_dataframe_name})
+                metric["labels"]=labels
+                Metrics.metrics[metric_dataframe_name]=metric
                 dataframe_list.append(cpu_df)
                 logger_instance.debug(cpu_df)
 
@@ -63,8 +72,11 @@ def get_metric_data(ids, index, metrics, match):
                 podl_df = match.convert_to_df(
                     podl, columns=["uuid", "timestamp", metric_of_interest]
                 )
+                metric_dataframe_name=f"{metric_name}_{metric_of_interest}"
                 podl_df = podl_df.rename(
-                    columns={metric_of_interest: metric_name+"_"+metric_of_interest})
+                    columns={metric_of_interest: metric_dataframe_name})
+                metric["labels"]=labels
+                Metrics.metrics[metric_dataframe_name]=metric
                 podl_df=podl_df.drop_duplicates()
                 dataframe_list.append(podl_df)
                 logger_instance.debug(podl_df)

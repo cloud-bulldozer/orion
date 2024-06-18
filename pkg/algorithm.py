@@ -15,6 +15,10 @@ class Algorithm:
         """Outputs the data in text/tabular format
         """
 
+    def output_junit(self):
+        """Outputs the data in junit format
+        """
+
     def output(self,output_format):
         """Method to select output method
 
@@ -31,4 +35,6 @@ class Algorithm:
             return self.output_json()
         if output_format=="text":
             return self.output_text()
+        if output_format=="junit":
+            return self.output_junit()
         raise ValueError("Unsupported output format {output_format} selected")

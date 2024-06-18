@@ -34,23 +34,19 @@ def run(**kwargs):
             verify_certs=False,
         )
         result_dataframe = process_test(
-            test, match, kwargs["output_path"], kwargs["uuid"], kwargs["baseline"]
+            test, match, kwargs["save_data_path"], kwargs["uuid"], kwargs["baseline"]
         )
         if result_dataframe is None:
             return None
         result_dataframe = result_dataframe.reset_index(drop=True)
         if kwargs["hunter_analyze"]:
-            algorithmFactory = AlgorithmFactory()
-            algorithm = algorithmFactory.instantiate_algorithm(
-                "EDivisive", match, result_dataframe, test
-            )
-            testname, result_data = algorithm.output(kwargs["output_format"])
-            result_output[testname] = result_data
+            algorithm_name="EDivisive"
         elif kwargs["anomaly_detection"]:
-            algorithmFactory = AlgorithmFactory()
-            algorithm = algorithmFactory.instantiate_algorithm(
-                "IsolationForest", match, result_dataframe, test
-            )
-            testname, result_data = algorithm.output(kwargs["output_format"])
-            result_output[testname] = result_data
+            algorithm_name="IsolationForest"
+        algorithmFactory = AlgorithmFactory()
+        algorithm = algorithmFactory.instantiate_algorithm(
+            algorithm_name, match, result_dataframe, test
+        )
+        testname, result_data = algorithm.output(kwargs["output_format"])
+        result_output[testname] = result_data
     return result_output
