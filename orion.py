@@ -11,6 +11,7 @@ import uvicorn
 from pkg.logrus import SingletonLogger
 from pkg.runTest import run
 from pkg.utils import load_config
+from pkg.types import OptionMap
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 warnings.filterwarnings(
@@ -42,6 +43,14 @@ class MutuallyExclusiveOption(click.Option):
                 f"arguments `{', '.join(self.mutually_exclusive)}`."
                 )
         return super().handle_parse_result(ctx, opts, args)
+    
+def validate_anomaly_options(ctx, param, value):
+    if value and (ctx.params.get("anomaly_window") or ctx.params.get("min_anomaly_percent")):
+        if not ctx.params.get("anomaly_detection"):
+            raise click.UsageError(
+                "`--anomaly-window` and `--min-anomaly-percent` can only be used when `--anomaly-detection` is enabled."
+            )
+    return value
 
 
 @click.group()
@@ -64,6 +73,16 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
     help="run hunter analyze",
     cls=MutuallyExclusiveOption,
     mutually_exclusive=["anomaly_detection"],
+)
+@click.option(
+    "--anomaly-window",
+    default=5,
+    callback=validate_anomaly_options
+)
+@click.option(
+    "--min-anomaly-percent",
+    default=10,
+    callback=validate_anomaly_options
 )
 @click.option(
     "--anomaly-detection",
@@ -91,7 +110,8 @@ def cmd_analysis(**kwargs):
     logger_instance = SingletonLogger(debug=level).logger
     logger_instance.info("🏹 Starting Orion in command-line mode")
     kwargs["configMap"] = load_config(kwargs["config"])
-    output = run(**kwargs)
+    OptionMap.set_map(kwargs)
+    output = run()
     if output is None:
         logger_instance.error("Terminating test")
         sys.exit(0)

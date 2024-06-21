@@ -8,7 +8,7 @@ import pandas as pd
 from tabulate import tabulate
 from pkg.algorithm import Algorithm
 from pkg.logrus import SingletonLogger
-
+from pkg.types import OptionMap
 
 class IsolationForestWeightedMean(Algorithm):
     """Isolation forest with weighted mean
@@ -82,7 +82,7 @@ class IsolationForestWeightedMean(Algorithm):
         dataframe["anomaly_score"] = anomaly_scores
 
         # Calculate moving average for each metric
-        window_size = 5
+        window_size = OptionMap.get_option("anomaly_window")
         moving_averages = dataframe_with_metrics.rolling(window=window_size).mean()
 
         # Initialize percentage change columns for all metrics
@@ -98,7 +98,7 @@ class IsolationForestWeightedMean(Algorithm):
                         (row[feature] - moving_averages.at[idx, feature])
                         / moving_averages.at[idx, feature]
                     ) * 100
-                    if abs(pct_change) > 5:
+                    if abs(pct_change) > OptionMap.get_option("min_anomaly_percent"):
                         anomaly_check_flag = 1
                         dataframe.at[idx, f"{feature}_pct_change"] = pct_change
                 if anomaly_check_flag == 1:

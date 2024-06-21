@@ -7,9 +7,10 @@ from fmatch.matcher import Matcher
 from pkg.algorithmFactory import AlgorithmFactory
 from pkg.logrus import SingletonLogger
 from pkg.utils import get_es_url, process_test
+from pkg.types import OptionMap
 
 
-def run(**kwargs):
+def run():
     """run method to start the tests
 
     Args:
@@ -21,8 +22,9 @@ def run(**kwargs):
     Returns:
         _type_: _description_
     """
+    optionMap= OptionMap.get_map()
     logger_instance = SingletonLogger(debug=logging.INFO).logger
-    data = kwargs["configMap"]
+    data = optionMap["configMap"]
 
     ES_URL = get_es_url(data)
     result_output = {}
@@ -34,23 +36,23 @@ def run(**kwargs):
             verify_certs=False,
         )
         result_dataframe = process_test(
-            test, match, kwargs["output_path"], kwargs["uuid"], kwargs["baseline"]
+            test, match, optionMap["output_path"], optionMap["uuid"], optionMap["baseline"]
         )
         if result_dataframe is None:
             return None
         result_dataframe = result_dataframe.reset_index(drop=True)
-        if kwargs["hunter_analyze"]:
+        if optionMap["hunter_analyze"]:
             algorithmFactory = AlgorithmFactory()
             algorithm = algorithmFactory.instantiate_algorithm(
                 "EDivisive", match, result_dataframe, test
             )
-            testname, result_data = algorithm.output(kwargs["output_format"])
+            testname, result_data = algorithm.output(optionMap["output_format"])
             result_output[testname] = result_data
-        elif kwargs["anomaly_detection"]:
+        elif optionMap["anomaly_detection"]:
             algorithmFactory = AlgorithmFactory()
             algorithm = algorithmFactory.instantiate_algorithm(
                 "IsolationForest", match, result_dataframe, test
             )
-            testname, result_data = algorithm.output(kwargs["output_format"])
+            testname, result_data = algorithm.output(optionMap["output_format"])
             result_output[testname] = result_data
     return result_output
