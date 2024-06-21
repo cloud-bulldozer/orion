@@ -10,6 +10,7 @@ from jinja2 import Template
 import pkg_resources
 import yaml
 from pkg.logrus import SingletonLogger
+from pkg.types import OptionMap
 
 from . import runTest
 
@@ -35,7 +36,7 @@ async def daemon_changepoint(
     """
     parameters = {"version": version}
     config_file_name=test_name+".yml"
-    test_arguments = {
+    option_arguments = {
         "config": config_file_name,
         "output_path": "output.csv",
         "hunter_analyze": True,
@@ -48,7 +49,8 @@ async def daemon_changepoint(
     filter_changepoints = (
         True if filter_changepoints == "true" else False  # pylint: disable = R1719
     )
-    result = runTest.run(**test_arguments)
+    OptionMap.set_map(option_arguments)
+    result = runTest.run()
     if result is None:
         return {"Error":"No UUID with given metadata"}
     if filter_changepoints:
@@ -84,12 +86,14 @@ async def get_options():
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 @app.get("/daemon/anomaly")
-async def daemon_anomaly(
+async def daemon_anomaly( # pylint: disable = R0913
     version: str = "4.15",
     uuid: str = "",
     baseline: str = "",
-    filter_changepoints="",
+    filter_points="",
     test_name="small-scale-cluster-density",
+    anomaly_window=5,
+    min_anomaly_percent=10
 ):
     """starts listening on port 8000 on url /daemon
 
@@ -101,7 +105,7 @@ async def daemon_anomaly(
     """
     parameters = {"version": version}
     config_file_name=test_name+".yml"
-    test_arguments = {
+    option_arguments = {
         "config": config_file_name,
         "output_path": "output.csv",
         "hunter_analyze": False,
@@ -110,14 +114,17 @@ async def daemon_anomaly(
         "uuid": uuid,
         "baseline": baseline,
         "configMap": render_template(config_file_name, parameters),
+        "anomaly_window": int(anomaly_window),
+        "min_anomaly_percent":int(min_anomaly_percent)
     }
-    filter_changepoints = (
-        True if filter_changepoints == "true" else False  # pylint: disable = R1719
+    filter_points = (
+        True if filter_points == "true" else False  # pylint: disable = R1719
     )
-    result = runTest.run(**test_arguments)
+    OptionMap.set_map(option_arguments)
+    result = runTest.run()
     if result is None:
         return {"Error":"No UUID with given metadata"}
-    if filter_changepoints:
+    if filter_points:
         for key, value in result.items():
             result[key] = list(filter(lambda x: x.get("is_changepoint", False), value))
     return result

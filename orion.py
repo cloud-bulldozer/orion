@@ -25,9 +25,10 @@ class MutuallyExclusiveOption(click.Option):
     Args:
         click (Option): _description_
     """
+
     def __init__(self, *args, **kwargs):
         self.mutually_exclusive = set(kwargs.pop("mutually_exclusive", []))
-        help = kwargs.get("help", "") # pylint: disable=redefined-builtin
+        help = kwargs.get("help", "")  # pylint: disable=redefined-builtin
         if self.mutually_exclusive:
             ex_str = ", ".join(self.mutually_exclusive)
             kwargs["help"] = help + (
@@ -41,14 +42,20 @@ class MutuallyExclusiveOption(click.Option):
             raise click.UsageError(
                 f"Illegal usage: `{self.name}` is mutually exclusive with "
                 f"arguments `{', '.join(self.mutually_exclusive)}`."
-                )
+            )
         return super().handle_parse_result(ctx, opts, args)
-    
-def validate_anomaly_options(ctx, param, value):
-    if value and (ctx.params.get("anomaly_window") or ctx.params.get("min_anomaly_percent")):
+
+
+def validate_anomaly_options(ctx, param, value): # pylint: disable = W0613
+    """ validate options so that can only be used with certain flags
+    """
+    if value and (
+        ctx.params.get("anomaly_window") or ctx.params.get("min_anomaly_percent")
+    ):
         if not ctx.params.get("anomaly_detection"):
             raise click.UsageError(
-                "`--anomaly-window` and `--min-anomaly-percent` can only be used when `--anomaly-detection` is enabled."
+                "`--anomaly-window` and \
+                    `--min-anomaly-percent` can only be used when `--anomaly-detection` is enabled."
             )
     return value
 
@@ -74,16 +81,8 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
     cls=MutuallyExclusiveOption,
     mutually_exclusive=["anomaly_detection"],
 )
-@click.option(
-    "--anomaly-window",
-    default=5,
-    callback=validate_anomaly_options
-)
-@click.option(
-    "--min-anomaly-percent",
-    default=10,
-    callback=validate_anomaly_options
-)
+@click.option("--anomaly-window", default=5, callback=validate_anomaly_options)
+@click.option("--min-anomaly-percent", default=10, callback=validate_anomaly_options)
 @click.option(
     "--anomaly-detection",
     is_flag=True,
