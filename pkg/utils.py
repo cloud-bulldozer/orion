@@ -6,7 +6,6 @@ module for all utility functions orion uses
 # pylint: disable = import-error
 
 from functools import reduce
-import json
 import logging
 import os
 import re
