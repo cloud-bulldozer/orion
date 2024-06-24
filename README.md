@@ -97,7 +97,7 @@ Activate Orion's regression detection tool for performance-scale CPT runs effort
 
 Additionally, users can specify a custom path for the output CSV file using the ```--output``` flag, providing control over the location where the generated CSV will be stored.
 
-Orion now supports anomaly detection for your data! Use the ```--anomaly-detection``` command to start the anomaly detection process.
+Orion now supports anomaly detection for your data. Use the ```--anomaly-detection``` command to start the anomaly detection process.
 
 **_NOTE:_**  The ```--hunter-analyze``` and ```--anomaly-detection``` flags are mutually exclusive. They cannot be used together because they represent different algorithms designed for distinct use cases.
 

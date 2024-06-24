@@ -2,7 +2,7 @@
 This is the cli file for orion, tool to detect regressions using hunter
 """
 
-# pylint: disable = import-error
+# pylint: disable = import-error, line-too-long
 import logging
 import sys
 import warnings
@@ -81,8 +81,8 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
     cls=MutuallyExclusiveOption,
     mutually_exclusive=["anomaly_detection"],
 )
-@click.option("--anomaly-window", default=5, callback=validate_anomaly_options)
-@click.option("--min-anomaly-percent", default=10, callback=validate_anomaly_options)
+@click.option("--anomaly-window", default=5, callback=validate_anomaly_options, help="set window size for moving average for anomaly-detection")
+@click.option("--min-anomaly-percent", default=10, callback=validate_anomaly_options, help="set minimum percentage difference from moving average for data point to be detected as anomaly")
 @click.option(
     "--anomaly-detection",
     is_flag=True,

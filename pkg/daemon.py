@@ -20,7 +20,7 @@ logger_instance = SingletonLogger(debug=logging.INFO).logger
 
 @app.get("/daemon/changepoint")
 async def daemon_changepoint(
-    version: str = "4.15",
+    version: str = "4.17",
     uuid: str = "",
     baseline: str = "",
     filter_changepoints="",
@@ -87,7 +87,7 @@ async def get_options():
 
 @app.get("/daemon/anomaly")
 async def daemon_anomaly( # pylint: disable = R0913
-    version: str = "4.15",
+    version: str = "4.17",
     uuid: str = "",
     baseline: str = "",
     filter_points="",
