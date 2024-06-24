@@ -45,6 +45,7 @@ def run(**kwargs):
         if result_dataframe is None:
             return None
         result_dataframe = result_dataframe.reset_index(drop=True)
+        algorithm_name=None
         if kwargs["hunter_analyze"]:
             algorithmFactory = AlgorithmFactory()
             algorithm = algorithmFactory.instantiate_algorithm(
