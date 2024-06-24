@@ -2,7 +2,7 @@
 This is the cli file for orion, tool to detect regressions using hunter
 """
 
-# pylint: disable = import-error
+# pylint: disable = import-error, line-too-long
 import logging
 import sys
 import warnings
@@ -102,7 +102,7 @@ def cmd_analysis(**kwargs):
         print(result_table)
 
         output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{kwargs['save_output_path'].split('.')[1]}"
-        with open(output_file_name, 'w') as file:
+        with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_table))
 
 

@@ -1,15 +1,17 @@
 # pylint: disable=cyclic-import
+# pylint: disable = line-too-long
 """
 module for all utility functions orion uses
 """
 # pylint: disable = import-error
 
 from functools import reduce
-import json
 import logging
 import os
 import re
 import sys
+import xml.etree.ElementTree as ET
+import xml.dom.minidom
 
 import yaml
 import pandas as pd
@@ -18,7 +20,9 @@ import pyshorteners
 
 from pkg.logrus import SingletonLogger
 
-class Metrics:
+class Metrics: #pylint: disable = R0903
+    """Type metrics
+    """
     metrics={}
 
 
@@ -285,3 +289,46 @@ def filter_metadata(uuid,match):
     no_blank_meta = {k: v for k, v in metadata.items() if v}
     logger_instance.debug('No blank metadata dict: ' + str(no_blank_meta))
     return no_blank_meta
+
+def json_to_junit(test_name, data_json):
+    """Convert json to junit format
+
+    Args:
+        test_name (_type_): _description_
+        data_json (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    testsuites = ET.Element("testsuites")
+    testsuite = ET.SubElement(
+        testsuites, "testsuite", name=f"{test_name} nightly compare"
+    )
+    failures_count = 0
+    for run in data_json:
+        run_data = {
+            str(key): str(value).lower()
+            for key, value in run.items()
+            if key in ["timestamp"]
+        }
+        for metric, value in run["metrics"].items():
+            failure = "false"
+            if not value["percentage_change"] == 0:
+                failure = "true"
+                failures_count += 1
+            labels = Metrics.metrics[metric]["labels"]
+            label_string = " ".join(labels) if labels else ""
+            testcase = ET.SubElement(
+                testsuite,
+                "testcase",
+                name=f"{label_string} {metric} regression detection",
+                attrib=run_data,
+            )
+            if failure == "true":
+                failure_element = ET.SubElement(testcase, "failure")
+                failure_element.text = f"{metric} has a value of {value['value']:.2f} with a percentage change of {value['percentage_change']:.2f}% over the previous runs"
+    testsuite.set("failures", str(failures_count))
+    xml_str = ET.tostring(testsuites, encoding="utf8", method="xml").decode()
+    dom = xml.dom.minidom.parseString(xml_str)
+    pretty_xml_as_string = dom.toprettyxml()
+    return pretty_xml_as_string
