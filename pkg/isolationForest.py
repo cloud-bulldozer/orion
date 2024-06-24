@@ -1,9 +1,7 @@
-#pylint: disable = too-many-locals, line-too-long
+# pylint: disable = too-many-locals, line-too-long
 """The implementation module for Isolation forest and weighted mean"""
 import json
 import logging
-import xml.etree.ElementTree as ET
-import xml.dom.minidom
 from typing import List
 from sklearn.ensemble import IsolationForest
 import pandas as pd
@@ -11,7 +9,7 @@ from tabulate import tabulate
 from pkg.algorithm import Algorithm
 from pkg.logrus import SingletonLogger
 from pkg.types import OptionMap
-from pkg.utils import Metrics
+from pkg.utils import Metrics, json_to_junit
 
 
 class IsolationForestWeightedMean(Algorithm):
@@ -23,20 +21,16 @@ class IsolationForestWeightedMean(Algorithm):
 
     def output_json(self):
         dataframe = self.dataframe
+        dataframe['timestamp'] = dataframe['timestamp'].apply(lambda x: int(pd.to_datetime(x).timestamp()))
         dataframe, anomalies_df = self.analyze(dataframe)
-        metric_columns = [
-            column
-            for column in dataframe.columns
-            if column not in ["uuid", "buildUrl", "timestamp"]
-        ]
+        metric_columns = Metrics.metrics.keys()
         dataframe_json = dataframe.to_json(orient="records")
         dataframe_json = json.loads(dataframe_json)
-
         for _, entry in enumerate(dataframe_json):
             uuid = entry["uuid"]
             entry["metrics"] = {
                 key: {"value": entry.pop(key), "percentage_change": 0}
-                for key in entry.keys() - {"uuid", "timestamp", "buildUrl"}
+                for key in Metrics.metrics
             }
             entry["is_anomalypoint"] = False
 
@@ -48,7 +42,7 @@ class IsolationForestWeightedMean(Algorithm):
                     )
                     if int(row["is_anomaly"].iloc[0]) == -1:
                         entry["is_anomalypoint"] = True
-        return self.test["name"], dataframe_json
+        return self.test["name"], json.dumps(dataframe_json, indent=2)
 
     def output_text(self):
         dataframe = self.dataframe
@@ -58,32 +52,11 @@ class IsolationForestWeightedMean(Algorithm):
         tabulated_df = tabulate(data_list, headers=column_names)
         formatted_table = self.format_dataframe(tabulated_df, anomalies_df, dataframe)
         return self.test["name"], formatted_table
-    
+
     def output_junit(self):
         test_name, data_json = self.output_json()
-        data_junit = self._json_to_junit(test_name=test_name, data_json=data_json)
+        data_junit = json_to_junit(test_name=test_name, data_json=data_json)
         return test_name, data_junit
-    
-    def _json_to_junit(self, test_name, data_json):
-        testsuites = ET.Element("testsuites")
-        testsuite = ET.SubElement(testsuites, "testsuite", name=f"{test_name} nightly compare")
-        for run in data_json:
-            run_data = {str(key): str(value).lower() for key, value in run.items() if key in ["uuid","timestamp", "buildUrl"]}
-            for metric, value in run["metrics"].items():
-                failure = "false"
-                if not value["percentage_change"] == 0:
-                    failure = "true"
-                testcase = ET.SubElement(testsuite, "testcase", 
-                                         name=f"{test_name} {' '.join(Metrics.metrics[metric]['labels'])} {metric} regression detection",
-                                         attrib=run_data, failure=failure)
-                if failure=="true":
-                    properties=ET.SubElement(testcase, "properties")
-                    value={str(k):str(v) for k,v in value.items()}
-                    ET.SubElement(properties, "property", name=metric, attrib=value)
-        xml_str = ET.tostring(testsuites, encoding='utf8', method='xml').decode()
-        dom = xml.dom.minidom.parseString(xml_str)
-        pretty_xml_as_string = dom.toprettyxml()
-        return pretty_xml_as_string
 
     def analyze(self, dataframe: pd.DataFrame):
         """Analyzing the data
@@ -96,11 +69,7 @@ class IsolationForestWeightedMean(Algorithm):
         """
         logger_instance = SingletonLogger(debug=logging.INFO).logger
         logger_instance.info("Starting analysis using Isolation Forest")
-        metric_columns = [
-            column
-            for column in dataframe.columns
-            if column not in ["uuid", "buildUrl", "timestamp"]
-        ]
+        metric_columns = Metrics.metrics.keys()
         model = IsolationForest(contamination="auto", random_state=42)
         dataframe_with_metrics = dataframe[metric_columns]
         model = IsolationForest(contamination="auto", random_state=42)
