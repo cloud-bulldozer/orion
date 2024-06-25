@@ -4,8 +4,11 @@ run test
 
 import logging
 from fmatch.matcher import Matcher
+import pandas as pd
+from pkg.algorithmFactory import AlgorithmFactory
 from pkg.logrus import SingletonLogger
-from pkg.utils import run_hunter_analyze, get_es_url, process_test
+from pkg.utils import get_es_url, process_test, get_subtracted_timestamp
+
 
 
 def run(**kwargs):
@@ -27,16 +30,30 @@ def run(**kwargs):
     result_output = {}
     for test in data["tests"]:
         match = Matcher(
-            index=test["index"], level=logger_instance.level, ES_URL=ES_URL, verify_certs=False
+            index=test["index"],
+            level=logger_instance.level,
+            ES_URL=ES_URL,
+            verify_certs=False,
         )
-        result = process_test(
-            test, match, kwargs["output_path"], kwargs["uuid"], kwargs["baseline"]
+        result_dataframe = process_test(
+            test, match, kwargs["save_data_path"], kwargs["uuid"], kwargs["baseline"]
         )
-        if result is None:
+        if result_dataframe is None:
             return None
+        if kwargs["lookback"]:
+            start_timestamp = get_subtracted_timestamp(kwargs["lookback"])
+            result_dataframe['timestamp'] = pd.to_datetime(result_dataframe['timestamp'])
+            result_dataframe=result_dataframe[result_dataframe["timestamp"] > start_timestamp]
+        result_dataframe = result_dataframe.reset_index(drop=True)
+        algorithm_name=None
         if kwargs["hunter_analyze"]:
-            testname, result_data = run_hunter_analyze(
-                result, test, output=kwargs["output_format"]
-            )
-            result_output[testname] = result_data
+            algorithm_name="EDivisive"
+        elif kwargs["anomaly_detection"]:
+            algorithm_name="IsolationForest"
+        algorithmFactory = AlgorithmFactory()
+        algorithm = algorithmFactory.instantiate_algorithm(
+            algorithm_name, match, result_dataframe, test
+        )
+        testname, result_data = algorithm.output(kwargs["output_format"])
+        result_output[testname] = result_data
     return result_output

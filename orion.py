@@ -2,7 +2,7 @@
 This is the cli file for orion, tool to detect regressions using hunter
 """
 
-# pylint: disable = import-error
+# pylint: disable = import-error, line-too-long
 import logging
 import sys
 import warnings
@@ -13,6 +13,35 @@ from pkg.runTest import run
 from pkg.utils import load_config
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
+warnings.filterwarnings(
+    "ignore", category=UserWarning, message=".*Connecting to.*verify_certs=False.*"
+)
+
+
+class MutuallyExclusiveOption(click.Option):
+    """Class to implement mutual exclusivity between options in click
+
+    Args:
+        click (Option): _description_
+    """
+    def __init__(self, *args, **kwargs):
+        self.mutually_exclusive = set(kwargs.pop("mutually_exclusive", []))
+        help = kwargs.get("help", "") # pylint: disable=redefined-builtin
+        if self.mutually_exclusive:
+            ex_str = ", ".join(self.mutually_exclusive)
+            kwargs["help"] = help + (
+                " NOTE: This argument is mutually exclusive with "
+                " arguments: [" + ex_str + "]."
+            )
+        super().__init__(*args, **kwargs)
+
+    def handle_parse_result(self, ctx, opts, args):
+        if self.mutually_exclusive.intersection(opts) and self.name in opts:
+            raise click.UsageError(
+                f"Illegal usage: `{self.name}` is mutually exclusive with "
+                f"arguments `{', '.join(self.mutually_exclusive)}`."
+                )
+        return super().handle_parse_result(ctx, opts, args)
 
 
 @click.group()
@@ -26,21 +55,36 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @cli.command(name="cmd")
 @click.option("--config", default="config.yaml", help="Path to the configuration file")
 @click.option(
-    "--output-path", default="output.csv", help="Path to save the output csv file"
+    "--save-data-path", default="data.csv", help="Path to save the output csv file"
 )
 @click.option("--debug", default=False, is_flag=True, help="log level")
-@click.option("--hunter-analyze", is_flag=True, help="run hunter analyze")
+@click.option(
+    "--hunter-analyze",
+    is_flag=True,
+    help="run hunter analyze",
+    cls=MutuallyExclusiveOption,
+    mutually_exclusive=["anomaly_detection"],
+)
+@click.option(
+    "--anomaly-detection",
+    is_flag=True,
+    help="run anomaly detection algorithm powered by isolation forest",
+    cls=MutuallyExclusiveOption,
+    mutually_exclusive=["hunter_analyze"],
+)
 @click.option(
     "-o",
     "--output-format",
-    type=click.Choice(["json", "text"]),
+    type=click.Choice(["json", "text", "junit"]),
     default="text",
-    help="Choose output format (json or text)",
+    help="Choose output format (json, text or junit)",
 )
+@click.option("--save-output-path", default="output.txt")
 @click.option("--uuid", default="", help="UUID to use as base for comparisons")
 @click.option(
     "--baseline", default="", help="Baseline UUID(s) to to compare against uuid"
 )
+@click.option("--lookback", help="Get data from last X days amd Y hours. Format in XdYh")
 def cmd_analysis(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
@@ -57,6 +101,11 @@ def cmd_analysis(**kwargs):
         print(test_name)
         print("=" * len(test_name))
         print(result_table)
+
+        output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{kwargs['save_output_path'].split('.')[1]}"
+        with open(output_file_name, 'w', encoding="utf-8") as file:
+            file.write(str(result_table))
+
 
 
 @cli.command(name="daemon")
