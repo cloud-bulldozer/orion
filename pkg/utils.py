@@ -12,6 +12,7 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
+from datetime import datetime, timedelta, timezone
 
 import yaml
 import pandas as pd
@@ -331,3 +332,23 @@ def json_to_junit(test_name, data_json, metrics_config):
     dom = xml.dom.minidom.parseString(xml_str)
     pretty_xml_as_string = dom.toprettyxml()
     return pretty_xml_as_string
+
+def get_subtracted_timestamp(time_duration: str) -> datetime:
+    """Get subtracted datetime from now
+
+    Args:
+        time_duration (str): time_gap in XdYh format
+
+    Returns:
+        datetime: return datetime of given timegap from now
+    """
+    logger_instance= SingletonLogger(debug=logging.INFO).logger
+    reg_ex = re.match(r'^(?:(\d+)d)?(?:(\d+)h)?$', time_duration)
+    if not reg_ex:
+        logger_instance.error("Wrong format for time duration, please provide in XdYh")
+    days = int(reg_ex.group(1)) if reg_ex.group(1) else 0
+    hours = int(reg_ex.group(2)) if reg_ex.group(2) else 0
+    duration_to_subtract = timedelta(days=days, hours=hours)
+    current_time = datetime.now(timezone.utc)
+    timestamp_before = current_time - duration_to_subtract
+    return timestamp_before

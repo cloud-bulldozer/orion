@@ -4,10 +4,13 @@ run test
 
 import logging
 from fmatch.matcher import Matcher
+import pandas as pd
 from pkg.algorithmFactory import AlgorithmFactory
 from pkg.logrus import SingletonLogger
-from pkg.utils import get_es_url, process_test
 import pkg.constants as cnsts
+from pkg.utils import get_es_url, process_test, get_subtracted_timestamp
+
+
 
 def run(**kwargs):
     """run method to start the tests
@@ -44,6 +47,10 @@ def run(**kwargs):
         )
         if result_dataframe is None:
             return None
+        if kwargs["time"]:
+            start_timestamp = get_subtracted_timestamp(kwargs["time"])
+            result_dataframe['timestamp'] = pd.to_datetime(result_dataframe['timestamp'])
+            result_dataframe=result_dataframe[result_dataframe["timestamp"] > start_timestamp]
         result_dataframe = result_dataframe.reset_index(drop=True)
         algorithm_name=None
         if kwargs["hunter_analyze"]:
