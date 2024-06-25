@@ -8,7 +8,7 @@ from pkg.algorithmFactory import AlgorithmFactory
 from pkg.logrus import SingletonLogger
 from pkg.utils import get_es_url, process_test
 from pkg.types import OptionMap
-
+import pkg.constants as cnsts
 
 def run():
     """run method to start the tests
@@ -44,14 +44,14 @@ def run():
         if optionMap["hunter_analyze"]:
             algorithmFactory = AlgorithmFactory()
             algorithm = algorithmFactory.instantiate_algorithm(
-                "EDivisive", match, result_dataframe, test
+                cnsts.EDIVISIVE, match, result_dataframe, test
             )
             testname, result_data = algorithm.output(optionMap["output_format"])
             result_output[testname] = result_data
         elif optionMap["anomaly_detection"]:
             algorithmFactory = AlgorithmFactory()
             algorithm = algorithmFactory.instantiate_algorithm(
-                "IsolationForest", match, result_dataframe, test
+                cnsts.ISOLATION_FOREST, match, result_dataframe, test
             )
             testname, result_data = algorithm.output(optionMap["output_format"])
             result_output[testname] = result_data

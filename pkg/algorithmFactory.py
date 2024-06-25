@@ -3,6 +3,7 @@ Algorithm Factory to choose avaiable algorithms
 """
 from pkg.edivisive import EDivisive
 from pkg.isolationForest import IsolationForestWeightedMean
+import pkg.constants as cnsts
 
 class AlgorithmFactory: # pylint: disable= too-few-public-methods
     """Algorithm Factory to choose algorithm
@@ -22,8 +23,8 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods
         Returns:
             Algorithm : Algorithm
         """
-        if algorithm == "EDivisive":
+        if algorithm == cnsts.EDIVISIVE:
             return EDivisive(matcher, dataframe, test)
-        if algorithm == "IsolationForest":
+        if algorithm == cnsts.ISOLATION_FOREST:
             return IsolationForestWeightedMean(matcher, dataframe, test)
         raise ValueError("Invalid algorithm called")

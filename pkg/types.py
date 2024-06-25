@@ -29,12 +29,10 @@ class OptionMap:
     def get_map(cls):
         """get the option map as dict
         """
-        with cls._lock:
-            return dict(cls._option_map)
+        return dict(cls._option_map)
 
     @classmethod
     def get_option(cls, key):
         """get the option value with a key
         """
-        with cls._lock:
-            return cls._option_map.get(key)
+        return cls._option_map.get(key)

@@ -12,6 +12,7 @@ from pkg.logrus import SingletonLogger
 from pkg.runTest import run
 from pkg.utils import load_config
 from pkg.types import OptionMap
+import pkg.constants as cnsts
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 warnings.filterwarnings(
@@ -49,13 +50,12 @@ class MutuallyExclusiveOption(click.Option):
 def validate_anomaly_options(ctx, param, value): # pylint: disable = W0613
     """ validate options so that can only be used with certain flags
     """
-    if value and (
+    if value or (
         ctx.params.get("anomaly_window") or ctx.params.get("min_anomaly_percent")
     ):
         if not ctx.params.get("anomaly_detection"):
             raise click.UsageError(
-                "`--anomaly-window` and \
-                    `--min-anomaly-percent` can only be used when `--anomaly-detection` is enabled."
+                "`--anomaly-window` and `--min-anomaly-percent` can only be used when `--anomaly-detection` is enabled."
             )
     return value
 
@@ -81,8 +81,8 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
     cls=MutuallyExclusiveOption,
     mutually_exclusive=["anomaly_detection"],
 )
-@click.option("--anomaly-window", default=5, callback=validate_anomaly_options, help="set window size for moving average for anomaly-detection")
-@click.option("--min-anomaly-percent", default=10, callback=validate_anomaly_options, help="set minimum percentage difference from moving average for data point to be detected as anomaly")
+@click.option("--anomaly-window", type=int, callback=validate_anomaly_options, help="set window size for moving average for anomaly-detection")
+@click.option("--min-anomaly-percent", type=int, callback=validate_anomaly_options, help="set minimum percentage difference from moving average for data point to be detected as anomaly")
 @click.option(
     "--anomaly-detection",
     is_flag=True,
@@ -93,8 +93,8 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option(
     "-o",
     "--output-format",
-    type=click.Choice(["json", "text"]),
-    default="text",
+    type=click.Choice([cnsts.JSON, cnsts.TEXT]),
+    default=cnsts.TEXT,
     help="Choose output format (json or text)",
 )
 @click.option("--uuid", default="", help="UUID to use as base for comparisons")

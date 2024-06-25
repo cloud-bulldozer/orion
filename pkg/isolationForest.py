@@ -16,6 +16,15 @@ class IsolationForestWeightedMean(Algorithm):
     Args:
         Algorithm (Algorithm): _description_
     """
+    def __init__(self, matcher, dataframe, test):
+        super().__init__(matcher, dataframe, test)
+        options = OptionMap.get_map()
+        #setting defaults
+        if options.get("anomaly_window",None) is None:
+            OptionMap.set_option("anomaly_window",5)
+        if options.get("min_anomaly_percent",None) is None:
+            OptionMap.set_option("min_anomaly_percent",10)
+
     def output_json(self):
         dataframe = self.dataframe
         dataframe, anomalies_df = self.analyze(dataframe)
@@ -82,7 +91,7 @@ class IsolationForestWeightedMean(Algorithm):
         dataframe["anomaly_score"] = anomaly_scores
 
         # Calculate moving average for each metric
-        window_size = OptionMap.get_option("anomaly_window")
+        window_size = int(OptionMap.get_option("anomaly_window"))
         moving_averages = dataframe_with_metrics.rolling(window=window_size).mean()
 
         # Initialize percentage change columns for all metrics
@@ -98,7 +107,7 @@ class IsolationForestWeightedMean(Algorithm):
                         (row[feature] - moving_averages.at[idx, feature])
                         / moving_averages.at[idx, feature]
                     ) * 100
-                    if abs(pct_change) > OptionMap.get_option("min_anomaly_percent"):
+                    if abs(pct_change) > int(OptionMap.get_option("min_anomaly_percent")):
                         anomaly_check_flag = 1
                         dataframe.at[idx, f"{feature}_pct_change"] = pct_change
                 if anomaly_check_flag == 1:

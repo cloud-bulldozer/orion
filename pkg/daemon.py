@@ -11,6 +11,7 @@ import pkg_resources
 import yaml
 from pkg.logrus import SingletonLogger
 from pkg.types import OptionMap
+import pkg.constants as cnsts
 
 from . import runTest
 
@@ -41,7 +42,7 @@ async def daemon_changepoint(
         "output_path": "output.csv",
         "hunter_analyze": True,
         "anomaly_detection": False,
-        "output_format": "json",
+        "output_format": cnsts.JSON,
         "uuid": uuid,
         "baseline": baseline,
         "configMap": render_template(config_file_name, parameters),
@@ -110,7 +111,7 @@ async def daemon_anomaly( # pylint: disable = R0913
         "output_path": "output.csv",
         "hunter_analyze": False,
         "anomaly_detection": True,
-        "output_format": "json",
+        "output_format": cnsts.JSON,
         "uuid": uuid,
         "baseline": baseline,
         "configMap": render_template(config_file_name, parameters),
