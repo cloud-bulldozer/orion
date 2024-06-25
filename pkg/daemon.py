@@ -2,6 +2,7 @@
 Module to run orion in daemon mode
 """
 
+import json
 import logging
 import os
 
@@ -24,6 +25,7 @@ async def daemon_changepoint(
     baseline: str = "",
     filter_changepoints="",
     test_name="small-scale-cluster-density",
+    lookback=None,
 ):
     """starts listening on port 8000 on url /daemon
 
@@ -37,11 +39,12 @@ async def daemon_changepoint(
     config_file_name=test_name+".yml"
     test_arguments = {
         "config": config_file_name,
-        "output_path": "output.csv",
+        "save_data_path": "output.csv",
         "hunter_analyze": True,
         "anomaly_detection": False,
         "output_format": "json",
         "uuid": uuid,
+        "lookback":lookback,
         "baseline": baseline,
         "configMap": render_template(config_file_name, parameters),
     }
@@ -49,6 +52,7 @@ async def daemon_changepoint(
         True if filter_changepoints == "true" else False  # pylint: disable = R1719
     )
     result = runTest.run(**test_arguments)
+    result = {k: json.loads(v) for k,v in result.items()}
     if result is None:
         return {"Error":"No UUID with given metadata"}
     if filter_changepoints:
@@ -90,6 +94,7 @@ async def daemon_anomaly(
     baseline: str = "",
     filter_changepoints="",
     test_name="small-scale-cluster-density",
+    lookback=None
 ):
     """starts listening on port 8000 on url /daemon
 
@@ -103,11 +108,12 @@ async def daemon_anomaly(
     config_file_name=test_name+".yml"
     test_arguments = {
         "config": config_file_name,
-        "output_path": "output.csv",
+        "save_data_path": "output.csv",
         "hunter_analyze": False,
         "anomaly_detection": True,
         "output_format": "json",
         "uuid": uuid,
+        "lookback":lookback,
         "baseline": baseline,
         "configMap": render_template(config_file_name, parameters),
     }
@@ -115,6 +121,7 @@ async def daemon_anomaly(
         True if filter_changepoints == "true" else False  # pylint: disable = R1719
     )
     result = runTest.run(**test_arguments)
+    result = {k: json.loads(v) for k,v in result.items()}
     if result is None:
         return {"Error":"No UUID with given metadata"}
     if filter_changepoints:
