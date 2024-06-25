@@ -19,7 +19,7 @@ logger_instance = SingletonLogger(debug=logging.INFO).logger
 
 
 @app.get("/daemon/changepoint")
-async def daemon_changepoint(
+async def daemon_changepoint( # pylint: disable = R0913
     version: str = "4.15",
     uuid: str = "",
     baseline: str = "",
@@ -88,7 +88,7 @@ async def get_options():
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 @app.get("/daemon/anomaly")
-async def daemon_anomaly(
+async def daemon_anomaly( # pylint: disable = R0913
     version: str = "4.15",
     uuid: str = "",
     baseline: str = "",
