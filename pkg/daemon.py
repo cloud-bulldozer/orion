@@ -26,6 +26,7 @@ async def daemon_changepoint(
     baseline: str = "",
     filter_changepoints="",
     test_name="small-scale-cluster-density",
+    lookback=None,
 ):
     """starts listening on port 8000 on url /daemon
 
@@ -44,6 +45,7 @@ async def daemon_changepoint(
         "anomaly_detection": False,
         "output_format": cnsts.JSON,
         "uuid": uuid,
+        "lookback":lookback,
         "baseline": baseline,
         "configMap": render_template(config_file_name, parameters),
     }
@@ -94,7 +96,8 @@ async def daemon_anomaly( # pylint: disable = R0913
     filter_points="",
     test_name="small-scale-cluster-density",
     anomaly_window=5,
-    min_anomaly_percent=10
+    min_anomaly_percent=10,
+    lookback=None
 ):
     """starts listening on port 8000 on url /daemon
 
@@ -113,6 +116,7 @@ async def daemon_anomaly( # pylint: disable = R0913
         "anomaly_detection": True,
         "output_format": cnsts.JSON,
         "uuid": uuid,
+        "lookback":lookback,
         "baseline": baseline,
         "configMap": render_template(config_file_name, parameters),
         "anomaly_window": int(anomaly_window),

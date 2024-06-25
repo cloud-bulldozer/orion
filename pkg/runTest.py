@@ -47,8 +47,8 @@ def run(**kwargs):
         )
         if result_dataframe is None:
             return None
-        if kwargs["time"]:
-            start_timestamp = get_subtracted_timestamp(kwargs["time"])
+        if kwargs["lookback"]:
+            start_timestamp = get_subtracted_timestamp(kwargs["lookback"])
             result_dataframe['timestamp'] = pd.to_datetime(result_dataframe['timestamp'])
             result_dataframe=result_dataframe[result_dataframe["timestamp"] > start_timestamp]
         result_dataframe = result_dataframe.reset_index(drop=True)

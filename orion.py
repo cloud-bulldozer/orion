@@ -101,7 +101,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option(
     "--baseline", default="", help="Baseline UUID(s) to to compare against uuid"
 )
-@click.option("--time", help="Get data from last X days amd Y hours. Format in XdYh")
+@click.option("--lookback", help="Get data from last X days amd Y hours. Format in XdYh")
 def cmd_analysis(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
