@@ -10,19 +10,25 @@ class OptionMap:
     """
     _option_map = {}
     _lock = Lock()
+    _is_set = False
 
     @classmethod
     def set_map(cls, options):
         """set the option map to a dict
         """
         with cls._lock:
+            if cls._is_set:
+                raise ValueError("OptionMap is already set and cannot be modified")
             cls._option_map = options
+            cls._is_set = True
 
     @classmethod
     def set_option(cls, key, value):
         """set the option value with key and value
         """
         with cls._lock:
+            if cls._is_set:
+                raise ValueError("OptionMap is already set and cannot be modified")
             cls._option_map[key] = value
 
     @classmethod
