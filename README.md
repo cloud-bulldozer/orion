@@ -97,6 +97,10 @@ Activate Orion's regression detection tool for performance-scale CPT runs effort
 
 Additionally, users can specify a custom path for the output CSV file using the ```--output``` flag, providing control over the location where the generated CSV will be stored.
 
+Orion now supports anomaly detection for your data. Use the ```--anomaly-detection``` command to start the anomaly detection process.
+
+**_NOTE:_**  The ```--hunter-analyze``` and ```--anomaly-detection``` flags are mutually exclusive. They cannot be used together because they represent different algorithms designed for distinct use cases.
+
 ### Daemon mode
 The core purpose of Daemon mode is to operate Orion as a self-contained server, dedicated to handling incoming requests. By sending a POST request accompanied by a test name of predefined tests, users can trigger change point detection on the provided metadata and metrics. Following the processing, the response is formatted in JSON, providing a structured output for seamless integration and analysis. To trigger daemon mode just use the following commands
 
@@ -110,7 +114,7 @@ To interact with the Daemon Service, you can send a POST request using `curl` wi
 *Request URL*
 
 ```
-POST http://127.0.0.1:8000/daemon
+POST http://127.0.0.1:8080/daemon/changepoint
 ```
 
 *Parameters*
@@ -124,7 +128,7 @@ POST http://127.0.0.1:8000/daemon
 
 Example
 ```
-curl -L -X POST 'http://127.0.0.1:8000/daemon?filter_changepoints=true&version=4.14&test_name=small-scale-node-density-cni'
+curl -L -X POST 'http://127.0.0.1:8080/daemon/changepoint?filter_changepoints=true&version=4.14&test_name=small-scale-node-density-cni'
 ```
 
 
@@ -160,6 +164,7 @@ Below is a sample output structure: the top level of the JSON contains the test 
 }
 ```
 
+Similarly, one can use the ```/daemon/anomaly``` endpoint to get anomaly detection on the preset metadata.
 
 **Querying List of Tests Available to the Daemon Service**
 
