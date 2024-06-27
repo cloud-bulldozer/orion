@@ -5,8 +5,8 @@ import pandas as pd
 from hunter.report import Report, ReportType
 from hunter.series import Metric, Series
 from pkg.algorithm import Algorithm
-from pkg.utils import Metrics, json_to_junit
-
+from pkg.utils import json_to_junit
+from pkg.types import Metrics
 
 class EDivisive(Algorithm):
     """Implementation of the EDivisive algorithm using hunter

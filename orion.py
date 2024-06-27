@@ -11,7 +11,6 @@ import uvicorn
 from pkg.logrus import SingletonLogger
 from pkg.runTest import run
 from pkg.utils import load_config
-from pkg.types import OptionMap
 import pkg.constants as cnsts
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
@@ -93,7 +92,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option(
     "-o",
     "--output-format",
-    type=click.Choice([cnsts.JSON, cnsts.TEXT]),
+    type=click.Choice([cnsts.JSON, cnsts.TEXT, cnsts.JUNIT]),
     default=cnsts.TEXT,
     help="Choose output format (json or text)",
 )
@@ -110,8 +109,7 @@ def cmd_analysis(**kwargs):
     logger_instance = SingletonLogger(debug=level).logger
     logger_instance.info("🏹 Starting Orion in command-line mode")
     kwargs["configMap"] = load_config(kwargs["config"])
-    OptionMap.set_map(kwargs)
-    output = run()
+    output = run(**kwargs)
     if output is None:
         logger_instance.error("Terminating test")
         sys.exit(0)

@@ -5,10 +5,10 @@ from pkg.edivisive import EDivisive
 from pkg.isolationForest import IsolationForestWeightedMean
 import pkg.constants as cnsts
 
-class AlgorithmFactory: # pylint: disable= too-few-public-methods
+class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-arguments
     """Algorithm Factory to choose algorithm
     """
-    def instantiate_algorithm(self, algorithm, matcher, dataframe, test):
+    def instantiate_algorithm(self, algorithm, matcher, dataframe, test, options):
         """Algorithm instantiation method
 
         Args:
@@ -24,7 +24,7 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods
             Algorithm : Algorithm
         """
         if algorithm == cnsts.EDIVISIVE:
-            return EDivisive(matcher, dataframe, test)
+            return EDivisive(matcher, dataframe, test, options)
         if algorithm == cnsts.ISOLATION_FOREST:
-            return IsolationForestWeightedMean(matcher, dataframe, test)
+            return IsolationForestWeightedMean(matcher, dataframe, test, options)
         raise ValueError("Invalid algorithm called")

@@ -19,13 +19,7 @@ import pandas as pd
 import pyshorteners
 
 from pkg.logrus import SingletonLogger
-
-class Metrics: #pylint: disable = R0903
-    """Type metrics
-    """
-    metrics={}
-
-
+from pkg.types import Metrics
 
 # pylint: disable=too-many-locals
 def get_metric_data(ids, index, metrics, match):
@@ -305,6 +299,7 @@ def json_to_junit(test_name, data_json):
         testsuites, "testsuite", name=f"{test_name} nightly compare"
     )
     failures_count = 0
+    test_count=0
     for run in data_json:
         run_data = {
             str(key): str(value).lower()
@@ -312,6 +307,7 @@ def json_to_junit(test_name, data_json):
             if key in ["timestamp"]
         }
         for metric, value in run["metrics"].items():
+            test_count+=1
             failure = "false"
             if not value["percentage_change"] == 0:
                 failure = "true"
@@ -328,6 +324,7 @@ def json_to_junit(test_name, data_json):
                 failure_element = ET.SubElement(testcase, "failure")
                 failure_element.text = f"{metric} has a value of {value['value']:.2f} with a percentage change of {value['percentage_change']:.2f}% over the previous runs"
     testsuite.set("failures", str(failures_count))
+    testsuite.set("tests", str(test_count))
     xml_str = ET.tostring(testsuites, encoding="utf8", method="xml").decode()
     dom = xml.dom.minidom.parseString(xml_str)
     pretty_xml_as_string = dom.toprettyxml()

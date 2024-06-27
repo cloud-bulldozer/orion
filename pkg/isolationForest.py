@@ -8,8 +8,8 @@ import pandas as pd
 from tabulate import tabulate
 from pkg.algorithm import Algorithm
 from pkg.logrus import SingletonLogger
-from pkg.types import OptionMap
-from pkg.utils import Metrics, json_to_junit
+from pkg.utils import json_to_junit
+from pkg.types import Metrics
 
 
 class IsolationForestWeightedMean(Algorithm):
@@ -83,8 +83,7 @@ class IsolationForestWeightedMean(Algorithm):
         dataframe["anomaly_score"] = anomaly_scores
 
         # Calculate moving average for each metric
-        options=OptionMap.get_map()
-        window_size = (5 if options.get("anomaly_window",None) is None else int(OptionMap.get_option("anomaly_window")))
+        window_size = (5 if self.options.get("anomaly_window",None) is None else int(self.options.get("anomaly_window",None)))
         moving_averages = dataframe_with_metrics.rolling(window=window_size).mean()
 
         # Initialize percentage change columns for all metrics
@@ -100,7 +99,7 @@ class IsolationForestWeightedMean(Algorithm):
                         (row[feature] - moving_averages.at[idx, feature])
                         / moving_averages.at[idx, feature]
                     ) * 100
-                    if abs(pct_change) > (10 if options.get("min_anomaly_percent",None) is None else int(OptionMap.get_option("min_anomaly_percent"))):
+                    if abs(pct_change) > (10 if self.options.get("min_anomaly_percent",None) is None else int(self.options.get("min_anomaly_percent",None))):
                         anomaly_check_flag = 1
                         dataframe.at[idx, f"{feature}_pct_change"] = pct_change
                 if anomaly_check_flag == 1:

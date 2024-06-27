@@ -6,10 +6,11 @@ class Algorithm(ABC):
     """Generic Algorithm class for algorithm factory
     """
 
-    def __init__(self, matcher, dataframe, test):
+    def __init__(self, matcher, dataframe, test, options):
         self.matcher = matcher
         self.dataframe = dataframe
         self.test = test
+        self.options = options
 
     @abstractmethod
     def output_json(self):
