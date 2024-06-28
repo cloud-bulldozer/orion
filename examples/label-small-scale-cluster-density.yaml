@@ -23,7 +23,7 @@ tests :
       not: 
         jobConfig.name: "garbage-collection"
       labels:
-        - "[Jira: PodLatency]"
+        - "[Jira: PerfScale]"
     - name:  apiserverCPU
       metricName : containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
@@ -42,7 +42,7 @@ tests :
         value: cpu
         agg_type: avg
       labels:
-        - "[Jira: ovnKubernetes]"
+        - "[Jira: Networking / ovn-kubernetes]"
 
     - name:  etcdCPU
       metricName : containerCPU

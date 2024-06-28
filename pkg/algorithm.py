@@ -41,6 +41,6 @@ class Algorithm(ABC):
             return self.output_json()
         if output_format==cnsts.TEXT:
             return self.output_text()
-        if output_format=="junit":
+        if output_format==cnsts.JUNIT:
             return self.output_junit()
         raise ValueError("Unsupported output format {output_format} selected")
