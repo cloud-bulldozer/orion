@@ -5,21 +5,19 @@ Below is an illustrative example of the config and metadata that Orion can handl
 
 ```
 tests :
-  - name : aws-small-scale-cluster-density-v2
+  - name : payload-cluster-density-v2
     index: ospst-perf-scale-ci-*
     benchmarkIndex: ospst-ripsaw-kube-burner*
     metadata:
       platform: AWS
+      clusterType: self-managed
       masterNodesType: m6a.xlarge
       masterNodesCount: 3
       workerNodesType: m6a.xlarge
-      workerNodesCount: 24
+      workerNodesCount: 6
       benchmark.keyword: cluster-density-v2
-      ocpVersion: {{ version }}
+      ocpVersion: 4.17
       networkType: OVNKubernetes
-    # encrypted: true
-    # fips: false
-    # ipsec: false
 
     metrics : 
     - name:  podReadyLatency
@@ -28,7 +26,10 @@ tests :
       metric_of_interest: P99
       not: 
         jobConfig.name: "garbage-collection"
-      
+      labels:
+        - "[Jira: PerfScale]"
+      direction: 0
+
     - name:  apiserverCPU
       metricName : containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
@@ -36,6 +37,9 @@ tests :
       agg:
         value: cpu
         agg_type: avg
+      labels:
+        - "[Jira: kube-apiserver]"
+      direction: 0
 
     - name:  ovnCPU
       metricName : containerCPU
@@ -44,6 +48,9 @@ tests :
       agg:
         value: cpu
         agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 0
 
     - name:  etcdCPU
       metricName : containerCPU
@@ -52,15 +59,32 @@ tests :
       agg:
         value: cpu
         agg_type: avg
-
+      labels:
+        - "[Jira: etcd]"
+      direction: 0
+    
     - name:  etcdDisk
       metricName : 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
         value: duration
         agg_type: avg
+      labels:
+        - "[Jira: etcd]"
+      direction: 0
+
+    - name: kubelet 
+      metricName : kubeletCPU 
+      metric_of_interest: value 
+      labels: 
+        - "[Jira: Node]" 
+      agg: 
+        value: cpu 
+        agg_type: avg
+      direction: 0
 
 ```
+**Note**: `direction: 1` specifies to show positive changes, `direction: 0` specifies to show both positive and negative changes while `direction: -1` shows negative changes.
 
 ## Build Orion
 Building Orion is a straightforward process. Follow these commands:
