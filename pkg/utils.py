@@ -39,6 +39,7 @@ def get_metric_data(ids, index, metrics, match):
     dataframe_list = []
     for metric in metrics:
         labels=metric.pop("labels",None)
+        direction = int(metric.pop("direction",0))
         metric_name = metric["name"]
         logger_instance.info("Collecting %s", metric_name)
         metric_of_interest = metric["metric_of_interest"]
@@ -54,6 +55,7 @@ def get_metric_data(ids, index, metrics, match):
                 metric_dataframe_name= f"{metric_name}_{agg_type}"
                 cpu_df = cpu_df.rename(columns={agg_name: metric_dataframe_name})
                 metric["labels"]=labels
+                metric["direction"]=direction
                 Metrics.metrics[metric_dataframe_name]=metric
                 dataframe_list.append(cpu_df)
                 logger_instance.debug(cpu_df)
@@ -74,6 +76,7 @@ def get_metric_data(ids, index, metrics, match):
                 podl_df = podl_df.rename(
                     columns={metric_of_interest: metric_dataframe_name})
                 metric["labels"]=labels
+                metric["direction"]=direction
                 Metrics.metrics[metric_dataframe_name]=metric
                 podl_df=podl_df.drop_duplicates()
                 dataframe_list.append(podl_df)

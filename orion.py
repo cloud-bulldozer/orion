@@ -70,7 +70,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @cli.command(name="cmd")
 @click.option("--config", default="config.yaml", help="Path to the configuration file")
 @click.option(
-    "--save-data-path", default="data.csv", help="Path to save the output csv file"
+    "--save-data-path", default="data.csv", help="Path to save the output file"
 )
 @click.option("--debug", default=False, is_flag=True, help="log level")
 @click.option(
@@ -94,9 +94,9 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
     "--output-format",
     type=click.Choice([cnsts.JSON, cnsts.TEXT, cnsts.JUNIT]),
     default=cnsts.TEXT,
-    help="Choose output format (json or text)",
+    help="Choose output format (json, text or junit)",
 )
-@click.option("--save-output-path", default="output.txt")
+@click.option("--save-output-path", default="output.txt", help="path to save output file with regressions")
 @click.option("--uuid", default="", help="UUID to use as base for comparisons")
 @click.option(
     "--baseline", default="", help="Baseline UUID(s) to to compare against uuid"

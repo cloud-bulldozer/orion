@@ -100,8 +100,9 @@ class IsolationForestWeightedMean(Algorithm):
                         / moving_averages.at[idx, feature]
                     ) * 100
                     if abs(pct_change) > (10 if self.options.get("min_anomaly_percent",None) is None else int(self.options.get("min_anomaly_percent",None))):
-                        anomaly_check_flag = 1
-                        dataframe.at[idx, f"{feature}_pct_change"] = pct_change
+                        if (pct_change * Metrics.metrics[feature]["direction"] > 0) or Metrics.metrics[feature]["direction"]==0:
+                            anomaly_check_flag = 1
+                            dataframe.at[idx, f"{feature}_pct_change"] = pct_change
                 if anomaly_check_flag == 1:
                     dataframe.at[idx, "is_anomaly"] = -1
                 else:

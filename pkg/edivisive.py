@@ -35,10 +35,11 @@ class EDivisive(Algorithm):
                     (change_point.stats.mean_2 - change_point.stats.mean_1)
                     / change_point.stats.mean_1
                 ) * 100
-                dataframe_json[index]["metrics"][key][
-                    "percentage_change"
-                ] = percentage_change
-                dataframe_json[index]["is_changepoint"] = True
+                if percentage_change * Metrics.metrics[key]["direction"] > 0 or Metrics.metrics[key]["direction"]==0:
+                    dataframe_json[index]["metrics"][key][
+                        "percentage_change"
+                    ] = percentage_change
+                    dataframe_json[index]["is_changepoint"] = True
 
         return self.test["name"], json.dumps(dataframe_json, indent=2)
 
@@ -58,7 +59,8 @@ class EDivisive(Algorithm):
     def _analyze(self):
         self.dataframe["timestamp"] = pd.to_datetime(self.dataframe["timestamp"])
         self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int) // 10**9
-        metrics = {column: Metric(1, 1.0) for column in Metrics.metrics}
+        metrics = {column: Metric(value.get("direction",1), 1.0) for column,value in Metrics.metrics.items()}
+        print(metrics)
         data = {column: self.dataframe[column] for column in Metrics.metrics}
         attributes = {
             column: self.dataframe[column]
@@ -74,5 +76,19 @@ class EDivisive(Algorithm):
             attributes=attributes,
         )
         change_points = series.analyze().change_points_by_time
+        # filter by direction
+        for change_point_group in change_points:
+            for i in range(len(change_point_group.changes)-1,-1,-1):
+                if Metrics.metrics[change_point_group.changes[i].metric]["direction"] == 1 and  change_point_group.changes[i].stats.mean_1> change_point_group.changes[i].stats.mean_2:
+                    del change_point_group.changes[i]
+            for i in range(len(change_point_group.changes)-1,-1,-1):
+                if Metrics.metrics[change_point_group.changes[i].metric]["direction"] == -1 and  change_point_group.changes[i].stats.mean_1< change_point_group.changes[i].stats.mean_2:
+                    del change_point_group.changes[i]
+
+        for i in range(len(change_points)-1,-1,-1):
+            if len(change_points[i].changes) == 0:
+                del change_points[i]
+
+
         report = Report(series, change_points)
         return report, series
