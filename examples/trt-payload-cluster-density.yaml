@@ -22,7 +22,7 @@ tests :
         jobConfig.name: "garbage-collection"
       labels:
         - "[Jira: PerfScale]"
-      direction: 0
+      direction: 1
 
     - name:  apiserverCPU
       metricName : containerCPU
@@ -33,7 +33,7 @@ tests :
         agg_type: avg
       labels:
         - "[Jira: kube-apiserver]"
-      direction: 0
+      direction: 1
 
     - name:  ovnCPU
       metricName : containerCPU
@@ -44,7 +44,7 @@ tests :
         agg_type: avg
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
-      direction: 0
+      direction: 1
 
     - name:  etcdCPU
       metricName : containerCPU
@@ -55,17 +55,7 @@ tests :
         agg_type: avg
       labels:
         - "[Jira: etcd]"
-      direction: 0
-    
-    - name:  etcdDisk
-      metricName : 99thEtcdDiskBackendCommitDurationSeconds
-      metric_of_interest: value
-      agg:
-        value: duration
-        agg_type: avg
-      labels:
-        - "[Jira: etcd]"
-      direction: 0
+      direction: 1
 
     - name: kubelet 
       metricName : kubeletCPU 
@@ -75,5 +65,5 @@ tests :
       agg: 
         value: cpu 
         agg_type: avg
-      direction: 0
+      direction: 1
 
