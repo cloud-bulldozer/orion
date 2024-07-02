@@ -1,4 +1,5 @@
 # pylint: disable=cyclic-import
+# pylint: disable = line-too-long
 """
 module for all utility functions orion uses
 """
@@ -9,6 +10,8 @@ import logging
 import os
 import re
 import sys
+import xml.etree.ElementTree as ET
+import xml.dom.minidom
 
 import yaml
 import pandas as pd
@@ -16,7 +19,7 @@ import pandas as pd
 import pyshorteners
 
 from pkg.logrus import SingletonLogger
-
+from pkg.types import Metrics
 
 # pylint: disable=too-many-locals
 def get_metric_data(ids, index, metrics, match):
@@ -35,6 +38,8 @@ def get_metric_data(ids, index, metrics, match):
     logger_instance= SingletonLogger(debug=logging.INFO).logger
     dataframe_list = []
     for metric in metrics:
+        labels=metric.pop("labels",None)
+        direction = int(metric.pop("direction",0))
         metric_name = metric["name"]
         logger_instance.info("Collecting %s", metric_name)
         metric_of_interest = metric["metric_of_interest"]
@@ -47,7 +52,11 @@ def get_metric_data(ids, index, metrics, match):
                 agg_name = agg_value + "_" + agg_type
                 cpu_df = match.convert_to_df(cpu, columns=["uuid", "timestamp", agg_name])
                 cpu_df= cpu_df.drop_duplicates(subset=['uuid'],keep='first')
-                cpu_df = cpu_df.rename(columns={agg_name: metric_name + "_" + agg_type})
+                metric_dataframe_name= f"{metric_name}_{agg_type}"
+                cpu_df = cpu_df.rename(columns={agg_name: metric_dataframe_name})
+                metric["labels"]=labels
+                metric["direction"]=direction
+                Metrics.metrics[metric_dataframe_name]=metric
                 dataframe_list.append(cpu_df)
                 logger_instance.debug(cpu_df)
 
@@ -63,8 +72,12 @@ def get_metric_data(ids, index, metrics, match):
                 podl_df = match.convert_to_df(
                     podl, columns=["uuid", "timestamp", metric_of_interest]
                 )
+                metric_dataframe_name=f"{metric_name}_{metric_of_interest}"
                 podl_df = podl_df.rename(
-                    columns={metric_of_interest: metric_name+"_"+metric_of_interest})
+                    columns={metric_of_interest: metric_dataframe_name})
+                metric["labels"]=labels
+                metric["direction"]=direction
+                Metrics.metrics[metric_dataframe_name]=metric
                 podl_df=podl_df.drop_duplicates()
                 dataframe_list.append(podl_df)
                 logger_instance.debug(podl_df)
@@ -273,3 +286,49 @@ def filter_metadata(uuid,match):
     no_blank_meta = {k: v for k, v in metadata.items() if v}
     logger_instance.debug('No blank metadata dict: ' + str(no_blank_meta))
     return no_blank_meta
+
+def json_to_junit(test_name, data_json):
+    """Convert json to junit format
+
+    Args:
+        test_name (_type_): _description_
+        data_json (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    testsuites = ET.Element("testsuites")
+    testsuite = ET.SubElement(
+        testsuites, "testsuite", name=f"{test_name} nightly compare"
+    )
+    failures_count = 0
+    test_count=0
+    for run in data_json:
+        run_data = {
+            str(key): str(value).lower()
+            for key, value in run.items()
+            if key in ["timestamp"]
+        }
+        for metric, value in run["metrics"].items():
+            test_count+=1
+            failure = "false"
+            if not value["percentage_change"] == 0:
+                failure = "true"
+                failures_count += 1
+            labels = Metrics.metrics[metric]["labels"]
+            label_string = " ".join(labels) if labels else ""
+            testcase = ET.SubElement(
+                testsuite,
+                "testcase",
+                name=f"{label_string} {metric} regression detection",
+                attrib=run_data,
+            )
+            if failure == "true":
+                failure_element = ET.SubElement(testcase, "failure")
+                failure_element.text = f"{metric} has a value of {value['value']:.2f} with a percentage change of {value['percentage_change']:.2f}% over the previous runs"
+    testsuite.set("failures", str(failures_count))
+    testsuite.set("tests", str(test_count))
+    xml_str = ET.tostring(testsuites, encoding="utf8", method="xml").decode()
+    dom = xml.dom.minidom.parseString(xml_str)
+    pretty_xml_as_string = dom.toprettyxml()
+    return pretty_xml_as_string

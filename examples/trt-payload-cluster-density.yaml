@@ -1,0 +1,79 @@
+tests :
+  - name : payload-cluster-density-v2
+    index: ospst-perf-scale-ci-*
+    benchmarkIndex: ospst-ripsaw-kube-burner*
+    metadata:
+      platform: AWS
+      clusterType: self-managed
+      masterNodesType: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType: m6a.xlarge
+      workerNodesCount: 6
+      benchmark.keyword: cluster-density-v2
+      ocpVersion: 4.17
+      networkType: OVNKubernetes
+
+    metrics : 
+    - name:  podReadyLatency
+      metricName: podLatencyQuantilesMeasurement
+      quantileName: Ready
+      metric_of_interest: P99
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: PerfScale]"
+      direction: 0
+
+    - name:  apiserverCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-kube-apiserver
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: kube-apiserver]"
+      direction: 0
+
+    - name:  ovnCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 0
+
+    - name:  etcdCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-etcd
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: etcd]"
+      direction: 0
+    
+    - name:  etcdDisk
+      metricName : 99thEtcdDiskBackendCommitDurationSeconds
+      metric_of_interest: value
+      agg:
+        value: duration
+        agg_type: avg
+      labels:
+        - "[Jira: etcd]"
+      direction: 0
+
+    - name: kubelet 
+      metricName : kubeletCPU 
+      metric_of_interest: value 
+      labels: 
+        - "[Jira: Node]" 
+      agg: 
+        value: cpu 
+        agg_type: avg
+      direction: 0
+

@@ -7,10 +7,9 @@ from fmatch.matcher import Matcher
 from pkg.algorithmFactory import AlgorithmFactory
 from pkg.logrus import SingletonLogger
 from pkg.utils import get_es_url, process_test
-from pkg.types import OptionMap
 import pkg.constants as cnsts
 
-def run():
+def run(**kwargs):
     """run method to start the tests
 
     Args:
@@ -22,9 +21,8 @@ def run():
     Returns:
         _type_: _description_
     """
-    optionMap= OptionMap.get_map()
     logger_instance = SingletonLogger(debug=logging.INFO).logger
-    data = optionMap["configMap"]
+    data = kwargs["configMap"]
 
     ES_URL = get_es_url(data)
     result_output = {}
@@ -36,23 +34,23 @@ def run():
             verify_certs=False,
         )
         result_dataframe = process_test(
-            test, match, optionMap["output_path"], optionMap["uuid"], optionMap["baseline"]
+            test, match, kwargs["save_data_path"], kwargs["uuid"], kwargs["baseline"]
         )
         if result_dataframe is None:
             return None
         result_dataframe = result_dataframe.reset_index(drop=True)
-        if optionMap["hunter_analyze"]:
+        if kwargs["hunter_analyze"]:
             algorithmFactory = AlgorithmFactory()
             algorithm = algorithmFactory.instantiate_algorithm(
-                cnsts.EDIVISIVE, match, result_dataframe, test
+                cnsts.EDIVISIVE, match, result_dataframe, test, kwargs
             )
-            testname, result_data = algorithm.output(optionMap["output_format"])
+            testname, result_data = algorithm.output(kwargs["output_format"])
             result_output[testname] = result_data
-        elif optionMap["anomaly_detection"]:
+        elif kwargs["anomaly_detection"]:
             algorithmFactory = AlgorithmFactory()
             algorithm = algorithmFactory.instantiate_algorithm(
-                cnsts.ISOLATION_FOREST, match, result_dataframe, test
+                cnsts.ISOLATION_FOREST, match, result_dataframe, test, kwargs
             )
-            testname, result_data = algorithm.output(optionMap["output_format"])
+            testname, result_data = algorithm.output(kwargs["output_format"])
             result_output[testname] = result_data
     return result_output
