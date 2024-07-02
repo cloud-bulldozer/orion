@@ -60,7 +60,6 @@ class EDivisive(Algorithm):
         self.dataframe["timestamp"] = pd.to_datetime(self.dataframe["timestamp"])
         self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int) // 10**9
         metrics = {column: Metric(value.get("direction",1), 1.0) for column,value in Metrics.metrics.items()}
-        print(metrics)
         data = {column: self.dataframe[column] for column in Metrics.metrics}
         attributes = {
             column: self.dataframe[column]
