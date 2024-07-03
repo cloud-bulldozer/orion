@@ -1,5 +1,5 @@
 # pylint: disable=cyclic-import
-# pylint: disable = line-too-long
+# pylint: disable = line-too-long, too-many-arguments
 """
 module for all utility functions orion uses
 """

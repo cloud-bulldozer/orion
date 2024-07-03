@@ -35,7 +35,12 @@ def run(**kwargs):
         )
         metrics_config={}
         result_dataframe = process_test(
-            test, match, kwargs["save_data_path"], kwargs["uuid"], kwargs["baseline"], metrics_config
+            test,
+            match,
+            kwargs["save_data_path"],
+            kwargs["uuid"],
+            kwargs["baseline"],
+            metrics_config
         )
         if result_dataframe is None:
             return None

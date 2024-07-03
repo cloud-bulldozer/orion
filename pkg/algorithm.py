@@ -6,7 +6,7 @@ class Algorithm(ABC):
     """Generic Algorithm class for algorithm factory
     """
 
-    def __init__(self, matcher, dataframe, test, options, metrics_config):
+    def __init__(self, matcher, dataframe, test, options, metrics_config): #pylint: disable = too-many-arguments
         self.matcher = matcher
         self.dataframe = dataframe
         self.test = test
