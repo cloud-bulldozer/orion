@@ -6,7 +6,6 @@ from hunter.report import Report, ReportType
 from hunter.series import Metric, Series
 from pkg.algorithm import Algorithm
 from pkg.utils import json_to_junit
-from pkg.types import Metrics
 
 class EDivisive(Algorithm):
     """Implementation of the EDivisive algorithm using hunter
@@ -24,7 +23,7 @@ class EDivisive(Algorithm):
         for index, entry in enumerate(dataframe_json):
             entry["metrics"] = {
                 key: {"value": entry.pop(key), "percentage_change": 0}
-                for key in Metrics.metrics
+                for key in self.metrics_config
             }
             entry["is_changepoint"] = False
 
@@ -35,7 +34,7 @@ class EDivisive(Algorithm):
                     (change_point.stats.mean_2 - change_point.stats.mean_1)
                     / change_point.stats.mean_1
                 ) * 100
-                if percentage_change * Metrics.metrics[key]["direction"] > 0 or Metrics.metrics[key]["direction"]==0:
+                if percentage_change * self.metrics_config[key]["direction"] > 0 or self.metrics_config[key]["direction"]==0:
                     dataframe_json[index]["metrics"][key][
                         "percentage_change"
                     ] = percentage_change
@@ -53,14 +52,14 @@ class EDivisive(Algorithm):
     def output_junit(self):
         test_name, data_json = self.output_json()
         data_json=json.loads(data_json)
-        data_junit = json_to_junit(test_name=test_name, data_json=data_json)
+        data_junit = json_to_junit(test_name=test_name, data_json=data_json, metrics_config=self.metrics_config)
         return test_name, data_junit
 
     def _analyze(self):
         self.dataframe["timestamp"] = pd.to_datetime(self.dataframe["timestamp"])
         self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int) // 10**9
-        metrics = {column: Metric(value.get("direction",1), 1.0) for column,value in Metrics.metrics.items()}
-        data = {column: self.dataframe[column] for column in Metrics.metrics}
+        metrics = {column: Metric(value.get("direction",1), 1.0) for column,value in self.metrics_config.items()}
+        data = {column: self.dataframe[column] for column in self.metrics_config}
         attributes = {
             column: self.dataframe[column]
             for column in self.dataframe.columns
@@ -77,12 +76,13 @@ class EDivisive(Algorithm):
         change_points = series.analyze().change_points_by_time
         # filter by direction
         for change_point_group in change_points:
-            for i in range(len(change_point_group.changes)-1,-1,-1):
-                if Metrics.metrics[change_point_group.changes[i].metric]["direction"] == 1 and  change_point_group.changes[i].stats.mean_1> change_point_group.changes[i].stats.mean_2:
-                    del change_point_group.changes[i]
-            for i in range(len(change_point_group.changes)-1,-1,-1):
-                if Metrics.metrics[change_point_group.changes[i].metric]["direction"] == -1 and  change_point_group.changes[i].stats.mean_1< change_point_group.changes[i].stats.mean_2:
-                    del change_point_group.changes[i]
+            change_point_group.changes = [
+                change for change in change_point_group.changes
+                if not (
+                    (self.metrics_config[change.metric]["direction"] == 1 and change.stats.mean_1 > change.stats.mean_2) or
+                    (self.metrics_config[change.metric]["direction"] == -1 and change.stats.mean_1 < change.stats.mean_2)
+                )
+            ]
 
         for i in range(len(change_points)-1,-1,-1):
             if len(change_points[i].changes) == 0:

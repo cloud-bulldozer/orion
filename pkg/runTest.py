@@ -33,8 +33,9 @@ def run(**kwargs):
             ES_URL=ES_URL,
             verify_certs=False,
         )
+        metrics_config={}
         result_dataframe = process_test(
-            test, match, kwargs["save_data_path"], kwargs["uuid"], kwargs["baseline"]
+            test, match, kwargs["save_data_path"], kwargs["uuid"], kwargs["baseline"], metrics_config
         )
         if result_dataframe is None:
             return None
@@ -42,14 +43,14 @@ def run(**kwargs):
         if kwargs["hunter_analyze"]:
             algorithmFactory = AlgorithmFactory()
             algorithm = algorithmFactory.instantiate_algorithm(
-                cnsts.EDIVISIVE, match, result_dataframe, test, kwargs
+                cnsts.EDIVISIVE, match, result_dataframe, test, kwargs, metrics_config
             )
             testname, result_data = algorithm.output(kwargs["output_format"])
             result_output[testname] = result_data
         elif kwargs["anomaly_detection"]:
             algorithmFactory = AlgorithmFactory()
             algorithm = algorithmFactory.instantiate_algorithm(
-                cnsts.ISOLATION_FOREST, match, result_dataframe, test, kwargs
+                cnsts.ISOLATION_FOREST, match, result_dataframe, test, kwargs, metrics_config
             )
             testname, result_data = algorithm.output(kwargs["output_format"])
             result_output[testname] = result_data

@@ -19,10 +19,9 @@ import pandas as pd
 import pyshorteners
 
 from pkg.logrus import SingletonLogger
-from pkg.types import Metrics
 
 # pylint: disable=too-many-locals
-def get_metric_data(ids, index, metrics, match):
+def get_metric_data(ids, index, metrics, match, metrics_config):
     """Gets details metrics basked on metric yaml list
 
     Args:
@@ -56,7 +55,7 @@ def get_metric_data(ids, index, metrics, match):
                 cpu_df = cpu_df.rename(columns={agg_name: metric_dataframe_name})
                 metric["labels"]=labels
                 metric["direction"]=direction
-                Metrics.metrics[metric_dataframe_name]=metric
+                metrics_config[metric_dataframe_name]=metric
                 dataframe_list.append(cpu_df)
                 logger_instance.debug(cpu_df)
 
@@ -77,7 +76,7 @@ def get_metric_data(ids, index, metrics, match):
                     columns={metric_of_interest: metric_dataframe_name})
                 metric["labels"]=labels
                 metric["direction"]=direction
-                Metrics.metrics[metric_dataframe_name]=metric
+                metrics_config[metric_dataframe_name]=metric
                 podl_df=podl_df.drop_duplicates()
                 dataframe_list.append(podl_df)
                 logger_instance.debug(podl_df)
@@ -187,7 +186,7 @@ def get_build_urls(index, uuids,match):
     return buildUrls
 
 
-def process_test(test, match, output, uuid, baseline):
+def process_test(test, match, output, uuid, baseline, metrics_config):
     """generate the dataframe for the test given
 
     Args:
@@ -225,7 +224,7 @@ def process_test(test, match, output, uuid, baseline):
     ids = get_ids_from_index(metadata, fingerprint_index, uuids, match, baseline)
 
     metrics = test["metrics"]
-    dataframe_list = get_metric_data(ids, fingerprint_index, metrics, match)
+    dataframe_list = get_metric_data(ids, fingerprint_index, metrics, match, metrics_config)
 
     for i, df in enumerate(dataframe_list):
         if i != 0 and ('timestamp' in df.columns):
@@ -287,7 +286,7 @@ def filter_metadata(uuid,match):
     logger_instance.debug('No blank metadata dict: ' + str(no_blank_meta))
     return no_blank_meta
 
-def json_to_junit(test_name, data_json):
+def json_to_junit(test_name, data_json, metrics_config):
     """Convert json to junit format
 
     Args:
@@ -315,7 +314,7 @@ def json_to_junit(test_name, data_json):
             if not value["percentage_change"] == 0:
                 failure = "true"
                 failures_count += 1
-            labels = Metrics.metrics[metric]["labels"]
+            labels = metrics_config[metric]["labels"]
             label_string = " ".join(labels) if labels else ""
             testcase = ET.SubElement(
                 testsuite,

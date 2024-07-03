@@ -9,7 +9,6 @@ from tabulate import tabulate
 from pkg.algorithm import Algorithm
 from pkg.logrus import SingletonLogger
 from pkg.utils import json_to_junit
-from pkg.types import Metrics
 
 
 class IsolationForestWeightedMean(Algorithm):
@@ -23,14 +22,14 @@ class IsolationForestWeightedMean(Algorithm):
         dataframe = self.dataframe
         dataframe['timestamp'] = dataframe['timestamp'].apply(lambda x: int(pd.to_datetime(x).timestamp()))
         dataframe, anomalies_df = self.analyze(dataframe)
-        metric_columns = Metrics.metrics.keys()
+        metric_columns = self.metrics_config.keys()
         dataframe_json = dataframe.to_json(orient="records")
         dataframe_json = json.loads(dataframe_json)
         for _, entry in enumerate(dataframe_json):
             uuid = entry["uuid"]
             entry["metrics"] = {
                 key: {"value": entry.pop(key), "percentage_change": 0}
-                for key in Metrics.metrics
+                for key in self.metrics_config
             }
             entry["is_anomalypoint"] = False
 
@@ -56,7 +55,7 @@ class IsolationForestWeightedMean(Algorithm):
     def output_junit(self):
         test_name, data_json = self.output_json()
         data_json=json.loads(data_json)
-        data_junit = json_to_junit(test_name=test_name, data_json=data_json)
+        data_junit = json_to_junit(test_name=test_name, data_json=data_json, metrics_config=self.metrics_config)
         return test_name, data_junit
 
     def analyze(self, dataframe: pd.DataFrame):
@@ -70,7 +69,7 @@ class IsolationForestWeightedMean(Algorithm):
         """
         logger_instance = SingletonLogger(debug=logging.INFO).logger
         logger_instance.info("Starting analysis using Isolation Forest")
-        metric_columns = Metrics.metrics.keys()
+        metric_columns = self.metrics_config.keys()
         model = IsolationForest(contamination="auto", random_state=42)
         dataframe_with_metrics = dataframe[metric_columns]
         model = IsolationForest(contamination="auto", random_state=42)
@@ -100,7 +99,7 @@ class IsolationForestWeightedMean(Algorithm):
                         / moving_averages.at[idx, feature]
                     ) * 100
                     if abs(pct_change) > (10 if self.options.get("min_anomaly_percent",None) is None else int(self.options.get("min_anomaly_percent",None))):
-                        if (pct_change * Metrics.metrics[feature]["direction"] > 0) or Metrics.metrics[feature]["direction"]==0:
+                        if (pct_change * self.metrics_config[feature]["direction"] > 0) or self.metrics_config[feature]["direction"]==0:
                             anomaly_check_flag = 1
                             dataframe.at[idx, f"{feature}_pct_change"] = pct_change
                 if anomaly_check_flag == 1:

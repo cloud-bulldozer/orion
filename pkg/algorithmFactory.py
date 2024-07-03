@@ -8,7 +8,7 @@ import pkg.constants as cnsts
 class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-arguments
     """Algorithm Factory to choose algorithm
     """
-    def instantiate_algorithm(self, algorithm, matcher, dataframe, test, options):
+    def instantiate_algorithm(self, algorithm, matcher, dataframe, test, options, metrics_config):
         """Algorithm instantiation method
 
         Args:
@@ -24,7 +24,7 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-argu
             Algorithm : Algorithm
         """
         if algorithm == cnsts.EDIVISIVE:
-            return EDivisive(matcher, dataframe, test, options)
+            return EDivisive(matcher, dataframe, test, options, metrics_config)
         if algorithm == cnsts.ISOLATION_FOREST:
-            return IsolationForestWeightedMean(matcher, dataframe, test, options)
+            return IsolationForestWeightedMean(matcher, dataframe, test, options, metrics_config)
         raise ValueError("Invalid algorithm called")
