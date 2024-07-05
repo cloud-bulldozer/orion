@@ -2,6 +2,7 @@
 Module to run orion in daemon mode
 """
 
+import json
 import logging
 import os
 
@@ -10,7 +11,6 @@ from jinja2 import Template
 import pkg_resources
 import yaml
 from pkg.logrus import SingletonLogger
-from pkg.types import OptionMap
 import pkg.constants as cnsts
 
 from . import runTest
@@ -39,7 +39,7 @@ async def daemon_changepoint(
     config_file_name=test_name+".yml"
     option_arguments = {
         "config": config_file_name,
-        "output_path": "output.csv",
+        "save_data_path": "output.csv",
         "hunter_analyze": True,
         "anomaly_detection": False,
         "output_format": cnsts.JSON,
@@ -50,8 +50,8 @@ async def daemon_changepoint(
     filter_changepoints = (
         True if filter_changepoints == "true" else False  # pylint: disable = R1719
     )
-    OptionMap.set_map(option_arguments)
-    result = runTest.run()
+    result = runTest.run(**option_arguments)
+    result = {k:json.loads(v) for k,v in result.items()}
     if result is None:
         return {"Error":"No UUID with given metadata"}
     if filter_changepoints:
@@ -108,7 +108,7 @@ async def daemon_anomaly( # pylint: disable = R0913
     config_file_name=test_name+".yml"
     option_arguments = {
         "config": config_file_name,
-        "output_path": "output.csv",
+        "save_data_path": "output.csv",
         "hunter_analyze": False,
         "anomaly_detection": True,
         "output_format": cnsts.JSON,
@@ -121,8 +121,8 @@ async def daemon_anomaly( # pylint: disable = R0913
     filter_points = (
         True if filter_points == "true" else False  # pylint: disable = R1719
     )
-    OptionMap.set_map(option_arguments)
-    result = runTest.run()
+    result = runTest.run(**option_arguments)
+    result = {k:json.loads(v) for k,v in result.items()}
     if result is None:
         return {"Error":"No UUID with given metadata"}
     if filter_points:

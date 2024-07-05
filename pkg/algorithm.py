@@ -6,10 +6,12 @@ class Algorithm(ABC):
     """Generic Algorithm class for algorithm factory
     """
 
-    def __init__(self, matcher, dataframe, test):
+    def __init__(self, matcher, dataframe, test, options, metrics_config): #pylint: disable = too-many-arguments
         self.matcher = matcher
         self.dataframe = dataframe
         self.test = test
+        self.options = options
+        self.metrics_config = metrics_config
 
     @abstractmethod
     def output_json(self):
@@ -18,6 +20,10 @@ class Algorithm(ABC):
     @abstractmethod
     def output_text(self):
         """Outputs the data in text/tabular format
+        """
+
+    def output_junit(self):
+        """Outputs the data in junit format
         """
 
     def output(self,output_format):
@@ -36,4 +42,6 @@ class Algorithm(ABC):
             return self.output_json()
         if output_format==cnsts.TEXT:
             return self.output_text()
+        if output_format==cnsts.JUNIT:
+            return self.output_junit()
         raise ValueError("Unsupported output format {output_format} selected")

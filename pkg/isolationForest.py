@@ -1,4 +1,4 @@
-#pylint: disable = too-many-locals, line-too-long
+# pylint: disable = too-many-locals, line-too-long
 """The implementation module for Isolation forest and weighted mean"""
 import json
 import logging
@@ -8,7 +8,8 @@ import pandas as pd
 from tabulate import tabulate
 from pkg.algorithm import Algorithm
 from pkg.logrus import SingletonLogger
-from pkg.types import OptionMap
+from pkg.utils import json_to_junit
+
 
 class IsolationForestWeightedMean(Algorithm):
     """Isolation forest with weighted mean
@@ -19,20 +20,16 @@ class IsolationForestWeightedMean(Algorithm):
 
     def output_json(self):
         dataframe = self.dataframe
+        dataframe['timestamp'] = dataframe['timestamp'].apply(lambda x: int(pd.to_datetime(x).timestamp()))
         dataframe, anomalies_df = self.analyze(dataframe)
-        metric_columns = [
-            column
-            for column in dataframe.columns
-            if column not in ["uuid", "buildUrl", "timestamp"]
-        ]
+        metric_columns = self.metrics_config.keys()
         dataframe_json = dataframe.to_json(orient="records")
         dataframe_json = json.loads(dataframe_json)
-
         for _, entry in enumerate(dataframe_json):
             uuid = entry["uuid"]
             entry["metrics"] = {
                 key: {"value": entry.pop(key), "percentage_change": 0}
-                for key in entry.keys() - {"uuid", "timestamp", "buildUrl"}
+                for key in self.metrics_config
             }
             entry["is_anomalypoint"] = False
 
@@ -44,7 +41,7 @@ class IsolationForestWeightedMean(Algorithm):
                     )
                     if int(row["is_anomaly"].iloc[0]) == -1:
                         entry["is_anomalypoint"] = True
-        return self.test["name"], dataframe_json
+        return self.test["name"], json.dumps(dataframe_json, indent=2)
 
     def output_text(self):
         dataframe = self.dataframe
@@ -54,6 +51,12 @@ class IsolationForestWeightedMean(Algorithm):
         tabulated_df = tabulate(data_list, headers=column_names)
         formatted_table = self.format_dataframe(tabulated_df, anomalies_df, dataframe)
         return self.test["name"], formatted_table
+
+    def output_junit(self):
+        test_name, data_json = self.output_json()
+        data_json=json.loads(data_json)
+        data_junit = json_to_junit(test_name=test_name, data_json=data_json, metrics_config=self.metrics_config)
+        return test_name, data_junit
 
     def analyze(self, dataframe: pd.DataFrame):
         """Analyzing the data
@@ -66,11 +69,7 @@ class IsolationForestWeightedMean(Algorithm):
         """
         logger_instance = SingletonLogger(debug=logging.INFO).logger
         logger_instance.info("Starting analysis using Isolation Forest")
-        metric_columns = [
-            column
-            for column in dataframe.columns
-            if column not in ["uuid", "buildUrl", "timestamp"]
-        ]
+        metric_columns = self.metrics_config.keys()
         model = IsolationForest(contamination="auto", random_state=42)
         dataframe_with_metrics = dataframe[metric_columns]
         model = IsolationForest(contamination="auto", random_state=42)
@@ -83,8 +82,7 @@ class IsolationForestWeightedMean(Algorithm):
         dataframe["anomaly_score"] = anomaly_scores
 
         # Calculate moving average for each metric
-        options=OptionMap.get_map()
-        window_size = (5 if options.get("anomaly_window",None) is None else int(OptionMap.get_option("anomaly_window")))
+        window_size = (5 if self.options.get("anomaly_window",None) is None else int(self.options.get("anomaly_window",None)))
         moving_averages = dataframe_with_metrics.rolling(window=window_size).mean()
 
         # Initialize percentage change columns for all metrics
@@ -100,9 +98,10 @@ class IsolationForestWeightedMean(Algorithm):
                         (row[feature] - moving_averages.at[idx, feature])
                         / moving_averages.at[idx, feature]
                     ) * 100
-                    if abs(pct_change) > (10 if options.get("min_anomaly_percent",None) is None else int(OptionMap.get_option("min_anomaly_percent"))):
-                        anomaly_check_flag = 1
-                        dataframe.at[idx, f"{feature}_pct_change"] = pct_change
+                    if abs(pct_change) > (10 if self.options.get("min_anomaly_percent",None) is None else int(self.options.get("min_anomaly_percent",None))):
+                        if (pct_change * self.metrics_config[feature]["direction"] > 0) or self.metrics_config[feature]["direction"]==0:
+                            anomaly_check_flag = 1
+                            dataframe.at[idx, f"{feature}_pct_change"] = pct_change
                 if anomaly_check_flag == 1:
                     dataframe.at[idx, "is_anomaly"] = -1
                 else:

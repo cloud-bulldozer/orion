@@ -11,7 +11,6 @@ import uvicorn
 from pkg.logrus import SingletonLogger
 from pkg.runTest import run
 from pkg.utils import load_config
-from pkg.types import OptionMap
 import pkg.constants as cnsts
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
@@ -71,7 +70,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @cli.command(name="cmd")
 @click.option("--config", default="config.yaml", help="Path to the configuration file")
 @click.option(
-    "--output-path", default="output.csv", help="Path to save the output csv file"
+    "--save-data-path", default="data.csv", help="Path to save the output file"
 )
 @click.option("--debug", default=False, is_flag=True, help="log level")
 @click.option(
@@ -93,10 +92,11 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option(
     "-o",
     "--output-format",
-    type=click.Choice([cnsts.JSON, cnsts.TEXT]),
+    type=click.Choice([cnsts.JSON, cnsts.TEXT, cnsts.JUNIT]),
     default=cnsts.TEXT,
-    help="Choose output format (json or text)",
+    help="Choose output format (json, text or junit)",
 )
+@click.option("--save-output-path", default="output.txt", help="path to save output file with regressions")
 @click.option("--uuid", default="", help="UUID to use as base for comparisons")
 @click.option(
     "--baseline", default="", help="Baseline UUID(s) to to compare against uuid"
@@ -109,8 +109,7 @@ def cmd_analysis(**kwargs):
     logger_instance = SingletonLogger(debug=level).logger
     logger_instance.info("🏹 Starting Orion in command-line mode")
     kwargs["configMap"] = load_config(kwargs["config"])
-    OptionMap.set_map(kwargs)
-    output = run()
+    output = run(**kwargs)
     if output is None:
         logger_instance.error("Terminating test")
         sys.exit(0)
@@ -118,6 +117,11 @@ def cmd_analysis(**kwargs):
         print(test_name)
         print("=" * len(test_name))
         print(result_table)
+
+        output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{kwargs['save_output_path'].split('.')[1]}"
+        with open(output_file_name, 'w', encoding="utf-8") as file:
+            file.write(str(result_table))
+
 
 
 @cli.command(name="daemon")
