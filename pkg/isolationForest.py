@@ -7,7 +7,7 @@ from sklearn.ensemble import IsolationForest
 import pandas as pd
 from tabulate import tabulate
 from pkg.algorithm import Algorithm
-from pkg.logrus import SingletonLogger
+from fmatch.logrus import SingletonLogger
 from pkg.utils import json_to_junit
 
 
@@ -73,7 +73,7 @@ class IsolationForestWeightedMean(Algorithm):
         Returns:
             pd.Dataframe, pd.Dataframe: _description_
         """
-        logger_instance = SingletonLogger(debug=logging.INFO).logger
+        logger_instance = SingletonLogger.getLogger("Orion")
         logger_instance.info("Starting analysis using Isolation Forest")
         metric_columns = self.metrics_config.keys()
         model = IsolationForest(contamination="auto", random_state=42)
