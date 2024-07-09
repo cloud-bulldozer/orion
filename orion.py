@@ -101,7 +101,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option(
     "--baseline", default="", help="Baseline UUID(s) to to compare against uuid"
 )
-@click.option("--lookback", help="Get data from last X days amd Y hours. Format in XdYh")
+@click.option("--lookback", help="Get data from last X days and Y hours. Format in XdYh")
 @click.option("--convert-tinyurl", is_flag=True, help="Convert buildUrls to tiny url format for better formatting")
 def cmd_analysis(**kwargs):
     """
@@ -109,7 +109,6 @@ def cmd_analysis(**kwargs):
     """
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
     logger_instance = SingletonLogger(debug=level, name="Orion")
-    logger_instance= SingletonLogger.getLogger("Orion")
     logger_instance.info("🏹 Starting Orion in command-line mode")
     kwargs["configMap"] = load_config(kwargs["config"])
     output = run(**kwargs)
