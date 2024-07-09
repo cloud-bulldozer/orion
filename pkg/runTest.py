@@ -2,11 +2,9 @@
 run test
 """
 
-import logging
 from fmatch.matcher import Matcher
-import pandas as pd
+from fmatch.logrus import SingletonLogger
 from pkg.algorithmFactory import AlgorithmFactory
-from pkg.logrus import SingletonLogger
 import pkg.constants as cnsts
 from pkg.utils import get_es_url, process_test, get_subtracted_timestamp
 
@@ -24,7 +22,7 @@ def run(**kwargs):
     Returns:
         _type_: _description_
     """
-    logger_instance = SingletonLogger(debug=logging.INFO).logger
+    logger_instance = SingletonLogger.getLogger("Orion")
     data = kwargs["configMap"]
 
     ES_URL = get_es_url(data)
@@ -37,22 +35,21 @@ def run(**kwargs):
             verify_certs=False,
         )
         metrics_config={}
+        start_timestamp=""
+        if kwargs["lookback"]:
+            start_timestamp = get_subtracted_timestamp(kwargs["lookback"])
         result_dataframe = process_test(
             test,
             match,
             kwargs["save_data_path"],
             kwargs["uuid"],
             kwargs["baseline"],
-            metrics_config
+            metrics_config,
+            start_timestamp,
+            kwargs["convert_tinyurl"]
         )
         if result_dataframe is None:
             return None
-        if kwargs["lookback"]:
-            start_timestamp = get_subtracted_timestamp(kwargs["lookback"])
-            result_dataframe['timestamp'] = pd.to_datetime(result_dataframe['timestamp'])
-            result_dataframe=result_dataframe[result_dataframe["timestamp"] > start_timestamp]
-        result_dataframe = result_dataframe.reset_index(drop=True)
-        algorithm_name=None
         if kwargs["hunter_analyze"]:
             algorithmFactory = AlgorithmFactory()
             algorithm = algorithmFactory.instantiate_algorithm(

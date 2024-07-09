@@ -1,13 +1,12 @@
 # pylint: disable = too-many-locals, line-too-long
 """The implementation module for Isolation forest and weighted mean"""
 import json
-import logging
 from typing import List
 from sklearn.ensemble import IsolationForest
 import pandas as pd
 from tabulate import tabulate
-from pkg.algorithm import Algorithm
 from fmatch.logrus import SingletonLogger
+from pkg.algorithm import Algorithm
 from pkg.utils import json_to_junit
 
 
@@ -51,12 +50,6 @@ class IsolationForestWeightedMean(Algorithm):
         tabulated_df = tabulate(data_list, headers=column_names)
         formatted_table = self.format_dataframe(tabulated_df, anomalies_df, dataframe)
         return self.test["name"], formatted_table
-
-    def output_junit(self):
-        test_name, data_json = self.output_json()
-        data_json=json.loads(data_json)
-        data_junit = json_to_junit(test_name=test_name, data_json=data_json)
-        return test_name, data_junit
 
     def output_junit(self):
         test_name, data_json = self.output_json()

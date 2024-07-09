@@ -6,7 +6,6 @@ module for all utility functions orion uses
 # pylint: disable = import-error
 
 from functools import reduce
-import logging
 import os
 import re
 import sys
@@ -19,7 +18,7 @@ import pandas as pd
 
 import pyshorteners
 
-from pkg.logrus import SingletonLogger
+from fmatch.logrus import SingletonLogger
 
 # pylint: disable=too-many-locals
 def get_metric_data(ids, index, metrics, match, metrics_config):
@@ -35,7 +34,7 @@ def get_metric_data(ids, index, metrics, match, metrics_config):
     Returns:
         dataframe_list: dataframe of the all metrics
     """
-    logger_instance= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger.getLogger("Orion")
     dataframe_list = []
     for metric in metrics:
         labels=metric.pop("labels",None)
@@ -99,7 +98,7 @@ def get_metadata(test):
     Returns:
         dict: dictionary of the metadata
     """
-    logger_instance= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger.getLogger("Orion")
     metadata = test["metadata"]
     metadata["ocpVersion"] = str(metadata["ocpVersion"])
     logger_instance.debug("metadata" + str(metadata))
@@ -116,7 +115,7 @@ def load_config(config):
     Returns:
         dict: dictionary of the config file
     """
-    logger_instance= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger.getLogger("Orion")
     try:
         with open(config, "r", encoding="utf-8") as file:
             data = yaml.safe_load(file)
@@ -140,7 +139,7 @@ def get_es_url(data):
     Returns:
         str: es url
     """
-    logger_instance= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger.getLogger("Orion")
     if "ES_SERVER" in data.keys():
         return data["ES_SERVER"]
     if "ES_SERVER" in os.environ:
@@ -187,7 +186,7 @@ def get_build_urls(index, uuids,match):
     return buildUrls
 
 
-def process_test(test, match, output, uuid, baseline, metrics_config):
+def process_test(test, match, output, uuid, baseline, metrics_config, start_timestamp, convert_tinyurl):
     """generate the dataframe for the test given
 
     Args:
@@ -199,7 +198,7 @@ def process_test(test, match, output, uuid, baseline, metrics_config):
     Returns:
         _type_: merged dataframe
     """
-    logger_instance= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger.getLogger("Orion")
     benchmarkIndex=test['benchmarkIndex']
     fingerprint_index=test['index']
     if uuid in ('', None):
@@ -207,13 +206,10 @@ def process_test(test, match, output, uuid, baseline, metrics_config):
     else:
         metadata = filter_metadata(uuid,match)
     logger_instance.info("The test %s has started", test["name"])
-    runs = match.get_uuid_by_metadata(metadata)
+    runs = match.get_uuid_by_metadata(metadata, lookback_date=start_timestamp)
     uuids = [run["uuid"] for run in runs]
     buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
     if baseline in ('', None):
-        runs = match.get_uuid_by_metadata(metadata)
-        uuids = [run["uuid"] for run in runs]
-        buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
         if len(uuids) == 0:
             logger_instance.error("No UUID present for given metadata")
             return None
@@ -237,7 +233,8 @@ def process_test(test, match, output, uuid, baseline, metrics_config):
     )
     shortener = pyshorteners.Shortener(timeout=10)
     merged_df["buildUrl"] = merged_df["uuid"].apply(
-            lambda uuid: shortener.tinyurl.short(buildUrls[uuid]) #pylint: disable = cell-var-from-loop
+            lambda uuid: shortener.tinyurl.short(buildUrls[uuid])
+            if convert_tinyurl else buildUrls[uuid] #pylint: disable = cell-var-from-loop
         )
     output_file_path = output.split(".")[0] + "-" + test["name"] + ".csv"
     match.save_results(merged_df, csv_file_path=output_file_path)
@@ -254,7 +251,7 @@ def filter_metadata(uuid,match):
     Returns:
         dict: dictionary of the metadata
     """
-    logger_instance= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger.getLogger("Orion")
     test = match.get_metadata_by_uuid(uuid)
     metadata = {
         'platform': '', 
@@ -342,7 +339,7 @@ def get_subtracted_timestamp(time_duration: str) -> datetime:
     Returns:
         datetime: return datetime of given timegap from now
     """
-    logger_instance= SingletonLogger(debug=logging.INFO).logger
+    logger_instance= SingletonLogger.getLogger("Orion")
     reg_ex = re.match(r'^(?:(\d+)d)?(?:(\d+)h)?$', time_duration)
     if not reg_ex:
         logger_instance.error("Wrong format for time duration, please provide in XdYh")
