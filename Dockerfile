@@ -18,13 +18,13 @@ RUN apt-get update --assume-yes && \
 
 ENV PATH="~/bin:$PATH"
 
-RUN python -m venv venv
-
 ADD . orion/
 
-RUN . venv/bin/activate && \
-    cd orion \
+RUN cd orion \
     pip install setuptools && \
     pip install -r requirements.txt && \
     python setup.py install && \
+    pip install . && \
     ln -s ../venv/bin/orion ~/bin
+
+CMD orion
