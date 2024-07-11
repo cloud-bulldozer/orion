@@ -2,13 +2,13 @@
 This is the cli file for orion, tool to detect regressions using hunter
 """
 
-# pylint: disable = import-error, line-too-long
+# pylint: disable = import-error, line-too-long, no-member
 import logging
 import sys
 import warnings
 import click
 import uvicorn
-from pkg.logrus import SingletonLogger
+from fmatch.logrus import SingletonLogger
 from pkg.runTest import run
 from pkg.utils import load_config
 import pkg.constants as cnsts
@@ -101,12 +101,14 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option(
     "--baseline", default="", help="Baseline UUID(s) to to compare against uuid"
 )
+@click.option("--lookback", help="Get data from last X days and Y hours. Format in XdYh")
+@click.option("--convert-tinyurl", is_flag=True, help="Convert buildUrls to tiny url format for better formatting")
 def cmd_analysis(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
     """
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
-    logger_instance = SingletonLogger(debug=level).logger
+    logger_instance = SingletonLogger(debug=level, name="Orion")
     logger_instance.info("🏹 Starting Orion in command-line mode")
     kwargs["configMap"] = load_config(kwargs["config"])
     output = run(**kwargs)
@@ -133,7 +135,7 @@ def rundaemon(debug, port):
     \b
     """
     level = logging.DEBUG if debug else logging.INFO
-    logger_instance = SingletonLogger(debug=level).logger
+    logger_instance = SingletonLogger(debug=level, name='Orion')
     logger_instance.info("🏹 Starting Orion in Daemon mode")
     uvicorn.run("pkg.daemon:app", port=port)
 

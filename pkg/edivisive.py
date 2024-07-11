@@ -7,6 +7,8 @@ from hunter.series import Metric, Series
 from pkg.algorithm import Algorithm
 from pkg.utils import json_to_junit
 
+
+
 class EDivisive(Algorithm):
     """Implementation of the EDivisive algorithm using hunter
 

@@ -3,29 +3,30 @@ Module to run orion in daemon mode
 """
 
 import json
-import logging
 import os
 
 from fastapi import FastAPI, HTTPException
 from jinja2 import Template
 import pkg_resources
 import yaml
-from pkg.logrus import SingletonLogger
+from fmatch.logrus import SingletonLogger
 import pkg.constants as cnsts
 
 from . import runTest
 
 app = FastAPI()
-logger_instance = SingletonLogger(debug=logging.INFO).logger
+logger_instance = SingletonLogger.getLogger("Orion")
 
 
 @app.get("/daemon/changepoint")
-async def daemon_changepoint(
+async def daemon_changepoint( # pylint: disable = R0913
     version: str = "4.17",
     uuid: str = "",
     baseline: str = "",
     filter_changepoints="",
     test_name="small-scale-cluster-density",
+    lookback=None,
+    convert_tinyurl="False",
 ):
     """starts listening on port 8000 on url /daemon
 
@@ -44,8 +45,10 @@ async def daemon_changepoint(
         "anomaly_detection": False,
         "output_format": cnsts.JSON,
         "uuid": uuid,
+        "lookback":lookback,
         "baseline": baseline,
         "configMap": render_template(config_file_name, parameters),
+        "convert_tinyurl": convert_tinyurl.lower() not in "false",
     }
     filter_changepoints = (
         True if filter_changepoints == "true" else False  # pylint: disable = R1719
@@ -94,7 +97,9 @@ async def daemon_anomaly( # pylint: disable = R0913
     filter_points="",
     test_name="small-scale-cluster-density",
     anomaly_window=5,
-    min_anomaly_percent=10
+    min_anomaly_percent=10,
+    lookback=None,
+    convert_tinyurl="False",
 ):
     """starts listening on port 8000 on url /daemon
 
@@ -113,10 +118,12 @@ async def daemon_anomaly( # pylint: disable = R0913
         "anomaly_detection": True,
         "output_format": cnsts.JSON,
         "uuid": uuid,
+        "lookback":lookback,
         "baseline": baseline,
         "configMap": render_template(config_file_name, parameters),
         "anomaly_window": int(anomaly_window),
-        "min_anomaly_percent":int(min_anomaly_percent)
+        "min_anomaly_percent":int(min_anomaly_percent),
+        "convert_tinyurl": convert_tinyurl.lower() not in "false",
     }
     filter_points = (
         True if filter_points == "true" else False  # pylint: disable = R1719

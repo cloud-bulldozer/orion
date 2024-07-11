@@ -123,6 +123,8 @@ Additionally, users can specify a custom path for the output CSV file using the 
 
 Orion now supports anomaly detection for your data. Use the ```--anomaly-detection``` command to start the anomaly detection process.
 
+You can now constrain your look-back period using the ```--lookback``` option. The format for look-back is ```XdYh```, where X represents the number of days and Y represents the number of hours.
+
 **_NOTE:_**  The ```--hunter-analyze``` and ```--anomaly-detection``` flags are mutually exclusive. They cannot be used together because they represent different algorithms designed for distinct use cases.
 
 ### Daemon mode
