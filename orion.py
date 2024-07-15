@@ -12,6 +12,7 @@ from fmatch.logrus import SingletonLogger
 from pkg.runTest import run
 from pkg.utils import load_config
 import pkg.constants as cnsts
+from typing import Any
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 warnings.filterwarnings(
@@ -26,7 +27,7 @@ class MutuallyExclusiveOption(click.Option):
         click (Option): _description_
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: tuple, **kwargs: dict[str, dict]) -> None:
         self.mutually_exclusive = set(kwargs.pop("mutually_exclusive", []))
         help = kwargs.get("help", "")  # pylint: disable=redefined-builtin
         if self.mutually_exclusive:
@@ -46,7 +47,7 @@ class MutuallyExclusiveOption(click.Option):
         return super().handle_parse_result(ctx, opts, args)
 
 
-def validate_anomaly_options(ctx, param, value): # pylint: disable = W0613
+def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable = W0613
     """ validate options so that can only be used with certain flags
     """
     if value or (
@@ -103,8 +104,12 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 )
 @click.option("--lookback", help="Get data from last X days and Y hours. Format in XdYh")
 @click.option("--convert-tinyurl", is_flag=True, help="Convert buildUrls to tiny url format for better formatting")
+<<<<<<< HEAD
 @click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
 def cmd_analysis(**kwargs):
+=======
+def cmd_analysis(**kwargs: dict[str, dict]) -> None:
+>>>>>>> 3488c73 (added typing)
     """
     Orion runs on command line mode, and helps in detecting regressions
     """
@@ -130,7 +135,7 @@ def cmd_analysis(**kwargs):
 @cli.command(name="daemon")
 @click.option("--debug", default=False, is_flag=True, help="log level")
 @click.option("--port", default=8080, help="set port")
-def rundaemon(debug, port):
+def rundaemon(debug: bool, port: int):
     """
     Orion runs on daemon mode
     \b

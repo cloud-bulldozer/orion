@@ -11,6 +11,7 @@ import pkg_resources
 import yaml
 from fmatch.logrus import SingletonLogger
 import pkg.constants as cnsts
+from typing import Any
 
 from . import runTest
 
@@ -23,11 +24,11 @@ async def daemon_changepoint( # pylint: disable = R0913
     version: str = "4.17",
     uuid: str = "",
     baseline: str = "",
-    filter_changepoints="",
-    test_name="small-scale-cluster-density",
-    lookback=None,
-    convert_tinyurl="False",
-):
+    filter_changepoints : str = "",
+    test_name : str = "small-scale-cluster-density",
+    lookback: str = None,
+    convert_tinyurl: str = "False",
+) -> (dict[str, str] | dict[Any, Any]):
     """starts listening on port 8000 on url /daemon
 
     Args:
@@ -64,7 +65,7 @@ async def daemon_changepoint( # pylint: disable = R0913
 
 
 @app.get("/daemon/options")
-async def get_options():
+async def get_options() -> Any:
     """Lists all the tests available in daemon mode
 
     Raises:
@@ -94,12 +95,12 @@ async def daemon_anomaly( # pylint: disable = R0913
     version: str = "4.17",
     uuid: str = "",
     baseline: str = "",
-    filter_points="",
-    test_name="small-scale-cluster-density",
-    anomaly_window=5,
-    min_anomaly_percent=10,
-    lookback=None,
-    convert_tinyurl="False",
+    filter_points: str = "",
+    test_name: str = "small-scale-cluster-density",
+    anomaly_window: int = 5,
+    min_anomaly_percent: int = 10,
+    lookback: str = None,
+    convert_tinyurl: str = "False",
 ):
     """starts listening on port 8000 on url /daemon
 
@@ -138,7 +139,7 @@ async def daemon_anomaly( # pylint: disable = R0913
     return result
 
 
-def render_template(test_name, parameters):
+def render_template(test_name: str, parameters: dict[str,Any]) -> Any:
     """replace parameters in the config file
 
     Args:

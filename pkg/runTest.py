@@ -7,10 +7,11 @@ from fmatch.logrus import SingletonLogger
 from pkg.algorithmFactory import AlgorithmFactory
 import pkg.constants as cnsts
 from pkg.utils import get_es_url, process_test, get_subtracted_timestamp
+from typing import Any
 
 
 
-def run(**kwargs):
+def run(**kwargs: dict[str, Any]) -> dict[str, Any]:
     """run method to start the tests
 
     Args:

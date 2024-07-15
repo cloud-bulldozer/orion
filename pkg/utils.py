@@ -13,6 +13,8 @@ import xml.etree.ElementTree as ET
 import xml.dom.minidom
 from datetime import datetime, timedelta, timezone
 from tabulate import tabulate
+from typing import List, Any, Dict
+from fmatch.matcher import Matcher
 
 import yaml
 import pandas as pd
@@ -23,7 +25,7 @@ from fmatch.logrus import SingletonLogger
 
 
 # pylint: disable=too-many-locals
-def get_metric_data(ids, index, metrics, match, metrics_config):
+def get_metric_data(ids: List[str], index: str, metrics: Dict[str, Any], match: Matcher, metrics_config: Dict[str, Any]) -> List[pd.DataFrame]:
     """Gets details metrics basked on metric yaml list
 
     Args:
@@ -94,7 +96,7 @@ def get_metric_data(ids, index, metrics, match, metrics_config):
     return dataframe_list
 
 
-def get_metadata(test):
+def get_metadata(test: Dict[str, Any]) -> Dict[Any, Any]:
     """Gets metadata of the run from each test
 
     Args:
@@ -110,7 +112,7 @@ def get_metadata(test):
     return metadata
 
 
-def load_config(config):
+def load_config(config: str) -> Dict[str,Any]:
     """Loads config file
 
     Args:
@@ -134,7 +136,7 @@ def load_config(config):
     return data
 
 
-def get_es_url(data):
+def get_es_url(data: Dict[Any,Any]) -> str:
     """Gets es url from config or env
 
     Args:
@@ -153,7 +155,7 @@ def get_es_url(data):
     sys.exit(1)
 
 
-def get_ids_from_index(metadata, fingerprint_index, uuids, match, baseline):
+def get_ids_from_index(metadata: Dict[str,Any], fingerprint_index: str, uuids: List[str], match: Matcher, baseline: str) -> List[str]:
     """returns the index to be used and runs as uuids
 
     Args:
@@ -174,7 +176,7 @@ def get_ids_from_index(metadata, fingerprint_index, uuids, match, baseline):
     return ids
 
 
-def get_build_urls(index, uuids, match):
+def get_build_urls(index: str, uuids: List[str], match: Matcher):
     """Gets metadata of the run from each test
         to get the build url
 
@@ -193,15 +195,15 @@ def get_build_urls(index, uuids, match):
 
 
 def process_test(
-    test,
-    match,
-    output,
-    uuid,
-    baseline,
-    metrics_config,
-    start_timestamp,
-    convert_tinyurl,
-):
+    test: Dict[str, Any],
+    match: Matcher,
+    output: str,
+    uuid: str,
+    baseline: str,
+    metrics_config: Dict[str,Any],
+    start_timestamp: datetime,
+    convert_tinyurl: bool,
+) -> pd.DataFrame:
     """generate the dataframe for the test given
 
     Args:
@@ -261,7 +263,7 @@ def process_test(
     return merged_df
 
 
-def filter_metadata(uuid, match):
+def filter_metadata(uuid: str, match: Matcher) -> Dict[Any,Any]:
     """Gets metadata of the run from each test
 
     Args:
@@ -306,7 +308,7 @@ def filter_metadata(uuid, match):
     return no_blank_meta
 
 
-def json_to_junit(test_name, data_json, metrics_config, options):
+def json_to_junit(test_name: str, data_json: Dict[Any,Any], metrics_config: Dict[Any,Any], options: Dict[Any,Any]) -> str:
     """Convert json to junit format
 
     Args:

@@ -1,12 +1,14 @@
 """Module for Generic Algorithm class"""
 from abc import ABC, abstractmethod
 import pkg.constants as cnsts
+import pandas as pd
+from fmatch.matcher import Matcher
 
 class Algorithm(ABC):
     """Generic Algorithm class for algorithm factory
     """
 
-    def __init__(self, matcher, dataframe, test, options, metrics_config): #pylint: disable = too-many-arguments
+    def __init__(self, matcher: Matcher, dataframe: pd.DataFrame, test: dict, options: dict, metrics_config: dict[str,dict]) -> None: #pylint: disable = too-many-arguments
         self.matcher = matcher
         self.dataframe = dataframe
         self.test = test
