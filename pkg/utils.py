@@ -6,13 +6,13 @@ module for all utility functions orion uses
 # pylint: disable = import-error
 
 from functools import reduce
+from io import StringIO
 import os
 import re
 import sys
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 from datetime import datetime, timedelta, timezone
-from tabulate import tabulate
 
 import yaml
 import pandas as pd
@@ -339,26 +339,34 @@ def json_to_junit(test_name, data_json, metrics_config):
     pretty_xml_as_string = dom.toprettyxml()
     return pretty_xml_as_string
 
-def generate_tabular_output(data: dict, metric_name: str) -> str:
+def generate_tabular_output(data: list, metric_name: str) -> str:
     """converts json to tabular format
 
     Args:
-        data (dict):data in json format
+        data (list):data in json format
         metric_name (str): metric name
     Returns:
         str: tabular form of data
     """
     records = []
-    for record in data:
-        records.append({
-            "uuid": record["uuid"],
-            "buildUrl": record["buildUrl"],
-            metric_name: record["metrics"][metric_name]["value"],
-            "percentage_change": record["metrics"][metric_name]["percentage_change"]
-        })
+    create_record = lambda record: { # pylint: disable = C3001
+        "uuid": record["uuid"],
+        "buildUrl": record["buildUrl"],
+        metric_name: record["metrics"][metric_name]["value"],
+        "is_changepoint": record["is_changepoint"]
+    }
+    for i in range(1, len(data)):
+        if data[i]["metrics"][metric_name]["percentage_change"] != 0:
+            records.append(create_record(data[i-1]))
+            records.append(create_record(data[i]))
+            if i + 1 < len(data):
+                records.append(create_record(data[i+1]))
 
-    df = pd.DataFrame(records)
-    return tabulate(df, headers='keys', tablefmt='grid')
+    df = pd.DataFrame(records).drop_duplicates().reset_index(drop=True)
+    csv_buffer = StringIO()
+    df.to_csv(csv_buffer, index=False)
+    csv_string = csv_buffer.getvalue()
+    return csv_string
 
 
 def get_subtracted_timestamp(time_duration: str) -> datetime:
