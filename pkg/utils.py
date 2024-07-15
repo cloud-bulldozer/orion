@@ -327,7 +327,7 @@ def json_to_junit(test_name, data_json, metrics_config):
         labels = value["labels"]
         label_string = " ".join(labels) if labels else ""
         testcase = ET.SubElement(testsuite, "testcase", name=f"{label_string} {metric} regression detection", timestamp=str(int(datetime.now().timestamp())))
-        if [run for run in data_json if not run["metrics"][metric]["percentage_change"]]:
+        if [run for run in data_json if not run["metrics"][metric]["percentage_change"] == 0]:
             failures_count +=1
             failure = ET.SubElement(testcase,"failure")
             failure.text = "\n"+generate_tabular_output(data_json, metric_name=metric)+"\n"
