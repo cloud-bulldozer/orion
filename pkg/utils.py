@@ -1,18 +1,18 @@
 # pylint: disable=cyclic-import
-# pylint: disable = line-too-long, too-many-arguments
+# pylint: disable = line-too-long, too-many-arguments, consider-using-enumerate
 """
 module for all utility functions orion uses
 """
 # pylint: disable = import-error
 
 from functools import reduce
-from io import StringIO
 import os
 import re
 import sys
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 from datetime import datetime, timedelta, timezone
+from tabulate import tabulate
 
 import yaml
 import pandas as pd
@@ -306,7 +306,7 @@ def filter_metadata(uuid, match):
     return no_blank_meta
 
 
-def json_to_junit(test_name, data_json, metrics_config):
+def json_to_junit(test_name, data_json, metrics_config, options):
     """Convert json to junit format
 
     Args:
@@ -330,7 +330,7 @@ def json_to_junit(test_name, data_json, metrics_config):
         if [run for run in data_json if not run["metrics"][metric]["percentage_change"] == 0]:
             failures_count +=1
             failure = ET.SubElement(testcase,"failure")
-            failure.text = "\n"+generate_tabular_output(data_json, metric_name=metric)+"\n"
+            failure.text = "\n"+generate_tabular_output(data_json, metric_name=metric, collapse=options["collapse"])+"\n"
 
     testsuite.set("failures", str(failures_count))
     testsuite.set("tests", str(test_count))
@@ -339,7 +339,7 @@ def json_to_junit(test_name, data_json, metrics_config):
     pretty_xml_as_string = dom.toprettyxml()
     return pretty_xml_as_string
 
-def generate_tabular_output(data: list, metric_name: str) -> str:
+def generate_tabular_output(data: list, metric_name: str, collapse: bool) -> str:
     """converts json to tabular format
 
     Args:
@@ -351,22 +351,41 @@ def generate_tabular_output(data: list, metric_name: str) -> str:
     records = []
     create_record = lambda record: { # pylint: disable = C3001
         "uuid": record["uuid"],
+        "timestamp": datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
         "buildUrl": record["buildUrl"],
         metric_name: record["metrics"][metric_name]["value"],
-        "is_changepoint": record["is_changepoint"]
+        "is_changepoint": record["is_changepoint"],
+        "percentage_change": record["metrics"][metric_name]["percentage_change"],
     }
-    for i in range(1, len(data)):
-        if data[i]["metrics"][metric_name]["percentage_change"] != 0:
-            records.append(create_record(data[i-1]))
+    if collapse:
+        for i in range(1, len(data)):
+            if data[i]["metrics"][metric_name]["percentage_change"] != 0:
+                records.append(create_record(data[i-1]))
+                records.append(create_record(data[i]))
+                if i + 1 < len(data):
+                    records.append(create_record(data[i+1]))
+    else:
+        for i in range(0,len(data)):
             records.append(create_record(data[i]))
-            if i + 1 < len(data):
-                records.append(create_record(data[i+1]))
 
     df = pd.DataFrame(records).drop_duplicates().reset_index(drop=True)
-    csv_buffer = StringIO()
-    df.to_csv(csv_buffer, index=False)
-    csv_string = csv_buffer.getvalue()
-    return csv_string
+    table = tabulate(df, headers='keys', tablefmt='psql')
+    lines = table.split('\n')
+    highlighted_lines = []
+    if lines:
+        highlighted_lines+=lines[0:3]
+    for i, line in enumerate(lines[3:-1]):
+        if df['is_changepoint'][i]:  # Offset by 3 to account for header and separator
+            highlighted_line = f"{lines[i+3]} -- changepoint"
+            highlighted_lines.append(highlighted_line)
+        else:
+            highlighted_lines.append(line)
+    highlighted_lines.append(lines[-1])
+
+# Join the lines back into a single string
+    highlighted_table = '\n'.join(highlighted_lines)
+
+    return  highlighted_table
 
 
 def get_subtracted_timestamp(time_duration: str) -> datetime:

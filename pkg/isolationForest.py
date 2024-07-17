@@ -54,7 +54,7 @@ class IsolationForestWeightedMean(Algorithm):
     def output_junit(self):
         test_name, data_json = self.output_json()
         data_json=json.loads(data_json)
-        data_junit = json_to_junit(test_name=test_name, data_json=data_json, metrics_config=self.metrics_config)
+        data_junit = json_to_junit(test_name=test_name, data_json=data_json, metrics_config=self.metrics_config, options=self.options)
         return test_name, data_junit
 
     def analyze(self, dataframe: pd.DataFrame):
