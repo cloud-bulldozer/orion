@@ -103,6 +103,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 )
 @click.option("--lookback", help="Get data from last X days and Y hours. Format in XdYh")
 @click.option("--convert-tinyurl", is_flag=True, help="Convert buildUrls to tiny url format for better formatting")
+@click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
 def cmd_analysis(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions

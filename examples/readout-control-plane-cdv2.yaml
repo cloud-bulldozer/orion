@@ -134,25 +134,25 @@ tests :
       controlPlaneArch: amd64
 
     metrics : 
-    - name:  CPU_Usage
+    - name:  CPU_Usage_kube-apiserver
       metricName.keyword: cpu-kube-apiserver
       metric_of_interest: value
       agg:
         value: kube_apiserver
         agg_type: avg
-    - name:  Max_Aggregated_RSS_Usage
+    - name:  Max_Aggregated_RSS_Usage_kube-apiserver
       metricName.keyword: max-memory-sum-kube-apiserver
       metric_of_interest: value
       agg:
         value: kube_apiserver
         agg_type: avg
-    - name:  CPU_Usage
+    - name:  CPU_Usage_etcd
       metricName.keyword: cpu-etcd
       metric_of_interest: value
       agg:
         value: etcd
         agg_type: avg
-    - name:  Max_Aggregated_RSS_Usage
+    - name:  Max_Aggregated_RSS_Usage_etcd
       metricName.keyword: max-memory-etcd
       metric_of_interest: value
       agg:
@@ -227,21 +227,21 @@ tests :
       controlPlaneArch: amd64
 
     metrics : 
-    - name:  Read_Only_API_request_P99_latency
+    - name:  Read_Only_API_request_P99_latency_namespace
       metricName.keyword: avg-ro-apicalls-latency
       labels.scope.keyword: namespace
       metric_of_interest: value
       agg:
         value: namespace_scoped
         agg_type: avg
-    - name:  Read_Only_API_request_P99_latency
+    - name:  Read_Only_API_request_P99_latency_cluster
       metricName.keyword: avg-ro-apicalls-latency
       labels.scope.keyword: cluster
       metric_of_interest: value
       agg:
         value: cluster_scoped
         agg_type: avg
-    - name:  Read_Only_API_request_P99_latency
+    - name:  Read_Only_API_request_P99_latency_avg
       metricName.keyword: avg-mutating-apicalls-latency
       metric_of_interest: value
       agg:
