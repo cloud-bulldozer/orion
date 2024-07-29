@@ -10,7 +10,7 @@ from pkg.utils import get_datasource, process_test, get_subtracted_timestamp
 
 
 
-def run(**kwargs: dict[str, Any]) -> dict[str, Any]:
+def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
     """run method to start the tests
 
     Args:
@@ -26,6 +26,7 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]:
     config_map = kwargs["configMap"]
     datasource = get_datasource(config_map)
     result_output = {}
+    regression_flag = False
     for test in config_map["tests"]:
         # Create fingerprint Matcher
         matcher = Matcher(
@@ -42,7 +43,6 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]:
             kwargs,
             start_timestamp,
         )
-
         if fingerprint_matched_df is None:
             return None
 
@@ -62,9 +62,10 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]:
                 kwargs,
                 metrics_config,
             )
-        testname, result_data = algorithm.output(kwargs["output_format"])
+        testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
         result_output[testname] = result_data
-    return result_output
+        regression_flag = regression_flag or test_flag
+    return result_output, regression_flag
 
 
 def get_start_timestamp(kwargs: Dict[str, Any]) -> str:
