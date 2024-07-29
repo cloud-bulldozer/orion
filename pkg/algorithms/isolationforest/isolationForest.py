@@ -4,7 +4,7 @@ from sklearn.ensemble import IsolationForest
 import pandas as pd
 from fmatch.logrus import SingletonLogger
 from hunter.series import  ChangePoint, ComparativeStats
-from pkg.algorithms import Algorithm
+from pkg.algorithms.algorithm import Algorithm
 
 
 class IsolationForestWeightedMean(Algorithm):
