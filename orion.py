@@ -114,7 +114,7 @@ def cmd_analysis(**kwargs):
     logger_instance = SingletonLogger(debug=level, name="Orion")
     logger_instance.info("🏹 Starting Orion in command-line mode")
     kwargs["configMap"] = load_config(kwargs["config"])
-    output = run(**kwargs)
+    output, regression_flag = run(**kwargs)
     if output is None:
         logger_instance.error("Terminating test")
         sys.exit(0)
@@ -126,6 +126,8 @@ def cmd_analysis(**kwargs):
         output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{kwargs['save_output_path'].split('.')[1]}"
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_table))
+    if regression_flag:
+        sys.exit(1)
 
 
 
