@@ -6,13 +6,13 @@ This is the cli file for orion, tool to detect regressions using hunter
 import logging
 import sys
 import warnings
+from typing import Any
 import click
 import uvicorn
 from fmatch.logrus import SingletonLogger
 from pkg.runTest import run
 from pkg.utils import load_config
 import pkg.constants as cnsts
-from typing import Any
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 warnings.filterwarnings(
@@ -104,12 +104,8 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 )
 @click.option("--lookback", help="Get data from last X days and Y hours. Format in XdYh")
 @click.option("--convert-tinyurl", is_flag=True, help="Convert buildUrls to tiny url format for better formatting")
-<<<<<<< HEAD
 @click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
 def cmd_analysis(**kwargs):
-=======
-def cmd_analysis(**kwargs: dict[str, dict]) -> None:
->>>>>>> 3488c73 (added typing)
     """
     Orion runs on command line mode, and helps in detecting regressions
     """

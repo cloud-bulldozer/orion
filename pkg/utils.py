@@ -1,5 +1,5 @@
 # pylint: disable=cyclic-import
-# pylint: disable = line-too-long, too-many-arguments, consider-using-enumerate
+# pylint: disable = line-too-long, too-many-arguments, consider-using-enumerate, broad-exception-caught
 """
 module for all utility functions orion uses
 """
@@ -12,21 +12,24 @@ import sys
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 from datetime import datetime, timedelta, timezone
+from typing import List, Any, Dict, Tuple
 from tabulate import tabulate
-from typing import List, Any, Dict
 from fmatch.matcher import Matcher
+from fmatch.logrus import SingletonLogger
 
 import yaml
 import pandas as pd
 
 import pyshorteners
 
-from fmatch.logrus import SingletonLogger
+
 
 
 # pylint: disable=too-many-locals
-def get_metric_data(ids: List[str], index: str, metrics: Dict[str, Any], match: Matcher, metrics_config: Dict[str, Any]) -> List[pd.DataFrame]:
-    """Gets details metrics basked on metric yaml list
+def get_metric_data(
+    uuids: List[str], index: str, metrics: Dict[str, Any], match: Matcher
+) -> List[pd.DataFrame]:
+    """Gets details metrics based on metric yaml list
 
     Args:
         ids (list): list of all uuids
@@ -40,63 +43,80 @@ def get_metric_data(ids: List[str], index: str, metrics: Dict[str, Any], match: 
     """
     logger_instance = SingletonLogger.getLogger("Orion")
     dataframe_list = []
+    metrics_config = {}
+
     for metric in metrics:
+        metric_name = metric["name"]
+        metric_value_field = metric["metric_of_interest"]
+
         labels = metric.pop("labels", None)
         direction = int(metric.pop("direction", 0))
-        metric_name = metric["name"]
+
         logger_instance.info("Collecting %s", metric_name)
-        metric_of_interest = metric["metric_of_interest"]
+        try:
+            if "agg" in metric:
+                metric_df, metric_dataframe_name = process_aggregation_metric(uuids, index, metric, match)
+            else:
+                metric_df, metric_dataframe_name = process_standard_metric(uuids, index, metric, match, metric_value_field)
 
-        if "agg" in metric.keys():
-            try:
-                cpu = match.get_agg_metric_query(ids, index, metric)
-                agg_value = metric["agg"]["value"]
-                agg_type = metric["agg"]["agg_type"]
-                agg_name = agg_value + "_" + agg_type
-                cpu_df = match.convert_to_df(
-                    cpu, columns=["uuid", "timestamp", agg_name]
-                )
-                cpu_df = cpu_df.drop_duplicates(subset=["uuid"], keep="first")
-                metric_dataframe_name = f"{metric_name}_{agg_type}"
-                cpu_df = cpu_df.rename(columns={agg_name: metric_dataframe_name})
-                metric["labels"] = labels
-                metric["direction"] = direction
-                metrics_config[metric_dataframe_name] = metric
-                dataframe_list.append(cpu_df)
-                logger_instance.debug(cpu_df)
+            metric["labels"] = labels
+            metric["direction"] = direction
+            metrics_config[metric_dataframe_name] = metric
+            dataframe_list.append(metric_df)
+            logger_instance.debug(metric_df)
+        except Exception as e:
+            logger_instance.error(
+                "Couldn't get metrics %s, exception %s",
+                metric_name,
+                e,
+            )
+    return dataframe_list, metrics_config
 
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                logger_instance.error(
-                    "Couldn't get agg metrics %s, exception %s",
-                    metric_name,
-                    e,
-                )
-        else:
-            try:
-                podl = match.getResults("", ids, index, metric)
-                podl_df = match.convert_to_df(
-                    podl, columns=["uuid", "timestamp", metric_of_interest]
-                )
-                metric_dataframe_name = f"{metric_name}_{metric_of_interest}"
-                podl_df = podl_df.rename(
-                    columns={metric_of_interest: metric_dataframe_name}
-                )
-                metric["labels"] = labels
-                metric["direction"] = direction
-                metrics_config[metric_dataframe_name] = metric
-                podl_df = podl_df.drop_duplicates()
-                dataframe_list.append(podl_df)
-                logger_instance.debug(podl_df)
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                logger_instance.error(
-                    "Couldn't get metrics %s, exception %s",
-                    metric_name,
-                    e,
-                )
-    return dataframe_list
+def process_aggregation_metric(
+    uuids: List[str], index: str, metric: Dict[str, Any], match: Matcher
+) -> pd.DataFrame:
+    """Method to get aggregated dataframe
 
+    Args:
+        uuids (List[str]): _description_
+        index (str): _description_
+        metric (Dict[str, Any]): _description_
+        match (Matcher): _description_
 
-def get_metadata(test: Dict[str, Any]) -> Dict[Any, Any]:
+    Returns:
+        pd.DataFrame: _description_
+    """
+    aggregated_metric_data = match.get_agg_metric_query(uuids, index, metric)
+    aggregation_value = metric["agg"]["value"]
+    aggregation_type = metric["agg"]["agg_type"]
+    aggregation_name = f"{aggregation_value}_{aggregation_type}"
+    aggregated_df = match.convert_to_df(aggregated_metric_data, columns=["uuid", "timestamp", aggregation_name])
+    aggregated_df = aggregated_df.drop_duplicates(subset=["uuid"], keep="first")
+    aggregated_metric_name = f"{metric['name']}_{aggregation_type}"
+    aggregated_df = aggregated_df.rename(columns={aggregation_name: aggregated_metric_name})
+    return aggregated_df, aggregated_metric_name
+
+def process_standard_metric(uuids: List[str], index: str, metric: Dict[str, Any], match: Matcher, metric_value_field: str) -> pd.DataFrame:
+    """Method to get dataframe of standard metric
+
+    Args:
+        uuids (List[str]): _description_
+        index (str): _description_
+        metric (Dict[str, Any]): _description_
+        match (Matcher): _description_
+        metric_value_field (str): _description_
+
+    Returns:
+        pd.DataFrame: _description_
+    """
+    standard_metric_data = match.getResults("",uuids, index, metric)
+    standard_metric_df = match.convert_to_df(standard_metric_data, columns=["uuid", "timestamp", metric_value_field])
+    standard_metric_name = f"{metric['name']}_{metric_value_field}"
+    standard_metric_df = standard_metric_df.rename(columns={metric_value_field: standard_metric_name})
+    standard_metric_df = standard_metric_df.drop_duplicates()
+    return standard_metric_df, standard_metric_name
+
+def extract_metadata_from_test(test: Dict[str, Any]) -> Dict[Any, Any]:
     """Gets metadata of the run from each test
 
     Args:
@@ -112,7 +132,7 @@ def get_metadata(test: Dict[str, Any]) -> Dict[Any, Any]:
     return metadata
 
 
-def load_config(config: str) -> Dict[str,Any]:
+def load_config(config: str) -> Dict[str, Any]:
     """Loads config file
 
     Args:
@@ -136,7 +156,7 @@ def load_config(config: str) -> Dict[str,Any]:
     return data
 
 
-def get_es_url(data: Dict[Any,Any]) -> str:
+def get_datasource(data: Dict[Any, Any]) -> str:
     """Gets es url from config or env
 
     Args:
@@ -155,7 +175,13 @@ def get_es_url(data: Dict[Any,Any]) -> str:
     sys.exit(1)
 
 
-def get_ids_from_index(metadata: Dict[str,Any], fingerprint_index: str, uuids: List[str], match: Matcher, baseline: str) -> List[str]:
+def filter_uuids_on_index(
+    metadata: Dict[str, Any],
+    fingerprint_index: str,
+    uuids: List[str],
+    match: Matcher,
+    baseline: str,
+) -> List[str]:
     """returns the index to be used and runs as uuids
 
     Args:
@@ -197,13 +223,9 @@ def get_build_urls(index: str, uuids: List[str], match: Matcher):
 def process_test(
     test: Dict[str, Any],
     match: Matcher,
-    output: str,
-    uuid: str,
-    baseline: str,
-    metrics_config: Dict[str,Any],
+    options: Dict[str, Any],
     start_timestamp: datetime,
-    convert_tinyurl: bool,
-) -> pd.DataFrame:
+) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """generate the dataframe for the test given
 
     Args:
@@ -215,37 +237,40 @@ def process_test(
     Returns:
         _type_: merged dataframe
     """
-    logger_instance = SingletonLogger.getLogger("Orion")
-    benchmarkIndex = test["benchmarkIndex"]
+    logger = SingletonLogger.getLogger("Orion")
+    logger.info("The test %s has started", test["name"])
     fingerprint_index = test["index"]
-    if uuid in ("", None):
-        metadata = get_metadata(test)
-    else:
-        metadata = filter_metadata(uuid, match)
-    logger_instance.info("The test %s has started", test["name"])
-    runs = match.get_uuid_by_metadata(metadata, lookback_date=start_timestamp)
+
+    # getting metadata
+    metadata = extract_metadata_from_test(test) if options["uuid"] in ("", None) else get_metadata_with_uuid(options["uuid"], match)
+    # get uuids, buildUrls matching with the metadata
+    runs = match.get_uuid_by_metadata(metadata, fingerprint_index, lookback_date=start_timestamp)
     uuids = [run["uuid"] for run in runs]
     buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
-    if baseline in ("", None):
-        if len(uuids) == 0:
-            logger_instance.error("No UUID present for given metadata")
-            return None
-    else:
-        uuids = [uuid for uuid in re.split(" |,", baseline) if uuid]
-        uuids.append(uuid)
+    # get uuids if there is a baseline
+    if options["baseline"] not in ("", None):
+        uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
+        uuids.append(options["uuid"])
         buildUrls = get_build_urls(fingerprint_index, uuids, match)
-    fingerprint_index = benchmarkIndex
-    ids = get_ids_from_index(metadata, fingerprint_index, uuids, match, baseline)
+    elif not uuids:
+        logger.error("No UUID present for given metadata")
+        return None, None
 
-    metrics = test["metrics"]
-    dataframe_list = get_metric_data(
-        ids, fingerprint_index, metrics, match, metrics_config
+    benchmark_index = test["benchmarkIndex"]
+
+    uuids = filter_uuids_on_index(
+        metadata, benchmark_index, uuids, match, options["baseline"]
     )
-
+    # get metrics data and dataframe
+    metrics = test["metrics"]
+    dataframe_list, metrics_config = get_metric_data(
+        uuids, benchmark_index, metrics, match
+    )
+    # check and filter for multiple timestamp values for each run
     for i, df in enumerate(dataframe_list):
         if i != 0 and ("timestamp" in df.columns):
             dataframe_list[i] = df.drop(columns=["timestamp"])
-
+    # merge the dataframe with all metrics
     merged_df = reduce(
         lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
         dataframe_list,
@@ -254,16 +279,17 @@ def process_test(
     merged_df["buildUrl"] = merged_df["uuid"].apply(
         lambda uuid: (
             shortener.tinyurl.short(buildUrls[uuid])
-            if convert_tinyurl
+            if options["convert_tinyurl"]
             else buildUrls[uuid]
         )  # pylint: disable = cell-var-from-loop
     )
-    output_file_path = output.split(".")[0] + "-" + test["name"] + ".csv"
+    #save the dataframe
+    output_file_path = f"{options['save_data_path'].split('.')[0]}-{test['name']}.csv"
     match.save_results(merged_df, csv_file_path=output_file_path)
-    return merged_df
+    return merged_df, metrics_config
 
 
-def filter_metadata(uuid: str, match: Matcher) -> Dict[Any,Any]:
+def get_metadata_with_uuid(uuid: str, match: Matcher) -> Dict[Any, Any]:
     """Gets metadata of the run from each test
 
     Args:
@@ -308,7 +334,12 @@ def filter_metadata(uuid: str, match: Matcher) -> Dict[Any,Any]:
     return no_blank_meta
 
 
-def json_to_junit(test_name: str, data_json: Dict[Any,Any], metrics_config: Dict[Any,Any], options: Dict[Any,Any]) -> str:
+def json_to_junit(
+    test_name: str,
+    data_json: Dict[Any, Any],
+    metrics_config: Dict[Any, Any],
+    options: Dict[Any, Any],
+) -> str:
     """Convert json to junit format
 
     Args:
@@ -328,11 +359,26 @@ def json_to_junit(test_name: str, data_json: Dict[Any,Any], metrics_config: Dict
         test_count += 1
         labels = value["labels"]
         label_string = " ".join(labels) if labels else ""
-        testcase = ET.SubElement(testsuite, "testcase", name=f"{label_string} {metric} regression detection", timestamp=str(int(datetime.now().timestamp())))
-        if [run for run in data_json if not run["metrics"][metric]["percentage_change"] == 0]:
-            failures_count +=1
-            failure = ET.SubElement(testcase,"failure")
-            failure.text = "\n"+generate_tabular_output(data_json, metric_name=metric, collapse=options["collapse"])+"\n"
+        testcase = ET.SubElement(
+            testsuite,
+            "testcase",
+            name=f"{label_string} {metric} regression detection",
+            timestamp=str(int(datetime.now().timestamp())),
+        )
+        if [
+            run
+            for run in data_json
+            if not run["metrics"][metric]["percentage_change"] == 0
+        ]:
+            failures_count += 1
+            failure = ET.SubElement(testcase, "failure")
+            failure.text = (
+                "\n"
+                + generate_tabular_output(
+                    data_json, metric_name=metric, collapse=options["collapse"]
+                )
+                + "\n"
+            )
 
     testsuite.set("failures", str(failures_count))
     testsuite.set("tests", str(test_count))
@@ -340,6 +386,7 @@ def json_to_junit(test_name: str, data_json: Dict[Any,Any], metrics_config: Dict
     dom = xml.dom.minidom.parseString(xml_str)
     pretty_xml_as_string = dom.toprettyxml()
     return pretty_xml_as_string
+
 
 def generate_tabular_output(data: list, metric_name: str, collapse: bool) -> str:
     """converts json to tabular format
@@ -351,43 +398,45 @@ def generate_tabular_output(data: list, metric_name: str, collapse: bool) -> str
         str: tabular form of data
     """
     records = []
-    create_record = lambda record: { # pylint: disable = C3001
+    create_record = lambda record: {  # pylint: disable = C3001
         "uuid": record["uuid"],
-        "timestamp": datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+        "timestamp": datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        ),
         "buildUrl": record["buildUrl"],
         metric_name: record["metrics"][metric_name]["value"],
-        "is_changepoint": record["is_changepoint"],
+        "is_changepoint": bool(record["metrics"][metric_name]["percentage_change"]),
         "percentage_change": record["metrics"][metric_name]["percentage_change"],
     }
     if collapse:
         for i in range(1, len(data)):
             if data[i]["metrics"][metric_name]["percentage_change"] != 0:
-                records.append(create_record(data[i-1]))
+                records.append(create_record(data[i - 1]))
                 records.append(create_record(data[i]))
                 if i + 1 < len(data):
-                    records.append(create_record(data[i+1]))
+                    records.append(create_record(data[i + 1]))
     else:
-        for i in range(0,len(data)):
+        for i in range(0, len(data)):
             records.append(create_record(data[i]))
 
     df = pd.DataFrame(records).drop_duplicates().reset_index(drop=True)
-    table = tabulate(df, headers='keys', tablefmt='psql')
-    lines = table.split('\n')
+    table = tabulate(df, headers="keys", tablefmt="psql")
+    lines = table.split("\n")
     highlighted_lines = []
     if lines:
-        highlighted_lines+=lines[0:3]
+        highlighted_lines += lines[0:3]
     for i, line in enumerate(lines[3:-1]):
-        if df['is_changepoint'][i]:  # Offset by 3 to account for header and separator
+        if df["percentage_change"][i]:  # Offset by 3 to account for header and separator
             highlighted_line = f"{lines[i+3]} -- changepoint"
             highlighted_lines.append(highlighted_line)
         else:
             highlighted_lines.append(line)
     highlighted_lines.append(lines[-1])
 
-# Join the lines back into a single string
-    highlighted_table = '\n'.join(highlighted_lines)
+    # Join the lines back into a single string
+    highlighted_table = "\n".join(highlighted_lines)
 
-    return  highlighted_table
+    return highlighted_table
 
 
 def get_subtracted_timestamp(time_duration: str) -> datetime:

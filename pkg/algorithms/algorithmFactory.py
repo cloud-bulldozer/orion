@@ -1,12 +1,14 @@
 """
 Algorithm Factory to choose avaiable algorithms
 """
-from pkg.edivisive import EDivisive
-from pkg.isolationForest import IsolationForestWeightedMean
-import pkg.constants as cnsts
 from fmatch.matcher import Matcher
 import pandas as pd
-class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-arguments
+import pkg.constants as cnsts
+from .edivisive import EDivisive
+from .isolationforest import IsolationForestWeightedMean
+
+
+class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-arguments, line-too-long
     """Algorithm Factory to choose algorithm
     """
     def instantiate_algorithm(self, algorithm: str, matcher: Matcher, dataframe:pd.DataFrame, test: dict, options: dict, metrics_config: dict[str,dict]):

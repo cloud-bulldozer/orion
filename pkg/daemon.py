@@ -4,14 +4,13 @@ Module to run orion in daemon mode
 
 import json
 import os
-
+from typing import Any
 from fastapi import FastAPI, HTTPException
 from jinja2 import Template
 import pkg_resources
 import yaml
 from fmatch.logrus import SingletonLogger
 import pkg.constants as cnsts
-from typing import Any
 
 from . import runTest
 
