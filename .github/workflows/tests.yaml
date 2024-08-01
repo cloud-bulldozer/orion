@@ -4,6 +4,9 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
     steps:
 
     - name: Install bats
@@ -22,6 +25,11 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
         persist-credentials: false
 
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -34,4 +42,6 @@ jobs:
         bats -F pretty -T --print-output-on-failure test.bats
       env:
         TERM: linux      
-        ES_SERVER: ${{ secrets.ES_SERVER }}
+        QE_ES_HOST: ${{ secrets.QE_ES_HOST }}
+        QE_ES_USERNAME: ${{ secrets.QE_ES_USERNAME }}
+        QE_ES_PASSWORD: ${{ secrets.QE_ES_PASSWORD }}

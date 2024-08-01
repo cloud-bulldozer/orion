@@ -1,7 +1,7 @@
 tests :
   - name : aws-small-scale-node-density-cni
-    index: {{ ES_METADATA_INDEX }}
-    benchmarkIndex: {{ ES_BENCHMARK_INDEX }}
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       platform: AWS
       masterNodesType: m6a.xlarge
