@@ -52,7 +52,6 @@ def load_config(config: str, parameters: Dict= None) -> Dict[str, Any]:
     template = Template(template_content)
     rendered_config_yaml = template.render(merged_parameters)
     rendered_config = yaml.safe_load(rendered_config_yaml)
-    print(rendered_config)
     return rendered_config
 
 
