@@ -1,5 +1,7 @@
 tests :
   - name : k8s-netperf-tcp
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: 4.15
       platform: AWS

@@ -1,7 +1,7 @@
 tests :
   - name : aws-small-scale-cluster-density-v2
-    index: ospst-perf-scale-ci-*
-    benchmarkIndex: ospst-ripsaw-kube-burner*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -52,8 +52,8 @@ tests :
         value: duration
         agg_type: avg
   - name : aws-payload-scale-node-density
-    index: ospst-perf-scale-ci-*
-    benchmarkIndex: ospst-ripsaw-kube-burner*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       platform: AWS
       clusterType: self-managed

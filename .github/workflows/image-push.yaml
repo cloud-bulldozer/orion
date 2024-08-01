@@ -1,9 +1,13 @@
-name: Build and Push Image
-on: [ push ]
+name: Image Push
+on:
+  push:
+    branches:
+      - master
+      - main
 
 jobs:
   build:
-    name: Build and push image
+    name: Image Push
     runs-on: ubuntu-20.04
 
     steps:

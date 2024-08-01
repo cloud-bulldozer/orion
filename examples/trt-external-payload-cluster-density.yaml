@@ -1,7 +1,7 @@
 tests :
   - name : payload-cluster-density-v2
-    index: perf_scale_ci-*
-    benchmarkIndex: ripsaw-kube-burner*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       platform: AWS
       clusterType: self-managed

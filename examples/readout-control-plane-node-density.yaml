@@ -1,7 +1,7 @@
 tests :
   - name : node-density-heavy-24nodes
-    index: ospst-perf-scale-ci*
-    benchmarkIndex: ospst-ripsaw-kube-burner*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: 4.15
       platform: AWS
@@ -49,8 +49,8 @@ tests :
         agg_type: avg
 
   - name : node-density-24nodes
-    index: ospst-perf-scale-ci*
-    benchmarkIndex: ospst-ripsaw-kube-burner*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: 4.15
       platform: AWS
@@ -81,8 +81,8 @@ tests :
         agg_type: avg
 
   - name : node-density-120nodes
-    index: ospst-perf-scale-ci*
-    benchmarkIndex: ospst-ripsaw-kube-burner*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: 4.15
       platform: AWS
@@ -113,8 +113,8 @@ tests :
         agg_type: avg
 
   - name : node-density-249nodes
-    index: ospst-perf-scale-ci*
-    benchmarkIndex: ospst-ripsaw-kube-burner*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: 4.15
       platform: AWS
@@ -145,8 +145,8 @@ tests :
         agg_type: avg
 
   - name : node-density-cni-24nodes
-    index: ospst-perf-scale-ci*
-    benchmarkIndex: ospst-ripsaw-kube-burner*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: 4.15
       platform: AWS
@@ -177,8 +177,8 @@ tests :
         agg_type: avg
 
   - name : node-density-cni-120nodes
-    index: ospst-perf-scale-ci*
-    benchmarkIndex: ospst-ripsaw-kube-burner*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: 4.15
       platform: AWS
@@ -209,8 +209,8 @@ tests :
         agg_type: avg
 
   - name : node-density-cni-249nodes
-    index: ospst-perf-scale-ci*
-    benchmarkIndex: ospst-ripsaw-kube-burner*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: 4.15
       platform: AWS
