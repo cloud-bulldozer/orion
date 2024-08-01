@@ -16,10 +16,7 @@ from typing import List, Any, Dict, Tuple
 from tabulate import tabulate
 from fmatch.matcher import Matcher
 from fmatch.logrus import SingletonLogger
-
-import yaml
 import pandas as pd
-
 import pyshorteners
 
 
@@ -132,28 +129,7 @@ def extract_metadata_from_test(test: Dict[str, Any]) -> Dict[Any, Any]:
     return metadata
 
 
-def load_config(config: str) -> Dict[str, Any]:
-    """Loads config file
 
-    Args:
-        config (str): path to config file
-        logger (Logger): logger
-
-    Returns:
-        dict: dictionary of the config file
-    """
-    logger_instance = SingletonLogger.getLogger("Orion")
-    try:
-        with open(config, "r", encoding="utf-8") as file:
-            data = yaml.safe_load(file)
-            logger_instance.debug("The %s file has successfully loaded", config)
-    except FileNotFoundError as e:
-        logger_instance.error("Config file not found: %s", e)
-        sys.exit(1)
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        logger_instance.error("An error occurred: %s", e)
-        sys.exit(1)
-    return data
 
 
 def get_datasource(data: Dict[Any, Any]) -> str:

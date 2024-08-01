@@ -11,7 +11,7 @@ import click
 import uvicorn
 from fmatch.logrus import SingletonLogger
 from pkg.runTest import run
-from pkg.utils import load_config
+from pkg.config import load_config
 import pkg.constants as cnsts
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
