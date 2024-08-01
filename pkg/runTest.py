@@ -1,16 +1,16 @@
 """
 run test
 """
-
+from typing import Any, Dict
 from fmatch.matcher import Matcher
 from fmatch.logrus import SingletonLogger
-from pkg.algorithmFactory import AlgorithmFactory
+from pkg.algorithms import AlgorithmFactory
 import pkg.constants as cnsts
-from pkg.utils import get_es_url, process_test, get_subtracted_timestamp
+from pkg.utils import get_datasource, process_test, get_subtracted_timestamp
 
 
 
-def run(**kwargs):
+def run(**kwargs: dict[str, Any]) -> dict[str, Any]:
     """run method to start the tests
 
     Args:
@@ -23,45 +23,52 @@ def run(**kwargs):
         _type_: _description_
     """
     logger_instance = SingletonLogger.getLogger("Orion")
-    data = kwargs["configMap"]
-
-    ES_URL = get_es_url(data)
+    config_map = kwargs["configMap"]
+    datasource = get_datasource(config_map)
     result_output = {}
-    for test in data["tests"]:
-        match = Matcher(
+    for test in config_map["tests"]:
+        # Create fingerprint Matcher
+        matcher = Matcher(
             index=test["index"],
             level=logger_instance.level,
-            ES_URL=ES_URL,
+            ES_URL=datasource,
             verify_certs=False,
         )
-        metrics_config={}
-        start_timestamp=""
-        if kwargs["lookback"]:
-            start_timestamp = get_subtracted_timestamp(kwargs["lookback"])
-        result_dataframe = process_test(
+        start_timestamp = get_start_timestamp(kwargs)
+
+        fingerprint_matched_df, metrics_config = process_test(
             test,
-            match,
-            kwargs["save_data_path"],
-            kwargs["uuid"],
-            kwargs["baseline"],
-            metrics_config,
+            matcher,
+            kwargs,
             start_timestamp,
-            kwargs["convert_tinyurl"]
         )
-        if result_dataframe is None:
+
+        if fingerprint_matched_df is None:
             return None
+
         if kwargs["hunter_analyze"]:
-            algorithmFactory = AlgorithmFactory()
-            algorithm = algorithmFactory.instantiate_algorithm(
-                cnsts.EDIVISIVE, match, result_dataframe, test, kwargs, metrics_config
-            )
-            testname, result_data = algorithm.output(kwargs["output_format"])
-            result_output[testname] = result_data
+            algorithm_name = cnsts.EDIVISIVE
         elif kwargs["anomaly_detection"]:
-            algorithmFactory = AlgorithmFactory()
-            algorithm = algorithmFactory.instantiate_algorithm(
-                cnsts.ISOLATION_FOREST, match, result_dataframe, test, kwargs, metrics_config
+            algorithm_name = cnsts.ISOLATION_FOREST
+        else:
+            return None
+
+        algorithmFactory = AlgorithmFactory()
+        algorithm = algorithmFactory.instantiate_algorithm(
+                algorithm_name,
+                matcher,
+                fingerprint_matched_df,
+                test,
+                kwargs,
+                metrics_config,
             )
-            testname, result_data = algorithm.output(kwargs["output_format"])
-            result_output[testname] = result_data
+        testname, result_data = algorithm.output(kwargs["output_format"])
+        result_output[testname] = result_data
     return result_output
+
+
+def get_start_timestamp(kwargs: Dict[str, Any]) -> str:
+    """Get the start timestamp if lookback is provided."""
+    return (
+        get_subtracted_timestamp(kwargs["lookback"]) if kwargs.get("lookback") else ""
+    )

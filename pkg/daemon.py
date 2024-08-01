@@ -4,12 +4,11 @@ Module to run orion in daemon mode
 
 import json
 import os
-
+from typing import Any
 from fastapi import FastAPI, HTTPException
-from jinja2 import Template
 import pkg_resources
-import yaml
 from fmatch.logrus import SingletonLogger
+from pkg.config import load_config
 import pkg.constants as cnsts
 
 from . import runTest
@@ -23,11 +22,11 @@ async def daemon_changepoint( # pylint: disable = R0913
     version: str = "4.17",
     uuid: str = "",
     baseline: str = "",
-    filter_changepoints="",
-    test_name="small-scale-cluster-density",
-    lookback=None,
-    convert_tinyurl="False",
-):
+    filter_changepoints : str = "",
+    test_name : str = "small-scale-cluster-density",
+    lookback: str = None,
+    convert_tinyurl: str = "False",
+) -> (dict[str, str] | dict[Any, Any]):
     """starts listening on port 8000 on url /daemon
 
     Args:
@@ -37,7 +36,8 @@ async def daemon_changepoint( # pylint: disable = R0913
         json: json object of the changepoints and metrics
     """
     parameters = {"version": version}
-    config_file_name=test_name+".yml"
+    config_file_name=f"{test_name}.yml"
+    config_path = pkg_resources.resource_filename("configs", config_file_name)
     option_arguments = {
         "config": config_file_name,
         "save_data_path": "output.csv",
@@ -47,7 +47,7 @@ async def daemon_changepoint( # pylint: disable = R0913
         "uuid": uuid,
         "lookback":lookback,
         "baseline": baseline,
-        "configMap": render_template(config_file_name, parameters),
+        "configMap": load_config(config_path, parameters),
         "convert_tinyurl": convert_tinyurl.lower() not in "false",
     }
     filter_changepoints = (
@@ -64,7 +64,7 @@ async def daemon_changepoint( # pylint: disable = R0913
 
 
 @app.get("/daemon/options")
-async def get_options():
+async def get_options() -> Any:
     """Lists all the tests available in daemon mode
 
     Raises:
@@ -90,16 +90,16 @@ async def get_options():
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 @app.get("/daemon/anomaly")
-async def daemon_anomaly( # pylint: disable = R0913
+async def daemon_anomaly( # pylint: disable = R0913, R0914
     version: str = "4.17",
     uuid: str = "",
     baseline: str = "",
-    filter_points="",
-    test_name="small-scale-cluster-density",
-    anomaly_window=5,
-    min_anomaly_percent=10,
-    lookback=None,
-    convert_tinyurl="False",
+    filter_points: str = "",
+    test_name: str = "small-scale-cluster-density",
+    anomaly_window: int = 5,
+    min_anomaly_percent: int = 10,
+    lookback: str = None,
+    convert_tinyurl: str = "False",
 ):
     """starts listening on port 8000 on url /daemon
 
@@ -111,6 +111,7 @@ async def daemon_anomaly( # pylint: disable = R0913
     """
     parameters = {"version": version}
     config_file_name=test_name+".yml"
+    config_path = pkg_resources.resource_filename("configs", config_file_name)
     option_arguments = {
         "config": config_file_name,
         "save_data_path": "output.csv",
@@ -120,7 +121,7 @@ async def daemon_anomaly( # pylint: disable = R0913
         "uuid": uuid,
         "lookback":lookback,
         "baseline": baseline,
-        "configMap": render_template(config_file_name, parameters),
+        "configMap": load_config(config_path, parameters),
         "anomaly_window": int(anomaly_window),
         "min_anomaly_percent":int(min_anomaly_percent),
         "convert_tinyurl": convert_tinyurl.lower() not in "false",
@@ -136,22 +137,3 @@ async def daemon_anomaly( # pylint: disable = R0913
         for key, value in result.items():
             result[key] = list(filter(lambda x: x.get("is_changepoint", False), value))
     return result
-
-
-def render_template(test_name, parameters):
-    """replace parameters in the config file
-
-    Args:
-        file_name (str): the config file
-        parameters (dict): parameters to be replaces
-
-    Returns:
-        dict: configMap in dict
-    """
-    config_path = pkg_resources.resource_filename("configs", test_name)
-    with open(config_path, "r", encoding="utf-8") as template_file:
-        template_content = template_file.read()
-    template = Template(template_content)
-    rendered_config_yaml = template.render(parameters)
-    rendered_config = yaml.safe_load(rendered_config_yaml)
-    return rendered_config

@@ -6,11 +6,12 @@ This is the cli file for orion, tool to detect regressions using hunter
 import logging
 import sys
 import warnings
+from typing import Any
 import click
 import uvicorn
 from fmatch.logrus import SingletonLogger
 from pkg.runTest import run
-from pkg.utils import load_config
+from pkg.config import load_config
 import pkg.constants as cnsts
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
@@ -26,7 +27,7 @@ class MutuallyExclusiveOption(click.Option):
         click (Option): _description_
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: tuple, **kwargs: dict[str, dict]) -> None:
         self.mutually_exclusive = set(kwargs.pop("mutually_exclusive", []))
         help = kwargs.get("help", "")  # pylint: disable=redefined-builtin
         if self.mutually_exclusive:
@@ -46,7 +47,7 @@ class MutuallyExclusiveOption(click.Option):
         return super().handle_parse_result(ctx, opts, args)
 
 
-def validate_anomaly_options(ctx, param, value): # pylint: disable = W0613
+def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable = W0613
     """ validate options so that can only be used with certain flags
     """
     if value or (
@@ -130,7 +131,7 @@ def cmd_analysis(**kwargs):
 @cli.command(name="daemon")
 @click.option("--debug", default=False, is_flag=True, help="log level")
 @click.option("--port", default=8080, help="set port")
-def rundaemon(debug, port):
+def rundaemon(debug: bool, port: int):
     """
     Orion runs on daemon mode
     \b
