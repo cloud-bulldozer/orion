@@ -38,6 +38,11 @@ setup() {
   run_cmd orion cmd --config "examples/readout-control-plane-node-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json
 }
 
+@test "orion cmd readout control plane node-density with json output and match all iterations " {
+  run_cmd orion cmd --config "examples/readout-control-plane-node-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json --node-count True
+}
+
+
 @test "orion cmd readout netperf tcp with junit output " {
   run_cmd orion cmd --config "examples/readout-netperf-tcp.yaml" --output-format junit --hunter-analyze --save-output-path=output.xml
 }

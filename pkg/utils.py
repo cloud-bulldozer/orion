@@ -157,6 +157,7 @@ def filter_uuids_on_index(
     uuids: List[str],
     match: Matcher,
     baseline: str,
+    filter_node_count: bool
 ) -> List[str]:
     """returns the index to be used and runs as uuids
 
@@ -170,7 +171,7 @@ def filter_uuids_on_index(
     """
     if metadata["benchmark.keyword"] in ["ingress-perf", "k8s-netperf"]:
         return uuids
-    if baseline == "":
+    if baseline == "" and not filter_node_count:
         runs = match.match_kube_burner(uuids, fingerprint_index)
         ids = match.filter_runs(runs, runs)
     else:
@@ -235,7 +236,7 @@ def process_test(
     benchmark_index = test["benchmarkIndex"]
 
     uuids = filter_uuids_on_index(
-        metadata, benchmark_index, uuids, match, options["baseline"]
+        metadata, benchmark_index, uuids, match, options["baseline"], options['node_count']
     )
     # get metrics data and dataframe
     metrics = test["metrics"]
