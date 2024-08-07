@@ -30,8 +30,9 @@ class Algorithm(ABC):
         self.test = test
         self.options = options
         self.metrics_config = metrics_config
+        self.regression_flag = False
 
-    def output_json(self) -> Tuple[str, str]:
+    def output_json(self) -> Tuple[str, str, bool]:
         """Method to output json output
 
         Returns:
@@ -64,9 +65,9 @@ class Algorithm(ABC):
                     ] = percentage_change
                     dataframe_json[index]["is_changepoint"] = True
 
-        return self.test["name"], json.dumps(dataframe_json, indent=2)
+        return self.test["name"], json.dumps(dataframe_json, indent=2), self.regression_flag
 
-    def output_text(self) -> Tuple[str,str]:
+    def output_text(self) -> Tuple[str,str, bool]:
         """Outputs the data in text/tabular format"""
         series, change_points_by_metric = self._analyze()
         change_points_by_time = self.group_change_points_by_time(
@@ -76,9 +77,9 @@ class Algorithm(ABC):
         output_table = report.produce_report(
             test_name=self.test["name"], report_type=ReportType.LOG
         )
-        return self.test["name"], output_table
+        return self.test["name"], output_table, self.regression_flag
 
-    def output_junit(self) -> Tuple[str,str]:
+    def output_junit(self) -> Tuple[str,str, bool]:
         """Output junit format
 
         Returns:
@@ -92,7 +93,7 @@ class Algorithm(ABC):
             metrics_config=self.metrics_config,
             options=self.options,
         )
-        return test_name, data_junit
+        return test_name, data_junit, self.regression_flag
 
     @abstractmethod
     def _analyze(self):

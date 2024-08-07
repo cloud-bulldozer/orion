@@ -25,5 +25,6 @@ class EDivisive(Algorithm):
                 if ((self.metrics_config[metric]["direction"] == 1 and changepoint_list[i].stats.mean_1 > changepoint_list[i].stats.mean_2) or
                     (self.metrics_config[metric]["direction"] == -1 and changepoint_list[i].stats.mean_1 < changepoint_list[i].stats.mean_2) ):
                     del changepoint_list[i]
-
+        if [val for li in change_points_by_metric.values() for val in li]:
+            self.regression_flag=True
         return series, change_points_by_metric
