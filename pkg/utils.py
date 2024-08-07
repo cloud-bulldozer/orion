@@ -229,7 +229,7 @@ def process_test(
         uuids.append(options["uuid"])
         buildUrls = get_build_urls(fingerprint_index, uuids, match)
     elif not uuids:
-        logger.error("No UUID present for given metadata")
+        logger.info("No UUID present for given metadata")
         return None, None
 
     benchmark_index = test["benchmarkIndex"]
@@ -247,10 +247,13 @@ def process_test(
         if i != 0 and ("timestamp" in df.columns):
             dataframe_list[i] = df.drop(columns=["timestamp"])
     # merge the dataframe with all metrics
-    merged_df = reduce(
-        lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
-        dataframe_list,
-    )
+    if dataframe_list:
+        merged_df = reduce(
+            lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
+            dataframe_list,
+        )
+    else:
+        return None, metrics_config
     shortener = pyshorteners.Shortener(timeout=10)
     merged_df["buildUrl"] = merged_df["uuid"].apply(
         lambda uuid: (

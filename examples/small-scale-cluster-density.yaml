@@ -1,7 +1,7 @@
 tests :
   - name : aws-small-scale-cluster-density-v2
-    index: ospst-perf-scale-ci-*
-    benchmarkIndex: ospst-ripsaw-kube-burner*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       platform: AWS
       masterNodesType: m6a.xlarge

@@ -36,7 +36,7 @@ async def daemon_changepoint( # pylint: disable = R0913
         json: json object of the changepoints and metrics
     """
     parameters = {"version": version}
-    config_file_name=f"{test_name}.yml"
+    config_file_name=f"{test_name}.yaml"
     config_path = pkg_resources.resource_filename("configs", config_file_name)
     option_arguments = {
         "config": config_file_name,
@@ -54,9 +54,9 @@ async def daemon_changepoint( # pylint: disable = R0913
         True if filter_changepoints == "true" else False  # pylint: disable = R1719
     )
     result = runTest.run(**option_arguments)
-    result = {k:json.loads(v) for k,v in result.items()}
     if result is None:
         return {"Error":"No UUID with given metadata"}
+    result = {k:json.loads(v) for k,v in result.items()}
     if filter_changepoints:
         for key, value in result.items():
             result[key] = list(filter(lambda x: x.get("is_changepoint", False), value))
@@ -130,9 +130,10 @@ async def daemon_anomaly( # pylint: disable = R0913, R0914
         True if filter_points == "true" else False  # pylint: disable = R1719
     )
     result = runTest.run(**option_arguments)
-    result = {k:json.loads(v) for k,v in result.items()}
     if result is None:
         return {"Error":"No UUID with given metadata"}
+    result = {k:json.loads(v) for k,v in result.items()}
+
     if filter_points:
         for key, value in result.items():
             result[key] = list(filter(lambda x: x.get("is_changepoint", False), value))

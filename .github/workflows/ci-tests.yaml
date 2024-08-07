@@ -1,0 +1,23 @@
+name: CI tests
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+jobs:
+  lint:
+    uses: ./.github/workflows/pylint.yaml
+
+  build:
+    uses: ./.github/workflows/builders.yaml
+
+  tests:
+    needs: build
+    uses: ./.github/workflows/tests.yaml
+    secrets: inherit
+
