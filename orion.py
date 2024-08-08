@@ -21,7 +21,7 @@ warnings.filterwarnings(
 
 
 class MutuallyExclusiveOption(click.Option):
-    """Class to implement mutual exclusivity between options in click
+    """Class to implement mutual exclusivity between options in click.
 
     Args:
         click (Option): _description_
