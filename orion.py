@@ -28,7 +28,7 @@ class MutuallyExclusiveOption(click.Option):
     """
 
     def __init__(self, *args: tuple, **kwargs: dict[str, dict]) -> None:
-        self.mutually_exclusive = set(kwargs.pop("mutually_exclusive", []))
+        self.mutually_exclusive = set(kwargs.pop("mutually_exclusive.", []))
         help = kwargs.get("help", "")  # pylint: disable=redefined-builtin
         if self.mutually_exclusive:
             ex_str = ", ".join(self.mutually_exclusive)
