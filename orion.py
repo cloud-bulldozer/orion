@@ -86,7 +86,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option(
     "--anomaly-detection",
     is_flag=True,
-    help="run anomaly detection algorithm powered by isolation forest",
+    help="run anomaly detection algorithm powered by isolation forest.",
     cls=MutuallyExclusiveOption,
     mutually_exclusive=["hunter_analyze"],
 )
