@@ -221,7 +221,7 @@ def process_test(
     # getting metadata
     metadata = extract_metadata_from_test(test) if options["uuid"] in ("", None) else get_metadata_with_uuid(options["uuid"], match)
     # get uuids, buildUrls matching with the metadata
-    runs = match.get_uuid_by_metadata(metadata, fingerprint_index, lookback_date=start_timestamp)
+    runs = match.get_uuid_by_metadata(metadata, fingerprint_index, lookback_date=start_timestamp, lookback_size=options['lookback_size'])
     uuids = [run["uuid"] for run in runs]
     buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
     # get uuids if there is a baseline
