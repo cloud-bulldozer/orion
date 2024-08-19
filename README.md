@@ -125,6 +125,8 @@ Orion now supports anomaly detection for your data. Use the ```--anomaly-detecti
 
 You can now constrain your look-back period using the ```--lookback``` option. The format for look-back is ```XdYh```, where X represents the number of days and Y represents the number of hours.
 
+To specify how many runs to look back, you can use the ```--lookback-size``` option. By default, this option is set to 10000.
+
 You can open the match requirement by using the ```--node-count``` option to find any matching uuid based on the metadata and not have to have the same jobConfig.jobIterations. This variable is a ```True``` or ```False```, defaulted to False. 
 
 **_NOTE:_**  The ```--hunter-analyze``` and ```--anomaly-detection``` flags are mutually exclusive. They cannot be used together because they represent different algorithms designed for distinct use cases.
