@@ -29,6 +29,12 @@ setup() {
   export version='4.17'
 }
 
+
+@test "orion cmd with previous version" {
+  run_cmd orion cmd --config "configs/small-scale-cluster-density.yaml" --previous-version
+}
+
+
 @test "orion cmd label small scale cluster density with hunter-analyze " {
   run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --lookback 5d --hunter-analyze
 }
