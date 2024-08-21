@@ -101,6 +101,7 @@ Clone the current repository using git clone.
 >> source venv/bin/activate
 >> pip install -r requirements.txt
 >> export ES_SERVER = <es_server_url>
+>> export version=<ocp version>
 >> pip install .
 ```
 ## Run Orion
@@ -198,10 +199,9 @@ POST http://127.0.0.1:8080/daemon/changepoint
 
 - uuid (optional): The uuid of the run you want to compare with similar runs.
 - baseline (optional): The runs you want to compare with.
-- version (optional): The ocpVersion you want to use for metadata defaults to `4.15`
 - filter_changepoints (optional): set to `true` if you only want changepoints to show up in the response
 - test_name (optional): name of the test you want to perform defaults to `small-scale-cluster-density`
-
+- previous-version (optional): Compare most recent run or given UUID with previous versions
 
 Example
 ```

@@ -123,13 +123,14 @@ def extract_metadata_from_test(test: Dict[str, Any]) -> Dict[Any, Any]:
         dict: dictionary of the metadata
     """
     logger_instance = SingletonLogger.getLogger("Orion")
-    metadata = test["metadata"]
-    metadata["ocpVersion"] = str(metadata["ocpVersion"])
+    if "metadata" in test:
+        metadata = test["metadata"]
+        if "ocpVersion" in metadata:
+            metadata["ocpVersion"] = str(metadata["ocpVersion"])
+    else:
+        metadata = test
     logger_instance.debug("metadata" + str(metadata))
     return metadata
-
-
-
 
 
 def get_datasource(data: Dict[Any, Any]) -> str:
@@ -178,16 +179,12 @@ def filter_uuids_on_index(
         ids = uuids
     return ids
 
-
 def get_build_urls(index: str, uuids: List[str], match: Matcher):
     """Gets metadata of the run from each test
         to get the build url
-
     Args:
         uuids (list): str list of uuid to find build urls of
         match: the fmatch instance
-
-
     Returns:
         dict: dictionary of the metadata
     """
@@ -218,23 +215,38 @@ def process_test(
     logger.info("The test %s has started", test["name"])
     fingerprint_index = test["index"]
 
-    # getting metadata
-    metadata = extract_metadata_from_test(test) if options["uuid"] in ("", None) else get_metadata_with_uuid(options["uuid"], match)
-    # get uuids, buildUrls matching with the metadata
-    runs = match.get_uuid_by_metadata(metadata, fingerprint_index, lookback_date=start_timestamp, lookback_size=options['lookback_size'])
-    uuids = [run["uuid"] for run in runs]
-    buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
-    # get uuids if there is a baseline
+    # get uuids if there is a baseline and uuid set
     if options["baseline"] not in ("", None):
+        # if baseline is set, set uuids
         uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
         uuids.append(options["uuid"])
-        buildUrls = get_build_urls(fingerprint_index, uuids, match)
-    elif not uuids:
+        runs = match.getResults("", uuids, fingerprint_index, {})
+        # get metadata of one run
+        metadata = get_metadata_with_uuid(options["uuid"], match)
+    else:
+        # getting metadata
+        metadata = extract_metadata_from_test(test) if options["uuid"] in ("", None) else get_metadata_with_uuid(options["uuid"], match)
+        # get uuids, buildUrls matching with the metadata
+        # this match might not always work if UUID failed run, we still want to analyze
+        runs = match.get_uuid_by_metadata(metadata, fingerprint_index, lookback_date=start_timestamp, lookback_size=options['lookback_size'])
+
+        if options['previous_version']:
+            last_version_run = runs
+            metadata['ocpVersion'] = str(float(metadata['ocpVersion'][:4]) - .01)
+            runs = match.get_uuid_by_metadata(metadata, fingerprint_index, lookback_date=start_timestamp, lookback_size=options['lookback_size'])
+            if len(last_version_run) > 0:
+                # get latest uuid as the "uuid" to compare against
+                last_uuid_run = last_version_run[0]
+                runs.append(last_uuid_run)
+
+    if not runs:
         logger.info("No UUID present for given metadata")
         return None, None
 
     benchmark_index = test["benchmarkIndex"]
-
+    #Want to set uuid list right before usage
+    buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
+    uuids = [run["uuid"] for run in runs]
     uuids = filter_uuids_on_index(
         metadata, benchmark_index, uuids, match, options["baseline"], options['node_count']
     )
