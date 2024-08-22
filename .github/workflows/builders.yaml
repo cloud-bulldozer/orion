@@ -1,6 +1,11 @@
 name: Builders
 on:
   workflow_call:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
