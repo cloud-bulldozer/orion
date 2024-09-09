@@ -70,5 +70,6 @@ class IsolationForestWeightedMean(Algorithm):
                                                            pvalue=1
                                                        ))
                             change_points_by_metric[feature].append(change_point)
-
+        if [val for li in change_points_by_metric.values() for val in li]:
+            self.regression_flag=True
         return series, change_points_by_metric

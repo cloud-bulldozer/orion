@@ -263,6 +263,7 @@ def process_test(
             else buildUrls[uuid]
         )  # pylint: disable = cell-var-from-loop
     )
+    merged_df=merged_df.reset_index(drop=True)
     #save the dataframe
     output_file_path = f"{options['save_data_path'].split('.')[0]}-{test['name']}.csv"
     match.save_results(merged_df, csv_file_path=output_file_path)
