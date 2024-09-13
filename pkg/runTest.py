@@ -1,6 +1,7 @@
 """
 run test
 """
+import sys
 from typing import Any, Dict
 from fmatch.matcher import Matcher
 from fmatch.logrus import SingletonLogger
@@ -43,15 +44,16 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
             kwargs,
             start_timestamp,
         )
+
         if fingerprint_matched_df is None:
-            return None
+            sys.exit(3) # No data present
 
         if kwargs["hunter_analyze"]:
             algorithm_name = cnsts.EDIVISIVE
         elif kwargs["anomaly_detection"]:
             algorithm_name = cnsts.ISOLATION_FOREST
         else:
-            return None
+            return None, None
 
         algorithmFactory = AlgorithmFactory()
         algorithm = algorithmFactory.instantiate_algorithm(

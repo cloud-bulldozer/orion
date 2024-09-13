@@ -128,7 +128,7 @@ def cmd_analysis(**kwargs):
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_table))
     if regression_flag:
-        sys.exit(1)
+        sys.exit(2) ## regression detected
 
 
 

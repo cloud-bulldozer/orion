@@ -85,7 +85,7 @@ class Algorithm(ABC):
         Returns:
             _type_: return
         """
-        test_name, data_json = self.output_json()
+        test_name, data_json, _ = self.output_json()
         data_json = json.loads(data_json)
         data_junit = json_to_junit(
             test_name=test_name,
