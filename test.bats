@@ -16,6 +16,7 @@ setup() {
   export ES_SERVER="$QE_ES_SERVER"
   export es_metadata_index="perf_scale_ci*"
   export es_benchmark_index="ripsaw-kube-burner*"
+  export version='4.17'
 }
 
 @test "orion cmd label small scale cluster density with hunter-analyze " {
