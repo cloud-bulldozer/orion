@@ -10,7 +10,7 @@ tests :
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
       benchmark.keyword: crd-scale 
-      ocpVersion: 4.17
+      ocpVersion: {{ version }}
       networkType: OVNKubernetes
 
     metrics : 
