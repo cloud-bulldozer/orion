@@ -5,8 +5,10 @@
 
 run_cmd(){
   echo "$@"
+  set +e
   ${@}
   EXIT_CODE=$?
+  set -e
 
   if [ $EXIT_CODE -eq 2 ]; then
     echo "Exit code 2 encountered, regression detected, treating as success"
