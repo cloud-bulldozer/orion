@@ -31,7 +31,10 @@ class EDivisive(Algorithm):
         # filter by direction and ack'ed issues
         for metric, changepoint_list in change_points_by_metric.items():
             for i in range(len(changepoint_list)-1, -1, -1):
-                if ((self.metrics_config[metric]["direction"] == 1 and changepoint_list[i].stats.mean_1 > changepoint_list[i].stats.mean_2) or (self.metrics_config[metric]["direction"] == -1 and changepoint_list[i].stats.mean_1 < changepoint_list[i].stats.mean_2) or (str(changepoint_list[i].index) + "_" + changepoint_list[i].metric in ackSet)):
+                if ((self.metrics_config[metric]["direction"] == 1 and changepoint_list[i].stats.mean_1 > changepoint_list[i].stats.mean_2) or
+                    (self.metrics_config[metric]["direction"] == -1 and changepoint_list[i].stats.mean_1 < changepoint_list[i].stats.mean_2) or
+                    (str(changepoint_list[i].index) + "_" + changepoint_list[i].metric in ackSet) or
+                    self.metrics_config[metric]["threshold"] > abs((changepoint_list[i].stats.mean_1 - changepoint_list[i].stats.mean_2)/changepoint_list[i].stats.mean_1)*100 ):
                     del changepoint_list[i]
 
         if [val for li in change_points_by_metric.values() for val in li]:
