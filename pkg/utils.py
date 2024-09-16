@@ -48,7 +48,7 @@ def get_metric_data(
 
         labels = metric.pop("labels", None)
         direction = int(metric.pop("direction", 0))
-
+        threshold = abs(int(metric.pop("threshold", 0)))
         logger_instance.info("Collecting %s", metric_name)
         try:
             if "agg" in metric:
@@ -58,6 +58,7 @@ def get_metric_data(
 
             metric["labels"] = labels
             metric["direction"] = direction
+            metric["threshold"] = threshold
             metrics_config[metric_dataframe_name] = metric
             dataframe_list.append(metric_df)
             logger_instance.debug(metric_df)
