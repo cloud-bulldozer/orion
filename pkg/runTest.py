@@ -9,7 +9,24 @@ from pkg.algorithms import AlgorithmFactory
 import pkg.constants as cnsts
 from pkg.utils import get_datasource, process_test, get_subtracted_timestamp
 
+def get_algorithm_type(kwargs):
+    """Switch Case of getting algorithm name
 
+    Args:
+        kwargs (dict): passed command line arguments
+
+    Returns:
+        str: algorithm name
+    """
+    if kwargs["hunter_analyze"]:
+        algorithm_name = cnsts.EDIVISIVE
+    elif kwargs["anomaly_detection"]:
+        algorithm_name = cnsts.ISOLATION_FOREST
+    elif kwargs['cmr']:
+        algorithm_name = cnsts.CMR
+    else:
+        algorithm_name = None
+    return algorithm_name
 
 def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
     """run method to start the tests
@@ -48,11 +65,8 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
         if fingerprint_matched_df is None:
             sys.exit(3) # No data present
 
-        if kwargs["hunter_analyze"]:
-            algorithm_name = cnsts.EDIVISIVE
-        elif kwargs["anomaly_detection"]:
-            algorithm_name = cnsts.ISOLATION_FOREST
-        else:
+        algorithm_name = get_algorithm_type(kwargs)
+        if algorithm_name is None:
             return None, None
 
         algorithmFactory = AlgorithmFactory()

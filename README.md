@@ -123,6 +123,11 @@ Additionally, users can specify a custom path for the output CSV file using the 
 
 Orion now supports anomaly detection for your data. Use the ```--anomaly-detection``` command to start the anomaly detection process.
 
+
+To be able to find significant percent differences in workload runs, use the ```--cmr``` command. This will compare the most recent run with any previous matching runs or baseline UUIDs. If more than 1 other run is found from the most recent, the values will be meaned together and then compared with the previous run. Use with *direction: 0* (set in the config) when using ```-o json``` format to see percent differences
+
+![cmr percent difference](percentdiff.jpg)
+
 You can now constrain your look-back period using the ```--lookback``` option. The format for look-back is ```XdYh```, where X represents the number of days and Y represents the number of hours.
 
 To specify how many runs to look back, you can use the ```--lookback-size``` option. By default, this option is set to 10000.
@@ -156,7 +161,7 @@ This is similar to how car manufacturers warranty plays out such as 5years or 60
 
 You can open the match requirement by using the ```--node-count``` option to find any matching uuid based on the metadata and not have to have the same jobConfig.jobIterations. This variable is a ```True``` or ```False```, defaulted to False. 
 
-**_NOTE:_**  The ```--hunter-analyze``` and ```--anomaly-detection``` flags are mutually exclusive. They cannot be used together because they represent different algorithms designed for distinct use cases.
+**_NOTE:_**  The ```cmr```, ```--hunter-analyze``` and ```--anomaly-detection``` flags are mutually exclusive. They cannot be used together because they represent different algorithms designed for distinct use cases.
 
 ### Daemon mode
 The core purpose of Daemon mode is to operate Orion as a self-contained server, dedicated to handling incoming requests. By sending a POST request accompanied by a test name of predefined tests, users can trigger change point detection on the provided metadata and metrics. Following the processing, the response is formatted in JSON, providing a structured output for seamless integration and analysis. To trigger daemon mode just use the following commands
