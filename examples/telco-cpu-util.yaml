@@ -1,0 +1,13 @@
+datasource:
+  type: splunk
+tests :
+  - name : telco_cpu_util_test
+    metadata:
+      test_type: cpu_util
+
+    metrics : 
+      - name: total_cpu
+        metric_of_interest: scenarios.scenario_name==idle.types.type_name==total.max_cpu
+      
+      - name : os_daemon
+        metric_of_interest: scenarios.scenario_name==idle.types.type_name==os_daemon.max_cpu
