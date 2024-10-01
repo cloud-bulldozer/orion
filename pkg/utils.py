@@ -9,13 +9,15 @@ from functools import reduce
 import os
 import re
 import sys
+import uuid
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 from datetime import datetime, timedelta, timezone
 from typing import List, Any, Dict, Tuple
-from tabulate import tabulate
+from fmatch.splunk_matcher import SplunkMatcher
 from fmatch.matcher import Matcher
 from fmatch.logrus import SingletonLogger
+from tabulate import tabulate
 import pandas as pd
 import pyshorteners
 
@@ -68,6 +70,65 @@ def get_metric_data(
                 e,
             )
     return dataframe_list, metrics_config
+
+def get_splunk_metrics(data: dict, metrics: dict) -> Tuple[pd.DataFrame, dict]:
+    """gets metrics from splunk data
+
+    Args:
+        data (dict): data with all the metrics
+        metrics (dict): metrics needed to extracted
+
+    Returns:
+        Tuple[pd.DataFrame, dict]: _description_
+    """
+    logger_instance = SingletonLogger.getLogger("Orion")
+    dataframe_rows = []
+    metrics_config = {}
+
+    for record in data:
+        timestamp = int(record["timestamp"])
+        record = record["data"]
+        record_uuid = uuid.uuid4()
+        row_data = {
+            "uuid": record_uuid,
+            "timestamp": timestamp
+        }
+
+        for metric in metrics:
+            metric_name = metric["name"]
+            metric_value_field = metric["metric_of_interest"]
+            metric_value = get_nested_value(record, metric_value_field)
+            row_data[metric_name] = metric_value
+            metrics_config[metric_name] = metric
+
+        dataframe_rows.append(row_data)
+
+    df = pd.DataFrame(dataframe_rows)
+    df.dropna(inplace=True)
+    df.sort_values(by="timestamp", inplace=True)
+    df.reset_index(drop=True, inplace=True)
+
+    logger_instance.info(f"Generated DataFrame with {len(df)} rows")
+    return df, metrics_config
+
+def get_nested_value(record, keys, default=None):
+    """Recursively traverse a nested dictionary/list to get a value based on dot-separated keys."""
+    keys = keys.split(".")
+    for key in keys:
+        if isinstance(record, dict):
+            record = record.get(key, default)
+        elif isinstance(record, list):
+            # For lists, we assume the user wants to filter based on some condition
+            key_parts = key.split("==")
+            if len(key_parts) == 2:
+                filter_key, filter_value = key_parts[0], key_parts[1].strip('"')
+                # Look for a matching dict in the list
+                record = next((item for item in record if item.get(filter_key) == filter_value), default)
+            else:
+                return default  # Key format is incorrect, return default
+        else:
+            return default  # If it's neither dict nor list, return default
+    return record
 
 def process_aggregation_metric(
     uuids: List[str], index: str, metric: Dict[str, Any], match: Matcher
@@ -124,15 +185,11 @@ def extract_metadata_from_test(test: Dict[str, Any]) -> Dict[Any, Any]:
     """
     logger_instance = SingletonLogger.getLogger("Orion")
     metadata = test["metadata"]
-    metadata["ocpVersion"] = str(metadata["ocpVersion"])
+    metadata = {key: str(value) for key, value in metadata.items()}
     logger_instance.debug("metadata" + str(metadata))
     return metadata
 
-
-
-
-
-def get_datasource(data: Dict[Any, Any]) -> str:
+def get_datasource(data: Dict[Any, Any]) -> dict:
     """Gets es url from config or env
 
     Args:
@@ -143,11 +200,24 @@ def get_datasource(data: Dict[Any, Any]) -> str:
         str: es url
     """
     logger_instance = SingletonLogger.getLogger("Orion")
-    if "ES_SERVER" in data.keys():
-        return data["ES_SERVER"]
-    if "ES_SERVER" in os.environ:
-        return os.environ.get("ES_SERVER")
-    logger_instance.error("ES_SERVER environment variable/config variable not set")
+    if data["datasource"]["type"].lower() == "splunk":
+        datasource = data["datasource"]
+        datasource_config = {"host": os.environ.get("SPLUNK_HOST", datasource.get("host","")),
+                             "port": os.environ.get("SPLUNK_PORT", datasource.get("port","")),
+                             "username": os.environ.get("SPLUNK_USERNAME", datasource.get("username","")),
+                             "password": os.environ.get("SPLUNK_PASSWORD", datasource.get("password","")),
+                             "indice": os.environ.get("SPLUNK_INDICE", datasource.get("indice",""))}
+        datasource.update(datasource_config)
+        return datasource
+    if data["datasource"]["type"].lower() == "elasticsearch":
+        if "ES_SERVER" in data["datasource"].keys():
+            return data["datasource"]
+        if "ES_SERVER" in os.environ:
+            datasource = data["datasource"]
+            datasource.update({"ES_SERVER":os.environ.get("ES_SERVER")})
+            return datasource
+
+    logger_instance.error("Datasurce variable/config variable not set")
     sys.exit(1)
 
 
@@ -271,6 +341,39 @@ def process_test(
     match.save_results(merged_df, csv_file_path=output_file_path)
     return merged_df, metrics_config
 
+async def process_splunk_test(
+    test: Dict[str, Any],
+    match: SplunkMatcher,
+    options: Dict[str, Any], # pylint: disable = W0613
+    start_timestamp: datetime,
+) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    """processing splunk data
+
+    Args:
+        test (Dict[str, Any]): splunk test
+        match (SplunkMatcher): splunk matcher
+        options (Dict[str, Any]): options for further use
+
+    Returns:
+        Tuple[pd.DataFrame, Dict[str, Any]]: _description_
+    """
+
+    logger = SingletonLogger.getLogger("Orion")
+    logger.info("The test %s has started", test["name"])
+    metadata = extract_metadata_from_test(test)
+    start_timestamp = datetime.strptime(start_timestamp, '%Y-%m-%d %H:%M:%S') if start_timestamp else datetime.now() - timedelta(days=30)
+    searchList = ' AND '.join([f'{key}="{value}"' for key, value in metadata.items()])
+    query = {
+        "earliest_time": f"{start_timestamp.strftime('%Y-%m-%d')}T00:00:00",
+        "latest_time": f"{datetime.now().strftime('%Y-%m-%d')}T23:59:59",
+        "output_mode": "json"
+    }
+    data = await match.query(query=query, searchList=searchList, max_results=10000)
+    metrics = test["metrics"]
+    dataframe_list, metrics_config = get_splunk_metrics(data, metrics)
+
+    return dataframe_list, metrics_config
+
 def shorten_url(shortener: any, uuids: str) -> str:
     """Shorten url if there is a list of buildUrls
 
@@ -287,7 +390,7 @@ def shorten_url(shortener: any, uuids: str) -> str:
     short_url = ','.join(short_url_list)
     return short_url
 
-def get_metadata_with_uuid(uuid: str, match: Matcher) -> Dict[Any, Any]:
+def get_metadata_with_uuid(uuid_gen: str, match: Matcher) -> Dict[Any, Any]:
     """Gets metadata of the run from each test
 
     Args:
@@ -299,7 +402,7 @@ def get_metadata_with_uuid(uuid: str, match: Matcher) -> Dict[Any, Any]:
         dict: dictionary of the metadata
     """
     logger_instance = SingletonLogger.getLogger("Orion")
-    test = match.get_metadata_by_uuid(uuid)
+    test = match.get_metadata_by_uuid(uuid_gen)
     metadata = {
         "platform": "",
         "clusterType": "",

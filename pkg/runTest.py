@@ -4,10 +4,11 @@ run test
 import sys
 from typing import Any, Dict
 from fmatch.matcher import Matcher
+from fmatch.splunk_matcher import SplunkMatcher
 from fmatch.logrus import SingletonLogger
 from pkg.algorithms import AlgorithmFactory
 import pkg.constants as cnsts
-from pkg.utils import get_datasource, process_test, get_subtracted_timestamp
+from pkg.utils import get_datasource, process_test, get_subtracted_timestamp, process_splunk_test
 
 def get_algorithm_type(kwargs):
     """Switch Case of getting algorithm name
@@ -28,7 +29,7 @@ def get_algorithm_type(kwargs):
         algorithm_name = None
     return algorithm_name
 
-def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
+async def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
     """run method to start the tests
 
     Args:
@@ -45,22 +46,38 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
     datasource = get_datasource(config_map)
     result_output = {}
     regression_flag = False
+    fingerprint_matched_df, metrics_config = None, None
     for test in config_map["tests"]:
         # Create fingerprint Matcher
-        matcher = Matcher(
-            index=test["index"],
-            level=logger_instance.level,
-            ES_URL=datasource,
-            verify_certs=False,
-        )
-        start_timestamp = get_start_timestamp(kwargs)
-
-        fingerprint_matched_df, metrics_config = process_test(
-            test,
-            matcher,
-            kwargs,
-            start_timestamp,
-        )
+        if datasource["type"] == "elasticsearch":
+            matcher = Matcher(
+                index=test["index"],
+                level=logger_instance.level,
+                ES_URL=datasource["ES_SERVER"],
+                verify_certs=False,
+            )
+            start_timestamp = get_start_timestamp(kwargs)
+            fingerprint_matched_df, metrics_config = process_test(
+                test,
+                matcher,
+                kwargs,
+                start_timestamp,
+            )
+        elif datasource["type"] == "splunk":
+            matcher = SplunkMatcher(
+                host= datasource.get("host"),
+                port= datasource.get("port"),
+                username= datasource.get("username"),
+                password= datasource.get("password"),
+                indice=datasource.get("indice")
+            )
+            start_timestamp = get_start_timestamp(kwargs)
+            fingerprint_matched_df, metrics_config = await process_splunk_test(
+                test,
+                matcher,
+                kwargs,
+                start_timestamp,
+            )
 
         if fingerprint_matched_df is None:
             sys.exit(3) # No data present

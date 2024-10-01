@@ -15,7 +15,12 @@ class EDivisive(Algorithm):
 
     def _analyze(self):
         self.dataframe["timestamp"] = pd.to_datetime(self.dataframe["timestamp"])
-        self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int) // 10**9
+        self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int)
+        first_timestamp = self.dataframe["timestamp"].dropna().iloc[0]
+        if first_timestamp > 1_000_000_000_000:
+            self.dataframe["timestamp"] = self.dataframe["timestamp"].astype('int64') // 10**9
+        else:
+            self.dataframe["timestamp"] = self.dataframe["timestamp"].astype('int64')
         series= self.setup_series()
         change_points_by_metric = series.analyze().change_points
 
