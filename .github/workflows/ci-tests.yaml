@@ -5,6 +5,10 @@ on:
     branches:
       - master
       - main
+  pull_request_target:
+    branches:
+      - master
+      - main
 
 jobs:
   lint:
