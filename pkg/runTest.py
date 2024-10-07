@@ -1,6 +1,7 @@
 """
 run test
 """
+import sys
 from typing import Any, Dict
 from fmatch.matcher import Matcher
 from fmatch.logrus import SingletonLogger
@@ -8,9 +9,26 @@ from pkg.algorithms import AlgorithmFactory
 import pkg.constants as cnsts
 from pkg.utils import get_datasource, process_test, get_subtracted_timestamp
 
+def get_algorithm_type(kwargs):
+    """Switch Case of getting algorithm name
 
+    Args:
+        kwargs (dict): passed command line arguments
 
-def run(**kwargs: dict[str, Any]) -> dict[str, Any]:
+    Returns:
+        str: algorithm name
+    """
+    if kwargs["hunter_analyze"]:
+        algorithm_name = cnsts.EDIVISIVE
+    elif kwargs["anomaly_detection"]:
+        algorithm_name = cnsts.ISOLATION_FOREST
+    elif kwargs['cmr']:
+        algorithm_name = cnsts.CMR
+    else:
+        algorithm_name = None
+    return algorithm_name
+
+def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
     """run method to start the tests
 
     Args:
@@ -26,6 +44,7 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]:
     config_map = kwargs["configMap"]
     datasource = get_datasource(config_map)
     result_output = {}
+    regression_flag = False
     for test in config_map["tests"]:
         # Create fingerprint Matcher
         matcher = Matcher(
@@ -44,14 +63,11 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]:
         )
 
         if fingerprint_matched_df is None:
-            return None
+            sys.exit(3) # No data present
 
-        if kwargs["hunter_analyze"]:
-            algorithm_name = cnsts.EDIVISIVE
-        elif kwargs["anomaly_detection"]:
-            algorithm_name = cnsts.ISOLATION_FOREST
-        else:
-            return None
+        algorithm_name = get_algorithm_type(kwargs)
+        if algorithm_name is None:
+            return None, None
 
         algorithmFactory = AlgorithmFactory()
         algorithm = algorithmFactory.instantiate_algorithm(
@@ -62,9 +78,10 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]:
                 kwargs,
                 metrics_config,
             )
-        testname, result_data = algorithm.output(kwargs["output_format"])
+        testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
         result_output[testname] = result_data
-    return result_output
+        regression_flag = regression_flag or test_flag
+    return result_output, regression_flag
 
 
 def get_start_timestamp(kwargs: Dict[str, Any]) -> str:

@@ -157,6 +157,7 @@ def filter_uuids_on_index(
     uuids: List[str],
     match: Matcher,
     baseline: str,
+    filter_node_count: bool
 ) -> List[str]:
     """returns the index to be used and runs as uuids
 
@@ -170,7 +171,7 @@ def filter_uuids_on_index(
     """
     if metadata["benchmark.keyword"] in ["ingress-perf", "k8s-netperf"]:
         return uuids
-    if baseline == "":
+    if baseline == "" and not filter_node_count:
         runs = match.match_kube_burner(uuids, fingerprint_index)
         ids = match.filter_runs(runs, runs)
     else:
@@ -220,7 +221,7 @@ def process_test(
     # getting metadata
     metadata = extract_metadata_from_test(test) if options["uuid"] in ("", None) else get_metadata_with_uuid(options["uuid"], match)
     # get uuids, buildUrls matching with the metadata
-    runs = match.get_uuid_by_metadata(metadata, fingerprint_index, lookback_date=start_timestamp)
+    runs = match.get_uuid_by_metadata(metadata, fingerprint_index, lookback_date=start_timestamp, lookback_size=options['lookback_size'])
     uuids = [run["uuid"] for run in runs]
     buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
     # get uuids if there is a baseline
@@ -235,7 +236,7 @@ def process_test(
     benchmark_index = test["benchmarkIndex"]
 
     uuids = filter_uuids_on_index(
-        metadata, benchmark_index, uuids, match, options["baseline"]
+        metadata, benchmark_index, uuids, match, options["baseline"], options['node_count']
     )
     # get metrics data and dataframe
     metrics = test["metrics"]
@@ -257,16 +258,34 @@ def process_test(
     shortener = pyshorteners.Shortener(timeout=10)
     merged_df["buildUrl"] = merged_df["uuid"].apply(
         lambda uuid: (
-            shortener.tinyurl.short(buildUrls[uuid])
+            shorten_url(shortener, buildUrls[uuid])
             if options["convert_tinyurl"]
             else buildUrls[uuid]
-        )  # pylint: disable = cell-var-from-loop
+        )
+
+        # pylint: disable = cell-var-from-loop
     )
+    merged_df=merged_df.reset_index(drop=True)
     #save the dataframe
     output_file_path = f"{options['save_data_path'].split('.')[0]}-{test['name']}.csv"
     match.save_results(merged_df, csv_file_path=output_file_path)
     return merged_df, metrics_config
 
+def shorten_url(shortener: any, uuids: str) -> str:
+    """Shorten url if there is a list of buildUrls
+
+    Args:
+        shortener (any): shortener object to use tinyrl.short on
+        uuids (List[str]): List of uuids to shorten
+
+    Returns:
+        str: a combined string of shortened urls
+    """
+    short_url_list = []
+    for buildUrl in uuids.split(","):
+        short_url_list.append(shortener.tinyurl.short(buildUrl))
+    short_url = ','.join(short_url_list)
+    return short_url
 
 def get_metadata_with_uuid(uuid: str, match: Matcher) -> Dict[Any, Any]:
     """Gets metadata of the run from each test

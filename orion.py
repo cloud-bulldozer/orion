@@ -69,6 +69,14 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 
 # pylint: disable=too-many-locals
 @cli.command(name="cmd")
+@click.option(
+    "--cmr", 
+    is_flag=True,
+    help="Generate percent difference in comparison",
+    cls=MutuallyExclusiveOption,
+    mutually_exclusive=["anomaly_detection","hunter_analyze"],
+)
+@click.option("--filter", is_flag=True, help="Generate percent difference in comparison")
 @click.option("--config", default="config.yaml", help="Path to the configuration file")
 @click.option(
     "--save-data-path", default="data.csv", help="Path to save the output file"
@@ -79,7 +87,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
     is_flag=True,
     help="run hunter analyze",
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["anomaly_detection"],
+    mutually_exclusive=["anomaly_detection","cmr"],
 )
 @click.option("--anomaly-window", type=int, callback=validate_anomaly_options, help="set window size for moving average for anomaly-detection")
 @click.option("--min-anomaly-percent", type=int, callback=validate_anomaly_options, help="set minimum percentage difference from moving average for data point to be detected as anomaly")
@@ -88,7 +96,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
     is_flag=True,
     help="run anomaly detection algorithm powered by isolation forest",
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["hunter_analyze"],
+    mutually_exclusive=["hunter_analyze","cmr"],
 )
 @click.option(
     "-o",
@@ -105,6 +113,8 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option("--lookback", help="Get data from last X days and Y hours. Format in XdYh")
 @click.option("--convert-tinyurl", is_flag=True, help="Convert buildUrls to tiny url format for better formatting")
 @click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
+@click.option("--node-count", default=False, help="Match any node iterations count")
+@click.option("--lookback-size", type=int, default=10000, help="Maximum number of entries to be looked back")
 def cmd_analysis(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
@@ -113,7 +123,7 @@ def cmd_analysis(**kwargs):
     logger_instance = SingletonLogger(debug=level, name="Orion")
     logger_instance.info("🏹 Starting Orion in command-line mode")
     kwargs["configMap"] = load_config(kwargs["config"])
-    output = run(**kwargs)
+    output, regression_flag = run(**kwargs)
     if output is None:
         logger_instance.error("Terminating test")
         sys.exit(0)
@@ -125,6 +135,8 @@ def cmd_analysis(**kwargs):
         output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{kwargs['save_output_path'].split('.')[1]}"
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_table))
+    if regression_flag:
+        sys.exit(2) ## regression detected
 
 
 

@@ -123,9 +123,45 @@ Additionally, users can specify a custom path for the output CSV file using the 
 
 Orion now supports anomaly detection for your data. Use the ```--anomaly-detection``` command to start the anomaly detection process.
 
+
+To be able to find significant percent differences in workload runs, use the ```--cmr``` command. This will compare the most recent run with any previous matching runs or baseline UUIDs. If more than 1 other run is found from the most recent, the values will be meaned together and then compared with the previous run. Use with *direction: 0* (set in the config) when using ```-o json``` format to see percent differences
+
+![cmr percent difference](percentdiff.jpg)
+
 You can now constrain your look-back period using the ```--lookback``` option. The format for look-back is ```XdYh```, where X represents the number of days and Y represents the number of hours.
 
-**_NOTE:_**  The ```--hunter-analyze``` and ```--anomaly-detection``` flags are mutually exclusive. They cannot be used together because they represent different algorithms designed for distinct use cases.
+To specify how many runs to look back, you can use the ```--lookback-size``` option. By default, this option is set to 10000.
+
+**_Note_** This particular feature clashes along with the idea of having to lookback for X number of days. The precedence of both the flags are equal and the using both at the same time returns the runs until the cutoff whichever is shorter. To provide precedence context one can understand the following example:
+
+Consider the following runs
+```
+1 -- 21 Aug
+2 -- 22 Aug
+3 -- 22 Aug
+4 -- 22 Aug
+5 -- 23 Aug
+6 -- 23 Aug
+7 -- 24 Aug
+8 -- 25 Aug
+9 -- 26 Aug
+```
+Today is 27 Aug, and 
+case 1: we want to get data of previous 5 days, the `--lookback` flag gets us the runs [2,9]
+case 2: we want to get data of previous 6 runs, the `--lookback-size` flag gets us the runs [4,9]
+case 3: when we use both `--lookback` and `--lookback-size`
+- Consider we pass `--lookback 5d --lookback-size 6` now this gets the union of both [2,9] and [4,9] which is [4,9]
+- Consider we pass `--lookback 3d --lookback-size 6` now this gets the union of both [7,9] and [4,9] which is [7,9]
+
+This is similar to how car manufacturers warranty plays out such as 5years or 60k miles whichever comes first.
+
+**Why we do not want higher precedence for a single flag?**
+- These flags are optional to use, if we give higher precedence to a single flag and use both flags, the same functionality  can be achieved by just passing the single flag(higher precedence) and ignoring the other.
+- In a use case where we would like to just see latest n number of runs and restricted to a date, using both operators can achieve it. Say I want latest 15 runs from past 10 days, this way of having no precedence allows us to have it. If there are more than 15 runs it gets only 15 runs, if there are less than 15 runs it gets the last 10 days runs.
+
+You can open the match requirement by using the ```--node-count``` option to find any matching uuid based on the metadata and not have to have the same jobConfig.jobIterations. This variable is a ```True``` or ```False```, defaulted to False. 
+
+**_NOTE:_**  The ```cmr```, ```--hunter-analyze``` and ```--anomaly-detection``` flags are mutually exclusive. They cannot be used together because they represent different algorithms designed for distinct use cases.
 
 ### Daemon mode
 The core purpose of Daemon mode is to operate Orion as a self-contained server, dedicated to handling incoming requests. By sending a POST request accompanied by a test name of predefined tests, users can trigger change point detection on the provided metadata and metrics. Following the processing, the response is formatted in JSON, providing a structured output for seamless integration and analysis. To trigger daemon mode just use the following commands

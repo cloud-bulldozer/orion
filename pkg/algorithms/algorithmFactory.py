@@ -6,6 +6,7 @@ import pandas as pd
 import pkg.constants as cnsts
 from .edivisive import EDivisive
 from .isolationforest import IsolationForestWeightedMean
+from .cmr import CMR
 
 
 class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-arguments, line-too-long
@@ -30,4 +31,6 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-argu
             return EDivisive(matcher, dataframe, test, options, metrics_config)
         if algorithm == cnsts.ISOLATION_FOREST:
             return IsolationForestWeightedMean(matcher, dataframe, test, options, metrics_config)
+        if algorithm == cnsts.CMR:
+            return CMR(matcher, dataframe, test, options, metrics_config)
         raise ValueError("Invalid algorithm called")

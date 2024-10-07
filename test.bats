@@ -5,17 +5,28 @@
 
 run_cmd(){
   echo "$@"
+  set +e
   ${@}
+  EXIT_CODE=$?
+  set -e
+
+  if [ $EXIT_CODE -eq 2 ]; then
+    echo "Exit code 2 encountered, regression detected, treating as success"
+    return 0
+  elif [ $EXIT_CODE -eq 3 ]; then
+    echo "Exit code 3 encountered, not enough data"
+    return 0
+  else
+    return $EXIT_CODE
+  fi
 }
 
 setup() {
   # Make a note of daemon PID
-  orion daemon --port 8080 &
-  DAEMON_PID=$!
-  echo "Orion daemon started with PID $DAEMON_PID"
   export ES_SERVER="$QE_ES_SERVER"
   export es_metadata_index="perf_scale_ci*"
   export es_benchmark_index="ripsaw-kube-burner*"
+  export version='4.17'
 }
 
 @test "orion cmd label small scale cluster density with hunter-analyze " {
@@ -23,11 +34,11 @@ setup() {
 }
 
 @test "orion cmd payload scale 4.15 " {
-  run_cmd orion cmd --config "examples/payload-scale-415.yaml" --lookback 5d
+  run_cmd orion cmd --config "examples/payload-scale-415.yaml" --lookback 5d --hunter-analyze
 }
 
 @test "orion cmd payload scale 4.16 without lookback period " {
-  run_cmd orion cmd --config "examples/payload-scale-416.yaml"
+  run_cmd orion cmd --config "examples/payload-scale-416.yaml" --hunter-analyze
 }
 
 @test "orion cmd readout control plane cdv2 with text output " {
@@ -38,7 +49,13 @@ setup() {
   run_cmd orion cmd --config "examples/readout-control-plane-node-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json
 }
 
+@test "orion cmd readout control plane node-density with json output and match all iterations " {
+  run_cmd orion cmd --config "examples/readout-control-plane-node-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json --node-count True
+}
+
+
 @test "orion cmd readout netperf tcp with junit output " {
+  export es_benchmark_index="k8s-netperf"
   run_cmd orion cmd --config "examples/readout-netperf-tcp.yaml" --output-format junit --hunter-analyze --save-output-path=output.xml
 }
 
@@ -67,23 +84,36 @@ setup() {
 }
 
 @test "orion daemon small scale cluster density with anomaly detection " {
+  orion daemon --port 8080 &
+  DAEMON_PID=$!
+  echo "Orion daemon started with PID $DAEMON_PID"
   run_cmd curl http://127.0.0.1:8080/daemon/anomaly?convert_tinyurl=True&test_name=small-scale-cluster-density
-}
-
-@test "orion daemon small scale node density cni with changepoint detection " {
-  run_cmd curl http://127.0.0.1:8080/daemon/changepoint?filter_changepoints=true&test_name=small-scale-node-density-cni
-}
-
-@test "orion daemon trt payload cluster density with version parameter " {
-  run_cmd curl http://127.0.0.1:8080/daemon/changepoint?version=4.17&filter_changepoints=false&test_name=trt-payload-cluster-density
-}
-
-teardown() {
-  # Kill the daemon using its PID
   if [ ! -z "$DAEMON_PID" ]; then
     kill $DAEMON_PID
     echo "Orion daemon with PID $DAEMON_PID killed"
-  else
-    echo "No daemon PID found"
   fi
 }
+
+@test "orion daemon small scale node density cni with changepoint detection " {
+  orion daemon --port 8080 &
+  DAEMON_PID=$!
+  echo "Orion daemon started with PID $DAEMON_PID"
+  run_cmd curl http://127.0.0.1:8080/daemon/changepoint?filter_changepoints=true&test_name=small-scale-node-density-cni
+  if [ ! -z "$DAEMON_PID" ]; then
+    kill $DAEMON_PID
+    echo "Orion daemon with PID $DAEMON_PID killed"
+  fi
+}
+
+@test "orion daemon trt payload cluster density with version parameter " {
+  orion daemon --port 8080 &
+  DAEMON_PID=$!
+  echo "Orion daemon started with PID $DAEMON_PID"
+  run_cmd curl http://127.0.0.1:8080/daemon/changepoint?version=4.17&filter_changepoints=false&test_name=trt-payload-cluster-density
+  if [ ! -z "$DAEMON_PID" ]; then
+    kill $DAEMON_PID
+    echo "Orion daemon with PID $DAEMON_PID killed"
+  fi
+}
+
+
