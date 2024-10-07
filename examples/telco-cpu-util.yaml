@@ -1,9 +1,10 @@
 datasource:
-  type: splunk
+  type: telco
 tests :
   - name : telco_cpu_util_test
     metadata:
       test_type: cpu_util
+      ocp_version: 4.17
 
     metrics : 
       - name: total_cpu

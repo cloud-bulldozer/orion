@@ -1,3 +1,5 @@
+datasource:
+  type: perfscale
 tests :
   - name : payload-node-density
     index: {{ es_metadata_index }}
