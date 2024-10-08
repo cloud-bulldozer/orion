@@ -1,4 +1,6 @@
 # This is a template file
+datasource:
+  type: perfscale
 tests :
   - name : aws-small-scale-cluster-density-v2
     index: ospst-perf-scale-ci-*

@@ -3,6 +3,7 @@ This is the cli file for orion, tool to detect regressions using hunter
 """
 
 # pylint: disable = import-error, line-too-long, no-member
+import asyncio
 import logging
 import sys
 import warnings
@@ -116,6 +117,11 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option("--node-count", default=False, help="Match any node iterations count")
 @click.option("--lookback-size", type=int, default=10000, help="Maximum number of entries to be looked back")
 def cmd_analysis(**kwargs):
+    """Dummy function for asyncio
+    """
+    asyncio.run(_cmd_analysis_async(**kwargs))
+
+async def _cmd_analysis_async(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
     """
@@ -123,7 +129,7 @@ def cmd_analysis(**kwargs):
     logger_instance = SingletonLogger(debug=level, name="Orion")
     logger_instance.info("🏹 Starting Orion in command-line mode")
     kwargs["configMap"] = load_config(kwargs["config"])
-    output, regression_flag = run(**kwargs)
+    output, regression_flag = await run(**kwargs)
     if output is None:
         logger_instance.error("Terminating test")
         sys.exit(0)

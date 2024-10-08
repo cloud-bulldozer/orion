@@ -32,6 +32,7 @@ class Algorithm(ABC):
         self.metrics_config = metrics_config
         self.regression_flag = False
 
+
     def output_json(self) -> Tuple[str, str, bool]:
         """Method to output json output
 
@@ -39,7 +40,7 @@ class Algorithm(ABC):
             Tuple[str, str]: returns test_name and json output
         """
         _, change_points_by_metric = self._analyze()
-        dataframe_json = self.dataframe.to_json(orient="records")
+        dataframe_json = self.dataframe.to_json(orient="records", default_handler=str)
         dataframe_json = json.loads(dataframe_json)
 
         for index, entry in enumerate(dataframe_json):
@@ -57,8 +58,8 @@ class Algorithm(ABC):
                     / change_point.stats.mean_1
                 ) * 100
                 if (
-                    percentage_change * self.metrics_config[key]["direction"] > 0
-                    or self.metrics_config[key]["direction"] == 0
+                    percentage_change * self.metrics_config[key].get("direction",0) > 0
+                    or self.metrics_config[key].get("direction",0) == 0
                 ):
                     dataframe_json[index]["metrics"][key][
                         "percentage_change"

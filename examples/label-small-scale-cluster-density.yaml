@@ -1,3 +1,5 @@
+datasource:
+  type: perfscale
 tests :
   - name : small-scale-cluster-density-v2
     index: {{ es_metadata_index }}

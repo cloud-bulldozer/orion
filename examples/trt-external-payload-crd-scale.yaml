@@ -1,3 +1,5 @@
+datasource:
+  type: perfscale
 tests :
   - name : payload-crd-scale
     index: {{ es_metadata_index }}
