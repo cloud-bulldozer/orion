@@ -29,6 +29,7 @@ tests :
       labels:
         - "[Jira: PerfScale]"
       direction: 0
+      threshold: 10
 
     - name:  apiserverCPU
       metricName : containerCPU
@@ -40,6 +41,7 @@ tests :
       labels:
         - "[Jira: kube-apiserver]"
       direction: 0
+      threshold: 10
 
     - name:  ovnCPU
       metricName : containerCPU
@@ -51,6 +53,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 0
+      threshold: 10
 
     - name:  etcdCPU
       metricName : containerCPU
@@ -62,6 +65,7 @@ tests :
       labels:
         - "[Jira: etcd]"
       direction: 0
+      threshold: 10
     
     - name:  etcdDisk
       metricName : 99thEtcdDiskBackendCommitDurationSeconds
@@ -72,6 +76,7 @@ tests :
       labels:
         - "[Jira: etcd]"
       direction: 0
+      threshold: 10
 
     - name: kubelet 
       metricName : kubeletCPU 
@@ -82,9 +87,10 @@ tests :
         value: cpu 
         agg_type: avg
       direction: 0
+      threshold: 10
 
 ```
-**Note**: `direction: 1` specifies to show positive changes, `direction: 0` specifies to show both positive and negative changes while `direction: -1` shows negative changes.
+**Note**: `direction: 1` specifies to show positive changes, `direction: 0` specifies to show both positive and negative changes while `direction: -1` shows negative changes. `threshold` is an absolute value, which allows only changepoints greater than a certain percentage to be detected.
 
 ## Build Orion
 Building Orion is a straightforward process. Follow these commands:
