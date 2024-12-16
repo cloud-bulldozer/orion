@@ -11,7 +11,7 @@ import click
 import uvicorn
 from fmatch.logrus import SingletonLogger
 from pkg.runTest import run
-from pkg.config import load_config
+from pkg.config import load_config, load_ack
 import pkg.constants as cnsts
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
@@ -78,6 +78,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 )
 @click.option("--filter", is_flag=True, help="Generate percent difference in comparison")
 @click.option("--config", default="config.yaml", help="Path to the configuration file")
+@click.option("--ack", default="", help="Optional ack YAML to ack known regressions")
 @click.option(
     "--save-data-path", default="data.csv", help="Path to save the output file"
 )
@@ -122,6 +123,8 @@ def cmd_analysis(**kwargs):
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
     logger_instance = SingletonLogger(debug=level, name="Orion")
     logger_instance.info("🏹 Starting Orion in command-line mode")
+    if len(kwargs["ack"]) > 1 :
+       kwargs["ackMap"] = load_ack(kwargs["ack"])
     kwargs["configMap"] = load_config(kwargs["config"])
     output, regression_flag = run(**kwargs)
     if output is None:
