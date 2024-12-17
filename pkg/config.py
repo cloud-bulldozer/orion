@@ -54,6 +54,23 @@ def load_config(config: str, parameters: Dict= None) -> Dict[str, Any]:
     rendered_config = yaml.safe_load(rendered_config_yaml)
     return rendered_config
 
+def load_ack(ack: str) -> Dict[str,Any]:
+    logger_instance = SingletonLogger.getLogger("Orion")
+    try:
+        with open(ack, "r", encoding="utf-8") as template_file:
+            template_content = template_file.read()
+            logger_instance.debug("The %s file has successfully loaded", ack)
+    except FileNotFoundError as e:
+        logger_instance.error("Config file not found: %s", e)
+        sys.exit(1)
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger_instance.error("An error occurred: %s", e)
+        sys.exit(1)
+
+    required_parameters = get_template_variables(template_content)
+
+    rendered_config = yaml.safe_load(template_content)
+    return rendered_config
 
 def get_template_variables(template_content: str) -> Set[str]:
     """Extracts all variables from the Jinja2 template content."""

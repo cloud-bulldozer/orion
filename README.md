@@ -163,6 +163,21 @@ You can open the match requirement by using the ```--node-count``` option to fin
 
 **_NOTE:_**  The ```cmr```, ```--hunter-analyze``` and ```--anomaly-detection``` flags are mutually exclusive. They cannot be used together because they represent different algorithms designed for distinct use cases.
 
+#### Ack known bugs
+To ack known regressions, you must provide a yaml file with the uuid and metric which the regression was identified at. Example below
+
+```
+---
+ack :
+  - uuid: "af24e294-93da-4729-a9cc-14acf38454e1",
+    metric: "etcdCPU_avg"
+    reason: "started thread with etcd team"
+```
+
+ack'ing regressions will ensure Orion doesn't continue to notify users of the same issues.
+
+Engineers should add a `reason` that could link to a JIRA or Slack thread. Or the `reason` could be the changepoint % diff is too low to alert component teams. 
+
 ### Daemon mode
 The core purpose of Daemon mode is to operate Orion as a self-contained server, dedicated to handling incoming requests. By sending a POST request accompanied by a test name of predefined tests, users can trigger change point detection on the provided metadata and metrics. Following the processing, the response is formatted in JSON, providing a structured output for seamless integration and analysis. To trigger daemon mode just use the following commands
 
