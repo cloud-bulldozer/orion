@@ -2,9 +2,13 @@
 ack :
   - uuid: "7f7337aa-cee3-4a36-b154-a7c48ed1fb75"
     metric: "etcdCPU_avg"
+    reason: "Under our 10% target"
   - uuid: "22e90f4e-1c79-4d9d-b2f6-b95a7072738c"
     metric: "kubelet_avg"
+    reason: "Opened Dialog with node team"
   - uuid: "22e90f4e-1c79-4d9d-b2f6-b95a7072738c"
     metric: "ovnCPU_avg"
+    reason: "OCPBUGS111111"
   - uuid: "93201652-b496-4594-b1ac-7eb9a32cd609"
     metric: "apiserverCPU_avg"
+    reason: "opened discussion with api team"
