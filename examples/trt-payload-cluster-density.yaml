@@ -35,6 +35,28 @@ tests :
         - "[Jira: kube-apiserver]"
       direction: 1
 
+    - name: multusCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-multus
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: multus]"
+      direction: 1
+
+    - name: monitoringCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-monitoring
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: monitoring]"
+      direction: 1
+
     - name:  ovnCPU
       metricName : containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
