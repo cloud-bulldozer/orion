@@ -22,7 +22,7 @@ class EDivisive(Algorithm):
 
         # Process if we have ack'ed regression
         ackSet = set()
-        if len(self.options["ack"]) > 1 :
+        if len(self.options["ack"]) > 1 and self.options["ackMap"] is not None:
             for ack in self.options["ackMap"]["ack"]:
                 pos = series.find_by_attribute("uuid",ack["uuid"])
                 ackSet.add(str(pos[0]) + "_" + ack["metric"])

@@ -1,0 +1,5 @@
+---
+ack: 
+  - uuid: 7f7337aa-cee3-4a36-b154-a7c48ed1fb75
+    metric: etcdCPU_avg
+    reason: "Below 10%"

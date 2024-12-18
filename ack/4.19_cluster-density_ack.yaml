@@ -1,0 +1,5 @@
+---
+ack :
+  - uuid: cfae6e1e-8c47-4628-be52-8705c8c64285
+    metric: kubelet_avg
+    reason: "kube-burner change which increased cpu for kubelet, it was reverted."
