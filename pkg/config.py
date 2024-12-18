@@ -55,15 +55,7 @@ def load_config(config: str, parameters: Dict= None) -> Dict[str, Any]:
     return rendered_config
 
 def load_ack(ack: str) -> Dict[str,Any]:
-    """Loads ack file
-
-    Args:
-        config (str): path to config file
-
-    Returns:
-        dict: dictionary of the config file
-    """
-
+    "Loads acknowledgment file content."
     logger_instance = SingletonLogger.getLogger("Orion")
     try:
         with open(ack, "r", encoding="utf-8") as template_file:
