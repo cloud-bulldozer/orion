@@ -124,7 +124,7 @@ def cmd_analysis(**kwargs):
     logger_instance = SingletonLogger(debug=level, name="Orion")
     logger_instance.info("🏹 Starting Orion in command-line mode")
     if len(kwargs["ack"]) > 1 :
-       kwargs["ackMap"] = load_ack(kwargs["ack"])
+        kwargs["ackMap"] = load_ack(kwargs["ack"])
     kwargs["configMap"] = load_config(kwargs["config"])
     output, regression_flag = run(**kwargs)
     if output is None:
