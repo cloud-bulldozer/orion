@@ -25,7 +25,8 @@ class EDivisive(Algorithm):
         if len(self.options["ack"]) > 1 and self.options["ackMap"] is not None:
             for ack in self.options["ackMap"]["ack"]:
                 pos = series.find_by_attribute("uuid",ack["uuid"])
-                ackSet.add(str(pos[0]) + "_" + ack["metric"])
+                if len(pos) > 0 :
+                    ackSet.add(str(pos[0]) + "_" + ack["metric"])
 
         # filter by direction and ack'ed issues
         for metric, changepoint_list in change_points_by_metric.items():
