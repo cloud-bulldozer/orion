@@ -116,6 +116,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
 @click.option("--node-count", default=False, help="Match any node iterations count")
 @click.option("--lookback-size", type=int, default=10000, help="Maximum number of entries to be looked back")
+@click.option("--previous-version", is_flag=True, default=False, help="Match with previous version from metadata")
 def cmd_analysis(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
