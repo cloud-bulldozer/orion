@@ -26,19 +26,52 @@ setup() {
   export ES_SERVER="$QE_ES_SERVER"
   export es_metadata_index="perf_scale_ci*"
   export es_benchmark_index="ripsaw-kube-burner*"
-  export version='4.17'
+  LATEST_VERSION=$(curl -s -X POST "$ES_SERVER/perf_scale_ci*/_search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "size": 0,
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "range": {
+              "timestamp": {
+                "gte": "now-1M/M",
+                "lt": "now/M"
+              }
+            }
+          }
+        ],
+        "must_not": [
+          { "wildcard": { "releaseStream.keyword": "*nightly*" } },
+          { "wildcard": { "releaseStream.keyword": "*rc*" } },
+          { "wildcard": { "releaseStream.keyword": "*ci*" } },
+          { "wildcard": { "releaseStream.keyword": "*ec*" } }
+        ]
+      }
+    },
+    "aggs": {
+      "distinct_versions": {
+        "terms": {
+          "field": "releaseStream.keyword",
+          "order": { "_key": "desc" }
+        }
+      }
+    }
+  }' | jq -r '.aggregations.distinct_versions.buckets[0].key')
+  export version=$(echo "$LATEST_VERSION" | cut -d. -f1,2)
 }
 
 @test "orion cmd label small scale cluster density with hunter-analyze " {
   run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --lookback 5d --hunter-analyze
 }
 
-@test "orion cmd payload scale 4.15 " {
-  run_cmd orion cmd --config "examples/payload-scale-415.yaml" --lookback 5d --hunter-analyze
+@test "orion cmd payload scale " {
+  run_cmd orion cmd --config "examples/payload-scale.yaml" --lookback 5d --hunter-analyze
 }
 
-@test "orion cmd payload scale 4.16 without lookback period " {
-  run_cmd orion cmd --config "examples/payload-scale-416.yaml" --hunter-analyze
+@test "orion cmd payload scale without lookback period " {
+  run_cmd orion cmd --config "examples/payload-scale.yaml" --hunter-analyze
 }
 
 @test "orion cmd readout control plane cdv2 with text output " {
@@ -109,7 +142,7 @@ setup() {
   orion daemon --port 8080 &
   DAEMON_PID=$!
   echo "Orion daemon started with PID $DAEMON_PID"
-  run_cmd curl http://127.0.0.1:8080/daemon/changepoint?version=4.17&filter_changepoints=false&test_name=trt-payload-cluster-density
+  run_cmd curl http://127.0.0.1:8080/daemon/changepoint?version=$version&filter_changepoints=false&test_name=trt-payload-cluster-density
   if [ ! -z "$DAEMON_PID" ]; then
     kill $DAEMON_PID
     echo "Orion daemon with PID $DAEMON_PID killed"

@@ -9,7 +9,7 @@ tests :
       workerNodesType: m6a.xlarge
       workerNodesCount: 24
       benchmark.keyword: cluster-density-v2
-      ocpVersion: 4.15
+      ocpVersion: {{ version }}
       # networkType: OVNKubernetes
       # encrypted: true
       # fips: false

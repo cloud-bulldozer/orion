@@ -10,7 +10,7 @@ tests :
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
       benchmark.keyword: cluster-density-v2
-      ocpVersion: 4.16
+      ocpVersion: {{ version }}
       networkType: OVNKubernetes
 
     metrics : 
@@ -62,7 +62,7 @@ tests :
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
       benchmark.keyword: node-density
-      ocpVersion: 4.16
+      ocpVersion: {{ version }}
       networkType: OVNKubernetes
 
     metrics : 
