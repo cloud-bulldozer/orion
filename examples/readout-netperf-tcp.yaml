@@ -3,7 +3,7 @@ tests :
     index: {{ es_metadata_index }}
     benchmarkIndex: {{ es_benchmark_index }}
     metadata:
-      ocpVersion: 4.15
+      ocpVersion: {{ version }}
       platform: AWS
       clusterType: rosa
       benchmark.keyword: k8s-netperf
