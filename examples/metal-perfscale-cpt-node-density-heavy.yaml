@@ -1,0 +1,92 @@
+tests :
+  - name : metal-perfscale-cpt-node-density-heavy
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
+    metadata:
+      platform: BareMetal
+      clusterType: self-managed
+      masterNodesType.keyword: ""
+      masterNodesCount: 3
+      workerNodesType.keyword: ""
+      workerNodesCount: 4
+      benchmark.keyword: node-density-heavy
+      ocpVersion: {{ version }}
+      networkType: OVNKubernetes
+
+    metrics : 
+    - name:  podReadyLatency
+      metricName: podLatencyQuantilesMeasurement
+      quantileName: Ready
+      metric_of_interest: P99
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: PodLatency]"
+
+    - name:  apiserverCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-kube-apiserver
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: kube-apiserver]"
+
+    - name: multusCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-multus
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: multus]"
+
+    - name: monitoringCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-monitoring
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: monitoring]"
+
+    - name:  ovnCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+
+    - name:  etcdCPU
+      metricName : containerCPU
+      labels.namespace.keyword: openshift-etcd
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: etcd]"
+
+    - name:  etcdDisk
+      metricName : 99thEtcdDiskBackendCommitDurationSeconds
+      metric_of_interest: value
+      agg:
+        value: duration
+        agg_type: avg
+      labels:
+        - "[Jira: etcd]"
+
+    - name: kubelet 
+      metricName : kubeletCPU 
+      metric_of_interest: value 
+      labels: 
+        - "[Jira: Node]" 
+      agg: 
+        value: cpu 
+        agg_type: avg
