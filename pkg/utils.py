@@ -153,7 +153,7 @@ def get_datasource(data: Dict[Any, Any]) -> str:
 
 def filter_uuids_on_index(
     metadata: Dict[str, Any],
-    fingerprint_index: str,
+    benchmark_index: str,
     uuids: List[str],
     match: Matcher,
     baseline: str,
@@ -171,8 +171,8 @@ def filter_uuids_on_index(
     """
     if metadata["benchmark.keyword"] in ["ingress-perf", "k8s-netperf"]:
         return uuids
-    if baseline == "" and not filter_node_count:
-        runs = match.match_kube_burner(uuids, fingerprint_index)
+    if baseline == "" and not filter_node_count and "kube-burner" in benchmark_index:
+        runs = match.match_kube_burner(uuids, benchmark_index)
         ids = match.filter_runs(runs, runs)
     else:
         ids = uuids

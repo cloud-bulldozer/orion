@@ -1,0 +1,336 @@
+tests :
+  - name : ols-load-generator-{{ workers }}w-5m
+    index: perf_scale_ci*
+    benchmarkIndex: ols-load-test-results*
+    metadata:
+      workers: {{ workers }}
+      duration: "5m0s"
+      platform: AWS
+      clusterType: self-managed
+      masterNodesType.keyword: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType.keyword: m6a.xlarge
+      workerNodesCount: 3
+      benchmark.keyword: ols-load-generator
+      ocpVersion: {{ version }}
+      networkType: OVNKubernetes
+
+    metrics : 
+    - name:  postQuery
+      metricName: post_query
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postQueryWithCache
+      metricName: post_query_with_cache
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  getFeedbackStatus
+      metricName: get_feedback_status
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postFeedback
+      metricName: post_feedback
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postAuthorized
+      metricName: post_authorized
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  getLiveness
+      metricName: get_liveness
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  getReadiness
+      metricName: get_readiness
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  getMetrics
+      metricName: get_metrics
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postQuery
+      metricName: post_query
+      metric_of_interest: throughput
+      direction: -1
+    - name:  postQueryWithCache
+      metricName: post_query_with_cache
+      metric_of_interest: throughput
+      direction: -1
+    - name:  getFeedbackStatus
+      metricName: get_feedback_status
+      metric_of_interest: throughput
+      direction: -1
+    - name:  postFeedback
+      metricName: post_feedback
+      metric_of_interest: throughput
+      direction: -1
+    - name:  postAuthorized
+      metricName: post_authorized
+      metric_of_interest: throughput
+      direction: -1
+    - name:  getLiveness
+      metricName: get_liveness
+      metric_of_interest: throughput
+      direction: -1
+    - name:  getReadiness
+      metricName: get_readiness
+      metric_of_interest: throughput
+      direction: -1
+    - name:  getMetrics
+      metricName: get_metrics
+      metric_of_interest: throughput
+      direction: -1
+    - name:  LLMCallFailures
+      metricName.keyword: avg-llm-call-failures
+      metric_of_interest: value
+      agg:
+        value: callFailures
+        agg_type: avg
+      direction: 1
+    - name:  LLMValidationErros
+      metricName.keyword: avg-llm-validation-errors
+      metric_of_interest: value
+      agg:
+        value: validationErrors
+        agg_type: avg
+      direction: 1
+    - name:  lightSpeedCPU
+      metricName.keyword: containerCPU
+      labels.namespace.keyword: openshift-lightspeed
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      direction: 1
+    - name:  lightSpeedMemory
+      metricName.keyword: containerMemory
+      labels.namespace.keyword: openshift-lightspeed
+      metric_of_interest: value
+      agg:
+        value: memory
+        agg_type: avg
+      direction: 1
+
+  - name : ols-load-generator-{{ workers }}w-10m
+    index: perf_scale_ci*
+    benchmarkIndex: ols-load-test-results*
+    metadata:
+      workers: {{ workers }}
+      duration: "10m0s"
+      platform: AWS
+      clusterType: self-managed
+      masterNodesType.keyword: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType.keyword: m6a.xlarge
+      workerNodesCount: 3
+      benchmark.keyword: ols-load-generator
+      ocpVersion: {{ version }}
+      networkType: OVNKubernetes
+
+    metrics : 
+    - name:  postQuery
+      metricName: post_query
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postQueryWithCache
+      metricName: post_query_with_cache
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  getFeedbackStatus
+      metricName: get_feedback_status
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postFeedback
+      metricName: post_feedback
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postAuthorized
+      metricName: post_authorized
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  getLiveness
+      metricName: get_liveness
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  getReadiness
+      metricName: get_readiness
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  getMetrics
+      metricName: get_metrics
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postQuery
+      metricName: post_query
+      metric_of_interest: throughput
+      direction: -1
+    - name:  postQueryWithCache
+      metricName: post_query_with_cache
+      metric_of_interest: throughput
+      direction: -1
+    - name:  getFeedbackStatus
+      metricName: get_feedback_status
+      metric_of_interest: throughput
+      direction: -1
+    - name:  postFeedback
+      metricName: post_feedback
+      metric_of_interest: throughput
+      direction: -1
+    - name:  postAuthorized
+      metricName: post_authorized
+      metric_of_interest: throughput
+      direction: -1
+    - name:  getLiveness
+      metricName: get_liveness
+      metric_of_interest: throughput
+      direction: -1
+    - name:  getReadiness
+      metricName: get_readiness
+      metric_of_interest: throughput
+      direction: -1
+    - name:  getMetrics
+      metricName: get_metrics
+      metric_of_interest: throughput
+      direction: -1
+    - name:  LLMCallFailures
+      metricName.keyword: avg-llm-call-failures
+      metric_of_interest: value
+      agg:
+        value: callFailures
+        agg_type: avg
+      direction: 1
+    - name:  LLMValidationErros
+      metricName.keyword: avg-llm-validation-errors
+      metric_of_interest: value
+      agg:
+        value: validationErrors
+        agg_type: avg
+      direction: 1
+    - name:  lightSpeedCPU
+      metricName.keyword: containerCPU
+      labels.namespace.keyword: openshift-lightspeed
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      direction: 1
+    - name:  lightSpeedMemory
+      metricName.keyword: containerMemory
+      labels.namespace.keyword: openshift-lightspeed
+      metric_of_interest: value
+      agg:
+        value: memory
+        agg_type: avg
+      direction: 1
+
+  - name : ols-load-generator-{{ workers }}w-20m
+    index: perf_scale_ci*
+    benchmarkIndex: ols-load-test-results*
+    metadata:
+      workers: {{ workers }}
+      duration: "20m0s"
+      platform: AWS
+      clusterType: self-managed
+      masterNodesType.keyword: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType.keyword: m6a.xlarge
+      workerNodesCount: 3
+      benchmark.keyword: ols-load-generator
+      ocpVersion: {{ version }}
+      networkType: OVNKubernetes
+
+    metrics : 
+    - name:  postQuery
+      metricName: post_query
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postQueryWithCache
+      metricName: post_query_with_cache
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  getFeedbackStatus
+      metricName: get_feedback_status
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postFeedback
+      metricName: post_feedback
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postAuthorized
+      metricName: post_authorized
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  getLiveness
+      metricName: get_liveness
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  getReadiness
+      metricName: get_readiness
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  getMetrics
+      metricName: get_metrics
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postQuery
+      metricName: post_query
+      metric_of_interest: throughput
+      direction: -1
+    - name:  postQueryWithCache
+      metricName: post_query_with_cache
+      metric_of_interest: throughput
+      direction: -1
+    - name:  getFeedbackStatus
+      metricName: get_feedback_status
+      metric_of_interest: throughput
+      direction: -1
+    - name:  postFeedback
+      metricName: post_feedback
+      metric_of_interest: throughput
+      direction: -1
+    - name:  postAuthorized
+      metricName: post_authorized
+      metric_of_interest: throughput
+      direction: -1
+    - name:  getLiveness
+      metricName: get_liveness
+      metric_of_interest: throughput
+      direction: -1
+    - name:  getReadiness
+      metricName: get_readiness
+      metric_of_interest: throughput
+      direction: -1
+    - name:  getMetrics
+      metricName: get_metrics
+      metric_of_interest: throughput
+      direction: -1
+    - name:  LLMCallFailures
+      metricName.keyword: avg-llm-call-failures
+      metric_of_interest: value
+      agg:
+        value: callFailures
+        agg_type: avg
+      direction: 1
+    - name:  LLMValidationErros
+      metricName.keyword: avg-llm-validation-errors
+      metric_of_interest: value
+      agg:
+        value: validationErrors
+        agg_type: avg
+      direction: 1
+    - name:  lightSpeedCPU
+      metricName.keyword: containerCPU
+      labels.namespace.keyword: openshift-lightspeed
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      direction: 1
+    - name:  lightSpeedMemory
+      metricName.keyword: containerMemory
+      labels.namespace.keyword: openshift-lightspeed
+      metric_of_interest: value
+      agg:
+        value: memory
+        agg_type: avg
+      direction: 1
