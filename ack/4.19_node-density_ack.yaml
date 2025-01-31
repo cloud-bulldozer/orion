@@ -1,1 +1,5 @@
 ---
+ack:
+  - uuid: 35bbc7f2-195c-43c2-8d43-62142d8bb33a
+    metric: ovnCPU_avg
+    reason: "Opened Bug: https://issues.redhat.com/browse/OCPBUGS-49613"
