@@ -1,15 +1,15 @@
 tests :
-  - name : ols-load-generator-{{ workers }}w-5m
+  - name : ols-load-generator-{{ ols_test_workers }}w-5m
     index: perf_scale_ci*
     benchmarkIndex: ols-load-test-results*
     metadata:
-      workers: {{ workers }}
-      duration: "5m0s"
+      olsTestWorkers: {{ ols_test_workers }}
+      olsTestDuration: "5m"
       platform: AWS
       clusterType: self-managed
       masterNodesType.keyword: m6a.xlarge
       masterNodesCount: 3
-      workerNodesType.keyword: m6a.xlarge
+      workerNodesType.keyword: m6i.xlarge
       workerNodesCount: 3
       benchmark.keyword: ols-load-generator
       ocpVersion: {{ version }}
@@ -20,8 +20,16 @@ tests :
       metricName: post_query
       metric_of_interest: p99Latency
       direction: 1
+    - name: postStreamingQuery
+      metricName: post_streaming_query
+      metric_of_interest: p99Latency
+      direction: 1
     - name:  postQueryWithCache
       metricName: post_query_with_cache
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postStreamingQueryWithCache
+      metricName: post_streaming_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
     - name:  getFeedbackStatus
@@ -50,35 +58,43 @@ tests :
       direction: 1
     - name:  postQuery
       metricName: post_query
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
+      direction: -1
+    - name: postStreamingQuery
+      metricName: post_streaming_query
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  postQueryWithCache
       metricName: post_query_with_cache
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
+      direction: -1
+    - name:  postStreamingQueryWithCache
+      metricName: post_streaming_query_with_cache
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  getFeedbackStatus
       metricName: get_feedback_status
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  postFeedback
       metricName: post_feedback
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  postAuthorized
       metricName: post_authorized
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  getLiveness
       metricName: get_liveness
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  getReadiness
       metricName: get_readiness
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  getMetrics
       metricName: get_metrics
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  LLMCallFailures
       metricName.keyword: avg-llm-call-failures
@@ -111,17 +127,17 @@ tests :
         agg_type: avg
       direction: 1
 
-  - name : ols-load-generator-{{ workers }}w-10m
+  - name : ols-load-generator-{{ ols_test_workers }}w-10m
     index: perf_scale_ci*
     benchmarkIndex: ols-load-test-results*
     metadata:
-      workers: {{ workers }}
-      duration: "10m0s"
+      olsTestWorkers: {{ ols_test_workers }}
+      olsTestDuration: "10m"
       platform: AWS
       clusterType: self-managed
       masterNodesType.keyword: m6a.xlarge
       masterNodesCount: 3
-      workerNodesType.keyword: m6a.xlarge
+      workerNodesType.keyword: m6i.xlarge
       workerNodesCount: 3
       benchmark.keyword: ols-load-generator
       ocpVersion: {{ version }}
@@ -132,8 +148,16 @@ tests :
       metricName: post_query
       metric_of_interest: p99Latency
       direction: 1
+    - name: postStreamingQuery
+      metricName: post_streaming_query
+      metric_of_interest: p99Latency
+      direction: 1
     - name:  postQueryWithCache
       metricName: post_query_with_cache
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postStreamingQueryWithCache
+      metricName: post_streaming_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
     - name:  getFeedbackStatus
@@ -162,35 +186,43 @@ tests :
       direction: 1
     - name:  postQuery
       metricName: post_query
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
+      direction: -1
+    - name: postStreamingQuery
+      metricName: post_streaming_query
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  postQueryWithCache
       metricName: post_query_with_cache
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
+      direction: -1
+    - name:  postStreamingQueryWithCache
+      metricName: post_streaming_query_with_cache
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  getFeedbackStatus
       metricName: get_feedback_status
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  postFeedback
       metricName: post_feedback
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  postAuthorized
       metricName: post_authorized
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  getLiveness
       metricName: get_liveness
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  getReadiness
       metricName: get_readiness
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  getMetrics
       metricName: get_metrics
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  LLMCallFailures
       metricName.keyword: avg-llm-call-failures
@@ -223,17 +255,17 @@ tests :
         agg_type: avg
       direction: 1
 
-  - name : ols-load-generator-{{ workers }}w-20m
+  - name : ols-load-generator-{{ ols_test_workers }}w-20m
     index: perf_scale_ci*
     benchmarkIndex: ols-load-test-results*
     metadata:
-      workers: {{ workers }}
-      duration: "20m0s"
+      olsTestWorkers: {{ ols_test_workers }}
+      olsTestDuration: "20m"
       platform: AWS
       clusterType: self-managed
       masterNodesType.keyword: m6a.xlarge
       masterNodesCount: 3
-      workerNodesType.keyword: m6a.xlarge
+      workerNodesType.keyword: m6i.xlarge
       workerNodesCount: 3
       benchmark.keyword: ols-load-generator
       ocpVersion: {{ version }}
@@ -244,8 +276,16 @@ tests :
       metricName: post_query
       metric_of_interest: p99Latency
       direction: 1
+    - name: postStreamingQuery
+      metricName: post_streaming_query
+      metric_of_interest: p99Latency
+      direction: 1
     - name:  postQueryWithCache
       metricName: post_query_with_cache
+      metric_of_interest: p99Latency
+      direction: 1
+    - name:  postStreamingQueryWithCache
+      metricName: post_streaming_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
     - name:  getFeedbackStatus
@@ -274,35 +314,43 @@ tests :
       direction: 1
     - name:  postQuery
       metricName: post_query
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
+      direction: -1
+    - name: postStreamingQuery
+      metricName: post_streaming_query
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  postQueryWithCache
       metricName: post_query_with_cache
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
+      direction: -1
+    - name:  postStreamingQueryWithCache
+      metricName: post_streaming_query_with_cache
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  getFeedbackStatus
       metricName: get_feedback_status
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  postFeedback
       metricName: post_feedback
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  postAuthorized
       metricName: post_authorized
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  getLiveness
       metricName: get_liveness
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  getReadiness
       metricName: get_readiness
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  getMetrics
       metricName: get_metrics
-      metric_of_interest: throughput
+      metric_of_interest: statusCodes.200
       direction: -1
     - name:  LLMCallFailures
       metricName.keyword: avg-llm-call-failures
