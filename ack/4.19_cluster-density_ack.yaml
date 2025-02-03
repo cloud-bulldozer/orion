@@ -3,6 +3,9 @@ ack:
   - uuid: cfae6e1e-8c47-4628-be52-8705c8c64285
     metric: kubelet_avg
     reason: "kube-burner change which increased cpu for kubelet, it was reverted."
-  - uuid: 35bbc7f2-195c-43c2-8d43-62142d8bb33a
+  - uuid: a7006f55-489b-4b79-96ed-5d3fd3f050b0
     metric: ovnCPU_avg
     reason: "Opened Bug: https://issues.redhat.com/browse/OCPBUGS-49613"
+  - uuid: 858c1aa1-eb87-4551-b6b8-f432807fff8d
+    metric: podReadyLatency_P99
+    reason: "Opened Bug: https://issues.redhat.com/browse/OCPBUGS-50522"
