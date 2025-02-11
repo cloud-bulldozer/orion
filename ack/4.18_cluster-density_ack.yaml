@@ -15,3 +15,12 @@ ack:
   - uuid: 35bbc7f2-195c-43c2-8d43-62142d8bb33a
     metric: ovnCPU_avg
     reason: "Opened Bug: https://issues.redhat.com/browse/OCPBUGS-49613"
+  - uuid: 90e38f9e-9b90-4f8a-af97-8ccbdb3ef800
+    metric: ovnCPU_avg
+    reason: "See OCPBUGS-49613"
+  - uuid: 90e38f9e-9b90-4f8a-af97-8ccbdb3ef800
+    metric: podReadyLatency_P99
+    reason: "Latency increase overlaps with ovnCPU_avg. See OCPBUGS-49613"
+  - uuid: 373effda-bcfd-42fe-8ba5-fd539bf2c755
+    metric: kubelet_avg
+    reason: "False positive. Values look fine."
