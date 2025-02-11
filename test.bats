@@ -116,6 +116,11 @@ setup() {
   run_cmd orion cmd --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze
 }
 
+@test "orion cmd ols configuration test " {
+  export ols_test_workers=10
+  run_cmd orion cmd --config "examples/ols-load-generator.yaml" --hunter-analyze
+}
+
 @test "orion daemon small scale cluster density with anomaly detection " {
   orion daemon --port 8080 &
   DAEMON_PID=$!
