@@ -118,7 +118,7 @@ setup() {
 
 @test "orion cmd ols configuration test " {
   export ols_test_workers=10
-  run_cmd orion cmd --config "examples/ols-load-generator.yaml" --hunter-analyze
+  es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion cmd --config "examples/ols-load-generator.yaml" --hunter-analyze
 }
 
 @test "orion daemon small scale cluster density with anomaly detection " {

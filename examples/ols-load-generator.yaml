@@ -1,7 +1,7 @@
 tests :
   - name : ols-load-generator-{{ ols_test_workers }}w-5m
-    index: perf_scale_ci*
-    benchmarkIndex: ols-load-test-results*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       olsTestWorkers: {{ ols_test_workers }}
       olsTestDuration: "5m"
@@ -128,8 +128,8 @@ tests :
       direction: 1
 
   - name : ols-load-generator-{{ ols_test_workers }}w-10m
-    index: perf_scale_ci*
-    benchmarkIndex: ols-load-test-results*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       olsTestWorkers: {{ ols_test_workers }}
       olsTestDuration: "10m"
@@ -256,8 +256,8 @@ tests :
       direction: 1
 
   - name : ols-load-generator-{{ ols_test_workers }}w-20m
-    index: perf_scale_ci*
-    benchmarkIndex: ols-load-test-results*
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       olsTestWorkers: {{ ols_test_workers }}
       olsTestDuration: "20m"
