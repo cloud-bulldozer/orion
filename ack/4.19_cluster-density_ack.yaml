@@ -9,3 +9,6 @@ ack:
   - uuid: 858c1aa1-eb87-4551-b6b8-f432807fff8d
     metric: podReadyLatency_P99
     reason: "Opened Bug: https://issues.redhat.com/browse/OCPBUGS-50522"
+  - uuid: e20ae931-6b18-46a7-b41d-e9a4ae2099d5
+    metric: ovnCPU_avg
+    reason: "See: OCPBUGS-50522. Fixed in: 1889163830622162944"

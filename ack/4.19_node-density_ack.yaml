@@ -3,3 +3,6 @@ ack:
   - uuid: fe3c49e3-0b53-4fb1-88bf-bbf3bd187efc
     metric: ovnCPU_avg
     reason: "Opened Bug: https://issues.redhat.com/browse/OCPBUGS-49613"
+  - uuid: e6db93d9-bcb7-47e8-a4d2-143b3db4fabc
+    metric: etcdCPU_avg
+    reason: "Abnormally high etcdCPU looks like it was fixed at 1890069956565929984"

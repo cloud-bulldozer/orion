@@ -24,3 +24,6 @@ ack:
   - uuid: 373effda-bcfd-42fe-8ba5-fd539bf2c755
     metric: kubelet_avg
     reason: "False positive. Values look fine."
+  - uuid: df4b0361-02f9-458d-9d02-57b1d6724983
+    metric: podReadyLatency_P99
+    reason: "12s podReady is not unusual in 4.18"
