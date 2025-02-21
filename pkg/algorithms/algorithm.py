@@ -41,6 +41,7 @@ class Algorithm(ABC):
         _, change_points_by_metric = self._analyze()
         dataframe_json = self.dataframe.to_json(orient="records")
         dataframe_json = json.loads(dataframe_json)
+        collapsed_json = []
 
         for index, entry in enumerate(dataframe_json):
             entry["metrics"] = {
@@ -60,14 +61,32 @@ class Algorithm(ABC):
                     percentage_change * self.metrics_config[key]["direction"] > 0
                     or self.metrics_config[key]["direction"] == 0
                 ):
-                    dataframe_json[index]["metrics"][key][
-                        "percentage_change"
-                    ] = percentage_change
+                    dataframe_json[index]["metrics"][key]["percentage_change"] = (
+                        percentage_change
+                    )
                     dataframe_json[index]["is_changepoint"] = True
+                    if self.options["collapse"]:
+                        if (
+                            index > 0
+                            and dataframe_json[index - 1] not in collapsed_json
+                        ):
+                            collapsed_json.append(dataframe_json[index - 1])
+                        if dataframe_json[index] not in collapsed_json:
+                            collapsed_json.append(dataframe_json[index])
+                        if (
+                            index < len(dataframe_json) - 1
+                            and dataframe_json[index + 1] not in collapsed_json
+                        ):
+                            collapsed_json.append(dataframe_json[index + 1])
+        return_json = collapsed_json if self.options["collapse"] else dataframe_json
 
-        return self.test["name"], json.dumps(dataframe_json, indent=2), self.regression_flag
+        return (
+            self.test["name"],
+            json.dumps(return_json, indent=2),
+            self.regression_flag,
+        )
 
-    def output_text(self) -> Tuple[str,str, bool]:
+    def output_text(self) -> Tuple[str, str, bool]:
         """Outputs the data in text/tabular format"""
         series, change_points_by_metric = self._analyze()
         change_points_by_time = self.group_change_points_by_time(
@@ -79,7 +98,7 @@ class Algorithm(ABC):
         )
         return self.test["name"], output_table, self.regression_flag
 
-    def output_junit(self) -> Tuple[str,str, bool]:
+    def output_junit(self) -> Tuple[str, str, bool]:
         """Output junit format
 
         Returns:
@@ -91,7 +110,6 @@ class Algorithm(ABC):
             test_name=test_name,
             data_json=data_json,
             metrics_config=self.metrics_config,
-            options=self.options,
         )
         return test_name, data_junit, self.regression_flag
 
@@ -157,7 +175,7 @@ class Algorithm(ABC):
 
         return series
 
-    def output(self, output_format) -> Union[Any,None]:
+    def output(self, output_format) -> Union[Any, None]:
         """Method to select output method
 
         Args:
