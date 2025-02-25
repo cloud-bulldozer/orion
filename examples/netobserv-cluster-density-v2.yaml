@@ -1,0 +1,221 @@
+tests:
+  - name: netobserv-perf-cluster-density-v2-{{ platform }}-{{ workers }}w
+    index: perf_scale_ci*
+    benchmarkIndex: prod-netobserv-datapoints*
+    metadata:
+      benchmark.keyword: cluster-density-v2
+      ocpVersion: { { version } }
+      platform: { { platform } }
+      workers: { { workers } }
+    metrics:
+      - name: nFlowsProcessedTotals
+        metricName: nFlowsProcessedTotals
+        metric_of_interest: value
+        agg:
+          value: nFlowsProcessedTotals
+          agg_type: max
+        direction: 0
+      - name: nWorkloadFlowsProcessedTotals
+        metricName: nWorkloadFlowsProcessedTotals
+        metric_of_interest: value
+        agg:
+          value: nWorkloadFlowsProcessedTotals
+          agg_type: max
+        direction: 0
+      - name: nWorkloadBytesProcessedPerMinuteNetobserv
+        metricName: nWorkloadBytesProcessedPerMinuteNetobserv
+        metric_of_interest: value
+        agg:
+          value: nWorkloadBytesProcessedPerMinuteNetobserv
+          agg_type: avg
+        direction: 0
+      - name: nWorkloadBytesProcessedPerMinuteCadvisor
+        metricName: nWorkloadBytesProcessedPerMinuteCadvisor
+        metric_of_interest: value
+        agg:
+          value: nWorkloadBytesProcessedPerMinuteCadvisor
+          agg_type: avg
+        direction: 0
+      - name: nFlowsErroredTotals
+        metricName: nFlowsErroredTotals
+        metric_of_interest: value
+        agg:
+          value: nFlowsErroredTotals
+          agg_type: max
+        direction: 0
+      - name: nFlowsErroredRatio
+        metricName: nFlowsErroredRatio
+        metric_of_interest: value
+        agg:
+          value: nFlowsErroredRatio
+          agg_type: avg
+        direction: 0
+      - name: lokiRecordsWritten
+        metricName: lokiRecordsWritten
+        metric_of_interest: value
+        agg:
+          value: lokiRecordsWritten
+          agg_type: max
+        direction: 0
+      - name: ebpfFlowsDroppedTotals
+        metricName: ebpfFlowsDroppedTotals
+        metric_of_interest: value
+        agg:
+          value: ebpfFlowsDroppedTotals
+          agg_type: max
+      - name: ebpfFlowsDroppedRatio
+        metricName: ebpfFlowsDroppedRatio
+        metric_of_interest: value
+        agg:
+          value: ebpfFlowsDroppedRatio
+          agg_type: avg
+      - name: ebpfRingBufferMapRatioTotals
+        metricName: ebpfRingBufferMapRatioTotals
+        metric_of_interest: value
+        agg:
+          value: ebpfRingBufferMapRatioTotals
+          agg_type: avg
+      - name: lokiRecordsDropped
+        metricName: lokiRecordsDropped
+        metric_of_interest: value
+        agg:
+          value: lokiRecordsDropped
+          agg_type: max
+      - name: lokiRecordsDroppedRatio
+        metricName: lokiRecordsDroppedRatio
+        metric_of_interest: value
+        agg:
+          value: lokiRecordsDroppedRatio
+          agg_type: avg
+      - name: lokiRecordsDroppedRatio
+        metricName: lokiRecordsDroppedRatio
+        metric_of_interest: value
+        agg:
+          value: lokiRecordsDroppedRatio
+          agg_type: avg
+      - name: cpuFLPTotals
+        metricName: cpuFLPTotals
+        metric_of_interest: value
+        agg:
+          value: nFlowsProcessedTotals
+          agg_type: avg
+        direction: 0
+      - name: cpuEBPFTotals
+        metricName: cpuEBPFTotals
+        metric_of_interest: value
+        agg:
+          value: cpuEBPFTotals
+          agg_type: avg
+        direction: 0
+      - name: cpuLokiTotals
+        metricName: cpuLokiTotals
+        metric_of_interest: value
+        agg:
+          value: cpuLokiTotals
+          agg_type: avg
+        direction: 0
+      - name: cpuKafkaTotals
+        metricName: cpuKafkaTotals
+        metric_of_interest: value
+        agg:
+          value: cpuKafkaTotals
+          agg_type: avg
+        direction: 0
+      - name: cpuPrometheusTotals
+        metricName: cpuPrometheusTotals
+        metric_of_interest: value
+        agg:
+          value: cpuPrometheusTotals
+          agg_type: avg
+        direction: 0
+      - name: rssFLPTotals
+        metricName: rssFLPTotals
+        metric_of_interest: value
+        agg:
+          value: rssFLPTotals
+          agg_type: avg
+        direction: 0
+      - name: rssEBPFTotals
+        metricName: rssEBPFTotals
+        metric_of_interest: value
+        agg:
+          value: rssEBPFTotals
+          agg_type: avg
+        direction: 0
+      - name: rssLokiTotals
+        metricName: rssLokiTotals
+        metric_of_interest: value
+        agg:
+          value: rssLokiTotals
+          agg_type: avg
+        direction: 0
+      - name: rssKafkaTotals
+        metricName: rssKafkaTotals
+        metric_of_interest: value
+        agg:
+          value: rssKafkaTotals
+          agg_type: avg
+        direction: 0
+      - name: rssPrometheusTotals
+        metricName: rssPrometheusTotals
+        metric_of_interest: value
+        agg:
+          value: rssPrometheusTotals
+          agg_type: avg
+        direction: 0
+      - name: TotalNetObservCPUUsage
+        metricName: TotalNetObservCPUUsage
+        metric_of_interest: value
+        agg:
+          value: TotalNetObservCPUUsage
+          agg_type: avg
+        direction: 0
+      - name: TotalNetObservRSSUsage
+        metricName: TotalNetObservRSSUsage
+        metric_of_interest: value
+        agg:
+          value: TotalNetObservRSSUsage
+          agg_type: avg
+        direction: 0
+      - name: TotalClusterCPUUsage
+        metricName: TotalClusterCPUUsage
+        metric_of_interest: value
+        agg:
+          value: TotalClusterCPUUsage
+          agg_type: avg
+        direction: 0
+      - name: TotalClusterRSSUsage
+        metricName: TotalClusterRSSUsage
+        metric_of_interest: value
+        agg:
+          value: TotalClusterRSSUsage
+          agg_type: avg
+        direction: 0
+      - name: TotalNetworkBytesOut
+        metricName: TotalNetworkBytesOut
+        metric_of_interest: value
+        agg:
+          value: TotalNetworkBytesOut
+          agg_type: avg
+        direction: 0
+      - name: TotalNetworkBytesIn
+        metricName: TotalNetworkBytesIn
+        metric_of_interest: value
+        agg:
+          value: TotalNetworkBytesIn
+          agg_type: avg
+        direction: 0
+      - name: NetObservClusterCPUPercentUtil
+        metricName: NetObservClusterCPUPercentUtil
+        metric_of_interest: value
+        agg:
+          value: NetObservClusterCPUPercentUtil
+          agg_type: avg
+        direction: 0
+      - name: NetObservClusterMemPercentUtil
+        metricName: NetObservClusterMemPercentUtil
+        metric_of_interest: value
+        agg:
+          value: NetObservClusterMemPercentUtil
+          agg_type: avg
+        direction: 0
