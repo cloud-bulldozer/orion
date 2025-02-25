@@ -4,9 +4,9 @@ tests:
     benchmarkIndex: prod-netobserv-datapoints*
     metadata:
       benchmark.keyword: node-density-heavy
-      ocpVersion: { { version } }
-      platform: { { platform } }
-      workers: { { workers } }
+      ocpVersion: {{ version }}
+      platform: {{ platform }}
+      workers: {{ workers }}
     metrics:
       - name: nFlowsProcessedTotals
         metricName: nFlowsProcessedTotals
