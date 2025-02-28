@@ -20,8 +20,6 @@ import pandas as pd
 import pyshorteners
 
 
-
-
 # pylint: disable=too-many-locals
 def get_metric_data(
     uuids: List[str], index: str, metrics: Dict[str, Any], match: Matcher
@@ -52,9 +50,13 @@ def get_metric_data(
         logger_instance.info("Collecting %s", metric_name)
         try:
             if "agg" in metric:
-                metric_df, metric_dataframe_name = process_aggregation_metric(uuids, index, metric, match)
+                metric_df, metric_dataframe_name = process_aggregation_metric(
+                    uuids, index, metric, match
+                )
             else:
-                metric_df, metric_dataframe_name = process_standard_metric(uuids, index, metric, match, metric_value_field)
+                metric_df, metric_dataframe_name = process_standard_metric(
+                    uuids, index, metric, match, metric_value_field
+                )
 
             metric["labels"] = labels
             metric["direction"] = direction
@@ -68,6 +70,7 @@ def get_metric_data(
                 e,
             )
     return dataframe_list, metrics_config
+
 
 def process_aggregation_metric(
     uuids: List[str], index: str, metric: Dict[str, Any], match: Matcher
@@ -87,13 +90,24 @@ def process_aggregation_metric(
     aggregation_value = metric["agg"]["value"]
     aggregation_type = metric["agg"]["agg_type"]
     aggregation_name = f"{aggregation_value}_{aggregation_type}"
-    aggregated_df = match.convert_to_df(aggregated_metric_data, columns=["uuid", "timestamp", aggregation_name])
+    aggregated_df = match.convert_to_df(
+        aggregated_metric_data, columns=["uuid", "timestamp", aggregation_name]
+    )
     aggregated_df = aggregated_df.drop_duplicates(subset=["uuid"], keep="first")
     aggregated_metric_name = f"{metric['name']}_{aggregation_type}"
-    aggregated_df = aggregated_df.rename(columns={aggregation_name: aggregated_metric_name})
+    aggregated_df = aggregated_df.rename(
+        columns={aggregation_name: aggregated_metric_name}
+    )
     return aggregated_df, aggregated_metric_name
 
-def process_standard_metric(uuids: List[str], index: str, metric: Dict[str, Any], match: Matcher, metric_value_field: str) -> pd.DataFrame:
+
+def process_standard_metric(
+    uuids: List[str],
+    index: str,
+    metric: Dict[str, Any],
+    match: Matcher,
+    metric_value_field: str,
+) -> pd.DataFrame:
     """Method to get dataframe of standard metric
 
     Args:
@@ -106,12 +120,17 @@ def process_standard_metric(uuids: List[str], index: str, metric: Dict[str, Any]
     Returns:
         pd.DataFrame: _description_
     """
-    standard_metric_data = match.getResults("",uuids, index, metric)
-    standard_metric_df = match.convert_to_df(standard_metric_data, columns=["uuid", "timestamp", metric_value_field])
+    standard_metric_data = match.getResults("", uuids, index, metric)
+    standard_metric_df = match.convert_to_df(
+        standard_metric_data, columns=["uuid", "timestamp", metric_value_field]
+    )
     standard_metric_name = f"{metric['name']}_{metric_value_field}"
-    standard_metric_df = standard_metric_df.rename(columns={metric_value_field: standard_metric_name})
+    standard_metric_df = standard_metric_df.rename(
+        columns={metric_value_field: standard_metric_name}
+    )
     standard_metric_df = standard_metric_df.drop_duplicates()
     return standard_metric_df, standard_metric_name
+
 
 def extract_metadata_from_test(test: Dict[str, Any]) -> Dict[Any, Any]:
     """Gets metadata of the run from each test
@@ -127,9 +146,6 @@ def extract_metadata_from_test(test: Dict[str, Any]) -> Dict[Any, Any]:
     metadata["ocpVersion"] = str(metadata["ocpVersion"])
     logger_instance.debug("metadata" + str(metadata))
     return metadata
-
-
-
 
 
 def get_datasource(data: Dict[Any, Any]) -> str:
@@ -157,7 +173,7 @@ def filter_uuids_on_index(
     uuids: List[str],
     match: Matcher,
     baseline: str,
-    filter_node_count: bool
+    filter_node_count: bool,
 ) -> List[str]:
     """returns the index to be used and runs as uuids
 
@@ -219,9 +235,18 @@ def process_test(
     fingerprint_index = test["index"]
 
     # getting metadata
-    metadata = extract_metadata_from_test(test) if options["uuid"] in ("", None) else get_metadata_with_uuid(options["uuid"], match)
+    metadata = (
+        extract_metadata_from_test(test)
+        if options["uuid"] in ("", None)
+        else get_metadata_with_uuid(options["uuid"], match)
+    )
     # get uuids, buildUrls matching with the metadata
-    runs = match.get_uuid_by_metadata(metadata, fingerprint_index, lookback_date=start_timestamp, lookback_size=options['lookback_size'])
+    runs = match.get_uuid_by_metadata(
+        metadata,
+        fingerprint_index,
+        lookback_date=start_timestamp,
+        lookback_size=options["lookback_size"],
+    )
     uuids = [run["uuid"] for run in runs]
     buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
     # get uuids if there is a baseline
@@ -236,7 +261,12 @@ def process_test(
     benchmark_index = test["benchmarkIndex"]
 
     uuids = filter_uuids_on_index(
-        metadata, benchmark_index, uuids, match, options["baseline"], options['node_count']
+        metadata,
+        benchmark_index,
+        uuids,
+        match,
+        options["baseline"],
+        options["node_count"],
     )
     # get metrics data and dataframe
     metrics = test["metrics"]
@@ -262,14 +292,14 @@ def process_test(
             if options["convert_tinyurl"]
             else buildUrls[uuid]
         )
-
         # pylint: disable = cell-var-from-loop
     )
-    merged_df=merged_df.reset_index(drop=True)
-    #save the dataframe
+    merged_df = merged_df.reset_index(drop=True)
+    # save the dataframe
     output_file_path = f"{options['save_data_path'].split('.')[0]}-{test['name']}.csv"
     match.save_results(merged_df, csv_file_path=output_file_path)
     return merged_df, metrics_config
+
 
 def shorten_url(shortener: any, uuids: str) -> str:
     """Shorten url if there is a list of buildUrls
@@ -284,8 +314,9 @@ def shorten_url(shortener: any, uuids: str) -> str:
     short_url_list = []
     for buildUrl in uuids.split(","):
         short_url_list.append(shortener.tinyurl.short(buildUrl))
-    short_url = ','.join(short_url_list)
+    short_url = ",".join(short_url_list)
     return short_url
+
 
 def get_metadata_with_uuid(uuid: str, match: Matcher) -> Dict[Any, Any]:
     """Gets metadata of the run from each test
@@ -333,10 +364,7 @@ def get_metadata_with_uuid(uuid: str, match: Matcher) -> Dict[Any, Any]:
 
 
 def json_to_junit(
-    test_name: str,
-    data_json: Dict[Any, Any],
-    metrics_config: Dict[Any, Any],
-    options: Dict[Any, Any],
+    test_name: str, data_json: Dict[Any, Any], metrics_config: Dict[Any, Any]
 ) -> str:
     """Convert json to junit format
 
@@ -371,11 +399,7 @@ def json_to_junit(
             failures_count += 1
             failure = ET.SubElement(testcase, "failure")
             failure.text = (
-                "\n"
-                + generate_tabular_output(
-                    data_json, metric_name=metric, collapse=options["collapse"]
-                )
-                + "\n"
+                "\n" + generate_tabular_output(data_json, metric_name=metric) + "\n"
             )
 
     testsuite.set("failures", str(failures_count))
@@ -386,7 +410,7 @@ def json_to_junit(
     return pretty_xml_as_string
 
 
-def generate_tabular_output(data: list, metric_name: str, collapse: bool) -> str:
+def generate_tabular_output(data: list, metric_name: str) -> str:
     """converts json to tabular format
 
     Args:
@@ -406,16 +430,8 @@ def generate_tabular_output(data: list, metric_name: str, collapse: bool) -> str
         "is_changepoint": bool(record["metrics"][metric_name]["percentage_change"]),
         "percentage_change": record["metrics"][metric_name]["percentage_change"],
     }
-    if collapse:
-        for i in range(1, len(data)):
-            if data[i]["metrics"][metric_name]["percentage_change"] != 0:
-                records.append(create_record(data[i - 1]))
-                records.append(create_record(data[i]))
-                if i + 1 < len(data):
-                    records.append(create_record(data[i + 1]))
-    else:
-        for i in range(0, len(data)):
-            records.append(create_record(data[i]))
+    for i in range(0, len(data)):
+        records.append(create_record(data[i]))
 
     df = pd.DataFrame(records).drop_duplicates().reset_index(drop=True)
     table = tabulate(df, headers="keys", tablefmt="psql")
@@ -424,7 +440,9 @@ def generate_tabular_output(data: list, metric_name: str, collapse: bool) -> str
     if lines:
         highlighted_lines += lines[0:3]
     for i, line in enumerate(lines[3:-1]):
-        if df["percentage_change"][i]:  # Offset by 3 to account for header and separator
+        if df["percentage_change"][
+            i
+        ]:  # Offset by 3 to account for header and separator
             highlighted_line = f"{lines[i+3]} -- changepoint"
             highlighted_lines.append(highlighted_line)
         else:
