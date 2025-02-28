@@ -118,7 +118,7 @@ setup() {
 
 @test "orion cmd ols configuration test " {
   export ols_test_workers=10
-  run_cmd orion cmd --config "examples/ols-load-generator.yaml" --hunter-analyze
+  run_cmd orion cmd --config "examples/ols-load-generator.yaml" --hunter-analyze --ack ack/4.15_ols-load-generator-10w_ack.yaml
 }
 
 @test "orion daemon small scale cluster density with anomaly detection " {
