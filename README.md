@@ -99,7 +99,9 @@ tests :
 - `direction: -1` shows negative changes
 
 ### threshold
-`threshold` is an absolute value, which allows only changepoints greater than a certain percentage to be detected.
+`threshold` is an absolute value, which allows only changepoints greater than a certain percentage to be detected. It can be set at Test level, and it will apply to all metrics, or at metric level for only that metric.
+
+| NOTE: If both are set, metric level `threshold` takes precedence. In none are set, it will default to `Zero`, which means any change will be reported.
 
 ### depends_on
 `depends_on: <metric_name>` is a filter, that will skip a changepoint detection on this metric if the depending metric has no changepoint, on the same run. To avoid clashing on different defined metrics, for example we could have an average and a max of the same metric, to build the desired metric you will need to specify the `name` field of the metric, followed by a `_`, and the field `metric_of_interest` or if it is an aggregarion query, the aggregation operation, E.g.: `avg`, `sum`, `max`
