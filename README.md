@@ -30,6 +30,7 @@ tests :
         - "[Jira: PerfScale]"
       direction: 0
       threshold: 10
+      depends_on: ovnCPU_avg
 
     - name:  apiserverCPU
       metricName : containerCPU
@@ -90,7 +91,25 @@ tests :
       threshold: 10
 
 ```
-**Note**: `direction: 1` specifies to show positive changes, `direction: 0` specifies to show both positive and negative changes while `direction: -1` shows negative changes. `threshold` is an absolute value, which allows only changepoints greater than a certain percentage to be detected.
+## Metrics Options
+
+### direction
+- `direction: 1` specifies to show positive changes
+- `direction: 0` specifies to show both positive and negative changes
+- `direction: -1` shows negative changes
+
+### threshold
+`threshold` is an absolute value, which allows only changepoints greater than a certain percentage to be detected.
+
+### depends_on
+`depends_on: <metric_name>` is a filter, that will skip a changepoint detection on this metric if the depending metric has no changepoint, on the same run. To avoid clashing on different defined metrics, for example we could have an average and a max of the same metric, to build the desired metric you will need to specify the `name` field of the metric, followed by a `_`, and the field `metric_of_interest` or if it is an aggregarion query, the aggregation operation, E.g.: `avg`, `sum`, `max`
+
+Examples built from the example config:
+- `podReadyLatency_P99`
+- `ovnCPU_avg`
+- `kubelet_avg`
+
+| NOTE: `depends_on` it's applied in order, be sure to set your dependent metrics before their depending metrics. 
 
 ## Build Orion
 Building Orion is a straightforward process. Follow these commands:
@@ -126,6 +145,8 @@ For enhanced troubleshooting and debugging, Orion supports the ```--debug``` fla
 Activate Orion's regression detection tool for performance-scale CPT runs effortlessly with the ```--hunter-analyze``` command. This seamlessly integrates with metadata and hunter, ensuring a robust and efficient regression detection process.
 
 Additionally, users can specify a custom path for the output CSV file using the ```--output``` flag, providing control over the location where the generated CSV will be stored.
+
+Enabling `--collapse` for both JSON and JUNIT output. This will help us only look at changepoints and few points around it.
 
 Orion now supports anomaly detection for your data. Use the ```--anomaly-detection``` command to start the anomaly detection process.
 
