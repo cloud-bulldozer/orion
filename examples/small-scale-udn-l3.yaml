@@ -127,7 +127,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
 
-    - name:  ovnMem-overall
+    - name:  ovnkMem-overall
       metricName : containerMemory
       jobName: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
