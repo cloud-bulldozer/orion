@@ -39,7 +39,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
 
-    - name:  ovnCPU-overall
+    - name:  ovnkCPU-overall
       metricName : containerCPU
       jobName: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
