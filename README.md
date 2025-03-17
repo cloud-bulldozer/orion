@@ -30,7 +30,8 @@ tests :
         - "[Jira: PerfScale]"
       direction: 0
       threshold: 10
-      depends_on: ovnCPU_avg
+      correlation: ovnCPU_avg
+      context: 5
 
     - name:  apiserverCPU
       metricName : containerCPU
@@ -101,17 +102,24 @@ tests :
 ### threshold
 `threshold` is an absolute value, which allows only changepoints greater than a certain percentage to be detected. It can be set at Test level, and it will apply to all metrics, or at metric level for only that metric.
 
-| NOTE: If both are set, metric level `threshold` takes precedence. In none are set, it will default to `Zero`, which means any change will be reported.
+| NOTE: If both are set, metric level `threshold` takes precedence. If none are set, it will default to `Zero`, which means any change will be reported.
 
-### depends_on
-`depends_on: <metric_name>` is a filter, that will skip a changepoint detection on this metric if the depending metric has no changepoint, on the same run. To avoid clashing on different defined metrics, for example we could have an average and a max of the same metric, to build the desired metric you will need to specify the `name` field of the metric, followed by a `_`, and the field `metric_of_interest` or if it is an aggregarion query, the aggregation operation, E.g.: `avg`, `sum`, `max`
+### correlation
+`correlation: <metric_name>` is a filter, that will skip a changepoint detection on this metric if the depending metric has no changepoint, on the same run. To avoid clashing on different defined metrics, for example we could have an average and a max of the same metric, to build the desired metric you will need to specify the `name` field of the metric, followed by a `_`, and the field `metric_of_interest` or if it is an aggregarion query, the aggregation operation, E.g.: `avg`, `sum`, `max`
 
 Examples built from the example config:
 - `podReadyLatency_P99`
 - `ovnCPU_avg`
 - `kubelet_avg`
 
-| NOTE: `depends_on` it's applied in order, be sure to set your dependent metrics before their depending metrics. 
+| NOTE: `correlation` it's applied in order, be sure to set your correlation dependent metrics before their depending metrics.
+
+| NOTE 2: Any `correlation` metric can only be in one `correlation` relation, we validate config and will fail if they appear in more than one relation.
+
+| Disclaimer: The `correlation` feature will hide change points detections based on two metrics relation, analize your results before implementing this
+
+#### context
+`context: <number>` is an absolute value, and it works as a complementary option for `correlation`, this will analize the runs `<number>` before and after the current change point. Default is 5.
 
 ## Build Orion
 Building Orion is a straightforward process. Follow these commands:

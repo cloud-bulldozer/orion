@@ -22,7 +22,7 @@ import pyshorteners
 
 # pylint: disable=too-many-locals
 def get_metric_data(
-    uuids: List[str], index: str, metrics: Dict[str, Any], match: Matcher, global_threshold: int
+    uuids: List[str], index: str, metrics: Dict[str, Any], match: Matcher, test_threshold: int
 ) -> List[pd.DataFrame]:
     """Gets details metrics based on metric yaml list
 
@@ -46,8 +46,9 @@ def get_metric_data(
 
         labels = metric.pop("labels", None)
         direction = int(metric.pop("direction", 0))
-        threshold = abs(int(metric.pop("threshold", global_threshold)))
-        depends_on = metric.pop("depends_on", "")
+        threshold = abs(int(metric.pop("threshold", test_threshold)))
+        correlation = metric.pop("correlation", "")
+        context = metric.pop("context", 5)
         logger_instance.info("Collecting %s", metric_name)
         try:
             if "agg" in metric:
@@ -62,7 +63,8 @@ def get_metric_data(
             metric["labels"] = labels
             metric["direction"] = direction
             metric["threshold"] = threshold
-            metric["depends_on"] = depends_on
+            metric["correlation"] = correlation
+            metric["context"] = context
             metrics_config[metric_dataframe_name] = metric
             dataframe_list.append(metric_df)
             logger_instance.debug(metric_df)
@@ -237,9 +239,9 @@ def process_test(
     logger.info("The test %s has started", test["name"])
     fingerprint_index = test["index"]
 
-    global_threshold=0
+    test_threshold=0
     if "threshold" in test:
-        global_threshold=test["threshold"]
+        test_threshold=test["threshold"]
 
     # getting metadata
     metadata = (
@@ -278,7 +280,7 @@ def process_test(
     # get metrics data and dataframe
     metrics = test["metrics"]
     dataframe_list, metrics_config = get_metric_data(
-        uuids, benchmark_index, metrics, match, global_threshold
+        uuids, benchmark_index, metrics, match, test_threshold
     )
     # check and filter for multiple timestamp values for each run
     for i, df in enumerate(dataframe_list):
