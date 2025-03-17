@@ -15,102 +15,157 @@ tests :
       ocpVersion: {{ version }}
       networkType: OVNKubernetes
 
+
     metrics : 
-    - name:  postQuery
+    - name:  postQuery_5m
       metricName: post_query
       metric_of_interest: p99Latency
       direction: 1
-    - name: postStreamingQuery
+      threshold: 10
+      context: 10
+      correlation: postQuery_5m_statusCodes.200
+    - name: postStreamingQuery_5m
       metricName: post_streaming_query
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postQueryWithCache
+      threshold: 10
+      context: 10
+      correlation: postStreamingQuery_5m_statusCodes.200
+    - name:  postQueryWithCache_5m
       metricName: post_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postStreamingQueryWithCache
+      threshold: 10
+      context: 10
+      correlation: postQueryWithCache_5m_statusCodes.200
+    - name:  postStreamingQueryWithCache_5m
       metricName: post_streaming_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
-    - name:  getFeedbackStatus
+      threshold: 10
+      context: 10
+      correlation: postStreamingQueryWithCache_5m_statusCodes.200
+    - name:  getFeedbackStatus_5m
       metricName: get_feedback_status
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postFeedback
+      threshold: 10
+      context: 10
+      correlation: getFeedbackStatus_5m_statusCodes.200
+    - name:  postFeedback_5m
       metricName: post_feedback
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postAuthorized
+      threshold: 10
+      context: 10
+      correlation: postFeedback_5m_statusCodes.200
+    - name:  postAuthorized_5m
       metricName: post_authorized
       metric_of_interest: p99Latency
       direction: 1
-    - name:  getLiveness
+      threshold: 10
+      context: 10
+      correlation: postAuthorized_5m_statusCodes.200
+    - name:  getLiveness_5m
       metricName: get_liveness
       metric_of_interest: p99Latency
       direction: 1
-    - name:  getReadiness
+      threshold: 10
+      context: 10
+      correlation: getLiveness_5m_statusCodes.200
+    - name:  getReadiness_5m
       metricName: get_readiness
       metric_of_interest: p99Latency
       direction: 1
-    - name:  getMetrics
+      threshold: 10
+      context: 10
+      correlation: getReadiness_5m_statusCodes.200
+    - name:  getMetrics_5m
       metricName: get_metrics
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postQuery
+      threshold: 10
+      context: 10
+      correlation: getMetrics_5m_statusCodes.200
+    - name:  postQuery_5m
       metricName: post_query
       metric_of_interest: statusCodes.200
       direction: -1
-    - name: postStreamingQuery
+      threshold: 10
+      context: 10
+    - name: postStreamingQuery_5m
       metricName: post_streaming_query
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  postQueryWithCache
+      threshold: 10
+      context: 10
+    - name:  postQueryWithCache_5m
       metricName: post_query_with_cache
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  postStreamingQueryWithCache
+      threshold: 10
+      context: 10
+    - name:  postStreamingQueryWithCache_5m
       metricName: post_streaming_query_with_cache
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  getFeedbackStatus
+      threshold: 10
+      context: 10
+    - name:  getFeedbackStatus_5m
       metricName: get_feedback_status
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  postFeedback
+      threshold: 10
+      context: 10
+    - name:  postFeedback_5m
       metricName: post_feedback
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  postAuthorized
+      threshold: 10
+      context: 10
+    - name:  postAuthorized_5m
       metricName: post_authorized
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  getLiveness
+      threshold: 10
+      context: 10
+    - name:  getLiveness_5m
       metricName: get_liveness
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  getReadiness
+      threshold: 10
+      context: 10
+    - name:  getReadiness_5m
       metricName: get_readiness
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  getMetrics
+      threshold: 10
+      context: 10
+    - name:  getMetrics_5m
       metricName: get_metrics
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  LLMCallFailures
+      threshold: 10
+      context: 10
+    - name:  LLMCallFailures_5m
       metricName.keyword: avg-llm-call-failures
       metric_of_interest: value
       agg:
         value: callFailures
         agg_type: avg
       direction: 1
-    - name:  LLMValidationErros
+      threshold: 10
+      context: 10
+    - name:  LLMValidationErros_5m
       metricName.keyword: avg-llm-validation-errors
       metric_of_interest: value
       agg:
         value: validationErrors
         agg_type: avg
       direction: 1
-    - name:  lightSpeedCPU
+      threshold: 10
+      context: 10
+    - name:  lightSpeedCPU_5m
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-lightspeed
       metric_of_interest: value
@@ -118,7 +173,9 @@ tests :
         value: cpu
         agg_type: avg
       direction: 1
-    - name:  lightSpeedMemory
+      threshold: 10
+      context: 10
+    - name:  lightSpeedMemory_5m
       metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-lightspeed
       metric_of_interest: value
@@ -126,6 +183,8 @@ tests :
         value: memory
         agg_type: avg
       direction: 1
+      threshold: 10
+      context: 10
 
   - name : ols-load-generator-{{ ols_test_workers }}w-10m
     index: {{ es_metadata_index }}
@@ -144,101 +203,155 @@ tests :
       networkType: OVNKubernetes
 
     metrics : 
-    - name:  postQuery
+    - name:  postQuery_10m
       metricName: post_query
       metric_of_interest: p99Latency
       direction: 1
-    - name: postStreamingQuery
+      threshold: 10
+      context: 10
+      correlation: postQuery_10m_statusCodes.200
+    - name: postStreamingQuery_10m
       metricName: post_streaming_query
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postQueryWithCache
+      threshold: 10
+      context: 10
+      correlation: postStreamingQuery_10m_statusCodes.200
+    - name:  postQueryWithCache_10m
       metricName: post_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postStreamingQueryWithCache
+      threshold: 10
+      context: 10
+      correlation: postQueryWithCache_10m_statusCodes.200
+    - name:  postStreamingQueryWithCache_10m
       metricName: post_streaming_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
-    - name:  getFeedbackStatus
+      threshold: 10
+      context: 10
+      correlation: postStreamingQueryWithCache_10m_statusCodes.200
+    - name:  getFeedbackStatus_10m
       metricName: get_feedback_status
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postFeedback
+      threshold: 10
+      context: 10
+      correlation: getFeedbackStatus_10m_statusCodes.200
+    - name:  postFeedback_10m
       metricName: post_feedback
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postAuthorized
+      threshold: 10
+      context: 10
+      correlation: postFeedback_10m_statusCodes.200
+    - name:  postAuthorized_10m
       metricName: post_authorized
       metric_of_interest: p99Latency
       direction: 1
-    - name:  getLiveness
+      threshold: 10
+      context: 10
+      correlation: postAuthorized_10m_statusCodes.200
+    - name:  getLiveness_10m
       metricName: get_liveness
       metric_of_interest: p99Latency
       direction: 1
-    - name:  getReadiness
+      threshold: 10
+      context: 10
+      correlation: getLiveness_10m_statusCodes.200
+    - name:  getReadiness_10m
       metricName: get_readiness
       metric_of_interest: p99Latency
       direction: 1
-    - name:  getMetrics
+      threshold: 10
+      context: 10
+      correlation: getReadiness_10m_statusCodes.200
+    - name:  getMetrics_10m
       metricName: get_metrics
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postQuery
+      threshold: 10
+      context: 10
+      correlation: getMetrics_10m_statusCodes.200
+    - name:  postQuery_10m
       metricName: post_query
       metric_of_interest: statusCodes.200
       direction: -1
-    - name: postStreamingQuery
+      threshold: 10
+      context: 10
+    - name: postStreamingQuery_10m
       metricName: post_streaming_query
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  postQueryWithCache
+      threshold: 10
+      context: 10
+    - name:  postQueryWithCache_10m
       metricName: post_query_with_cache
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  postStreamingQueryWithCache
+      threshold: 10
+      context: 10
+    - name:  postStreamingQueryWithCache_10m
       metricName: post_streaming_query_with_cache
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  getFeedbackStatus
+      threshold: 10
+      context: 10
+    - name:  getFeedbackStatus_10m
       metricName: get_feedback_status
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  postFeedback
+      threshold: 10
+      context: 10
+    - name:  postFeedback_10m
       metricName: post_feedback
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  postAuthorized
+      threshold: 10
+      context: 10
+    - name:  postAuthorized_10m
       metricName: post_authorized
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  getLiveness
+      threshold: 10
+      context: 10
+    - name:  getLiveness_10m
       metricName: get_liveness
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  getReadiness
+      threshold: 10
+      context: 10
+    - name:  getReadiness_10m
       metricName: get_readiness
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  getMetrics
+      threshold: 10
+      context: 10
+    - name:  getMetrics_10m
       metricName: get_metrics
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  LLMCallFailures
+      threshold: 10
+      context: 10
+    - name:  LLMCallFailures_10m
       metricName.keyword: avg-llm-call-failures
       metric_of_interest: value
       agg:
         value: callFailures
         agg_type: avg
       direction: 1
-    - name:  LLMValidationErros
+      threshold: 10
+      context: 10
+    - name:  LLMValidationErros_10m
       metricName.keyword: avg-llm-validation-errors
       metric_of_interest: value
       agg:
         value: validationErrors
         agg_type: avg
       direction: 1
-    - name:  lightSpeedCPU
+      threshold: 10
+      context: 10
+    - name:  lightSpeedCPU_10m
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-lightspeed
       metric_of_interest: value
@@ -246,7 +359,9 @@ tests :
         value: cpu
         agg_type: avg
       direction: 1
-    - name:  lightSpeedMemory
+      threshold: 10
+      context: 10
+    - name:  lightSpeedMemory_10m
       metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-lightspeed
       metric_of_interest: value
@@ -254,6 +369,8 @@ tests :
         value: memory
         agg_type: avg
       direction: 1
+      threshold: 10
+      context: 10
 
   - name : ols-load-generator-{{ ols_test_workers }}w-20m
     index: {{ es_metadata_index }}
@@ -272,101 +389,155 @@ tests :
       networkType: OVNKubernetes
 
     metrics : 
-    - name:  postQuery
+    - name:  postQuery_20m
       metricName: post_query
       metric_of_interest: p99Latency
       direction: 1
-    - name: postStreamingQuery
+      threshold: 10
+      context: 10
+      correlation: postQuery_20m_statusCodes.200
+    - name: postStreamingQuery_20m
       metricName: post_streaming_query
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postQueryWithCache
+      threshold: 10
+      context: 10
+      correlation: postStreamingQuery_20m_statusCodes.200
+    - name:  postQueryWithCache_20m
       metricName: post_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postStreamingQueryWithCache
+      threshold: 10
+      context: 10
+      correlation: postQueryWithCache_20m_statusCodes.200
+    - name:  postStreamingQueryWithCache_20m
       metricName: post_streaming_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
-    - name:  getFeedbackStatus
+      threshold: 10
+      context: 10
+      correlation: postStreamingQueryWithCache_20m_statusCodes.200
+    - name:  getFeedbackStatus_20m
       metricName: get_feedback_status
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postFeedback
+      threshold: 10
+      context: 10
+      correlation: getFeedbackStatus_20m_statusCodes.200
+    - name:  postFeedback_20m
       metricName: post_feedback
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postAuthorized
+      threshold: 10
+      context: 10
+      correlation: postFeedback_20m_statusCodes.200
+    - name:  postAuthorized_20m
       metricName: post_authorized
       metric_of_interest: p99Latency
       direction: 1
-    - name:  getLiveness
+      threshold: 10
+      context: 10
+      correlation: postAuthorized_20m_statusCodes.200
+    - name:  getLiveness_20m
       metricName: get_liveness
       metric_of_interest: p99Latency
       direction: 1
-    - name:  getReadiness
+      threshold: 10
+      context: 10
+      correlation: getLiveness_20m_statusCodes.200
+    - name:  getReadiness_20m
       metricName: get_readiness
       metric_of_interest: p99Latency
       direction: 1
-    - name:  getMetrics
+      threshold: 10
+      context: 10
+      correlation: getReadiness_20m_statusCodes.200
+    - name:  getMetrics_20m
       metricName: get_metrics
       metric_of_interest: p99Latency
       direction: 1
-    - name:  postQuery
+      threshold: 10
+      context: 10
+      correlation: getMetrics_20m_statusCodes.200
+    - name:  postQuery_20m
       metricName: post_query
       metric_of_interest: statusCodes.200
       direction: -1
-    - name: postStreamingQuery
+      threshold: 10
+      context: 10
+    - name: postStreamingQuery_20m
       metricName: post_streaming_query
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  postQueryWithCache
+      threshold: 10
+      context: 10
+    - name:  postQueryWithCache_20m
       metricName: post_query_with_cache
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  postStreamingQueryWithCache
+      threshold: 10
+      context: 10
+    - name:  postStreamingQueryWithCache_20m
       metricName: post_streaming_query_with_cache
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  getFeedbackStatus
+      threshold: 10
+      context: 10
+    - name:  getFeedbackStatus_20m
       metricName: get_feedback_status
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  postFeedback
+      threshold: 10
+      context: 10
+    - name:  postFeedback_20m
       metricName: post_feedback
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  postAuthorized
+      threshold: 10
+      context: 10
+    - name:  postAuthorized_20m
       metricName: post_authorized
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  getLiveness
+      threshold: 10
+      context: 10
+    - name:  getLiveness_20m
       metricName: get_liveness
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  getReadiness
+      threshold: 10
+      context: 10
+    - name:  getReadiness_20m
       metricName: get_readiness
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  getMetrics
+      threshold: 10
+      context: 10
+    - name:  getMetrics_20m
       metricName: get_metrics
       metric_of_interest: statusCodes.200
       direction: -1
-    - name:  LLMCallFailures
+      threshold: 10
+      context: 10
+    - name:  LLMCallFailures_20m
       metricName.keyword: avg-llm-call-failures
       metric_of_interest: value
       agg:
         value: callFailures
         agg_type: avg
       direction: 1
-    - name:  LLMValidationErros
+      threshold: 10
+      context: 10
+    - name:  LLMValidationErros_20m
       metricName.keyword: avg-llm-validation-errors
       metric_of_interest: value
       agg:
         value: validationErrors
         agg_type: avg
       direction: 1
-    - name:  lightSpeedCPU
+      threshold: 10
+      context: 10
+    - name:  lightSpeedCPU_20m
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-lightspeed
       metric_of_interest: value
@@ -374,7 +545,9 @@ tests :
         value: cpu
         agg_type: avg
       direction: 1
-    - name:  lightSpeedMemory
+      threshold: 10
+      context: 10
+    - name:  lightSpeedMemory_20m
       metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-lightspeed
       metric_of_interest: value
@@ -382,3 +555,5 @@ tests :
         value: memory
         agg_type: avg
       direction: 1
+      threshold: 10
+      context: 10
