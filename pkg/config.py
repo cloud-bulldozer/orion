@@ -70,7 +70,6 @@ def load_ack(ack: str) -> Dict[str,Any]:
         sys.exit(1)
 
     rendered_config = yaml.safe_load(template_content)
-    validate_correlations(rendered_config)
     return rendered_config
 
 def get_template_variables(template_content: str) -> Set[str]:
