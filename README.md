@@ -29,6 +29,9 @@ tests :
       labels:
         - "[Jira: PerfScale]"
       direction: 0
+      threshold: 10
+      correlation: ovnCPU_avg
+      context: 5
 
     - name:  apiserverCPU
       metricName : containerCPU
@@ -40,6 +43,7 @@ tests :
       labels:
         - "[Jira: kube-apiserver]"
       direction: 0
+      threshold: 10
 
     - name:  ovnCPU
       metricName : containerCPU
@@ -51,6 +55,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 0
+      threshold: 10
 
     - name:  etcdCPU
       metricName : containerCPU
@@ -62,6 +67,7 @@ tests :
       labels:
         - "[Jira: etcd]"
       direction: 0
+      threshold: 10
     
     - name:  etcdDisk
       metricName : 99thEtcdDiskBackendCommitDurationSeconds
@@ -72,6 +78,7 @@ tests :
       labels:
         - "[Jira: etcd]"
       direction: 0
+      threshold: 10
 
     - name: kubelet 
       metricName : kubeletCPU 
@@ -82,9 +89,37 @@ tests :
         value: cpu 
         agg_type: avg
       direction: 0
+      threshold: 10
 
 ```
-**Note**: `direction: 1` specifies to show positive changes, `direction: 0` specifies to show both positive and negative changes while `direction: -1` shows negative changes.
+## Metrics Options
+
+### direction
+- `direction: 1` specifies to show positive changes
+- `direction: 0` specifies to show both positive and negative changes
+- `direction: -1` shows negative changes
+
+### threshold
+`threshold` is an absolute value, which allows only changepoints greater than a certain percentage to be detected. It can be set at Test level, and it will apply to all metrics, or at metric level for only that metric.
+
+| NOTE: If both are set, metric level `threshold` takes precedence. If none are set, it will default to `Zero`, which means any change will be reported.
+
+### correlation
+`correlation: <metric_name>` is a filter, that will skip a changepoint detection on this metric if the depending metric has no changepoint, on the same run. To avoid clashing on different defined metrics, for example we could have an average and a max of the same metric, to build the desired metric you will need to specify the `name` field of the metric, followed by a `_`, and the field `metric_of_interest` or if it is an aggregarion query, the aggregation operation, E.g.: `avg`, `sum`, `max`
+
+Examples built from the example config:
+- `podReadyLatency_P99`
+- `ovnCPU_avg`
+- `kubelet_avg`
+
+| NOTE: `correlation` it's applied in order, be sure to set your correlation dependent metrics before their depending metrics.
+
+| NOTE 2: Any `correlation` metric can only be in one `correlation` relation, we validate config and will fail if they appear in more than one relation.
+
+| Disclaimer: The `correlation` feature will hide change points detections based on two metrics relation, analize your results before implementing this
+
+#### context
+`context: <number>` is an absolute value, and it works as a complementary option for `correlation`, this will analize the runs `<number>` before and after the current change point. Default is 5.
 
 ## Build Orion
 Building Orion is a straightforward process. Follow these commands:
@@ -120,6 +155,8 @@ For enhanced troubleshooting and debugging, Orion supports the ```--debug``` fla
 Activate Orion's regression detection tool for performance-scale CPT runs effortlessly with the ```--hunter-analyze``` command. This seamlessly integrates with metadata and hunter, ensuring a robust and efficient regression detection process.
 
 Additionally, users can specify a custom path for the output CSV file using the ```--output``` flag, providing control over the location where the generated CSV will be stored.
+
+Enabling `--collapse` for both JSON and JUNIT output. This will help us only look at changepoints and few points around it.
 
 Orion now supports anomaly detection for your data. Use the ```--anomaly-detection``` command to start the anomaly detection process.
 
