@@ -52,6 +52,7 @@ def load_config(config: str, parameters: Dict= None) -> Dict[str, Any]:
     template = Template(template_content)
     rendered_config_yaml = template.render(merged_parameters)
     rendered_config = yaml.safe_load(rendered_config_yaml)
+    validate_correlations(rendered_config)
     return rendered_config
 
 def load_ack(ack: str) -> Dict[str,Any]:
@@ -69,6 +70,7 @@ def load_ack(ack: str) -> Dict[str,Any]:
         sys.exit(1)
 
     rendered_config = yaml.safe_load(template_content)
+    validate_correlations(rendered_config)
     return rendered_config
 
 def get_template_variables(template_content: str) -> Set[str]:
@@ -77,3 +79,22 @@ def get_template_variables(template_content: str) -> Set[str]:
     parsed_content = env.parse(template_content)
     variables = meta.find_undeclared_variables(parsed_content)
     return variables
+
+
+def validate_correlations(rendered_config):
+    """Validates that the metrics are not in another correlation"""
+    logger_instance = SingletonLogger.getLogger("Orion")
+    correlations = []
+    for test in rendered_config["tests"]:
+        for metric in test["metrics"]:
+            if "correlation" in metric.keys() and metric["correlation"] != "":
+                if metric["name"] in correlations:
+                    logger_instance.error("Correlation in test: %s: %s -> %s in conflict with another",
+                                        test["name"], metric["name"], metric["correlation"] )
+                    sys.exit(1)
+                if metric["correlation"] in correlations:
+                    logger_instance.error("Correlation in test %s: %s -> %s in conflict with another",
+                                        test["name"], metric["name"], metric["correlation"] )
+                    sys.exit(1)
+                correlations.append(metric["name"])
+                correlations.append(metric["correlation"])
