@@ -20,9 +20,6 @@ class EDivisive(Algorithm):
         self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int) // 10**9
         series = self.setup_series()
         change_points_by_metric = series.analyze().change_points
-        print("data")
-        print(change_points_by_metric)
-
 
         # Process if we have ack'ed regression
         ackSet = set()
