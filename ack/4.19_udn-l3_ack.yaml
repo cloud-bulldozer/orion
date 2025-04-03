@@ -1,1 +1,38 @@
 ---
+ack:
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnkCPU-overall_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnCPU-ovncontroller_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnCPU-northd_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnCPU-nbdb_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnCPU-ovnk-controller_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnkMem-overall_avg 
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnMem-ovncontroller_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnMem-northd_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnMem-nbdb_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnMem-sbdb_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnMem-ovnk-controller_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+
+
+
