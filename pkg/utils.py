@@ -190,6 +190,8 @@ def filter_uuids_on_index(
     Returns:
         _type_: index and uuids
     """
+    if "jobConfig.name" in metadata :
+        return uuids
     if metadata["benchmark.keyword"] in ["ingress-perf", "k8s-netperf"]:
         return uuids
     if baseline == "" and not filter_node_count and "kube-burner" in benchmark_index:
