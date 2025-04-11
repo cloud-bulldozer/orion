@@ -27,3 +27,6 @@ ack:
   - uuid: df4b0361-02f9-458d-9d02-57b1d6724983
     metric: podReadyLatency_P99
     reason: "12s podReady is not unusual in 4.18"
+  - uuid: e3e07bda-179a-4962-bc14-0e40e247d9fa
+    metric: etcdCPU_avg
+    reason: "2025-04-11 8.10777% change less than 10% threshold"

@@ -15,3 +15,9 @@ ack:
   - uuid: 84322af4-d853-4c95-aa38-f6417159712d
     metric: etcdCPU_avg
     reason: "hichup: https://redhat-internal.slack.com/archives/C020CKMP6CT/p1741244229397479"
+  - uuid: a1fcb44b-c5fc-4070-bc71-8940184b310f
+    metric: multusCPU_avg
+    reason: "2025-04-04 change of 3.2% is less than 10% toleration threshold"
+  - uuid: 411a73f2-3213-40df-ac66-c28b2fdc639d
+    metric: ovnCPU_avg
+    reason: "2025-04-08 change of 4.62436% is less than 10% toleration threshold"
