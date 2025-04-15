@@ -24,6 +24,7 @@ tests :
       labels:
         - "[Jira: PerfScale]"
       direction: 1
+      threshold: 10
 
     - name:  serviceReadyLatency
       metricName: serviceLatencyQuantilesMeasurement
@@ -34,6 +35,7 @@ tests :
       labels:
         - "[Jira: PerfScale]"
       direction: 1
+      threshold: 10
 
     - name:  ovsCPU
       metricName : cgroupCPUSeconds-Workers
@@ -44,6 +46,7 @@ tests :
         agg_type: avg
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
+      threshold: 10
 
     - name:  ovnkCPU-overall
       metricName : containerCPU
@@ -55,6 +58,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  ovnCPU-ovncontroller
       metricName : containerCPU
@@ -67,6 +71,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  ovnCPU-northd
       metricName : containerCPU
@@ -79,6 +84,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  ovnCPU-nbdb
       metricName : containerCPU
@@ -91,6 +97,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  ovnCPU-sbdb
       metricName : containerCPU
@@ -103,6 +110,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  ovnCPU-ovnk-controller
       metricName : containerCPU
@@ -115,6 +123,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  ovsMemory
       metricName : cgroupMemoryRSS-Workers
@@ -136,6 +145,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  ovnMem-ovncontroller
       metricName : containerMemory
@@ -148,6 +158,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  ovnMem-northd
       metricName : containerMemory
@@ -160,6 +171,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  ovnMem-nbdb
       metricName : containerMemory
@@ -172,6 +184,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  ovnMem-sbdb
       metricName : containerMemory
@@ -184,6 +197,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  ovnMem-ovnk-controller
       metricName : containerMemory
@@ -196,6 +210,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  apiserverCPU
       metricName : containerCPU
@@ -207,6 +222,7 @@ tests :
       labels:
         - "[Jira: kube-apiserver]"
       direction: 1
+      threshold: 10
 
     - name: multusCPU
       metricName : containerCPU
@@ -218,6 +234,7 @@ tests :
       labels:
         - "[Jira: multus]"
       direction: 1
+      threshold: 10
 
     - name: monitoringCPU
       metricName : containerCPU
@@ -229,6 +246,7 @@ tests :
       labels:
         - "[Jira: monitoring]"
       direction: 1
+      threshold: 10
 
     - name:  etcdCPU
       metricName : containerCPU
@@ -240,6 +258,7 @@ tests :
       labels:
         - "[Jira: etcd]"
       direction: 1
+      threshold: 10
 
     - name: kubelet 
       metricName : kubeletCPU 
@@ -250,4 +269,5 @@ tests :
         value: cpu 
         agg_type: avg
       direction: 1
+      threshold: 10
 

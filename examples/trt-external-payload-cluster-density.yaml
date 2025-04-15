@@ -24,6 +24,7 @@ tests :
       labels:
         - "[Jira: PerfScale]"
       direction: 1
+      threshold: 10
 
     - name:  apiserverCPU
       metricName : containerCPU
@@ -35,6 +36,7 @@ tests :
       labels:
         - "[Jira: kube-apiserver]"
       direction: 1
+      threshold: 10
 
     - name: multusCPU
       metricName : containerCPU
@@ -46,6 +48,7 @@ tests :
       labels:
         - "[Jira: multus]"
       direction: 1
+      threshold: 10
 
     - name: monitoringCPU
       metricName : containerCPU
@@ -57,6 +60,7 @@ tests :
       labels:
         - "[Jira: monitoring]"
       direction: 1
+      threshold: 10
 
     - name:  ovnCPU
       metricName : containerCPU
@@ -68,6 +72,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
+      threshold: 10
 
     - name:  etcdCPU
       metricName : containerCPU
@@ -79,6 +84,7 @@ tests :
       labels:
         - "[Jira: etcd]"
       direction: 1
+      threshold: 10
 
     - name: kubelet 
       metricName : kubeletCPU 
@@ -89,4 +95,5 @@ tests :
         value: cpu 
         agg_type: avg
       direction: 1
+      threshold: 10
 

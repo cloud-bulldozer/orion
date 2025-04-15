@@ -24,6 +24,7 @@ tests :
       labels:
         - "[Jira: kube-apiserver]"
       direction: 1
+      threshold: 10
 
     - name:  etcdCPU
       metricName : containerCPU
@@ -35,4 +36,4 @@ tests :
       labels:
         - "[Jira: etcd]"
       direction: 1
-
+      threshold: 10
