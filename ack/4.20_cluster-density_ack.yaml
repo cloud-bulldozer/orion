@@ -1,0 +1,5 @@
+---
+ack:
+  - uuid: a6ee097c-24f8-470f-a2c8-cd21651fd497
+    metric: multusCPU_avg
+    reason: "2025-04-14 change of 19.9848% is because whereabouts-reconciler pods were removed. No CPU change in remaining pods. See PERFSCALE-3872"
