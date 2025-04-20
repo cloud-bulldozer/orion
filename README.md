@@ -94,6 +94,11 @@ tests :
 ```
 ## Metrics Options
 
+### custom timestamp
+`timestamp` is a field which allows users to set custom timestamp fields for both metadata and actual data as well, depending on their use case. It can be set at Test level, and it will apply to all metrics, or at metric level for only that metric.
+
+| NOTE: If both are set, metric level custom timestamp field takes precedence. If none are set, it will default to `timestamp`, which means your data is expected to have it already.
+
 ### direction
 - `direction: 1` specifies to show positive changes
 - `direction: 0` specifies to show both positive and negative changes

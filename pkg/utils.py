@@ -18,11 +18,12 @@ from fmatch.matcher import Matcher
 from fmatch.logrus import SingletonLogger
 import pandas as pd
 import pyshorteners
+from pkg.constants import NANO_SECONDS_PATTERN
 
 
 # pylint: disable=too-many-locals
 def get_metric_data(
-    uuids: List[str], index: str, metrics: Dict[str, Any], match: Matcher, test_threshold: int
+    uuids: List[str], index: str, metrics: Dict[str, Any], match: Matcher, test_threshold: int, timestamp_field: str="timestamp"
 ) -> List[pd.DataFrame]:
     """Gets details metrics based on metric yaml list
 
@@ -47,19 +48,19 @@ def get_metric_data(
         labels = metric.pop("labels", None)
         direction = int(metric.pop("direction", 0))
         threshold = abs(int(metric.pop("threshold", test_threshold)))
+        timestamp_field = metric.pop("timestamp", timestamp_field)
         correlation = metric.pop("correlation", "")
         context = metric.pop("context", 5)
         logger_instance.info("Collecting %s", metric_name)
         try:
             if "agg" in metric:
                 metric_df, metric_dataframe_name = process_aggregation_metric(
-                    uuids, index, metric, match
+                    uuids, index, metric, match, timestamp_field
                 )
             else:
                 metric_df, metric_dataframe_name = process_standard_metric(
-                    uuids, index, metric, match, metric_value_field
+                    uuids, index, metric, match, metric_value_field, timestamp_field
                 )
-
             metric["labels"] = labels
             metric["direction"] = direction
             metric["threshold"] = threshold
@@ -78,7 +79,7 @@ def get_metric_data(
 
 
 def process_aggregation_metric(
-    uuids: List[str], index: str, metric: Dict[str, Any], match: Matcher
+    uuids: List[str], index: str, metric: Dict[str, Any], match: Matcher, timestamp_field: str="timestamp"
 ) -> pd.DataFrame:
     """Method to get aggregated dataframe
 
@@ -91,19 +92,46 @@ def process_aggregation_metric(
     Returns:
         pd.DataFrame: _description_
     """
-    aggregated_metric_data = match.get_agg_metric_query(uuids, index, metric)
+    aggregated_metric_data = match.get_agg_metric_query(uuids, index, metric, timestamp_field)
     aggregation_value = metric["agg"]["value"]
     aggregation_type = metric["agg"]["agg_type"]
     aggregation_name = f"{aggregation_value}_{aggregation_type}"
-    aggregated_df = match.convert_to_df(
-        aggregated_metric_data, columns=["uuid", "timestamp", aggregation_name]
-    )
+    if len(aggregated_metric_data) == 0:
+        aggregated_df = pd.DataFrame(columns=["uuid", timestamp_field, aggregation_name])
+    else:
+        aggregated_df = match.convert_to_df(
+            aggregated_metric_data, columns=["uuid", timestamp_field, aggregation_name],
+            timestamp_field=timestamp_field,
+        )
+        aggregated_df[timestamp_field] = aggregated_df[timestamp_field].apply(standardize)
+
     aggregated_df = aggregated_df.drop_duplicates(subset=["uuid"], keep="first")
     aggregated_metric_name = f"{metric['name']}_{aggregation_type}"
     aggregated_df = aggregated_df.rename(
         columns={aggregation_name: aggregated_metric_name}
     )
+    if timestamp_field != "timestamp":
+        aggregated_df = aggregated_df.rename(
+            columns={timestamp_field: "timestamp"}
+        )
     return aggregated_df, aggregated_metric_name
+
+def standardize(timestamp: Any) -> str:
+    """Method to standardize timestamp formats
+
+    Args:
+        timestamp Any: timestamp object with various formats 
+
+    Returns:
+        str: _description_
+    """
+    if timestamp is None:
+        return timestamp
+    if isinstance(timestamp, str) and NANO_SECONDS_PATTERN.match(timestamp):
+        return timestamp
+    dt = pd.to_datetime(timestamp, utc=True)
+    ns = f"{dt.microsecond:06d}000"
+    return dt.strftime(f"%Y-%m-%dT%H:%M:%S.{ns}Z")
 
 
 def process_standard_metric(
@@ -112,6 +140,7 @@ def process_standard_metric(
     metric: Dict[str, Any],
     match: Matcher,
     metric_value_field: str,
+    timestamp_field: str="timestamp",
 ) -> pd.DataFrame:
     """Method to get dataframe of standard metric
 
@@ -126,13 +155,22 @@ def process_standard_metric(
         pd.DataFrame: _description_
     """
     standard_metric_data = match.getResults("", uuids, index, metric)
-    standard_metric_df = match.convert_to_df(
-        standard_metric_data, columns=["uuid", "timestamp", metric_value_field]
-    )
+    if len(standard_metric_data) == 0:
+        standard_metric_df = pd.DataFrame(columns=["uuid", timestamp_field, metric_value_field])
+    else:
+        standard_metric_df = match.convert_to_df(
+            standard_metric_data, columns=["uuid", timestamp_field, metric_value_field],
+            timestamp_field=timestamp_field
+        )
+        standard_metric_df[timestamp_field] = standard_metric_df[timestamp_field].apply(standardize)
     standard_metric_name = f"{metric['name']}_{metric_value_field}"
     standard_metric_df = standard_metric_df.rename(
         columns={metric_value_field: standard_metric_name}
     )
+    if timestamp_field != "timestamp":
+        standard_metric_df = standard_metric_df.rename(
+            columns={timestamp_field: "timestamp"}
+        )
     standard_metric_df = standard_metric_df.drop_duplicates()
     return standard_metric_df, standard_metric_name
 
@@ -244,6 +282,9 @@ def process_test(
     test_threshold=0
     if "threshold" in test:
         test_threshold=test["threshold"]
+    timestamp_field = "timestamp"
+    if "timestamp" in test:
+        timestamp_field=test["timestamp"]
 
     # getting metadata
     metadata = (
@@ -257,6 +298,7 @@ def process_test(
         fingerprint_index,
         lookback_date=start_timestamp,
         lookback_size=options["lookback_size"],
+        timestamp_field=timestamp_field,
     )
     uuids = [run["uuid"] for run in runs]
     buildUrls = {run["uuid"]: run["buildUrl"] for run in runs}
@@ -282,7 +324,7 @@ def process_test(
     # get metrics data and dataframe
     metrics = test["metrics"]
     dataframe_list, metrics_config = get_metric_data(
-        uuids, benchmark_index, metrics, match, test_threshold
+        uuids, benchmark_index, metrics, match, test_threshold, timestamp_field
     )
     # check and filter for multiple timestamp values for each run
     for i, df in enumerate(dataframe_list):
@@ -291,7 +333,7 @@ def process_test(
     # merge the dataframe with all metrics
     if dataframe_list:
         merged_df = reduce(
-            lambda left, right: pd.merge(left, right, on="uuid", how="inner"),
+            lambda left, right: pd.merge(left, right, on="uuid", how="outer"),
             dataframe_list,
         )
     else:
