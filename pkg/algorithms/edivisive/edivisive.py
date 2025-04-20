@@ -55,6 +55,8 @@ class EDivisive(Algorithm):
     def _depending_metric_has_chagepoint(self, change_points_by_metric: Dict[str, List[ChangePoint]], ackSet, metric, index) -> bool:
         depending_metric = self.metrics_config[metric]["correlation"]
         context = self.metrics_config[metric]["context"]
+        if depending_metric not in change_points_by_metric.keys():
+            return False
         changepoint_list = change_points_by_metric[depending_metric]
         for i in range(len(changepoint_list)-1, -1, -1):
             if (changepoint_list[i].index >= index-context) and (changepoint_list[i].index <= index+context):

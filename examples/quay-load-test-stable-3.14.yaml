@@ -11,6 +11,7 @@ tests :
       workerNodesCount: 5
       benchmark.keyword: quay-load-test
       ocpVersion: {{ ocp_version }}
+      quayVersion: {{ quay_version }}
       networkType: OVNKubernetes
 
     metrics : 
@@ -2393,6 +2394,7 @@ tests :
       workerNodesCount: 5
       benchmark.keyword: quay-load-test
       ocpVersion: {{ ocp_version }}
+      quayVersion: {{ quay_version }}
       networkType: OVNKubernetes
 
     metrics : 
