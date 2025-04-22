@@ -9,7 +9,7 @@ tests :
       masterNodesCount: 3
       workerNodesType.keyword: ""
       workerNodesCount: 4
-      benchmark.keyword: node-density-heavy
+      benchmark.keyword: virt-density
       ocpVersion: {{ version }}
       networkType: OVNKubernetes
 
