@@ -21,7 +21,7 @@ tests :
       not:
         jobConfig.name: "garbage-collection"
       labels:
-        - "[Jira: PodLatency]"
+        - "[Jira: VmiLatency]"
 
     - name:  apiserverCPU
       metricName : containerCPU
