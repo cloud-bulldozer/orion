@@ -20,6 +20,8 @@ tests :
       publish: External
       computeArch: amd64
       controlPlaneArch: amd64
+      not:
+        stream: okd
 
     metrics : 
     - name:  Pod_Ready_Latency

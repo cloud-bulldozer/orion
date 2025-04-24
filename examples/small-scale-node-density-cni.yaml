@@ -13,6 +13,8 @@ tests :
       ocpVersion: {{ version }}
       networkType: OVNKubernetes
       infraNodesType: r5.2xlarge
+      not:
+        stream: okd
     # encrypted: true
     # fips: false
     # ipsec: false

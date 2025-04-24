@@ -10,6 +10,8 @@ tests :
       workerNodesCount: 24
       benchmark.keyword: cluster-density-v2
       ocpVersion: {{ version }}
+      not:
+        stream: okd
       # networkType: OVNKubernetes
       # encrypted: true
       # fips: false

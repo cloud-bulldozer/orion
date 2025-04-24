@@ -12,6 +12,8 @@ tests :
       benchmark.keyword: node-density-heavy
       ocpVersion: {{ version }}
       networkType: OVNKubernetes
+      not:
+        stream: okd
 
     metrics : 
     - name:  podReadyLatency

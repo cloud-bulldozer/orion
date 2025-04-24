@@ -13,6 +13,8 @@ tests :
       ocpVersion: {{ version }}
       networkType: OVNKubernetes
       jobType: periodic OR pull
+      not:
+        stream: okd
     # encrypted: true
     # fips: false
     # ipsec: false

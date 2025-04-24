@@ -18,6 +18,8 @@ tests :
       encrypted: true
       fips: false
       ipsec: false
+      not:
+        stream: okd
 
     metrics : 
     - name:  n2n-tput-64-1p
