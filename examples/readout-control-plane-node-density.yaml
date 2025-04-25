@@ -21,6 +21,8 @@ tests :
       publish: External
       computeArch: amd64
       controlPlaneArch: amd64
+      not:
+        stream: okd
 
     metrics : 
     - name:  cpu-kubelet
