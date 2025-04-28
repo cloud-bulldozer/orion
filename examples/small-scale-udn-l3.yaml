@@ -23,7 +23,7 @@ tests :
     - name:  podReadyLatency
       metricName: podLatencyQuantilesMeasurement
       quantileName: Ready
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       metric_of_interest: P99
       not: 
         jobConfig.name: "garbage-collection"
@@ -33,7 +33,7 @@ tests :
 
     - name:  ovsCPU
       metricName : cgroupCPUSeconds-Workers
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.id.keyword : /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
@@ -44,7 +44,7 @@ tests :
 
     - name:  ovnkCPU-overall
       metricName : containerCPU
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -56,7 +56,7 @@ tests :
 
     - name:  ovnCPU-ovncontroller
       metricName : containerCPU
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: ovn-controller 
       metric_of_interest: value
@@ -69,7 +69,7 @@ tests :
 
     - name:  ovnCPU-northd
       metricName : containerCPU
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: northd
       metric_of_interest: value
@@ -82,7 +82,7 @@ tests :
 
     - name:  ovnCPU-nbdb
       metricName : containerCPU
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: nbdb
       metric_of_interest: value
@@ -95,7 +95,7 @@ tests :
 
     - name:  ovnCPU-sbdb
       metricName : containerCPU
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: sbdb
       metric_of_interest: value
@@ -108,7 +108,7 @@ tests :
 
     - name:  ovnCPU-ovnk-controller
       metricName : containerCPU
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: ovnkube-controller
       metric_of_interest: value
@@ -121,7 +121,7 @@ tests :
 
     - name:  ovsMemory
       metricName : cgroupMemoryRSS-Workers
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.id.keyword : /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
@@ -132,7 +132,7 @@ tests :
 
     - name:  ovnkMem-overall
       metricName : containerMemory
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -144,7 +144,7 @@ tests :
 
     - name:  ovnMem-ovncontroller
       metricName : containerMemory
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: ovn-controller 
       metric_of_interest: value
@@ -157,7 +157,7 @@ tests :
 
     - name:  ovnMem-northd
       metricName : containerMemory
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: northd
       metric_of_interest: value
@@ -170,7 +170,7 @@ tests :
 
     - name:  ovnMem-nbdb
       metricName : containerMemory
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: nbdb 
       metric_of_interest: value
@@ -183,7 +183,7 @@ tests :
 
     - name:  ovnMem-sbdb
       metricName : containerMemory
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: sbdb 
       metric_of_interest: value
@@ -196,7 +196,7 @@ tests :
 
     - name:  ovnMem-ovnk-controller
       metricName : containerMemory
-      jobName: create-udn-l3
+      jobName.keyword: create-udn-l3
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: ovnkube-controller 
       metric_of_interest: value
