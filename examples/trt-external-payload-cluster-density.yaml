@@ -13,6 +13,8 @@ tests :
       ocpVersion: {{ version }}
       networkType: OVNKubernetes
       jobType: periodic
+      not:
+        stream: okd
 
     metrics : 
     - name:  podReadyLatency

@@ -67,7 +67,9 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
 
         algorithm_name = get_algorithm_type(kwargs)
         if algorithm_name is None:
+            logger_instance.error("No algorithm configured")
             return None, None
+        logger_instance.info("Comparison algorithm: %s", algorithm_name)
 
         algorithmFactory = AlgorithmFactory()
         algorithm = algorithmFactory.instantiate_algorithm(
