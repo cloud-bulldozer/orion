@@ -12,6 +12,8 @@ tests :
       benchmark.keyword: crd-scale 
       ocpVersion: {{ version }}
       networkType: OVNKubernetes
+      not:
+        stream: okd
 
     metrics : 
     - name:  apiserverCPU

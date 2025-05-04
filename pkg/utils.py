@@ -335,7 +335,7 @@ def process_test(
         merged_df = reduce(
             lambda left, right: pd.merge(left, right, on="uuid", how="outer"),
             dataframe_list,
-        )
+        ).sort_values(by="timestamp")
     else:
         return None, metrics_config
     shortener = pyshorteners.Shortener(timeout=10)
