@@ -320,7 +320,7 @@ def process_test(
     # get uuids if there is a baseline
     if options["baseline"] not in ("", None):
         uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
-        uuids.append(options[uuid_field])
+        uuids.append(options["uuid"])
         buildUrls = get_build_urls(fingerprint_index, uuids, match, uuid_field)
     elif not uuids:
         logger.info("No UUID present for given metadata")
