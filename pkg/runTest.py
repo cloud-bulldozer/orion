@@ -7,7 +7,7 @@ from fmatch.matcher import Matcher
 from fmatch.logrus import SingletonLogger
 from pkg.algorithms import AlgorithmFactory
 import pkg.constants as cnsts
-from pkg.utils import get_datasource, process_test, get_subtracted_timestamp
+from pkg.utils import Utils, get_subtracted_timestamp
 
 def get_algorithm_type(kwargs):
     """Switch Case of getting algorithm name
@@ -42,24 +42,35 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
     """
     logger_instance = SingletonLogger.getLogger("Orion")
     config_map = kwargs["configMap"]
-    datasource = get_datasource(config_map)
     result_output = {}
     regression_flag = False
     for test in config_map["tests"]:
         # Create fingerprint Matcher
+
+        version_field = "ocpVersion"
+        if "version" in test:
+            version_field=test["version"]
+        uuid_field = "uuid"
+        if "uuid_field" in test:
+            uuid_field=test["uuid_field"]
+
+        utils = Utils(uuid_field, version_field)
+        datasource = utils.get_datasource(config_map)
         matcher = Matcher(
             index=test["index"],
             level=logger_instance.level,
             ES_URL=datasource,
             verify_certs=False,
+            version_field=version_field,
+            uuid_field=uuid_field
         )
-        start_timestamp = get_start_timestamp(kwargs)
 
-        fingerprint_matched_df, metrics_config = process_test(
+        start_timestamp = get_start_timestamp(kwargs)
+        fingerprint_matched_df, metrics_config = utils.process_test(
             test,
             matcher,
             kwargs,
-            start_timestamp,
+            start_timestamp
         )
 
         if fingerprint_matched_df is None:
