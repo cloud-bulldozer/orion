@@ -47,12 +47,25 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
     regression_flag = False
     for test in config_map["tests"]:
         # Create fingerprint Matcher
+
+        version_field = "ocpVersion"
+        logger_instance.info('test.keys' + str(test.keys()))
+        if "version" in test:
+            version_field=test["version"]
+        
+        if "uuid_field" in test:
+            global uuid_field
+            uuid_field=test["uuid_field"]
+        logger_instance.info("uuid field " + str(uuid_field))
         matcher = Matcher(
             index=test["index"],
             level=logger_instance.level,
             ES_URL=datasource,
             verify_certs=False,
+            version_field=version_field,
+            uuid_field=uuid_field
         )
+
         start_timestamp = get_start_timestamp(kwargs)
 
         fingerprint_matched_df, metrics_config = process_test(
@@ -60,6 +73,8 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
             matcher,
             kwargs,
             start_timestamp,
+            version_field,
+            uuid_field
         )
 
         if fingerprint_matched_df is None:

@@ -20,10 +20,12 @@ import pandas as pd
 import pyshorteners
 from pkg.constants import NANO_SECONDS_PATTERN
 
+uuid_field="uuid"
+version_field="ocpVersion"
 
 # pylint: disable=too-many-locals
 def get_metric_data(
-    uuids: List[str], index: str, metrics: Dict[str, Any], match: Matcher, test_threshold: int, timestamp_field: str="timestamp", uuid_field: str="uuid"
+    uuids: List[str], index: str, metrics: Dict[str, Any], match: Matcher, test_threshold: int, timestamp_field: str="timestamp"
 ) -> List[pd.DataFrame]:
     """Gets details metrics based on metric yaml list
 
@@ -79,7 +81,7 @@ def get_metric_data(
 
 
 def process_aggregation_metric(
-    uuids: List[str], index: str, metric: Dict[str, Any], match: Matcher, timestamp_field: str="timestamp", uuid_field: str="uuid"
+    uuids: List[str], index: str, metric: Dict[str, Any], match: Matcher, timestamp_field: str="timestamp"
 ) -> pd.DataFrame:
     """Method to get aggregated dataframe
 
@@ -92,7 +94,7 @@ def process_aggregation_metric(
     Returns:
         pd.DataFrame: _description_
     """
-    aggregated_metric_data = match.get_agg_metric_query(uuids, index, metric, timestamp_field, uuid_field)
+    aggregated_metric_data = match.get_agg_metric_query(uuids, index, metric, timestamp_field)
     aggregation_value = metric["agg"]["value"]
     aggregation_type = metric["agg"]["agg_type"]
     aggregation_name = f"{aggregation_value}_{aggregation_type}"
@@ -101,7 +103,7 @@ def process_aggregation_metric(
     else:
         aggregated_df = match.convert_to_df(
             aggregated_metric_data, columns=[uuid_field, timestamp_field, aggregation_name],
-            timestamp_field=timestamp_field,
+            timestamp_field=timestamp_field
         )
         aggregated_df[timestamp_field] = aggregated_df[timestamp_field].apply(standardize)
 
@@ -140,8 +142,7 @@ def process_standard_metric(
     metric: Dict[str, Any],
     match: Matcher,
     metric_value_field: str,
-    timestamp_field: str="timestamp",
-    uuid_field: str="uuid"
+    timestamp_field: str="timestamp"
 ) -> pd.DataFrame:
     """Method to get dataframe of standard metric
 
@@ -155,7 +156,8 @@ def process_standard_metric(
     Returns:
         pd.DataFrame: _description_
     """
-    standard_metric_data = match.getResults("", uuids, index, metric, uuid_field)
+    standard_metric_data = match.getResults("", uuids, index, metric)
+    #print('standard meetr1'+ str(standard_metric_data))
     if len(standard_metric_data) == 0:
         standard_metric_df = pd.DataFrame(columns=[uuid_field, timestamp_field, metric_value_field])
     else:
@@ -230,7 +232,7 @@ def filter_uuids_on_index(
     Returns:
         _type_: index and uuids
     """
-    if "jobConfig.name" in metadata :
+    if "jobConfig.name" in metadata:
         return uuids
     if "benchmark.keyword" in metadata:
         if metadata["benchmark.keyword"] in ["ingress-perf", "k8s-netperf"]:
@@ -245,7 +247,7 @@ def filter_uuids_on_index(
     return ids
 
 
-def get_build_urls(index: str, uuids: List[str], match: Matcher, uuid_field: str="uuid"):
+def get_build_urls(index: str, uuids: List[str], match: Matcher):
     """Gets metadata of the run from each test
         to get the build url
 
@@ -268,6 +270,8 @@ def process_test(
     match: Matcher,
     options: Dict[str, Any],
     start_timestamp: datetime,
+    process_version_field: str,
+    process_uuid_field: str
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """generate the dataframe for the test given
 
@@ -291,14 +295,12 @@ def process_test(
     if "timestamp" in test:
         timestamp_field=test["timestamp"]
 
-    version_field = "ocpVersion"
-    logger.info('test.keys' + str(test.keys()))
-    if "version" in test:
-        version_field=test["version"]
-    uuid_field = "uuid"
-    if "uuid_field" in test:
-        uuid_field=test["uuid_field"]
-    logger.info("uuid field " + str(uuid_field))
+    global uuid_field
+    uuid_field = process_uuid_field
+
+    global version_field
+    version_field = process_version_field
+
     # getting metadata
     metadata = (
         extract_metadata_from_test(test)
@@ -311,9 +313,7 @@ def process_test(
         fingerprint_index,
         lookback_date=start_timestamp,
         lookback_size=options["lookback_size"],
-        timestamp_field=timestamp_field,
-        version_field=version_field,
-        uuid_field=uuid_field
+        timestamp_field=timestamp_field
     )
     uuids = [run[uuid_field] for run in runs]
     buildUrls = {run[uuid_field]: run["buildUrl"] for run in runs}
@@ -321,7 +321,7 @@ def process_test(
     if options["baseline"] not in ("", None):
         uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
         uuids.append(options["uuid"])
-        buildUrls = get_build_urls(fingerprint_index, uuids, match, uuid_field)
+        buildUrls = get_build_urls(fingerprint_index, uuids, match)
     elif not uuids:
         logger.info("No UUID present for given metadata")
         return None, None
@@ -341,6 +341,7 @@ def process_test(
     dataframe_list, metrics_config = get_metric_data(
         uuids, benchmark_index, metrics, match, test_threshold, timestamp_field, uuid_field
     )
+    print('data frame list' +str(dataframe_list))
     # check and filter for multiple timestamp values for each run
     for i, df in enumerate(dataframe_list):
         if i != 0 and ("timestamp" in df.columns):
@@ -388,7 +389,7 @@ def shorten_url(shortener: any, uuids: str) -> str:
     return short_url
 
 
-def get_metadata_with_uuid(uuid: str, match: Matcher,uuid_field: str="uuid") -> Dict[Any, Any]:
+def get_metadata_with_uuid(uuid: str, match: Matcher) -> Dict[Any, Any]:
     """Gets metadata of the run from each test
 
     Args:
@@ -400,7 +401,7 @@ def get_metadata_with_uuid(uuid: str, match: Matcher,uuid_field: str="uuid") -> 
         dict: dictionary of the metadata
     """
     logger_instance = SingletonLogger.getLogger("Orion")
-    test = match.get_metadata_by_uuid(uuid,uuid_field)
+    test = match.get_metadata_by_uuid(uuid)
     metadata = {
         "platform": "",
         "clusterType": "",
@@ -424,8 +425,10 @@ def get_metadata_with_uuid(uuid: str, match: Matcher,uuid_field: str="uuid") -> 
         if k not in metadata:
             continue
         metadata[k] = v
-    metadata["benchmark.keyword"] = test["benchmark"]
-    metadata["ocpVersion"] = str(metadata["ocpVersion"])
+    if "benchmark" in test:
+        metadata["benchmark.keyword"] = test["benchmark"]
+    if "ocpVersion" in metadata:
+        metadata["ocpVersion"] = str(metadata["ocpVersion"])
 
     # Remove any keys that have blank values
     no_blank_meta = {k: v for k, v in metadata.items() if v}
