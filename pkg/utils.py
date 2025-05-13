@@ -57,11 +57,11 @@ def get_metric_data(
         try:
             if "agg" in metric:
                 metric_df, metric_dataframe_name = process_aggregation_metric(
-                    uuids, index, metric, match, timestamp_field, uuid_field
+                    uuids, index, metric, match, timestamp_field
                 )
             else:
                 metric_df, metric_dataframe_name = process_standard_metric(
-                    uuids, index, metric, match, metric_value_field, timestamp_field, uuid_field
+                    uuids, index, metric, match, metric_value_field, timestamp_field
                 )
             metric["labels"] = labels
             metric["direction"] = direction
@@ -190,7 +190,7 @@ def extract_metadata_from_test(test: Dict[str, Any]) -> Dict[Any, Any]:
     """
     logger_instance = SingletonLogger.getLogger("Orion")
     metadata = test["metadata"]
-    #metadata["ocpVersion"] = str(metadata["ocpVersion"])
+    metadata[uuid_field] = str(metadata[uuid_field])
     logger_instance.debug("metadata" + str(metadata))
     return metadata
 
@@ -339,7 +339,7 @@ def process_test(
     # get metrics data and dataframe
     metrics = test["metrics"]
     dataframe_list, metrics_config = get_metric_data(
-        uuids, benchmark_index, metrics, match, test_threshold, timestamp_field, uuid_field
+        uuids, benchmark_index, metrics, match, test_threshold, timestamp_field
     )
     print('data frame list' +str(dataframe_list))
     # check and filter for multiple timestamp values for each run
