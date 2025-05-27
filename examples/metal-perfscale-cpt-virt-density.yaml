@@ -16,7 +16,7 @@ tests :
     metrics :
     - name:  vmiReadyLatency
       metricName: vmiLatencyQuantilesMeasurement
-      quantileName: Ready
+      quantileName: VMReady
       metric_of_interest: P99
       not:
         jobConfig.name: "garbage-collection"
