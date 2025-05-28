@@ -86,14 +86,17 @@ setup() {
   run_cmd orion cmd --config "examples/readout-control-plane-node-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json --node-count True
 }
 
-
 @test "orion cmd readout netperf tcp with junit output " {
   export es_benchmark_index="k8s-netperf"
   run_cmd orion cmd --config "examples/readout-netperf-tcp.yaml" --output-format junit --hunter-analyze --save-output-path=output.xml
 }
 
+@test "orion cmd virt-density " {
+  run_cmd orion cmd --config examples/metal-perfscale-cpt-virt-density.yaml --lookback 15d --hunter-analyze
+}
+
 @test "orion cmd small scale cluster density with anomaly detection " {
-  run_cmd orion cmd --config "examples/small-scale-cluster-density.yaml" --lookback 5d --anomaly-detection 
+  run_cmd orion cmd --config "examples/small-scale-cluster-density.yaml" --lookback 5d --anomaly-detection
 }
 
 @test "orion cmd small scale node density cni anomaly detection with a window " {
