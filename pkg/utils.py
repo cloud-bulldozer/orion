@@ -326,18 +326,28 @@ def process_test(
     dataframe_list, metrics_config = get_metric_data(
         uuids, benchmark_index, metrics, match, test_threshold, timestamp_field
     )
-    # check and filter for multiple timestamp values for each run
-    for i, df in enumerate(dataframe_list):
-        if i != 0 and ("timestamp" in df.columns):
-            dataframe_list[i] = df.drop(columns=["timestamp"])
-    # merge the dataframe with all metrics
-    if dataframe_list:
-        merged_df = reduce(
-            lambda left, right: pd.merge(left, right, on="uuid", how="outer"),
-            dataframe_list,
-        ).sort_values(by="timestamp")
-    else:
+    if not dataframe_list:
         return None, metrics_config
+
+    uuid_timestamp_map = pd.DataFrame()
+    for df in dataframe_list:
+        if "timestamp" in df.columns:
+            uuid_timestamp_map = pd.concat(
+                [uuid_timestamp_map, df[["uuid", "timestamp"]].drop_duplicates()]
+            )
+    uuid_timestamp_map = uuid_timestamp_map.drop_duplicates(subset=["uuid"])
+
+    for i, df in enumerate(dataframe_list):
+        dataframe_list[i] = df.drop(columns=["timestamp"], errors="ignore")
+
+    merged_df = reduce(
+        lambda left, right: pd.merge(left, right, on="uuid", how="outer"),
+        dataframe_list,
+    )
+
+    merged_df = merged_df.merge(uuid_timestamp_map, on="uuid", how="left")
+    merged_df = merged_df.sort_values(by="timestamp")
+
     shortener = pyshorteners.Shortener(timeout=10)
     merged_df["buildUrl"] = merged_df["uuid"].apply(
         lambda uuid: (
