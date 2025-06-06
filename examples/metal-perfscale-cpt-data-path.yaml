@@ -22,7 +22,7 @@ tests :
       messageSize: 64
       driver.keyword: netperf
       hostNetwork: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -34,7 +34,7 @@ tests :
       messageSize: 64
       driver.keyword: netperf
       hostNetwork: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -46,7 +46,7 @@ tests :
       messageSize: 1024
       driver.keyword: netperf
       hostNetwork: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -59,7 +59,7 @@ tests :
       messageSize: 1024
       driver.keyword: netperf
       hostNetwork: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -71,7 +71,7 @@ tests :
       messageSize: 4096
       driver.keyword: netperf
       hostNetwork: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -83,7 +83,7 @@ tests :
       messageSize: 4096
       driver.keyword: netperf
       hostNetwork: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -95,7 +95,7 @@ tests :
       messageSize: 8192
       driver.keyword: netperf
       hostNetwork: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -107,7 +107,7 @@ tests :
       messageSize: 8192
       driver.keyword: netperf
       hostNetwork: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -119,7 +119,7 @@ tests :
       messageSize: 1024
       driver.keyword: netperf
       hostNetwork: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: latency
       agg:
         value: latency
@@ -131,7 +131,7 @@ tests :
       messageSize: 1024
       driver.keyword: netperf
       hostNetwork: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: latency
       agg:
         value: latency
@@ -145,7 +145,7 @@ tests :
       messageSize: 64
       driver.keyword: netperf
       hostNetwork: false
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -157,7 +157,7 @@ tests :
       messageSize: 64
       driver.keyword: netperf
       hostNetwork: false
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -169,7 +169,7 @@ tests :
       messageSize: 1024
       driver.keyword: netperf
       hostNetwork: false
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -182,7 +182,7 @@ tests :
       messageSize: 1024
       driver.keyword: netperf
       hostNetwork: false
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -194,7 +194,7 @@ tests :
       messageSize: 4096
       driver.keyword: netperf
       hostNetwork: false
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -206,7 +206,7 @@ tests :
       messageSize: 4096
       driver.keyword: netperf
       hostNetwork: false
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -218,7 +218,7 @@ tests :
       messageSize: 8192
       driver.keyword: netperf
       hostNetwork: false
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -230,7 +230,7 @@ tests :
       messageSize: 8192
       driver.keyword: netperf
       hostNetwork: false
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -242,7 +242,7 @@ tests :
       messageSize: 1024
       driver.keyword: netperf
       hostNetwork: false
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: latency
       agg:
         value: latency
@@ -254,7 +254,7 @@ tests :
       messageSize: 1024
       driver.keyword: netperf
       hostNetwork: false
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: latency
       agg:
         value: latency
@@ -269,7 +269,7 @@ tests :
       driver.keyword: netperf
       hostNetwork: false
       service: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -282,7 +282,7 @@ tests :
       driver.keyword: netperf
       hostNetwork: false
       service: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -295,7 +295,7 @@ tests :
       driver.keyword: netperf
       hostNetwork: false
       service: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -308,7 +308,7 @@ tests :
       driver.keyword: netperf
       hostNetwork: false
       service: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: throughput
       agg:
         value: throughput
@@ -321,7 +321,7 @@ tests :
       driver.keyword: netperf
       hostNetwork: false
       service: true
-      acrossAZ: false
+      acrossAZ: true
       metric_of_interest: latency
       agg:
         value: latency
