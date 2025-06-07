@@ -1,5 +1,5 @@
-tests :
-  - name : metal-perfscale-cpt-datapath
+tests:
+  - name: metal-perfscale-cpt-datapath
     index: {{ es_metadata_index }}
     benchmarkIndex: {{ es_benchmark_index }}
     metadata:
@@ -15,7 +15,7 @@ tests :
       not:
         stream: okd
 
-    metrics :
+    metrics:
     - name:  n2n-tput-64-1p
       parallelism: 1
       profile: TCP_STREAM
@@ -51,7 +51,6 @@ tests :
       agg:
         value: throughput
         agg_type: avg
-
 
     - name:  n2n-tput-1024-2p
       parallelism: 2
@@ -124,6 +123,7 @@ tests :
       agg:
         value: latency
         agg_type: avg
+      direction: 1
 
     - name:  n2n-ltcy-1024-2p
       parallelism: 2
@@ -136,6 +136,7 @@ tests :
       agg:
         value: latency
         agg_type: avg
+      direction: 1
 
 
 # p2p
@@ -247,6 +248,7 @@ tests :
       agg:
         value: latency
         agg_type: avg
+      direction: 1
 
     - name:  p2p-ltcy-1024-2p
       parallelism: 2
@@ -259,6 +261,7 @@ tests :
       agg:
         value: latency
         agg_type: avg
+      direction: 1
 
 
 #p2s
@@ -326,3 +329,4 @@ tests :
       agg:
         value: latency
         agg_type: avg
+      direction: 1
