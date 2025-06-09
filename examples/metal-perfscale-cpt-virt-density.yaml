@@ -12,6 +12,8 @@ tests :
       benchmark.keyword: virt-density
       ocpVersion: {{ version }}
       networkType: OVNKubernetes
+      not:
+        stream: okd
 
     metrics :
     - name:  vmiReadyLatency
