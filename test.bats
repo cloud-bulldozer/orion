@@ -119,6 +119,10 @@ setup() {
   run_cmd orion cmd --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze
 }
 
+@test "orion cmd chaos pod recovery " {
+  run_cmd orion cmd --config "examples/chaos_results.yaml" --lookback 10d
+}
+
 @test "orion cmd ols configuration test " {
   export ols_test_workers=10
   es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion cmd --config "examples/ols-load-generator.yaml" --hunter-analyze --ack ack/4.15_ols-load-generator-10w_ack.yaml

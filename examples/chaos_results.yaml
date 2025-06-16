@@ -1,0 +1,38 @@
+tests :
+  - name : chaos
+    index: krkn-telemetry*
+    benchmarkIndex: krkn-metrics*
+    version: cluster_version
+    uuid_field: run_uuid
+    metadata:
+      cloud_infrastructure.keyword: AWS
+      cluster_version: {{ version }}
+      scenarios.scenario_type.keyword: pod_disruption_scenarios
+      scenarios.affected_pods.recovered.namespace.keyword: openshift-monitoring
+
+    metrics :
+    - name: monitoring_recovery_time
+      metric_of_interest: total_recovery_time
+      metricName: affected_pods_recovery
+
+    - name:  masterNodeUtilCPU
+      metricName: nodeCPUSeconds-Masters
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: max
+  
+    - name: workerNodeUtilCPU
+      metricName: nodeCPUSeconds-Workers
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: max
+
+    - name: kubelet 
+      metricName : cpu-kubelet 
+      metric_of_interest: value
+      agg: 
+        value: cpu 
+        agg_type: avg
+      direction: 1
