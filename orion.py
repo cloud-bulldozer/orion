@@ -121,9 +121,9 @@ def cmd_analysis(**kwargs):
     Orion runs on command line mode, and helps in detecting regressions
     """
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
-    logger_instance = SingletonLogger(debug=level, name="Orion")
     if kwargs['output_format'] == cnsts.JSON :
         level = logging.ERROR
+    logger_instance = SingletonLogger(debug=level, name="Orion")
     logger_instance.info("🏹 Starting Orion in command-line mode")
     if len(kwargs["ack"]) > 1 :
         kwargs["ackMap"] = load_ack(kwargs["ack"])
