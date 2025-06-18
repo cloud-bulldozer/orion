@@ -1,0 +1,79 @@
+tests :
+  - name : quay-load-test-stable-stage-image-push-pulls
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ quay_image_push_pull_index }}
+    metadata:
+      platform: AWS
+      clusterType: self-managed
+      masterNodesType.keyword: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType.keyword: m6a.8xlarge
+      workerNodesCount: 5
+      benchmark.keyword: quay-load-test
+      ocpVersion: {{ ocp_version }}
+      quayVersion: {{ quay_version }}
+      networkType: OVNKubernetes
+
+    metrics : 
+    - name: image_pulls_success_count
+      targets: image_pulls
+      metric_of_interest: success_count
+      agg:
+        value: success
+        agg_type: sum
+      direction: -1
+      threshold: 10
+      context: 10
+      timestamp: end_time
+    - name: image_pulls_failure_count
+      targets: image_pulls
+      metric_of_interest: failure_count
+      agg:
+        value: failure
+        agg_type: sum
+      direction: -1
+      threshold: 10
+      context: 10
+      timestamp: end_time
+    - name: image_pulls_latency
+      targets: image_pulls
+      metric_of_interest: elapsed_time
+      agg:
+        value: latency
+        agg_type: max
+      direction: 1
+      threshold: 10
+      context: 10
+      timestamp: end_time
+      correlation: image_pulls_success_count
+    - name: image_pushes_success_count
+      targets: image_pushes
+      metric_of_interest: success_count
+      agg:
+        value: success
+        agg_type: sum
+      direction: -1
+      threshold: 10
+      context: 10
+      timestamp: end_time
+    - name: image_pushes_failure_count
+      targets: image_pushes
+      metric_of_interest: failure_count
+      agg:
+        value: failure
+        agg_type: sum
+      direction: -1
+      threshold: 10
+      context: 10
+      timestamp: end_time
+    - name: image_pushes_latency
+      targets: image_pushes
+      metric_of_interest: elapsed_time
+      agg:
+        value: latency
+        agg_type: max
+      direction: 1
+      threshold: 10
+      context: 10
+      timestamp: end_time
+      correlation: image_pushes_success_count
