@@ -1,4 +1,4 @@
-tests :
+tests:
   - name: metal-perfscale-cpt-node-density
     index: {{ es_metadata_index }}
     benchmarkIndex: {{ es_benchmark_index }}
