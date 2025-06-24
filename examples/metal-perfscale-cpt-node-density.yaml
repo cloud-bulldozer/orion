@@ -1,5 +1,5 @@
 tests :
-  - name : metal-perfscale-cpt-node-density
+  - name: metal-perfscale-cpt-node-density
     index: {{ es_metadata_index }}
     benchmarkIndex: {{ es_benchmark_index }}
     metadata:
@@ -15,8 +15,8 @@ tests :
       not:
         stream: okd
 
-    metrics :
-    - name:  podReadyLatency
+    metrics:
+    - name: podReadyLatency
       metricName: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
@@ -25,8 +25,8 @@ tests :
       labels:
         - "[Jira: PodLatency]"
 
-    - name:  apiserverCPU
-      metricName : containerCPU
+    - name: apiserverCPU
+      metricName: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
@@ -36,7 +36,7 @@ tests :
         - "[Jira: kube-apiserver]"
 
     - name: multusCPU
-      metricName : containerCPU
+      metricName: containerCPU
       labels.namespace.keyword: openshift-multus
       metric_of_interest: value
       agg:
@@ -46,7 +46,7 @@ tests :
         - "[Jira: multus]"
 
     - name: monitoringCPU
-      metricName : containerCPU
+      metricName: containerCPU
       labels.namespace.keyword: openshift-monitoring
       metric_of_interest: value
       agg:
@@ -55,8 +55,8 @@ tests :
       labels:
         - "[Jira: monitoring]"
 
-    - name:  ovnCPU
-      metricName : containerCPU
+    - name: ovnCPU
+      metricName: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -65,8 +65,8 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
 
-    - name:  etcdCPU
-      metricName : containerCPU
+    - name: etcdCPU
+      metricName: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
@@ -75,8 +75,8 @@ tests :
       labels:
         - "[Jira: etcd]"
 
-    - name:  etcdDisk
-      metricName : 99thEtcdDiskBackendCommitDurationSeconds
+    - name: etcdDisk
+      metricName: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
         value: duration
@@ -85,7 +85,7 @@ tests :
         - "[Jira: etcd]"
 
     - name: kubelet
-      metricName : kubeletCPU
+      metricName: kubeletCPU
       metric_of_interest: value
       labels:
         - "[Jira: Node]"
