@@ -18,7 +18,7 @@ from fmatch.matcher import Matcher
 from fmatch.logrus import SingletonLogger
 import pandas as pd
 import pyshorteners
-from pkg.constants import NANO_SECONDS_PATTERN
+from pkg.constants import NANO_SECONDS_PATTERN, EPOCH_TIMESTAMP_PATTERN
 
 
 class Utils:
@@ -142,8 +142,17 @@ class Utils:
         """
         if timestamp is None:
             return timestamp
-        if isinstance(timestamp, str) and NANO_SECONDS_PATTERN.match(timestamp):
-            return timestamp
+
+        if isinstance(timestamp, str):
+            if NANO_SECONDS_PATTERN.match(timestamp):
+                return timestamp
+            elif EPOCH_TIMESTAMP_PATTERN.match(timestamp):
+                # Convert Unix epoch timestamp
+                dt = pd.to_datetime(timestamp, unit='s', utc=True)
+                ns = f"{dt.microsecond:06d}000"
+                return dt.strftime(f"%Y-%m-%dT%H:%M:%S.{ns}Z")
+
+        # Original logic for other timestamp formats
         dt = pd.to_datetime(timestamp, utc=True)
         ns = f"{dt.microsecond:06d}000"
         return dt.strftime(f"%Y-%m-%dT%H:%M:%S.{ns}Z")
