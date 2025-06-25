@@ -146,7 +146,7 @@ class Utils:
         if isinstance(timestamp, str):
             if NANO_SECONDS_PATTERN.match(timestamp):
                 return timestamp
-            elif EPOCH_TIMESTAMP_PATTERN.match(timestamp):
+            if EPOCH_TIMESTAMP_PATTERN.match(timestamp):
                 # Convert Unix epoch timestamp
                 dt = pd.to_datetime(timestamp, unit='s', utc=True)
                 ns = f"{dt.microsecond:06d}000"

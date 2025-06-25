@@ -16,5 +16,5 @@ CMR="cmr"
 NANO_SECONDS_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}T"
                         r"\d{2}:\d{2}:\d{2}\."
                         r"\d{9}Z$")
-# Matches Unix epoch timestamps in seconds                       
+# Matches Unix epoch timestamps in seconds
 EPOCH_TIMESTAMP_PATTERN = re.compile(r"^\d{10}$")
