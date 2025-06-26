@@ -142,21 +142,21 @@ class Utils:
         """
         if timestamp is None:
             return timestamp
-
+        dt = None
         if isinstance(timestamp, str):
             if NANO_SECONDS_PATTERN.match(timestamp):
                 return timestamp
             if EPOCH_TIMESTAMP_PATTERN.match(timestamp):
                 # Convert Unix epoch timestamp
                 dt = pd.to_datetime(timestamp, unit='s', utc=True)
-                ns = f"{dt.microsecond:06d}000"
-                return dt.strftime(f"%Y-%m-%dT%H:%M:%S.{ns}Z")
+            else:
+                raise ValueError(f"Unrecognized or invalid timestamp format: {timestamp}")
+        else:
+            # Original logic for other timestamp formats
+            dt = pd.to_datetime(timestamp, utc=True)
 
-        # Original logic for other timestamp formats
-        dt = pd.to_datetime(timestamp, utc=True)
         ns = f"{dt.microsecond:06d}000"
         return dt.strftime(f"%Y-%m-%dT%H:%M:%S.{ns}Z")
-
 
     def process_standard_metric(
         self,
