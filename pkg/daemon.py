@@ -11,7 +11,7 @@ from fmatch.logrus import SingletonLogger
 from pkg.config import load_config
 import pkg.constants as cnsts
 
-from . import runTest
+from . import run_test
 
 app = FastAPI()
 logger_instance = SingletonLogger.getLogger("Orion")
@@ -36,10 +36,9 @@ async def daemon_changepoint( # pylint: disable = R0913
         json: json object of the changepoints and metrics
     """
     parameters = {"version": version}
-    config_file_name=f"{test_name}.yaml"
-    config_path = pkg_resources.resource_filename("configs", config_file_name)
+    config_file_name = f"{test_name}.yaml"
+    config_path = pkg_resources.resource_filename("configs", f"{test_name}.yaml")
     option_arguments = {
-        "config": config_file_name,
         "save_data_path": "output.csv",
         "hunter_analyze": True,
         "anomaly_detection": False,
@@ -47,7 +46,7 @@ async def daemon_changepoint( # pylint: disable = R0913
         "uuid": uuid,
         "lookback":lookback,
         "baseline": baseline,
-        "configMap": load_config(config_path, parameters),
+        "config": load_config(config_path, parameters),
         "convert_tinyurl": convert_tinyurl.lower() not in "false",
     }
     filter_changepoints = (
@@ -111,10 +110,8 @@ async def daemon_anomaly( # pylint: disable = R0913, R0914
         json: json object of the changepoints and metrics
     """
     parameters = {"version": version}
-    config_file_name=test_name+".yml"
-    config_path = pkg_resources.resource_filename("configs", config_file_name)
+    config_path = pkg_resources.resource_filename("configs", test_name + ".yml")
     option_arguments = {
-        "config": config_file_name,
         "save_data_path": "output.csv",
         "hunter_analyze": False,
         "anomaly_detection": True,
@@ -122,7 +119,7 @@ async def daemon_anomaly( # pylint: disable = R0913, R0914
         "uuid": uuid,
         "lookback":lookback,
         "baseline": baseline,
-        "configMap": load_config(config_path, parameters),
+        "config": load_config(config_path, parameters),
         "anomaly_window": int(anomaly_window),
         "min_anomaly_percent":int(min_anomaly_percent),
         "convert_tinyurl": convert_tinyurl.lower() not in "false",
@@ -130,7 +127,7 @@ async def daemon_anomaly( # pylint: disable = R0913, R0914
     filter_points = (
         True if filter_points == "true" else False  # pylint: disable = R1719
     )
-    result, _ = runTest.run(**option_arguments)
+    result, _ = run_test.run(**option_arguments)
     result = {k:json.loads(v) for k,v in result.items()}
     if result is None:
         return {"Error":"No UUID with given metadata"}
