@@ -38,16 +38,16 @@ class Utils:
 
     # pylint: disable=too-many-locals
     def get_metric_data(
-        self, uuids: List[str], index: str, metrics: Dict[str, Any], match: Matcher, test_threshold: int, timestamp_field: str="timestamp"
+        self, uuids: List[str], metrics: Dict[str, Any], match: Matcher, test_threshold: int, timestamp_field: str="timestamp"
     ) -> List[pd.DataFrame]:
         """Gets details metrics based on metric yaml list
 
         Args:
-            ids (list): list of all uuids
-            index (dict): index in es of where to find data
+            uuids (list): list of all uuids
             metrics (dict): metrics to gather data on
-            match (Matcher): current matcher instance
-            logger (logger): log data to one output
+            match (Matcher): matcher instance
+            test_threshold (int): threshold for the test
+            timestamp_field (str): field name holding the timestamp
 
         Returns:
             dataframe_list: dataframe of the all metrics
@@ -70,11 +70,11 @@ class Utils:
             try:
                 if "agg" in metric:
                     metric_df, metric_dataframe_name = self.process_aggregation_metric(
-                        uuids, index, metric, match, timestamp_field
+                        uuids, metric, match, timestamp_field
                     )
                 else:
                     metric_df, metric_dataframe_name = self.process_standard_metric(
-                        uuids, index, metric, match, metric_value_field, timestamp_field
+                        uuids, metric, match, metric_value_field, timestamp_field
                     )
                 metric["labels"] = labels
                 metric["direction"] = direction
@@ -94,20 +94,19 @@ class Utils:
 
 
     def process_aggregation_metric(
-        self, uuids: List[str], index: str, metric: Dict[str, Any], match: Matcher, timestamp_field: str="timestamp"
+        self, uuids: List[str], metric: Dict[str, Any], match: Matcher, timestamp_field: str="timestamp"
     ) -> pd.DataFrame:
         """Method to get aggregated dataframe
 
         Args:
             uuids (List[str]): _description_
-            index (str): _description_
             metric (Dict[str, Any]): _description_
             match (Matcher): _description_
 
         Returns:
             pd.DataFrame: _description_
         """
-        aggregated_metric_data = match.get_agg_metric_query(uuids, index, metric, timestamp_field)
+        aggregated_metric_data = match.get_agg_metric_query(uuids, metric, timestamp_field)
         aggregation_value = metric["agg"]["value"]
         aggregation_type = metric["agg"]["agg_type"]
         aggregation_name = f"{aggregation_value}_{aggregation_type}"
@@ -161,7 +160,6 @@ class Utils:
     def process_standard_metric(
         self,
         uuids: List[str],
-        index: str,
         metric: Dict[str, Any],
         match: Matcher,
         metric_value_field: str,
@@ -170,16 +168,16 @@ class Utils:
         """Method to get dataframe of standard metric
 
         Args:
-            uuids (List[str]): _description_
-            index (str): _description_
-            metric (Dict[str, Any]): _description_
-            match (Matcher): _description_
-            metric_value_field (str): _description_
+            uuids (List[str]): list of uuids
+            metric (Dict[str, Any]): metric name to fetch
+            match (Matcher): Matcher instance
+            metric_value_field (str): field name holding the metric
+            timestamp_field (str, optional): field name holding timestamp. Defaults to "timestamp".
 
         Returns:
             pd.DataFrame: _description_
         """
-        standard_metric_data = match.getResults("", uuids, index, metric)
+        standard_metric_data = match.get_results("", uuids, metric)
         if len(standard_metric_data) == 0:
             standard_metric_df = pd.DataFrame(columns=[self.uuid_field, timestamp_field, metric_value_field])
         else:
@@ -222,10 +220,9 @@ class Utils:
 
         Args:
             data (_type_): config file data
-            logger (_type_): logger
 
         Returns:
-            str: es url
+            str: ElasticSearch URL
         """
         logger_instance = SingletonLogger.getLogger("Orion")
         if "ES_SERVER" in data.keys():
@@ -261,7 +258,7 @@ class Utils:
             if metadata["benchmark.keyword"] in ["ingress-perf", "k8s-netperf"]:
                 return uuids
             if baseline == "" and not filter_node_count and "kube-burner" in benchmark_index:
-                runs = match.match_kube_burner(uuids, benchmark_index)
+                runs = match.match_kube_burner(uuids)
                 ids = match.filter_runs(runs, runs)
             else:
                 ids = uuids
@@ -270,7 +267,7 @@ class Utils:
         return ids
 
 
-    def get_build_urls(self, index: str, uuids: List[str], match: Matcher):
+    def get_build_urls(self, uuids: List[str], match: Matcher):
         """Gets metadata of the run from each test
             to get the build url
 
@@ -283,9 +280,9 @@ class Utils:
             dict: dictionary of the metadata
         """
 
-        test = match.getResults("", uuids, index, {})
-        buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in test}
-        return buildUrls
+        test = match.get_results("", uuids, {})
+        build_urls = {run[self.uuid_field]: run["buildUrl"] for run in test}
+        return build_urls
 
 
     def process_test(
@@ -298,17 +295,16 @@ class Utils:
         """generate the dataframe for the test given
 
         Args:
-            test (_type_): test from process test
-            match (_type_): matcher object
-            logger (_type_): logger object
-            output (_type_): output file name
+            test (Dict[str, Any]): test from process test
+            match (fmatch.Matcher): matcher instance
+            options (Dict[str, Any]): options
+            start_timestamp (datetime): start timestamp
 
         Returns:
             _type_: merged dataframe
         """
         logger = SingletonLogger.getLogger("Orion")
         logger.info("The test %s has started", test["name"])
-        fingerprint_index = test["index"]
 
         test_threshold=0
         if "threshold" in test:
@@ -326,7 +322,6 @@ class Utils:
         # get uuids, buildUrls matching with the metadata
         runs = match.get_uuid_by_metadata(
             metadata,
-            fingerprint_index,
             lookback_date=start_timestamp,
             lookback_size=options["lookback_size"],
             timestamp_field=timestamp_field
@@ -337,16 +332,15 @@ class Utils:
         if options["baseline"] not in ("", None):
             uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
             uuids.append(options["uuid"])
-            buildUrls = self.get_build_urls(fingerprint_index, uuids, match)
+            buildUrls = self.get_build_urls(uuids, match)
         elif not uuids:
             logger.info("No UUID present for given metadata")
             return None, None
 
-        benchmark_index = test["benchmarkIndex"]
 
         uuids = self.filter_uuids_on_index(
             metadata,
-            benchmark_index,
+            test["benchmarkIndex"],
             uuids,
             match,
             options["baseline"],
@@ -355,7 +349,7 @@ class Utils:
         # get metrics data and dataframe
         metrics = test["metrics"]
         dataframe_list, metrics_config = self.get_metric_data(
-            uuids, benchmark_index, metrics, match, test_threshold, timestamp_field
+            uuids, metrics, match, test_threshold, timestamp_field
         )
         if not dataframe_list:
             return None, metrics_config

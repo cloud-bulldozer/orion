@@ -24,8 +24,7 @@ def load_config(config: str, parameters: Dict= None) -> Dict[str, Any]:
         dict: dictionary of the config file
     """
     env_vars = {k.lower(): v for k, v in os.environ.items()}
-    merged_parameters = {}
-    merged_parameters.update(env_vars)
+    merged_parameters = env_vars
     if parameters:
         merged_parameters.update(parameters)
     logger_instance = SingletonLogger.getLogger("Orion")
