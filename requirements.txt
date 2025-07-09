@@ -11,7 +11,6 @@ PyYAML==6.0.1
 six==1.16.0
 tzdata==2023.4
 urllib3==1.26.18
-pylint==3.2.7
 pyshorteners==1.0.1
 fastapi==0.110.0
 python-multipart==0.0.9
