@@ -1,77 +1,80 @@
-tests :
-  - name : payload-node-density
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
-    metadata:
-      platform: AWS
-      clusterType: self-managed
-      masterNodesType: m6a.xlarge
-      masterNodesCount: 3
-      workerNodesType: m6a.xlarge
-      workerNodesCount: 6
-      benchmark.keyword: node-density 
-      ocpVersion: {{ version }}
-      networkType: OVNKubernetes
-      jobType: periodic
-      not:
-        stream: okd
-
-    metrics : 
-    - name:  podReadyLatency
+name : payload-node-density
+metadata_index: {{ es_metadata_index }}
+benchmark_index: {{ es_benchmark_index }}
+metadata:
+  platform: AWS
+  clusterType: self-managed
+  masterNodesType: m6a.xlarge
+  masterNodesCount: 3
+  workerNodesType: m6a.xlarge
+  workerNodesCount: 6
+  benchmark.keyword: node-density 
+  ocpVersion: {{ version }}
+  networkType: OVNKubernetes
+  jobType: periodic
+  not:
+    stream: okd
+metrics : 
+  - name:  podReadyLatency
+    metric_of_interest: P99
+    query:
       metricName: podLatencyQuantilesMeasurement
       quantileName: Ready
-      metric_of_interest: P99
       not: 
         jobConfig.name: "garbage-collection"
-      labels:
-        - "[Jira: PerfScale]"
-      direction: 1
-      threshold: 10
+    labels:
+      - "[Jira: PerfScale]"
+    direction: 1
+    threshold: 10
 
-    - name:  apiserverCPU
+  - name:  apiserverCPU
+    query:
       metricName : containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: kube-apiserver]"
-      direction: 1
-      threshold: 10
+    metric_of_interest: value
+    agg:
+      value: cpu
+      agg_type: avg
+    labels:
+      - "[Jira: kube-apiserver]"
+    direction: 1
+    threshold: 10
 
-    - name:  ovnCPU
+  - name: ovnCPU
+    query:
       metricName : containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: Networking / ovn-kubernetes]"
-      direction: 1
-      threshold: 10
+    metric_of_interest: value
+    agg:
+      value: cpu
+      agg_type: avg
+    labels:
+      - "[Jira: Networking / ovn-kubernetes]"
+    direction: 1
+    threshold: 10
 
-    - name:  etcdCPU
+  - name:  etcdCPU
+    query:
       metricName : containerCPU
       labels.namespace.keyword: openshift-etcd
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: etcd]"
-      direction: 1
-      threshold: 10
+    metric_of_interest: value
+    agg:
+      value: cpu
+      agg_type: avg
+    labels:
+      - "[Jira: etcd]"
+    direction: 1
+    threshold: 10
 
-    - name: kubelet 
+  - name: kubelet 
+    query:
       metricName : kubeletCPU 
-      metric_of_interest: value 
-      labels: 
-        - "[Jira: Node]" 
-      agg: 
-        value: cpu 
-        agg_type: avg
-      direction: 1
-      threshold: 10
+    metric_of_interest: value 
+    labels: 
+      - "[Jira: Node]" 
+    agg: 
+      value: cpu 
+      agg_type: avg
+    direction: 1
+    threshold: 10
 

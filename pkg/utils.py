@@ -26,118 +26,122 @@ class Utils:
     Helper utils class
     """
 
-    def __init__(self, uuid_field: str ="uuid", version_field: str ="ocpVersion"):
+    def __init__(self, uuid_field: str ="uuid", version_field: str ="ocpVersion", match: Matcher = None):
         """Instanciates utils class with uuid and version fields 
 
         Args:
             uuid_field (str): key to find the uuid
             version_field (str): key to find the version
+            match (Matcher): matcher instance
         """
         self.uuid_field = uuid_field
         self.version_field = version_field
+        self.logger = SingletonLogger.getLogger("Orion")
+        self.match = match
 
-    # pylint: disable=too-many-locals
     def get_metric_data(
-        self, uuids: List[str], metrics: Dict[str, Any], match: Matcher, test_threshold: int, timestamp_field: str="timestamp"
-    ) -> List[pd.DataFrame]:
-        """Gets details metrics based on metric yaml list
+        self, uuids: List[str], metrics: Dict[str, Any], timestamp_field: str="timestamp"
+    ) -> Tuple[List[pd.DataFrame], List[Dict[str, Any]]]:
+        """
+        Get metrics data from elasticsearch based on given uuids and metrics configuration.
 
         Args:
-            uuids (list): list of all uuids
-            metrics (dict): metrics to gather data on
-            match (Matcher): matcher instance
-            test_threshold (int): threshold for the test
-            timestamp_field (str): field name holding the timestamp
+            uuids (List[str]): List of uuids to query the metric data for.
+            metrics (Dict[str, Any]): Dictionary of metrics configuration.
+            timestamp_field (str): Field name holding the timestamp. Defaults to "timestamp".
 
         Returns:
-            dataframe_list: dataframe of the all metrics
+            Tuple[List[pd.DataFrame], List[Dict[str, Any]]]: List of dataframes for each metric, and a second list of dictionaries containing metrics configuration.
         """
-        logger_instance = SingletonLogger.getLogger("Orion")
         dataframe_list = []
-        metrics_config = {}
-
+        metrics_config = []
         for metric in metrics:
-            metric_name = metric["name"]
-            metric_value_field = metric["metric_of_interest"]
-
-            labels = metric.pop("labels", None)
-            direction = int(metric.pop("direction", 0))
-            threshold = abs(int(metric.pop("threshold", test_threshold)))
-            timestamp_field = metric.pop("timestamp", timestamp_field)
-            correlation = metric.pop("correlation", "")
             context = metric.pop("context", 5)
-            logger_instance.info("Collecting %s", metric_name)
+            self.logger.info("Collecting %s", metric["name"])
             try:
                 if "agg" in metric:
-                    metric_df, metric_dataframe_name = self.process_aggregation_metric(
-                        uuids, metric, match, timestamp_field
-                    )
+                    metric_df, metric_dataframe_name = self.process_aggregation_metric(uuids, metric, timestamp_field)
                 else:
-                    metric_df, metric_dataframe_name = self.process_standard_metric(
-                        uuids, metric, match, metric_value_field, timestamp_field
-                    )
-                metric["labels"] = labels
-                metric["direction"] = direction
-                metric["threshold"] = threshold
-                metric["correlation"] = correlation
-                metric["context"] = context
-                metrics_config[metric_dataframe_name] = metric
+                    metric_df, metric_dataframe_name = self.process_standard_metric(uuids, metric["metric_of_interest"], metric["query"], timestamp_field)
                 dataframe_list.append(metric_df)
-                logger_instance.debug(metric_df)
+                metrics_config.append(metric)
+                self.logger.debug(metric_df)
             except Exception as e:
-                logger_instance.error(
+                self.logger.error(
                     "Couldn't get metrics %s, exception %s",
-                    metric_name,
+                    metric["name"],
                     e,
                 )
         return dataframe_list, metrics_config
 
 
     def process_aggregation_metric(
-        self, uuids: List[str], metric: Dict[str, Any], match: Matcher, timestamp_field: str="timestamp"
-    ) -> pd.DataFrame:
-        """Method to get aggregated dataframe
+        self, uuids: List[str], metric: Dict[str, Any], timestamp_field: str="timestamp"
+    ) -> Tuple[pd.DataFrame, str]:
+        """Processes aggregated metric data and returns a DataFrame with the specified aggregation type.
 
         Args:
-            uuids (List[str]): _description_
-            metric (Dict[str, Any]): _description_
-            match (Matcher): _description_
+            uuids (List[str]): List of UUIDs to query the metric data for.
+            metric (Dict[str, Any]): Dictionary containing metric details including aggregation specifications.
+            timestamp_field (str, optional): Field name holding the timestamp. Defaults to "timestamp".
 
         Returns:
-            pd.DataFrame: _description_
+            Tuple[pd.DataFrame, str]: A tuple containing the DataFrame of aggregated metrics and the name of the metric with aggregation type.
         """
-        aggregated_metric_data = match.get_agg_metric_query(uuids, metric, timestamp_field)
+
+        metric_data = self.match.get_agg_metric_query(uuids, metric, timestamp_field)
         aggregation_value = metric["agg"]["value"]
         aggregation_type = metric["agg"]["agg_type"]
-        aggregation_name = f"{aggregation_value}_{aggregation_type}"
-        if len(aggregated_metric_data) == 0:
-            aggregated_df = pd.DataFrame(columns=[self.uuid_field, timestamp_field, aggregation_name])
+        metric_name = f"{metric['name']}_{aggregation_type}"
+        if len(metric_data) == 0:
+            aggregated_df = pd.DataFrame(columns=[self.uuid_field, "timestamp", metric_name])
         else:
-            aggregated_df = match.convert_to_df(
-                aggregated_metric_data, columns=[self.uuid_field, timestamp_field, aggregation_name],
+            aggregated_df = self.match.convert_to_df(
+                metric_data, columns=[self.uuid_field, "timestamp", metric_name],
                 timestamp_field=timestamp_field
             )
             aggregated_df[timestamp_field] = aggregated_df[timestamp_field].apply(self.standardize)
-
         aggregated_df = aggregated_df.drop_duplicates(subset=[self.uuid_field], keep="first")
-        aggregated_metric_name = f"{metric['name']}_{aggregation_type}"
-        aggregated_df = aggregated_df.rename(
-            columns={aggregation_name: aggregated_metric_name}
-        )
-        if timestamp_field != "timestamp":
-            aggregated_df = aggregated_df.rename(
-                columns={timestamp_field: "timestamp"}
+        return aggregated_df, metric_name
+
+    def process_standard_metric(
+        self,
+        uuids: List[str],
+        metric_name: str,
+        query: Dict[str, Any],
+        timestamp_field: str="timestamp"
+    ) -> Tuple[pd.DataFrame, str]:
+        """Method to get dataframe of standard metric
+
+        Args:
+            uuids (List[str]): list of uuids
+            metric_name (str): arbitrary metric name
+            query (Dict[str, Any]): query parameters
+            timestamp_field (str, optional): field name holding timestamp. Defaults to "timestamp".
+
+        Returns:
+            Tuple[pd.DataFrame, str]: dataframe and metric name
+        """
+        metric_data = self.match.get_results("", uuids, query)
+        if len(metric_data) == 0:
+            standard_metric_df = pd.DataFrame(columns=[self.uuid_field, "timestamp", metric_name])
+        else:
+            standard_metric_df = self.match.convert_to_df(
+                metric_data, columns=[self.uuid_field, "timestamp", metric_name],
+                timestamp_field=timestamp_field
             )
-        return aggregated_df, aggregated_metric_name
+            standard_metric_df[timestamp_field] = standard_metric_df[timestamp_field].apply(self.standardize)
+        standard_metric_df = standard_metric_df.drop_duplicates()
+        return standard_metric_df, metric_name
 
     def standardize(self, timestamp: Any) -> str:
         """Method to standardize timestamp formats
 
         Args:
-            timestamp Any: timestamp object with various formats 
+            timestamp (Any): timestamp object with various formats 
 
         Returns:
-            str: _description_
+            str: standardized timestamp
         """
         if timestamp is None:
             return timestamp
@@ -157,88 +161,12 @@ class Utils:
         ns = f"{dt.microsecond:06d}000"
         return dt.strftime(f"%Y-%m-%dT%H:%M:%S.{ns}Z")
 
-    def process_standard_metric(
-        self,
-        uuids: List[str],
-        metric: Dict[str, Any],
-        match: Matcher,
-        metric_value_field: str,
-        timestamp_field: str="timestamp"
-    ) -> pd.DataFrame:
-        """Method to get dataframe of standard metric
-
-        Args:
-            uuids (List[str]): list of uuids
-            metric (Dict[str, Any]): metric name to fetch
-            match (Matcher): Matcher instance
-            metric_value_field (str): field name holding the metric
-            timestamp_field (str, optional): field name holding timestamp. Defaults to "timestamp".
-
-        Returns:
-            pd.DataFrame: _description_
-        """
-        standard_metric_data = match.get_results("", uuids, metric)
-        if len(standard_metric_data) == 0:
-            standard_metric_df = pd.DataFrame(columns=[self.uuid_field, timestamp_field, metric_value_field])
-        else:
-            standard_metric_df = match.convert_to_df(
-                standard_metric_data, columns=[self.uuid_field, timestamp_field, metric_value_field],
-                timestamp_field=timestamp_field
-            )
-            standard_metric_df[timestamp_field] = standard_metric_df[timestamp_field].apply(self.standardize)
-        standard_metric_name = f"{metric['name']}_{metric_value_field}"
-        standard_metric_df = standard_metric_df.rename(
-            columns={metric_value_field: standard_metric_name}
-        )
-        if timestamp_field != "timestamp":
-            standard_metric_df = standard_metric_df.rename(
-                columns={timestamp_field: "timestamp"}
-            )
-
-        standard_metric_df = standard_metric_df.drop_duplicates()
-        return standard_metric_df, standard_metric_name
-
-
-    def extract_metadata_from_test(self, test: Dict[str, Any]) -> Dict[Any, Any]:
-        """Gets metadata of the run from each test
-
-        Args:
-            test (dict): test dictionary
-
-        Returns:
-            dict: dictionary of the metadata
-        """
-        logger_instance = SingletonLogger.getLogger("Orion")
-        metadata = test["metadata"]
-        metadata[self.version_field] = str(metadata[self.version_field])
-        logger_instance.debug("metadata" + str(metadata))
-        return metadata
-
-
-    def get_datasource(self, data: Dict[Any, Any]) -> str:
-        """Gets es url from config or env
-
-        Args:
-            data (_type_): config file data
-
-        Returns:
-            str: ElasticSearch URL
-        """
-        logger_instance = SingletonLogger.getLogger("Orion")
-        if "ES_SERVER" in data.keys():
-            return data["ES_SERVER"]
-        if "ES_SERVER" in os.environ:
-            return os.environ.get("ES_SERVER")
-        logger_instance.error("ES_SERVER environment variable/config variable not set")
-        sys.exit(1)
-
 
     def filter_uuids_on_index(
         self,
         metadata: Dict[str, Any],
         benchmark_index: str,
         uuids: List[str],
-        match: Matcher,
         baseline: str,
         filter_node_count: bool,
     ) -> List[str]:
@@ -247,10 +175,9 @@ class Utils:
         Args:
             metadata (_type_): metadata from config
             uuids (_type_): uuids collected
-            match (_type_): Matcher object
 
         Returns:
-            _type_: index and uuids
+            str: index and uuids
         """
         if "jobConfig.name" in metadata:
             return uuids
@@ -258,8 +185,8 @@ class Utils:
             if metadata["benchmark.keyword"] in ["ingress-perf", "k8s-netperf"]:
                 return uuids
             if baseline == "" and not filter_node_count and "kube-burner" in benchmark_index:
-                runs = match.match_kube_burner(uuids)
-                ids = match.filter_runs(runs, runs)
+                runs = self.match.match_kube_burner(uuids)
+                ids = self.match.filter_runs(runs, runs)
             else:
                 ids = uuids
         else:
@@ -267,89 +194,83 @@ class Utils:
         return ids
 
 
-    def get_build_urls(self, uuids: List[str], match: Matcher):
+    def get_build_urls(self, uuids: List[str]) -> Dict[str, str]:
         """Gets metadata of the run from each test
             to get the build url
 
         Args:
             uuids (list): str list of uuid to find build urls of
-            match: the fmatch instance
 
 
         Returns:
-            dict: dictionary of the metadata
+            dict: build urls
         """
 
-        test = match.get_results("", uuids, {})
+        test = self.match.get_results("", uuids, {})
         build_urls = {run[self.uuid_field]: run["buildUrl"] for run in test}
         return build_urls
 
 
     def process_test(
         self,
-        test: Dict[str, Any],
-        match: Matcher,
+        test_config: Dict[str, Any],
         options: Dict[str, Any],
         start_timestamp: datetime
     ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
-        """generate the dataframe for the test given
+        """returns the dataframe for the test given
 
         Args:
-            test (Dict[str, Any]): test from process test
-            match (fmatch.Matcher): matcher instance
+            test_config (Dict[str, Any]): test configuration
             options (Dict[str, Any]): options
             start_timestamp (datetime): start timestamp
 
         Returns:
-            _type_: merged dataframe
+            Tuple[pd.DataFrame, Dict[str, Any]]: test dataframe and metrics configuration
         """
-        logger = SingletonLogger.getLogger("Orion")
-        logger.info("The test %s has started", test["name"])
 
-        test_threshold=0
-        if "threshold" in test:
-            test_threshold=test["threshold"]
+        uuids = []
+        build_urls = []
+        self.logger.info("The test %s has started", test_config["name"])
+
+        test_threshold = 0
+        if "threshold" in test_config:
+            test_threshold = test_config["threshold"]
         timestamp_field = "timestamp"
-        if "timestamp" in test:
-            timestamp_field=test["timestamp"]
+        if "timestamp" in test_config:
+            timestamp_field = test_config["timestamp"]
 
-        # getting metadata
-        metadata = (
-            self.extract_metadata_from_test(test)
-            if options["uuid"] in ("", None)
-            else self.get_metadata_with_uuid(options["uuid"], match)
-        )
-        # get uuids, buildUrls matching with the metadata
-        runs = match.get_uuid_by_metadata(
-            metadata,
-            lookback_date=start_timestamp,
-            lookback_size=options["lookback_size"],
-            timestamp_field=timestamp_field
-        )
-        uuids = [run[self.uuid_field] for run in runs]
-        buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
         # get uuids if there is a baseline
-        if options["baseline"] not in ("", None):
+        if options["baseline"]:
             uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
             uuids.append(options["uuid"])
-            buildUrls = self.get_build_urls(uuids, match)
-        elif not uuids:
-            logger.info("No UUID present for given metadata")
+            build_urls = self.get_build_urls(uuids, self.match)
+        else:
+            # get uuids, buildUrls matching with the metadata
+            uuids_and_build_urls = self.match.get_uuid_by_metadata(
+                test_config["metadata"],
+                lookback_date=start_timestamp,
+                lookback_size=options["lookback_size"],
+                timestamp_field=timestamp_field
+            )
+            for uuid_build_url in uuids_and_build_urls:
+                uuids.append(uuid_build_url["uuid"])
+                build_urls.append(uuid_build_url["buildUrl"])
+        if not uuids:
+            self.logger.error("No UUID found for given metadata")
             return None, None
 
 
         uuids = self.filter_uuids_on_index(
-            metadata,
-            test["benchmarkIndex"],
+            test_config["metadata"],
+            test_config["benchmark_index"],
             uuids,
-            match,
             options["baseline"],
             options["node_count"],
         )
         # get metrics data and dataframe
-        metrics = test["metrics"]
+        metrics = test_config["metrics"]
         dataframe_list, metrics_config = self.get_metric_data(
-            uuids, metrics, match, test_threshold, timestamp_field
+            uuids, metrics, timestamp_field
         )
         if not dataframe_list:
             return None, metrics_config
@@ -364,7 +285,6 @@ class Utils:
 
         for i, df in enumerate(dataframe_list):
             dataframe_list[i] = df.drop(columns=["timestamp"], errors="ignore")
-
         merged_df = reduce(
             lambda left, right: pd.merge(left, right, on=self.uuid_field, how="outer"),
             dataframe_list,
@@ -376,17 +296,17 @@ class Utils:
         shortener = pyshorteners.Shortener(timeout=10)
         merged_df["buildUrl"] = merged_df[self.uuid_field].apply(
             lambda uuid: (
-                self.shorten_url(shortener, buildUrls[uuid])
+                self.shorten_url(shortener, build_urls[uuid])
                 if options["convert_tinyurl"]
-                else buildUrls[uuid]
+                else build_urls[uuid]
             )
             # pylint: disable = cell-var-from-loop
         )
 
         merged_df = merged_df.reset_index(drop=True)
         # save the dataframe
-        output_file_path = f"{options['save_data_path'].split('.')[0]}-{test['name']}.csv"
-        match.save_results(merged_df, csv_file_path=output_file_path)
+        output_file_path = f"{options['save_data_path'].split('.')[0]}-{test_config['name']}.csv"
+        self.match.save_results(merged_df, csv_file_path=output_file_path)
         return merged_df, metrics_config
 
 
@@ -407,65 +327,22 @@ class Utils:
         return short_url
 
 
-    def get_metadata_with_uuid(self, uuid: str, match: Matcher) -> Dict[Any, Any]:
-        """Gets metadata of the run from each test
-
-        Args:
-            uuid (str): str of uuid ot find metadata of
-            match: the fmatch instance
-
-
-        Returns:
-            dict: dictionary of the metadata
-        """
-        logger_instance = SingletonLogger.getLogger("Orion")
-        test = match.get_metadata_by_uuid(uuid)
-        metadata = {
-            "platform": "",
-            "clusterType": "",
-            "masterNodesCount": 0,
-            "workerNodesCount": 0,
-            "infraNodesCount": 0,
-            "masterNodesType": "",
-            "workerNodesType": "",
-            "infraNodesType": "",
-            "totalNodesCount": 0,
-            "ocpVersion": "",
-            "networkType": "",
-            "ipsec": "",
-            "fips": "",
-            "encrypted": "",
-            "publish": "",
-            "computeArch": "",
-            "controlPlaneArch": "",
-        }
-        for k, v in test.items():
-            if k not in metadata:
-                continue
-            metadata[k] = v
-        if "benchmark" in test:
-            metadata["benchmark.keyword"] = test["benchmark"]
-        if "ocpVersion" in metadata:
-            metadata["ocpVersion"] = str(metadata["ocpVersion"])
-
-        # Remove any keys that have blank values
-        no_blank_meta = {k: v for k, v in metadata.items() if v}
-        logger_instance.debug("No blank metadata dict: " + str(no_blank_meta))
-        return no_blank_meta
-
 # pylint: disable=too-many-locals
 def json_to_junit(
     test_name: str, data_json: Dict[Any, Any], metrics_config: Dict[Any, Any]
 ) -> str:
-    """Convert json to junit format
+    """
+    Convert the json output of orion to junit format
 
     Args:
-        test_name (_type_): _description_
-        data_json (_type_): _description_
+        test_name (str): Name of the test
+        data_json (Dict[Any, Any]): dictionary of changepoint data
+        metrics_config (Dict[Any, Any]): dictionary of metrics configuration
 
     Returns:
-        _type_: _description_
+        str: a string of the junit formatted output
     """
+    
     testsuites = ET.Element("testsuites")
     testsuite = ET.SubElement(
         testsuites, "testsuite", name=f"{test_name} nightly compare"
@@ -555,10 +432,10 @@ def get_subtracted_timestamp(time_duration: str) -> datetime:
     Returns:
         datetime: return datetime of given timegap from now
     """
-    logger_instance = SingletonLogger.getLogger("Orion")
+    logger = SingletonLogger.getLogger("Orion")
     reg_ex = re.match(r"^(?:(\d+)d)?(?:(\d+)h)?$", time_duration)
     if not reg_ex:
-        logger_instance.error("Wrong format for time duration, please provide in XdYh")
+        logger.error("Wrong format for time duration, please provide in XdYh")
     days = int(reg_ex.group(1)) if reg_ex.group(1) else 0
     hours = int(reg_ex.group(2)) if reg_ex.group(2) else 0
     duration_to_subtract = timedelta(days=days, hours=hours)

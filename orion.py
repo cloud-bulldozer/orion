@@ -116,6 +116,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
 @click.option("--node-count", default=False, help="Match any node iterations count")
 @click.option("--lookback-size", type=int, default=10000, help="Maximum number of entries to be looked back")
+@click.option("--es-server", type=str, default="http://localhost:9200", help="Elasticsearch endpoint where test data is stored")
 def cmd_analysis(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
@@ -123,14 +124,14 @@ def cmd_analysis(**kwargs):
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
     if kwargs['output_format'] == cnsts.JSON :
         level = logging.ERROR
-    logger_instance = SingletonLogger(debug=level, name="Orion")
-    logger_instance.info("🏹 Starting Orion in command-line mode")
+    logger = SingletonLogger(debug=level, name="Orion")
+    logger.info("🏹 Starting Orion in command-line mode")
     if len(kwargs["ack"]) > 1 :
         kwargs["ackMap"] = load_ack(kwargs["ack"])
     kwargs["config"] = load_config(kwargs["config"])
     output, regression_flag = run(**kwargs)
-    if output is None:
-        logger_instance.error("Terminating test")
+    if not output:
+        logger.error("Terminating test")
         sys.exit(0)
     for test_name, result_table in output.items():
         if kwargs['output_format'] != cnsts.JSON :

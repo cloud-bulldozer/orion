@@ -35,63 +35,65 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]:  # pylint: disable = R0914
     """run method to start the tests
 
     Args:
-        config (_type_): orion configuration
-        output_path (_type_): output path to save the data
-        hunter_analyze (_type_): changepoint detection through hunter. defaults to True
-        output_format (_type_): output to be table or json
-
+        **kwargs: keyword arguments.
+            config (str): orion configuration
+            es_server (str): elasticsearch endpoint
+            output_path (str): output path to save the data
+            hunter_analyze (str): changepoint detection through hunter. defaults to True
+            output_format (str): output to be table or json
+            lookback (str): lookback in days
     Returns:
-        _type_: _description_
+        tuple:
+            - Test output (dict): Test JSON output
+            - regression flag (bool): Test result
     """
-    logger_instance = SingletonLogger.getLogger("Orion")
-    config = kwargs["config"]
+
+    logger = SingletonLogger.getLogger("Orion")
+    test_config = kwargs["config"]
+    es_server = kwargs["es_server"]
     result_output = {}
     regression_flag = False
-    for test in config["tests"]:
-        # Create fingerprint Matcher
+    # Create fingerprint Matcher
+    version_field = "ocpVersion"
+    if "version" in test_config:
+        version_field = test_config["version"]
+    uuid_field = "uuid"
+    if "uuid_field" in test_config:
+        uuid_field = test_config["uuid_field"]
+    
+    matcher = Matcher(
+        metadata_index=test_config["metadata_index"],
+        benchmark_index=test_config["benchmark_index"],
+        level=logger.level,
+        es_url=es_server,
+        verify_certs=False,
+        version_field=version_field,
+        uuid_field=uuid_field,
+    )
+    utils = Utils(uuid_field, version_field, matcher)
 
-        version_field = "ocpVersion"
-        if "version" in test:
-            version_field = test["version"]
-        uuid_field = "uuid"
-        if "uuid_field" in test:
-            uuid_field = test["uuid_field"]
+    start_timestamp = get_subtracted_timestamp(kwargs["lookback"]) if kwargs.get("lookback") else ""
+    fingerprint_matched_df, test_config = utils.process_test(test_config, kwargs, start_timestamp)
 
-        utils = Utils(uuid_field, version_field)
-        datasource = utils.get_datasource(config)
-        matcher = Matcher(
-            index=test["index"],
-            level=logger_instance.level,
-            es_url=datasource,
-            verify_certs=False,
-            version_field=version_field,
-            uuid_field=uuid_field,
-        )
+    if not fingerprint_matched_df:
+        sys.exit(3)  # No data present
 
-        start_timestamp = get_subtracted_timestamp(kwargs["lookback"]) if kwargs.get("lookback") else ""
-        fingerprint_matched_df, metrics_config = utils.process_test(
-            test, matcher, kwargs, start_timestamp
-        )
+    algorithm_name = get_algorithm_type(kwargs)
+    if algorithm_name is None:
+        logger.error("No comparison algorithm configured")
+        return None, None
+    logger.info("Comparison algorithm: %s", algorithm_name)
 
-        if fingerprint_matched_df is None:
-            sys.exit(3)  # No data present
-
-        algorithm_name = get_algorithm_type(kwargs)
-        if algorithm_name is None:
-            logger_instance.error("No algorithm configured")
-            return None, None
-        logger_instance.info("Comparison algorithm: %s", algorithm_name)
-
-        algorithmFactory = AlgorithmFactory()
-        algorithm = algorithmFactory.instantiate_algorithm(
-            algorithm_name,
-            matcher,
-            fingerprint_matched_df,
-            test,
-            kwargs,
-            metrics_config,
-        )
-        testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
-        result_output[testname] = result_data
-        regression_flag = regression_flag or test_flag
+    algorithmFactory = AlgorithmFactory()
+    algorithm = algorithmFactory.instantiate_algorithm(
+        algorithm_name,
+        matcher,
+        fingerprint_matched_df,
+        test_config,
+        kwargs,
+        metrics_config,
+    )
+    testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
+    result_output[testname] = result_data
+    regression_flag = regression_flag or test_flag
     return result_output, regression_flag
