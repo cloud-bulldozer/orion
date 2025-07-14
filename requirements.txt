@@ -17,4 +17,3 @@ python-multipart==0.0.9
 scikit-learn==1.5.0
 scipy==1.12.0
 uvicorn==0.28.0
-pylint==3.3.2
