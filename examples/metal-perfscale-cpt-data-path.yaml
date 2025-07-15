@@ -12,6 +12,7 @@ tests:
       benchmark.keyword: k8s-netperf
       ocpVersion: {{ version }}
       networkType: OVNKubernetes
+      jobType: periodic OR pull
       not:
         stream: okd
 

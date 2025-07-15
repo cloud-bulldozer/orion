@@ -12,6 +12,7 @@ tests:
       benchmark.keyword: node-density
       ocpVersion: {{ version }}
       networkType: OVNKubernetes
+      jobType: periodic OR pull
       not:
         stream: okd
 
