@@ -40,7 +40,7 @@ class Utils:
 
     def get_metric_data(
         self, uuids: List[str], metrics: Dict[str, Any], timestamp_field: str="timestamp"
-    ) -> Tuple[List[pd.DataFrame], List[Dict[str, Any]]]:
+    ) -> List[pd.DataFrame]:
         """
         Get metrics data from elasticsearch based on given uuids and metrics configuration.
 
@@ -50,20 +50,18 @@ class Utils:
             timestamp_field (str): Field name holding the timestamp. Defaults to "timestamp".
 
         Returns:
-            Tuple[List[pd.DataFrame], List[Dict[str, Any]]]: List of dataframes for each metric, and a second list of dictionaries containing metrics configuration.
+            List[pd.DataFrame]: List of dataframes for each metric
         """
         dataframe_list = []
-        metrics_config = []
         for metric in metrics:
             context = metric.pop("context", 5)
             self.logger.info("Collecting %s", metric["name"])
             try:
                 if "agg" in metric:
-                    metric_df, metric_dataframe_name = self.process_aggregation_metric(uuids, metric, timestamp_field)
+                    metric_df = self.process_aggregation_metric(uuids, metric, timestamp_field)
                 else:
-                    metric_df, metric_dataframe_name = self.process_standard_metric(uuids, metric["metric_of_interest"], metric["query"], timestamp_field)
+                    metric_df = self.process_standard_metric(uuids, metric, timestamp_field)
                 dataframe_list.append(metric_df)
-                metrics_config.append(metric)
                 self.logger.debug(metric_df)
             except Exception as e:
                 self.logger.error(
@@ -71,12 +69,12 @@ class Utils:
                     metric["name"],
                     e,
                 )
-        return dataframe_list, metrics_config
+        return dataframe_list
 
 
     def process_aggregation_metric(
         self, uuids: List[str], metric: Dict[str, Any], timestamp_field: str="timestamp"
-    ) -> Tuple[pd.DataFrame, str]:
+    ) -> pd.DataFrame:
         """Processes aggregated metric data and returns a DataFrame with the specified aggregation type.
 
         Args:
@@ -85,54 +83,52 @@ class Utils:
             timestamp_field (str, optional): Field name holding the timestamp. Defaults to "timestamp".
 
         Returns:
-            Tuple[pd.DataFrame, str]: A tuple containing the DataFrame of aggregated metrics and the name of the metric with aggregation type.
+            pd.DataFrame: DataFrame containing the aggregated metric data.
         """
 
         metric_data = self.match.get_agg_metric_query(uuids, metric, timestamp_field)
         aggregation_value = metric["agg"]["value"]
         aggregation_type = metric["agg"]["agg_type"]
-        metric_name = f"{metric['name']}_{aggregation_type}"
         if len(metric_data) == 0:
-            aggregated_df = pd.DataFrame(columns=[self.uuid_field, "timestamp", metric_name])
+            aggregated_df = pd.DataFrame(columns=[self.uuid_field, "timestamp", metric["name"]])
         else:
             aggregated_df = self.match.convert_to_df(
-                metric_data, columns=[self.uuid_field, "timestamp", metric_name],
+                metric_data, columns=[self.uuid_field, "timestamp", metric["name"]],
                 timestamp_field=timestamp_field
             )
             aggregated_df[timestamp_field] = aggregated_df[timestamp_field].apply(self.standardize_timestamp)
 
         aggregated_df = aggregated_df.drop_duplicates(subset=[self.uuid_field], keep="first")
-        return aggregated_df, metric_name
+        return aggregated_df
 
     def process_standard_metric(
         self,
         uuids: List[str],
-        metric_name: str,
-        query: Dict[str, Any],
+        metric: Dict[str, Any],
         timestamp_field: str="timestamp"
-    ) -> Tuple[pd.DataFrame, str]:
+    ) -> pd.DataFrame:
         """Method to get dataframe of standard metric
 
         Args:
             uuids (List[str]): list of uuids
-            metric_name (str): arbitrary metric name
-            query (Dict[str, Any]): query parameters
+            metric (Dict[str, Any]): Dictionary containing metric details including aggregation specifications.
             timestamp_field (str, optional): field name holding timestamp. Defaults to "timestamp".
 
         Returns:
-            Tuple[pd.DataFrame, str]: dataframe and metric name
+            pd.DataFrame: dataframe
         """
-        metric_data = self.match.get_results("", uuids, query)
+        metric_data = self.match.get_results("", uuids, metric["query"])
         if len(metric_data) == 0:
-            standard_metric_df = pd.DataFrame(columns=[self.uuid_field, "timestamp", metric_name])
+            df = pd.DataFrame(columns=[self.uuid_field, "timestamp", metric["name"]])
         else:
-            standard_metric_df = self.match.convert_to_df(
-                metric_data, columns=[self.uuid_field, "timestamp", metric_name],
+            df = self.match.convert_to_df(
+                metric_data, columns=[self.uuid_field, "timestamp", metric["metric_of_interest"]],
                 timestamp_field=timestamp_field
             )
-            standard_metric_df[timestamp_field] = standard_metric_df[timestamp_field].apply(self.standardize)
-        standard_metric_df = standard_metric_df.drop_duplicates()
-        return standard_metric_df, metric_name
+            df[timestamp_field] = df[timestamp_field].apply(self.standardize_timestamp)
+            df.rename(columns={metric["metric_of_interest"]: metric["name"]}, inplace=True)
+        df = df.drop_duplicates()
+        return df
 
     def standardize_timestamp(self, timestamp: Any) -> str:
         """Method to standardize timestamp formats
@@ -206,7 +202,7 @@ class Utils:
         test_config: Dict[str, Any],
         options: Dict[str, Any],
         start_timestamp: datetime
-    ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    ) -> pd.DataFrame:
         """returns the dataframe for the test given
 
         Args:
@@ -215,11 +211,10 @@ class Utils:
             start_timestamp (datetime): start timestamp
 
         Returns:
-            Tuple[pd.DataFrame, Dict[str, Any]]: test dataframe and metrics configuration
+            pd.DataFrame: test dataframe
         """
 
         uuids = []
-        build_urls = []
         self.logger.info("The test %s has started", test_config["name"])
 
         test_threshold = 0
@@ -233,7 +228,7 @@ class Utils:
         if options["baseline"]:
             uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
             uuids.append(options["uuid"])
-            build_urls = self.get_build_urls(uuids, self.match)
+            uuids_and_build_urls = self.get_build_urls(uuids, self.match)
         else:
             # get uuids, buildUrls matching with the metadata
             uuids_and_build_urls = self.match.get_uuid_by_metadata(
@@ -242,12 +237,10 @@ class Utils:
                 lookback_size=options["lookback_size"],
                 timestamp_field=timestamp_field
             )
-            for uuid_build_url in uuids_and_build_urls:
-                uuids.append(uuid_build_url["uuid"])
-                build_urls.append(uuid_build_url["buildUrl"])
+            uuids = list(uuids_and_build_urls)
         if not uuids:
             self.logger.error("No UUID found for given metadata")
-            return None, None
+            return None
 
 
         uuids = self.filter_uuids_on_index(
@@ -259,11 +252,11 @@ class Utils:
         )
         # get metrics data and dataframe
         metrics = test_config["metrics"]
-        dataframe_list, metrics_config = self.get_metric_data(
+        dataframe_list = self.get_metric_data(
             uuids, metrics, timestamp_field
         )
         if not dataframe_list:
-            return None, metrics_config
+            return None
 
         uuid_timestamp_map = pd.DataFrame()
         for df in dataframe_list:
@@ -272,23 +265,20 @@ class Utils:
                     [uuid_timestamp_map, df[[self.uuid_field, "timestamp"]].drop_duplicates()]
                 )
         uuid_timestamp_map = uuid_timestamp_map.drop_duplicates(subset=[self.uuid_field])
-
         for i, df in enumerate(dataframe_list):
             dataframe_list[i] = df.drop(columns=["timestamp"], errors="ignore")
         merged_df = reduce(
             lambda left, right: pd.merge(left, right, on=self.uuid_field, how="outer"),
             dataframe_list,
         )
-
-        merged_df = merged_df.merge(uuid_timestamp_map, on=self.uuid_field, how="left")
-        merged_df = merged_df.sort_values(by="timestamp")
+        merged_df = merged_df.merge(uuid_timestamp_map, on=self.uuid_field, how="left").sort_values(by="timestamp")
 
         shortener = pyshorteners.Shortener(timeout=10)
         merged_df["buildUrl"] = merged_df[self.uuid_field].apply(
             lambda uuid: (
-                self.shorten_url(shortener, build_urls[uuid])
+                self.shorten_url(shortener, uuids_and_build_urls[uuid])
                 if options["convert_tinyurl"]
-                else build_urls[uuid]
+                else uuids_and_build_urls[uuid]
             )
             # pylint: disable = cell-var-from-loop
         )
@@ -297,7 +287,7 @@ class Utils:
         # save the dataframe
         output_file_path = f"{options['save_data_path'].split('.')[0]}-{test_config['name']}.csv"
         self.match.save_results(merged_df, csv_file_path=output_file_path)
-        return merged_df, metrics_config
+        return merged_df
 
 
     def shorten_url(self, shortener: any, uuids: str) -> str:

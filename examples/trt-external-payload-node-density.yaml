@@ -1,4 +1,4 @@
-name : payload-node-density
+name: payload-node-density
 metadata_index: {{ es_metadata_index }}
 benchmark_index: {{ es_benchmark_index }}
 metadata:
@@ -14,7 +14,7 @@ metadata:
   jobType: periodic
   not:
     stream: okd
-metrics : 
+metrics: 
   - name:  podReadyLatency
     metric_of_interest: P99
     query:
@@ -29,7 +29,7 @@ metrics :
 
   - name:  apiserverCPU
     query:
-      metricName : containerCPU
+      metricName: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
     metric_of_interest: value
     agg:
@@ -42,7 +42,7 @@ metrics :
 
   - name: ovnCPU
     query:
-      metricName : containerCPU
+      metricName: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
     metric_of_interest: value
     agg:
@@ -55,7 +55,7 @@ metrics :
 
   - name:  etcdCPU
     query:
-      metricName : containerCPU
+      metricName: containerCPU
       labels.namespace.keyword: openshift-etcd
     metric_of_interest: value
     agg:
@@ -68,7 +68,7 @@ metrics :
 
   - name: kubelet 
     query:
-      metricName : kubeletCPU 
+      metricName: kubeletCPU 
     metric_of_interest: value 
     labels: 
       - "[Jira: Node]" 

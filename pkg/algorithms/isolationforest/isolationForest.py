@@ -30,7 +30,7 @@ class IsolationForestWeightedMean(Algorithm):
 
         logger_instance = SingletonLogger.getLogger("Orion")
         logger_instance.info("Starting analysis using Isolation Forest")
-        metric_columns = self.metrics_config.keys()
+        metric_columns = self.orion_config.keys()
         dataframe_with_metrics = dataframe[metric_columns]
         model = IsolationForest(contamination="auto", random_state=42)
         model.fit(dataframe_with_metrics)
@@ -58,7 +58,7 @@ class IsolationForestWeightedMean(Algorithm):
                         / moving_averages.at[idx, feature]
                     ) * 100
                     if abs(pct_change) > (10 if self.options.get("min_anomaly_percent",None) is None else int(self.options.get("min_anomaly_percent",None))):
-                        if (pct_change * self.metrics_config[feature]["direction"] > 0) or self.metrics_config[feature]["direction"]==0:
+                        if (pct_change * self.orion_config[feature]["direction"] > 0) or self.orion_config[feature]["direction"]==0:
                             change_point = ChangePoint(metric=feature,
                                                        index=idx,
                                                        time=row['timestamp'],

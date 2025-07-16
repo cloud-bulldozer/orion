@@ -54,7 +54,7 @@ class CMR(Algorithm):
         Returns:
             pd.Dataframe, dict[metric_name, ChangePoint]: Returned data frame and change points
         """
-        metric_columns = self.metrics_config.keys()
+        metric_columns = self.orion_config.keys()
         change_points_by_metric={ k:[] for k in metric_columns }
 
         for column in metric_columns:

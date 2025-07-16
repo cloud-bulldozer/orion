@@ -49,21 +49,21 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]:  # pylint: disable = R0914
     """
 
     logger = SingletonLogger.getLogger("Orion")
-    test_config = kwargs["config"]
+    orion_config = kwargs["config"]
     es_server = kwargs["es_server"]
     result_output = {}
     regression_flag = False
     # Create fingerprint Matcher
     version_field = "ocpVersion"
-    if "version" in test_config:
-        version_field = test_config["version"]
+    if "version" in orion_config:
+        version_field = orion_config["version"]
     uuid_field = "uuid"
-    if "uuid_field" in test_config:
-        uuid_field = test_config["uuid_field"]
+    if "uuid_field" in orion_config:
+        uuid_field = orion_config["uuid_field"]
     
     matcher = Matcher(
-        metadata_index=test_config["metadata_index"],
-        benchmark_index=test_config["benchmark_index"],
+        metadata_index=orion_config["metadata_index"],
+        benchmark_index=orion_config["benchmark_index"],
         level=logger.level,
         es_url=es_server,
         verify_certs=False,
@@ -73,9 +73,9 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]:  # pylint: disable = R0914
     utils = Utils(uuid_field, version_field, matcher)
 
     start_timestamp = get_subtracted_timestamp(kwargs["lookback"]) if kwargs.get("lookback") else ""
-    fingerprint_matched_df, test_config = utils.process_test(test_config, kwargs, start_timestamp)
+    fingerprint_matched_df = utils.process_test(orion_config, kwargs, start_timestamp)
 
-    if not fingerprint_matched_df:
+    if fingerprint_matched_df.empty:
         sys.exit(3)  # No data present
 
     algorithm_name = get_algorithm_type(kwargs)
@@ -89,9 +89,8 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]:  # pylint: disable = R0914
         algorithm_name,
         matcher,
         fingerprint_matched_df,
-        test_config,
+        orion_config,
         kwargs,
-        metrics_config,
     )
     testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
     result_output[testname] = result_data

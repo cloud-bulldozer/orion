@@ -20,12 +20,11 @@ class EDivisive(Algorithm):
         self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int) // 10**9
         series = self.setup_series()
         change_points_by_metric = series.analyze().change_points
-
         # Process if we have ack'ed regression
         ackSet = set()
         if len(self.options["ack"]) > 1 and self.options["ackMap"] is not None:
             for ack in self.options["ackMap"]["ack"]:
-                pos = series.find_by_attribute("uuid",ack["uuid"])
+                pos = series.find_by_attribute("uuid", ack["uuid"])
                 if len(pos) > 0 :
                     ackSet.add(str(pos[0]) + "_" + ack["metric"])
 
@@ -33,9 +32,9 @@ class EDivisive(Algorithm):
         for metric, changepoint_list in change_points_by_metric.items():
             for i in range(len(changepoint_list)-1, -1, -1):
                 deleted = False
-                if (self._has_changepoint(metric, changepoint_list, i) or
-                    self._is_acked(ackSet, changepoint_list, i) or
-                    self._is_under_threshold(metric, changepoint_list, i)):
+                if (self._has_changepoint(metric, changepoint_list[i]) or
+                    self._is_acked(ackSet, changepoint_list[i]) or
+                    self._is_under_threshold(metric, changepoint_list[i])):
                     deleted=True
                     del changepoint_list[i]
                 if (not deleted and self.metrics_config[metric]["correlation"] != ""):
@@ -60,22 +59,22 @@ class EDivisive(Algorithm):
         changepoint_list = change_points_by_metric[depending_metric]
         for i in range(len(changepoint_list)-1, -1, -1):
             if (changepoint_list[i].index >= index-context) and (changepoint_list[i].index <= index+context):
-                if (self._has_changepoint(depending_metric, changepoint_list, i) or
-                    self._is_acked(ackSet, changepoint_list, i) or
-                    self._is_under_threshold(depending_metric, changepoint_list, i)):
+                if (self._has_changepoint(depending_metric, changepoint_list[i]) or
+                    self._is_acked(ackSet, changepoint_list[i]) or
+                    self._is_under_threshold(depending_metric, changepoint_list[i])):
                     return False
                 return True
         return False
 
 
-    def _is_under_threshold(self, metric, changepoint_list, i):
-        return self.metrics_config[metric]["threshold"] > abs((changepoint_list[i].stats.mean_1 - changepoint_list[i].stats.mean_2)/changepoint_list[i].stats.mean_1)*100
+    def _is_under_threshold(self, metric, changepoint):
+        return self.metrics_config[metric]["threshold"] > abs((changepoint.stats.mean_1 - changepoint.stats.mean_2)/changepoint.stats.mean_1)*100
 
 
-    def _is_acked(self, ackSet, changepoint_list, i):
-        return str(changepoint_list[i].index) + "_" + changepoint_list[i].metric in ackSet
+    def _is_acked(self, ackSet, changepoint):
+        return str(changepoint.index) + "_" + changepoint.metric in ackSet
 
 
-    def _has_changepoint(self, metric, changepoint_list, i):
-        return ((self.metrics_config[metric]["direction"] == 1 and changepoint_list[i].stats.mean_1 > changepoint_list[i].stats.mean_2) or
-                (self.metrics_config[metric]["direction"] == -1 and changepoint_list[i].stats.mean_1 < changepoint_list[i].stats.mean_2))
+    def _has_changepoint(self, metric, changepoint):
+        return ((self.metrics_config[metric]["direction"] == 1 and changepoint.stats.mean_1 > changepoint.stats.mean_2) or
+                (self.metrics_config[metric]["direction"] == -1 and changepoint.stats.mean_1 < changepoint.stats.mean_2))

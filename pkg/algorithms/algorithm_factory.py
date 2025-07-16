@@ -18,9 +18,8 @@ class AlgorithmFactory:  # pylint: disable= too-few-public-methods, too-many-arg
         algorithm: str,
         matcher: Matcher,
         dataframe: pd.DataFrame,
-        test: dict,
+        orion_config: dict,
         options: dict,
-        metrics_config: dict[str, dict],
     ):
         """Algorithm instantiation method
 
@@ -28,20 +27,36 @@ class AlgorithmFactory:  # pylint: disable= too-few-public-methods, too-many-arg
             algorithm (str): Name of the algorithm
             matcher (Matcher): Matcher class
             dataframe (pd.Dataframe): dataframe with data
-            test (dict): test information dictionary
-
+            orion_config (dict): Orion configuration
+            options (dict): options dictionary
         Raises:
             ValueError: When invalid algo is chosen
 
         Returns:
             Algorithm : Algorithm
         """
+        metrics_config = self._get_metrics_config(orion_config)
         if algorithm == cnsts.EDIVISIVE:
-            return EDivisive(matcher, dataframe, test, options, metrics_config)
+            return EDivisive(matcher, dataframe, options, orion_config, metrics_config)
         if algorithm == cnsts.ISOLATION_FOREST:
             return IsolationForestWeightedMean(
-                matcher, dataframe, test, options, metrics_config
+                matcher, dataframe, options, orion_config
             )
         if algorithm == cnsts.CMR:
-            return CMR(matcher, dataframe, test, options, metrics_config)
+            return CMR(matcher, dataframe, options, orion_config)
         raise ValueError("Invalid algorithm called")
+
+
+    def _get_metrics_config(self, orion_config):
+        """Get metrics configuration dict
+
+        Args:
+            config (dict): orion configuration
+
+        Returns:
+            dict: metrics configuration dictionary
+        """
+        metrics_config = {}
+        for cfg in orion_config["metrics"]:
+            metrics_config[cfg["name"]] = cfg
+        return metrics_config

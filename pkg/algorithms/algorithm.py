@@ -21,14 +21,14 @@ class Algorithm(ABC):
         self,
         matcher: Matcher,
         dataframe: pd.DataFrame,
-        test: dict,
         options: dict,
+        orion_config: dict[str, dict],
         metrics_config: dict[str, dict],
     ) -> None:
         self.matcher = matcher
         self.dataframe = dataframe
-        self.test = test
         self.options = options
+        self.orion_config = orion_config
         self.metrics_config = metrics_config
         self.regression_flag = False
 
@@ -46,7 +46,7 @@ class Algorithm(ABC):
         for index, entry in enumerate(dataframe_json):
             entry["metrics"] = {
                 key: {"value": entry.pop(key), "percentage_change": 0}
-                for key in self.metrics_config
+                for key in self.orion_config
             }
             entry["is_changepoint"] = False
 
@@ -58,8 +58,8 @@ class Algorithm(ABC):
                     / change_point.stats.mean_1
                 ) * 100
                 if (
-                    percentage_change * self.metrics_config[key]["direction"] > 0
-                    or self.metrics_config[key]["direction"] == 0
+                    percentage_change * self.orion_config[key]["direction"] > 0
+                    or self.orion_config[key]["direction"] == 0
                 ):
                     dataframe_json[index]["metrics"][key]["percentage_change"] = (
                         percentage_change
@@ -81,7 +81,7 @@ class Algorithm(ABC):
         return_json = collapsed_json if self.options["collapse"] else dataframe_json
 
         return (
-            self.test["name"],
+            self.orion_config["name"],
             json.dumps(return_json, indent=2),
             self.regression_flag,
         )
@@ -94,9 +94,9 @@ class Algorithm(ABC):
         )
         report = Report(series, change_points_by_time)
         output_table = report.produce_report(
-            test_name=self.test["name"], report_type=ReportType.LOG
+            test_name=self.orion_config["name"], report_type=ReportType.LOG
         )
-        return self.test["name"], output_table, self.regression_flag
+        return self.orion_config["name"], output_table, self.regression_flag
 
     def output_junit(self) -> Tuple[str, str, bool]:
         """Output junit format
@@ -109,7 +109,7 @@ class Algorithm(ABC):
         data_junit = json_to_junit(
             test_name=test_name,
             data_json=data_json,
-            metrics_config=self.metrics_config,
+            metrics_config=self.orion_config,
         )
         return test_name, data_junit, self.regression_flag
 
@@ -149,23 +149,22 @@ class Algorithm(ABC):
         return points
 
     def setup_series(self) -> Series:
-        """
-        Returns series
+        """Convert dataframe to series
+
         Returns:
-            _type_: _description_
+            Series
         """
-        metrics = {
-            column: Metric(value.get("direction", 1), 1.0)
-            for column, value in self.metrics_config.items()
-        }
-        data = {column: self.dataframe[column] for column in self.metrics_config}
+        metrics = {}
+        for metric in self.orion_config["metrics"]:
+            metrics[metric["name"]] = Metric(metric.get("direction", 1), 1.0)
+        data = {metric["name"]: self.dataframe[metric["name"]] for metric in self.orion_config["metrics"]}
         attributes = {
             column: self.dataframe[column]
             for column in self.dataframe.columns
             if column in ["uuid", "buildUrl"]
         }
         series = Series(
-            test_name=self.test["name"],
+            test_name=self.orion_config["name"],
             branch=None,
             time=list(self.dataframe["timestamp"]),
             metrics=metrics,
