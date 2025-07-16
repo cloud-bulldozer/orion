@@ -18,7 +18,6 @@ from fmatch.matcher import Matcher
 from fmatch.logrus import SingletonLogger
 import pandas as pd
 import pyshorteners
-from pkg.constants import NANO_SECONDS_PATTERN, EPOCH_TIMESTAMP_PATTERN
 
 
 class Utils:
@@ -100,7 +99,8 @@ class Utils:
                 metric_data, columns=[self.uuid_field, "timestamp", metric_name],
                 timestamp_field=timestamp_field
             )
-            aggregated_df[timestamp_field] = aggregated_df[timestamp_field].apply(self.standardize)
+            aggregated_df[timestamp_field] = aggregated_df[timestamp_field].apply(self.standardize_timestamp)
+
         aggregated_df = aggregated_df.drop_duplicates(subset=[self.uuid_field], keep="first")
         return aggregated_df, metric_name
 
@@ -134,32 +134,22 @@ class Utils:
         standard_metric_df = standard_metric_df.drop_duplicates()
         return standard_metric_df, metric_name
 
-    def standardize(self, timestamp: Any) -> str:
+    def standardize_timestamp(self, timestamp: Any) -> str:
         """Method to standardize timestamp formats
 
         Args:
             timestamp (Any): timestamp object with various formats 
 
         Returns:
-            str: standardized timestamp
+            str: standard timestamp in format %Y-%m-%dT%H:%M:%S
         """
         if timestamp is None:
             return timestamp
-        dt = None
-        if isinstance(timestamp, str):
-            if NANO_SECONDS_PATTERN.match(timestamp):
-                return timestamp
-            if EPOCH_TIMESTAMP_PATTERN.match(timestamp):
-                # Convert Unix epoch timestamp
-                dt = pd.to_datetime(timestamp, unit='s', utc=True)
-            else:
-                raise ValueError(f"Unrecognized or invalid timestamp format: {timestamp}")
+        if timestamp.isnumeric():
+            dt = pd.to_datetime(timestamp, unit='s', utc=True)
         else:
-            # Original logic for other timestamp formats
             dt = pd.to_datetime(timestamp, utc=True)
-
-        ns = f"{dt.microsecond:06d}000"
-        return dt.strftime(f"%Y-%m-%dT%H:%M:%S.{ns}Z")
+        return dt.replace(tzinfo=None).isoformat(timespec="seconds")
 
 
     def filter_uuids_on_index(
