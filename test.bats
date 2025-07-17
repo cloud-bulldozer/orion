@@ -161,4 +161,10 @@ setup() {
   fi
 }
 
+@test "orion cmd with netobserv configs " {
+  curl -s https://raw.githubusercontent.com/openshift-eng/ocp-qe-perfscale-ci/refs/heads/netobserv-perf-tests/scripts/queries/netobserv-orion-node-density-heavy.yaml -w %{http_code} -o /tmp/netobserv-node-density-heavy-ospst.yaml
+  export WORKERS=25
+  run_cmd orion cmd --config "/tmp/netobserv-node-density-heavy-ospst.yaml" --lookback 5d --hunter-analyze
+}
+
 
