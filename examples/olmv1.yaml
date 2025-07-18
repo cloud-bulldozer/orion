@@ -1,0 +1,35 @@
+tests :
+  - name : olmv1-GCP
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
+    metadata:
+      platform: GCP
+      clusterType: self-managed
+      masterNodesType: e2-custom-6-16384
+      masterNodesCount: 3
+      workerNodesType: e2-standard-4
+      workerNodesCount: 3
+      benchmark.keyword: olm
+      ocpVersion: {{ version }}
+      not:
+        stream: okd
+    metrics : 
+    - name: catalogdMemory_GCP
+      metricName: catalogd_memory_peak_usage_5m
+      metric_of_interest: value
+      quantileName: Ready
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: OLMv1Performance]"
+    - name:  catalogdCPU_GCP
+      metricName : catalogd_cpu_usage_cores
+      metric_of_interest: value
+      labels.namespace.keyword: openshift-catalogd
+      not: 
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: OLMv1Performance]"
