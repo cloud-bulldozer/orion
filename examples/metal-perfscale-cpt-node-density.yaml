@@ -25,6 +25,7 @@ tests:
         jobConfig.name: "garbage-collection"
       labels:
         - "[Jira: PodLatency]"
+      threshold: 10
 
     - name: apiserverCPU
       metricName: containerCPU
@@ -35,6 +36,7 @@ tests:
         agg_type: avg
       labels:
         - "[Jira: kube-apiserver]"
+      threshold: 10
 
     - name: multusCPU
       metricName: containerCPU
@@ -45,6 +47,7 @@ tests:
         agg_type: avg
       labels:
         - "[Jira: multus]"
+      threshold: 10
 
     - name: monitoringCPU
       metricName: containerCPU
@@ -55,6 +58,7 @@ tests:
         agg_type: avg
       labels:
         - "[Jira: monitoring]"
+      threshold: 10
 
     - name: ovnCPU
       metricName: containerCPU
@@ -65,6 +69,7 @@ tests:
         agg_type: avg
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
+      threshold: 10
 
     - name: etcdCPU
       metricName: containerCPU
@@ -75,6 +80,7 @@ tests:
         agg_type: avg
       labels:
         - "[Jira: etcd]"
+      threshold: 10
 
     - name: etcdDisk
       metricName: 99thEtcdDiskBackendCommitDurationSeconds
@@ -84,6 +90,7 @@ tests:
         agg_type: avg
       labels:
         - "[Jira: etcd]"
+      threshold: 10
 
     - name: kubelet
       metricName: kubeletCPU
@@ -93,3 +100,4 @@ tests:
       agg:
         value: cpu
         agg_type: avg
+      threshold: 10
