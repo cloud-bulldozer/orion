@@ -4,23 +4,38 @@ Orion stands as a powerful command-line tool/daemon designed for identifying reg
 
 ## Quick Start
 
+### Podman
+```bash
+$ podman build -f Dockerfile -t orion
+# Needed env vars.
+# ES/OpenSearch Server where the results live
+ $ export ES_SERVER='my-opensearch.perf.com'
+ # Version of OpenShift
+ $ export version=4.19
+ # Index where the benchmark data is stored
+ $ export es_benchmark_index=ripsaw-kube-burner*
+ # Index where you store the run metadata
+ $ export es_metadata_index=perf_scale_ci*
+ $ podman run --env-host orion orion cmd --config orion/examples/trt-external-payload-node-density.yaml --hunter-analyze
+ ```
+
+
 ### Installation
 ```bash
-git clone <repository_url>
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-export ES_SERVER=<es_server_url>
-pip install .
+$ git clone <repository_url>
+$ python3.11 -m venv venv
+$ source venv/bin/activate
+$ pip install -r requirements.txt
+$ pip install .
 ```
 
 ### Basic Usage
 ```bash
 # Command-line mode
-orion cmd --hunter-analyze
+$ orion cmd --hunter-analyze
 
 # Daemon mode
-orion daemon
+$ orion daemon
 ```
 
 ## Features
