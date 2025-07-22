@@ -28,6 +28,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  n2n-tput-64-2p
       parallelism: 2
@@ -40,6 +41,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  n2n-tput-1024-1p
       parallelism: 1
@@ -52,6 +54,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  n2n-tput-1024-2p
       parallelism: 2
@@ -64,6 +67,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  n2n-tput-4096-1p
       parallelism: 1
@@ -76,6 +80,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  n2n-tput-4096-2p
       parallelism: 2
@@ -88,6 +93,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  n2n-tput-8192-1p
       parallelism: 1
@@ -100,6 +106,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  n2n-tput-8192-2p
       parallelism: 2
@@ -112,6 +119,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  n2n-ltcy-1024-1p
       parallelism: 1
@@ -125,6 +133,7 @@ tests:
         value: latency
         agg_type: avg
       direction: 1
+      threshold: 10
 
     - name:  n2n-ltcy-1024-2p
       parallelism: 2
@@ -138,6 +147,7 @@ tests:
         value: latency
         agg_type: avg
       direction: 1
+      threshold: 10
 
 
 # p2p
@@ -152,6 +162,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  p2p-tput-64-2p
       parallelism: 2
@@ -164,6 +175,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  p2p-tput-1024-1p
       parallelism: 1
@@ -176,7 +188,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
-
+      threshold: 10
 
     - name:  p2p-tput-1024-2p
       parallelism: 2
@@ -189,6 +201,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  p2p-tput-4096-1p
       parallelism: 1
@@ -201,6 +214,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  p2p-tput-4096-2p
       parallelism: 2
@@ -213,6 +227,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  p2p-tput-8192-1p
       parallelism: 1
@@ -225,6 +240,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  p2p-tput-8192-2p
       parallelism: 2
@@ -237,6 +253,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  p2p-ltcy-1024-1p
       parallelism: 1
@@ -250,6 +267,7 @@ tests:
         value: latency
         agg_type: avg
       direction: 1
+      threshold: 10
 
     - name:  p2p-ltcy-1024-2p
       parallelism: 2
@@ -263,7 +281,7 @@ tests:
         value: latency
         agg_type: avg
       direction: 1
-
+      threshold: 10
 
 #p2s
     - name:  p2s-tput-64-1p
@@ -278,6 +296,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  p2s-tput-1024-1p
       parallelism: 1
@@ -291,6 +310,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  p2s-tput-4096-1p
       parallelism: 1
@@ -304,6 +324,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  p2s-tput-8192-1p
       parallelism: 1
@@ -317,6 +338,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
+      threshold: 10
 
     - name:  p2s-ltcy-1024-1p
       parallelism: 1
@@ -331,3 +353,4 @@ tests:
         value: latency
         agg_type: avg
       direction: 1
+      threshold: 10
