@@ -258,6 +258,16 @@ class Utils:
             ids = uuids
         return ids
 
+    def get_version(self, index: str, uuids: List[str], match: Matcher) -> dict:
+        """Gets the version of the run from each test
+
+        Args:
+            index (str): index of the run
+            uuids (List[str]): list of uuids to find version of
+            match (Matcher): the fmatch instance
+        """
+        test = match.getResults("", uuids, index, {})
+        return {run[self.uuid_field]: run["ocpVersion"] for run in test}
 
     def get_build_urls(self, index: str, uuids: List[str], match: Matcher):
         """Gets metadata of the run from each test
@@ -322,11 +332,13 @@ class Utils:
         )
         uuids = [run[self.uuid_field] for run in runs]
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
+        versions = self.get_version(fingerprint_index, uuids, match)
         # get uuids if there is a baseline
         if options["baseline"] not in ("", None):
             uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
             uuids.append(options["uuid"])
             buildUrls = self.get_build_urls(fingerprint_index, uuids, match)
+            versions = self.get_version(fingerprint_index, uuids, match)
         elif not uuids:
             logger.info("No UUID present for given metadata")
             return None, None
@@ -368,6 +380,10 @@ class Utils:
         merged_df = merged_df.merge(uuid_timestamp_map, on=self.uuid_field, how="left")
         merged_df = merged_df.sort_values(by="timestamp")
 
+        merged_df["ocpVersion"] = merged_df[self.uuid_field].apply(
+            lambda uuid: versions[uuid]
+        )
+
         shortener = pyshorteners.Shortener(timeout=10)
         merged_df["buildUrl"] = merged_df[self.uuid_field].apply(
             lambda uuid: (
@@ -377,7 +393,6 @@ class Utils:
             )
             # pylint: disable = cell-var-from-loop
         )
-
         merged_df = merged_df.reset_index(drop=True)
         # save the dataframe
         output_file_path = f"{options['save_data_path'].split('.')[0]}-{test['name']}.csv"
