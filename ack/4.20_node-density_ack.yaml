@@ -2,8 +2,8 @@
 ack:
   - uuid: 35dbe753-c8c6-4ecf-9070-83e45fede818
     metric: kubelet_avg
-    reason: "OCPBUG is opened (waiting for ID)"
+    reason: "OCPBUG is opened https://issues.redhat.com/browse/OCPBUGS-59641"
   - uuid: 35dbe753-c8c6-4ecf-9070-83e45fede818
     metric: podReadyLatency_P99
-    reason: "OCPBUG is opened (waiting for ID)"
+    reason: "OCPBUG is opened https://issues.redhat.com/browse/OCPBUGS-59641"
 
