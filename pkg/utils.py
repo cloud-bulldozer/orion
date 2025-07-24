@@ -106,7 +106,7 @@ class Utils:
         Returns:
             pd.DataFrame: _description_
         """
-        aggregated_metric_data = match.get_agg_metric_query(uuids, index, metric, timestamp_field)
+        aggregated_metric_data = match.get_agg_metric_query(uuids, metric, timestamp_field)
         aggregation_value = metric["agg"]["value"]
         aggregation_type = metric["agg"]["agg_type"]
         aggregation_name = f"{aggregation_value}_{aggregation_type}"
@@ -168,7 +168,7 @@ class Utils:
         Returns:
             pd.DataFrame: _description_
         """
-        standard_metric_data = match.getResults("", uuids, index, metric)
+        standard_metric_data = match.get_results("", uuids, metric)
         if len(standard_metric_data) == 0:
             standard_metric_df = pd.DataFrame(columns=[self.uuid_field, timestamp_field, metric_value_field])
         else:
@@ -250,7 +250,7 @@ class Utils:
             if metadata["benchmark.keyword"] in ["ingress-perf", "k8s-netperf"]:
                 return uuids
             if baseline == "" and not filter_node_count and "kube-burner" in benchmark_index:
-                runs = match.match_kube_burner(uuids, benchmark_index)
+                runs = match.match_kube_burner(uuids)
                 ids = match.filter_runs(runs, runs)
             else:
                 ids = uuids
@@ -266,7 +266,7 @@ class Utils:
             uuids (List[str]): list of uuids to find version of
             match (Matcher): the fmatch instance
         """
-        test = match.getResults("", uuids, index, {})
+        test = match.get_results("", uuids, {})
         return {run[self.uuid_field]: run["ocpVersion"] for run in test}
 
     def get_build_urls(self, index: str, uuids: List[str], match: Matcher):
@@ -282,7 +282,7 @@ class Utils:
             dict: dictionary of the metadata
         """
 
-        test = match.getResults("", uuids, index, {})
+        test = match.get_results("", uuids, {})
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in test}
         return buildUrls
 
@@ -325,7 +325,6 @@ class Utils:
         # get uuids, buildUrls matching with the metadata
         runs = match.get_uuid_by_metadata(
             metadata,
-            fingerprint_index,
             lookback_date=start_timestamp,
             lookback_size=options["lookback_size"],
             timestamp_field=timestamp_field
@@ -343,11 +342,11 @@ class Utils:
             logger.info("No UUID present for given metadata")
             return None, None
 
-        benchmark_index = test["benchmarkIndex"]
+        match.index = test["benchmarkIndex"]
 
         uuids = self.filter_uuids_on_index(
             metadata,
-            benchmark_index,
+            test["benchmarkIndex"],
             uuids,
             match,
             options["baseline"],
@@ -356,7 +355,7 @@ class Utils:
         # get metrics data and dataframe
         metrics = test["metrics"]
         dataframe_list, metrics_config = self.get_metric_data(
-            uuids, benchmark_index, metrics, match, test_threshold, timestamp_field
+            uuids, test["benchmarkIndex"], metrics, match, test_threshold, timestamp_field
         )
         if not dataframe_list:
             return None, metrics_config

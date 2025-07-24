@@ -59,7 +59,7 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
         matcher = Matcher(
             index=test["index"],
             level=logger_instance.level,
-            ES_URL=datasource,
+            es_url=datasource,
             verify_certs=False,
             version_field=version_field,
             uuid_field=uuid_field
@@ -83,6 +83,7 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
         logger_instance.info("Comparison algorithm: %s", algorithm_name)
 
         algorithmFactory = AlgorithmFactory()
+        
         algorithm = algorithmFactory.instantiate_algorithm(
                 algorithm_name,
                 matcher,
