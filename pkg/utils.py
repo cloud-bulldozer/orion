@@ -37,13 +37,12 @@ class Utils:
 
     # pylint: disable=too-many-locals
     def get_metric_data(
-        self, uuids: List[str], index: str, metrics: Dict[str, Any], match: Matcher, test_threshold: int, timestamp_field: str="timestamp"
+        self, uuids: List[str], metrics: Dict[str, Any], match: Matcher, test_threshold: int, timestamp_field: str="timestamp"
     ) -> List[pd.DataFrame]:
         """Gets details metrics based on metric yaml list
 
         Args:
             ids (list): list of all uuids
-            index (dict): index in es of where to find data
             metrics (dict): metrics to gather data on
             match (Matcher): current matcher instance
             logger (logger): log data to one output
@@ -69,11 +68,11 @@ class Utils:
             try:
                 if "agg" in metric:
                     metric_df, metric_dataframe_name = self.process_aggregation_metric(
-                        uuids, index, metric, match, timestamp_field
+                        uuids, metric, match, timestamp_field
                     )
                 else:
                     metric_df, metric_dataframe_name = self.process_standard_metric(
-                        uuids, index, metric, match, metric_value_field, timestamp_field
+                        uuids, metric, match, metric_value_field, timestamp_field
                     )
                 metric["labels"] = labels
                 metric["direction"] = direction
@@ -93,20 +92,19 @@ class Utils:
 
 
     def process_aggregation_metric(
-        self, uuids: List[str], index: str, metric: Dict[str, Any], match: Matcher, timestamp_field: str="timestamp"
+        self, uuids: List[str],  metric: Dict[str, Any], match: Matcher, timestamp_field: str="timestamp"
     ) -> pd.DataFrame:
         """Method to get aggregated dataframe
 
         Args:
             uuids (List[str]): _description_
-            index (str): _description_
             metric (Dict[str, Any]): _description_
             match (Matcher): _description_
 
         Returns:
             pd.DataFrame: _description_
         """
-        aggregated_metric_data = match.get_agg_metric_query(uuids, index, metric, timestamp_field)
+        aggregated_metric_data = match.get_agg_metric_query(uuids, metric, timestamp_field)
         aggregation_value = metric["agg"]["value"]
         aggregation_type = metric["agg"]["agg_type"]
         aggregation_name = f"{aggregation_value}_{aggregation_type}"
@@ -150,7 +148,6 @@ class Utils:
     def process_standard_metric(
         self,
         uuids: List[str],
-        index: str,
         metric: Dict[str, Any],
         match: Matcher,
         metric_value_field: str,
@@ -160,7 +157,6 @@ class Utils:
 
         Args:
             uuids (List[str]): _description_
-            index (str): _description_
             metric (Dict[str, Any]): _description_
             match (Matcher): _description_
             metric_value_field (str): _description_
@@ -168,7 +164,7 @@ class Utils:
         Returns:
             pd.DataFrame: _description_
         """
-        standard_metric_data = match.getResults("", uuids, index, metric)
+        standard_metric_data = match.get_results("", uuids, metric)
         if len(standard_metric_data) == 0:
             standard_metric_df = pd.DataFrame(columns=[self.uuid_field, timestamp_field, metric_value_field])
         else:
@@ -250,7 +246,7 @@ class Utils:
             if metadata["benchmark.keyword"] in ["ingress-perf", "k8s-netperf"]:
                 return uuids
             if baseline == "" and not filter_node_count and "kube-burner" in benchmark_index:
-                runs = match.match_kube_burner(uuids, benchmark_index)
+                runs = match.match_kube_burner(uuids)
                 ids = match.filter_runs(runs, runs)
             else:
                 ids = uuids
@@ -258,8 +254,17 @@ class Utils:
             ids = uuids
         return ids
 
+    def get_version(self, uuids: List[str], match: Matcher) -> dict:
+        """Gets the version of the run from each test
 
-    def get_build_urls(self, index: str, uuids: List[str], match: Matcher):
+        Args:
+            uuids (List[str]): list of uuids to find version of
+            match (Matcher): the fmatch instance
+        """
+        test = match.get_results("", uuids, {})
+        return {run[self.uuid_field]: run["ocpVersion"] for run in test}
+
+    def get_build_urls(self, uuids: List[str], match: Matcher):
         """Gets metadata of the run from each test
             to get the build url
 
@@ -272,7 +277,7 @@ class Utils:
             dict: dictionary of the metadata
         """
 
-        test = match.getResults("", uuids, index, {})
+        test = match.get_results("", uuids, {})
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in test}
         return buildUrls
 
@@ -297,7 +302,6 @@ class Utils:
         """
         logger = SingletonLogger.getLogger("Orion")
         logger.info("The test %s has started", test["name"])
-        fingerprint_index = test["index"]
 
         test_threshold=0
         if "threshold" in test:
@@ -315,27 +319,28 @@ class Utils:
         # get uuids, buildUrls matching with the metadata
         runs = match.get_uuid_by_metadata(
             metadata,
-            fingerprint_index,
             lookback_date=start_timestamp,
             lookback_size=options["lookback_size"],
             timestamp_field=timestamp_field
         )
         uuids = [run[self.uuid_field] for run in runs]
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
+        versions = self.get_version(uuids, match)
         # get uuids if there is a baseline
         if options["baseline"] not in ("", None):
             uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
             uuids.append(options["uuid"])
-            buildUrls = self.get_build_urls(fingerprint_index, uuids, match)
+            buildUrls = self.get_build_urls(uuids, match)
+            versions = self.get_version( uuids, match)
         elif not uuids:
             logger.info("No UUID present for given metadata")
             return None, None
 
-        benchmark_index = test["benchmarkIndex"]
+        match.index = test["benchmarkIndex"]
 
         uuids = self.filter_uuids_on_index(
             metadata,
-            benchmark_index,
+            test["benchmarkIndex"],
             uuids,
             match,
             options["baseline"],
@@ -344,7 +349,7 @@ class Utils:
         # get metrics data and dataframe
         metrics = test["metrics"]
         dataframe_list, metrics_config = self.get_metric_data(
-            uuids, benchmark_index, metrics, match, test_threshold, timestamp_field
+            uuids, metrics, match, test_threshold, timestamp_field
         )
         if not dataframe_list:
             return None, metrics_config
@@ -368,6 +373,10 @@ class Utils:
         merged_df = merged_df.merge(uuid_timestamp_map, on=self.uuid_field, how="left")
         merged_df = merged_df.sort_values(by="timestamp")
 
+        merged_df["ocpVersion"] = merged_df[self.uuid_field].apply(
+            lambda uuid: versions[uuid]
+        )
+
         shortener = pyshorteners.Shortener(timeout=10)
         merged_df["buildUrl"] = merged_df[self.uuid_field].apply(
             lambda uuid: (
@@ -377,7 +386,6 @@ class Utils:
             )
             # pylint: disable = cell-var-from-loop
         )
-
         merged_df = merged_df.reset_index(drop=True)
         # save the dataframe
         output_file_path = f"{options['save_data_path'].split('.')[0]}-{test['name']}.csv"
