@@ -12,7 +12,7 @@ tests :
       benchmark.keyword: crd-scale 
       ocpVersion: {{ version }}
       networkType: OVNKubernetes
-      jobType: periodic
+      jobType: {{ jobtype | default('periodic') }}
       not:
         stream: okd
 
