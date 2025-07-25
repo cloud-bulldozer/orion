@@ -83,7 +83,6 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
         logger_instance.info("Comparison algorithm: %s", algorithm_name)
 
         algorithmFactory = AlgorithmFactory()
-        
         algorithm = algorithmFactory.instantiate_algorithm(
                 algorithm_name,
                 matcher,
