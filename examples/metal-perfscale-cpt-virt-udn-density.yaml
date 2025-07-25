@@ -12,7 +12,7 @@ tests :
       benchmark.keyword: virt-udn-density
       ocpVersion: {{ version }}
       networkType: OVNKubernetes
-      jobType: periodic OR pull
+      jobType: {{ jobtype | default('periodic') }}
       not:
         stream: okd
 
