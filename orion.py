@@ -10,7 +10,7 @@ from typing import Any
 import click
 import uvicorn
 from fmatch.logrus import SingletonLogger
-from pkg.runTest import run
+from pkg.run_test import run
 from pkg.config import load_config, load_ack
 import pkg.constants as cnsts
 
@@ -127,7 +127,7 @@ def cmd_analysis(**kwargs):
     logger_instance.info("🏹 Starting Orion in command-line mode")
     if len(kwargs["ack"]) > 1 :
         kwargs["ackMap"] = load_ack(kwargs["ack"])
-    kwargs["configMap"] = load_config(kwargs["config"])
+    kwargs["config"] = load_config(kwargs["config"])
     output, regression_flag = run(**kwargs)
     if output is None:
         logger_instance.error("Terminating test")
