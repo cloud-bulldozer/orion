@@ -1,0 +1,126 @@
+tests :
+  - name : olmv1-GCP
+    index: {{ es_metadata_index }}
+    benchmarkIndex: {{ es_benchmark_index }}
+    metadata:
+      platform: GCP
+      clusterType: self-managed
+      masterNodesType: e2-custom-6-16384
+      masterNodesCount: 3
+      workerNodesType: e2-standard-4
+      workerNodesCount: 3
+      benchmark.keyword: olm
+      ocpVersion: {{ version }}
+      not:
+        stream: okd
+    metrics : 
+    - name: catalogdMemory_GCP
+      metricName: catalogd_memory_peak_usage_5m
+      metric_of_interest: value
+      quantileName: Ready
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: OpenShift Bugs]"
+    - name: controllerMemory_GCP
+      metricName: operator-controller_memory_peak_usage_5m
+      metric_of_interest: value
+      quantileName: Ready
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: OpenShift Bugs]"
+    - name:  catalogdCPU_GCP
+      metricName : catalogd_cpu_usage_cores
+      metric_of_interest: value
+      labels.namespace.keyword: openshift-catalogd
+      not: 
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: OpenShift Bugs]"
+    - name:  controllerCPU_GCP
+      metricName : operator-controller_cpu_usage_cores
+      metric_of_interest: value
+      labels.namespace.keyword: openshift-operator-controller
+      not: 
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: OpenShift Bugs]"
+    - name: catalogdDisk_GCP
+      metricName: catalogd_disk_usage
+      metric_of_interest: value
+      quantileName: Ready
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: OpenShift Bugs]"
+    - name: controllerDisk_GCP
+      metricName: controller_disk_usage
+      metric_of_interest: value
+      quantileName: Ready
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: OpenShift Bugs]"
+    - name: catalogd_5xx_error_GCP
+      metricName: catalogd_http_5xx_error_count
+      metric_of_interest: value
+      quantileName: Ready
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: OpenShift Bugs]"
+    - name: catalog_error_rate_GCP
+      metricName: clustercatalog_error_rate
+      metric_of_interest: value
+      quantileName: Ready
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: OpenShift Bugs]"
+    - name: extension_error_rate_GCP
+      metricName: clusterextension_error_rate
+      metric_of_interest: value
+      quantileName: Ready
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: OpenShift Bugs]"
+    - name: catalogd_workqueue_latency_GCP
+      metricName: catalogd-clustercatalog_workqueue_latency_p99
+      metric_of_interest: value
+      quantileName: Ready
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: OpenShift Bugs]"
+    - name: extension_workqueue_latency_GCP
+      metricName: clusterextension_workqueue_latency_p99
+      metric_of_interest: value
+      quantileName: Ready
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: OpenShift Bugs]"
+    - name: controller_reconcile_p99_GCP
+      metricName: operator-controller-controller_reconcile_p99
+      metric_of_interest: value
+      quantileName: Ready
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: OpenShift Bugs]"
+    - name: catalogd_reconcile_p99_GCP
+      metricName: catalogd-controller_reconcile_p99
+      metric_of_interest: value
+      quantileName: Ready
+      not: 
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: OpenShift Bugs]"
