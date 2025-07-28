@@ -33,6 +33,25 @@ ack:
   - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
     metric: ovnMem-ovnk-controller_avg
     reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
-
-
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: podReadyLatency_P99
+    reason: kube-burner change on how we calculate metrics
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: ovnkMem-overall_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: ovnMem-ovncontroller_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: ovnMem-northd_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: ovnMem-nbdb_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: ovnMem-sbdb_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: ovnMem-ovnk-controller_av
+    reason: kube-burner change on how we calculate metrics
 
