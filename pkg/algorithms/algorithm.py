@@ -162,7 +162,7 @@ class Algorithm(ABC):
         attributes = {
             column: self.dataframe[column]
             for column in self.dataframe.columns
-            if column in ["uuid", "buildUrl"]
+            if column in ["uuid", "buildUrl", "ocpVersion"]
         }
         series = Series(
             test_name=self.test["name"],

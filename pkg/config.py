@@ -44,7 +44,8 @@ def load_config(config: str, parameters: Dict= None) -> Dict[str, Any]:
     logger_instance.debug(f"Variables required by the template: {required_parameters}")
 
     # Check for missing variables
-    missing_vars = required_parameters - merged_parameters.keys()
+    optional_params_with_defaults = {"jobtype"}
+    missing_vars = required_parameters - merged_parameters.keys() - optional_params_with_defaults
     if missing_vars:
         logger_instance.error(f"Missing required parameters: {missing_vars}, use environment variables to set")
         sys.exit(1)
