@@ -48,6 +48,7 @@ tests :
         agg_type: avg
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
       threshold: 10
 
     - name:  ovnkCPU-overall
@@ -136,6 +137,8 @@ tests :
         agg_type: avg
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
 
     - name:  ovnkMem-overall
       metricName : containerMemory
