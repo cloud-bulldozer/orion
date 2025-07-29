@@ -1,0 +1,23 @@
+---
+ack:
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: podReadyLatency_P99
+    reason: kube-burner change on how we calculate metrics
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: ovnkMem-overall_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: ovnMem-ovncontroller_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: ovnMem-northd_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: ovnMem-nbdb_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: ovnMem-sbdb_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: ovnMem-ovnk-controller_av
+    reason: kube-burner change on how we calculate metrics
