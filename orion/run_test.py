@@ -92,6 +92,7 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
                 test,
                 kwargs,
                 metrics_config,
+                version_field,
             )
 
         if kwargs["output_format"] != cnsts.JUNIT:

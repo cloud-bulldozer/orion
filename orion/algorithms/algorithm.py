@@ -24,10 +24,12 @@ class Algorithm(ABC):
         test: dict,
         options: dict,
         metrics_config: dict[str, dict],
+        version_field: str = "ocpVersion",
     ) -> None:
         self.matcher = matcher
         self.dataframe = dataframe
         self.test = test
+        self.version_field = version_field
         self.options = options
         self.metrics_config = metrics_config
         self.regression_flag = False
@@ -162,7 +164,7 @@ class Algorithm(ABC):
         attributes = {
             column: self.dataframe[column]
             for column in self.dataframe.columns
-            if column in ["uuid", "buildUrl", "ocpVersion"]
+            if column in ["uuid", "buildUrl", self.version_field]
         }
         series = Series(
             test_name=self.test["name"],

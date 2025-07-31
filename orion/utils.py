@@ -266,12 +266,7 @@ class Utils:
             match (Matcher): the fmatch instance
         """
         test = match.get_results("", uuids, {})
-        if len(test) == 0:
-            return {}
-
-        # Fingerprint / metadata index code path
-        if "ocpVersion" in test[0]:
-            return {run[self.uuid_field]: run["ocpVersion"] for run in test}
+        return {run[self.uuid_field]: run[self.version_field] for run in test}
 
         # No Fingerprint / Metatdata index used. Benchmark result index path
         result = {}
@@ -390,7 +385,7 @@ class Utils:
         merged_df = merged_df.merge(uuid_timestamp_map, on=self.uuid_field, how="left")
         merged_df = merged_df.sort_values(by="timestamp")
 
-        merged_df["ocpVersion"] = merged_df[self.uuid_field].apply(
+        merged_df[self.version_field] = merged_df[self.uuid_field].apply(
             lambda uuid: versions[uuid]
         )
         merged_df["prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
@@ -451,7 +446,7 @@ class Utils:
             "workerNodesType": "",
             "infraNodesType": "",
             "totalNodesCount": 0,
-            "ocpVersion": "",
+            self.version_field: "",
             "networkType": "",
             "ipsec": "",
             "fips": "",
@@ -466,8 +461,8 @@ class Utils:
             metadata[k] = v
         if "benchmark" in test:
             metadata["benchmark.keyword"] = test["benchmark"]
-        if "ocpVersion" in metadata:
-            metadata["ocpVersion"] = str(metadata["ocpVersion"])
+        if self.version_field in metadata:
+            metadata[self.version_field] = str(metadata[self.version_field])
 
         # Remove any keys that have blank values
         no_blank_meta = {k: v for k, v in metadata.items() if v}

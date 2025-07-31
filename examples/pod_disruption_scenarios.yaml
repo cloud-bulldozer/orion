@@ -1,37 +1,92 @@
 tests:
-  - name: chaos
+  - name: krkn-hub-*
     index: krkn-telemetry*
     benchmarkIndex: krkn-metrics*
+    version: cluster_version
     uuid_field: run_uuid
     metadata:
-      cloud_infrastructure: AWS
-      ocpVersion: "{{ version }}"
+      cluster_version: "{{ version }}"
       scenarios.scenario_type: pod_disruption_scenarios
-      platform: AWS
-      networkType: OVNKubernetes
+      cloud_infrastructure: AWS  # Options: AWS, IBMCloud, GCP, Azure, VSphere
+      cloud_type: self-managed   # Options: self-managed, rosa
+      total_node_count: 9
+      node_summary_infos.instance_type: "*xlarge*"  # Matches: m6a.xlarge (masters), r5.xlarge (workers)
+      network_plugins: OVNKubernetes
+      scenarios.scenario: "*pod_scenario.yaml"
     metrics:
-      # Recovery metrics .
-      - name: pod_recovery_time
+      # Recovery & Health metrics (specific to pod disruption scenarios)
+      - name: health_check_recovery
         metricName: health_check_recovery
-        metric_of_interest: value
+        metric_of_interest: duration
         agg:
           value: duration
           agg_type: avg
-      - name: affected_pods_status
+
+      # Pod Recovery metrics (specific to pod disruption scenarios)
+      - name: affected_pods_total_recovery_time
         metricName: affected_pods_recovery
-        metric_of_interest: type
-      # API server metrics .
-      - name: api_request_rate
-        metricName: APIRequestRate
+        metric_of_interest: total_recovery_time
+        agg:
+          value: total_recovery_time
+          agg_type: avg
+      - name: affected_pods_readiness_time
+        metricName: affected_pods_recovery
+        metric_of_interest: pod_readiness_time
+        agg:
+          value: pod_readiness_time
+          agg_type: avg
+      - name: affected_pods_rescheduling_time
+        metricName: affected_pods_recovery
+        metric_of_interest: pod_rescheduling_time
+        agg:
+          value: pod_rescheduling_time
+          agg_type: avg
+
+      # API Server metrics
+      - name: api_99th_latency
+        metricName: API99thLatency
         metric_of_interest: value
         agg:
+          value: value
           agg_type: max
       - name: api_inflight_requests
         metricName: APIInflightRequests
         metric_of_interest: value
         agg:
+          value: value
           agg_type: max
-      # Node CPU metrics .
+      - name: api_request_rate
+        metricName: APIRequestRate
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: max
+      - name: kube_apiserver_cpu
+        metricName: cpu-kube-apiserver
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: kube_apiserver_memory
+        metricName: memory-kube-apiserver
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: openshift_apiserver_cpu
+        metricName: cpu-openshift-apiserver
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: openshift_apiserver_memory
+        metricName: memory-openshift-apiserver
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      # Node Resource metrics
       - name: master_node_cpu
         metricName: nodeCPUSeconds-Masters
         metric_of_interest: value
@@ -50,32 +105,92 @@ tests:
         agg:
           value: cpu
           agg_type: max
-      # Container metrics .
-      - name: container_cpu_masters
-        metricName: containerCPU-Masters
+
+      # Container Resource metrics
+      - name: masters_cpu
+        metricName: cpu-masters
         metric_of_interest: value
         agg:
           value: cpu
           agg_type: max
-      - name: container_memory_masters
-        metricName: containerMemory-Masters
+      - name: masters_memory
+        metricName: memory-masters
         metric_of_interest: value
         agg:
           value: mem
           agg_type: max
-      - name: container_cpu_infra
-        metricName: containerCPU-AggregatedInfra
+      - name: workers_cpu
+        metricName: cpu-workers
         metric_of_interest: value
         agg:
           value: cpu
           agg_type: max
-      - name: container_memory_infra
-        metricName: containerMemory-AggregatedInfra
+      - name: workers_memory
+        metricName: memory-workers
         metric_of_interest: value
         agg:
           value: mem
           agg_type: max
-      # Network components .
+      - name: max_workers_cpu
+        metricName: max-cpu-workers
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: max_masters_memory
+        metricName: max-memory-masters
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: max_workers_memory
+        metricName: max-memory-workers
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      # Kubelet metrics
+      - name: kubelet_cpu
+        metricName: cpu-kubelet
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: kubelet_memory
+        metricName: memory-kubelet
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: max_kubelet_cpu
+        metricName: max-cpu-kubelet
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: max_kubelet_memory
+        metricName: max-memory-kubelet
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      # Container Runtime metrics
+      - name: crio_cpu
+        metricName: cpu-crio
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: crio_memory
+        metricName: memory-crio
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      # Network metrics
       - name: ovnkube_node_cpu
         metricName: cpu-ovnkube-node
         metric_of_interest: value
@@ -100,41 +215,66 @@ tests:
         agg:
           value: mem
           agg_type: max
-      # etcd metrics .
-      - name: etcd_leader_changes_rate
-        metricName: etcdLeaderChangesRate
+      - name: ovn_control_plane_cpu
+        metricName: cpu-ovn-control-plane
         metric_of_interest: value
         agg:
+          value: cpu
           agg_type: max
-      - name: etcd_server_is_leader
-        metricName: etcdServerIsLeader
+      - name: ovn_control_plane_memory
+        metricName: memory-ovn-control-plane
         metric_of_interest: value
         agg:
+          value: mem
           agg_type: max
-      - name: etcd_99th_backend_commit_duration
-        metricName: 99thEtcdDiskBackendCommitDurationSeconds
+
+      # Router metrics
+      - name: router_cpu
+        metricName: cpu-router
         metric_of_interest: value
         agg:
-          value: duration
-          agg_type: avg
-      - name: etcd_99th_wal_fsync_duration
-        metricName: 99thEtcdDiskWalFsyncDurationSeconds
-        metric_of_interest: value
-        agg:
-          value: duration
-          agg_type: avg
-      - name: etcd_99th_round_trip_time
-        metricName: 99thEtcdRoundTripTimeSeconds
-        metric_of_interest: value
-        agg:
-          value: duration
-          agg_type: avg
-      - name: etcd_version
-        metricName: etcdVersion
-        metric_of_interest: value
-        agg:
+          value: cpu
           agg_type: max
-      # Monitoring components .
+      - name: router_memory
+        metricName: memory-router
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      # etcd metrics
+      - name: etcd_99th_backend_commit_avg
+        metricName: 99thEtcdDiskBackendCommit
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: avg
+      - name: etcd_99th_wal_fsync_avg
+        metricName: 99thEtcdDiskWalFsync
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: avg
+      - name: etcd_99th_round_trip_time_avg
+        metricName: 99thEtcdRoundTripTime
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: avg
+      - name: etcd_cpu
+        metricName: cpu-etcd
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: etcd_memory
+        metricName: memory-etcd
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      # Monitoring metrics
       - name: prometheus_cpu
         metricName: cpu-prometheus
         metric_of_interest: value
@@ -158,4 +298,172 @@ tests:
         metric_of_interest: value
         agg:
           value: mem
-          agg_type: max 
+          agg_type: max
+
+      # Controller Manager metrics
+      - name: kube_controller_manager_cpu
+        metricName: cpu-kube-controller-manager
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: kube_controller_manager_memory
+        metricName: memory-kube-controller-manager
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: openshift_controller_manager_cpu
+        metricName: cpu-openshift-controller-manager
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: openshift_controller_manager_memory
+        metricName: memory-openshift-controller-manager
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      # etcd Performance metrics
+      - name: etcd_total_object_count
+        metricName: etcdTotalObjectCount
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: max
+
+      # Container Aggregated metrics
+      - name: container_memory_aggregated_infra
+        metricName: containerMemory-AggregatedInfra
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: container_memory_aggregated_workers
+        metricName: containerMemory-AggregatedWorkers
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      # Node Aggregated metrics
+      - name: node_cpu_aggregated_infra
+        metricName: nodeCPU-AggregatedInfra
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: node_cpu_aggregated_workers
+        metricName: nodeCPU-AggregatedWorkers
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: node_memory_active_aggregated_infra
+        metricName: nodeMemoryActive-AggregatedInfra
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: node_memory_active_aggregated_workers
+        metricName: nodeMemoryActive-AggregatedWorkers
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: node_memory_available_aggregated_infra
+        metricName: nodeMemoryAvailable-AggregatedInfra
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: node_memory_available_aggregated_workers
+        metricName: nodeMemoryAvailable-AggregatedWorkers
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      # Max Memory metrics
+      - name: max_memory_masters
+        metricName: maxMemory-Masters
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: max_memory_workers
+        metricName: maxMemory-Workers
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      # Additional memory metrics
+      - name: memory_sum_workers
+        metricName: memory-sum-workers
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: max_cpu_infra
+        metricName: max-cpu-infra
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: max_cpu_kube_controller_manager
+        metricName: max-cpu-kube-controller-manager
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: max_memory_kube_controller_manager
+        metricName: max-memory-kube-controller-manager
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: max_memory_infra
+        metricName: max-memory-infra
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: max_memory_crio
+        metricName: max-memory-crio
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: max_cpu_crio
+        metricName: max-cpu-crio
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: memory_infra
+        metricName: memory-infra
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+      - name: cpu_infra
+        metricName: cpu-infra
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+      - name: cpu_cluster_usage_ratio
+        metricName: cpu-cluster-usage-ratio
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: avg
+      - name: memory_cluster_usage_ratio
+        metricName: memory-cluster-usage-ratio
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: avg 
