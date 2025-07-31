@@ -264,9 +264,12 @@ class Utils:
         test = match.get_results("", uuids, {})
         if len(test) == 0:
             return {}
+
+        # Fingerprint / metadata index code path
         if "ocpVersion" in test[0]:
             return {run[self.uuid_field]: run["ocpVersion"] for run in test}
 
+        # No Fingerprint / Metatdata index used. Benchmark result index path
         result = {}
         for uuid in uuids :
             test = match.get_results("", [uuid], {})
