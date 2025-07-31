@@ -82,6 +82,8 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option(
     "--save-data-path", default="data.csv", help="Path to save the output file"
 )
+@click.option("--sippy-pr-search", is_flag=True, help="Search for PRs in sippy")
+@click.option("--sippy-pr-search-version", default="", help="Version to search for PRs in sippy")
 @click.option("--debug", default=False, is_flag=True, help="log level")
 @click.option(
     "--hunter-analyze",
@@ -123,6 +125,10 @@ def cmd_analysis(**kwargs):
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
     if kwargs['output_format'] == cnsts.JSON :
         level = logging.ERROR
+    if kwargs["sippy_pr_search"]:
+        utils = Utils()
+        prs = utils.sippy_pr_search(kwargs["sippy_pr_search_version"])
+        print(prs)
     logger_instance = SingletonLogger(debug=level, name="Orion")
     logger_instance.info("🏹 Starting Orion in command-line mode")
     if len(kwargs["ack"]) > 1 :
