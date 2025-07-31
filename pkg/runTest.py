@@ -90,6 +90,7 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
                 test,
                 kwargs,
                 metrics_config,
+                version_field,
             )
         testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
         result_output[testname] = result_data
