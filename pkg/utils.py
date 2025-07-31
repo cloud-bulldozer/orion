@@ -262,7 +262,17 @@ class Utils:
             match (Matcher): the fmatch instance
         """
         test = match.get_results("", uuids, {})
-        return {run[self.uuid_field]: run["ocpVersion"] for run in test}
+        if len(test) == 0:
+            return {}
+        if "ocpVersion" in test[0]:
+            return {run[self.uuid_field]: run["ocpVersion"] for run in test}
+        else:
+            result = {}
+            for uuid in uuids :
+                test = match.get_results("", [uuid], {})
+                result[uuid] = test[0]["metadata"]["ocpVersion"]
+                continue
+            return result
 
     def get_build_urls(self, uuids: List[str], match: Matcher):
         """Gets metadata of the run from each test
