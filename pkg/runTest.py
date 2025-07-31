@@ -91,6 +91,13 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
                 kwargs,
                 metrics_config,
             )
+
+        if kwargs["output_format"] != cnsts.JUNIT:
+            testname, result_data, _ = algorithm.output(cnsts.JUNIT)
+            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{testname}.xml"
+            with open(output_file_name, 'w', encoding="utf-8") as file:
+                file.write(str(result_data))
+
         testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
         result_output[testname] = result_data
         regression_flag = regression_flag or test_flag
