@@ -271,7 +271,6 @@ class Utils:
         for uuid in uuids :
             test = match.get_results("", [uuid], {})
             result[uuid] = test[0]["metadata"]["ocpVersion"]
-            continue
         return result
 
     def get_build_urls(self, uuids: List[str], match: Matcher):
