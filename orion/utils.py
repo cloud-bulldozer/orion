@@ -5,14 +5,15 @@ module for all utility functions orion uses
 """
 # pylint: disable = import-error
 
-from functools import reduce
+import json
 import os
 import re
-import requests
 import sys
+import urllib.parse
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 from datetime import datetime, timedelta, timezone
+from functools import reduce
 from typing import List, Any, Dict, Tuple
 from tabulate import tabulate
 import pandas as pd
@@ -473,7 +474,7 @@ class Utils:
         logger_instance.debug("No blank metadata dict: " + str(no_blank_meta))
         return no_blank_meta
 
-    def sippy_pr_diff(self, base_version: str, new_version: str) -> Dict[Any, Any]:
+    def sippy_pr_diff(self, base_version: str, new_version: str) -> List[str]:
         """Get diff between two versions in sippy
         Args:
             base_version (str): base version
@@ -481,37 +482,37 @@ class Utils:
         Returns:
             list: list of PRs
         """
+        logger_instance = SingletonLogger.getLogger("Orion")
         base_url = "https://sippy.dptools.openshift.org/api/payloads/"
         filter_url = f"diff?fromPayload={base_version}&toPayload={new_version}"
         url = base_url + filter_url
-        response = requests.get(url)
+        response = requests.get(url, timeout=30)
         if response.status_code != 200:
-            print("Failed to get diff between %s and %s in sippy" % (base_version, new_version))
+            logger_instance.error("Failed to get diff between %s and %s in sippy", base_version, new_version)
             return []
         return self.process_sippy_pr_list(response.json())
 
-    
-    def process_sippy_pr_list(self, pr_list: List[Dict[Any, Any]]) -> list:
+    def process_sippy_pr_list(self, pr_list: List[Dict[Any, Any]]) -> List[str]:
         """Process the list of PRs
         Args:
-            pr_list (List[str]): list of PRs
+            pr_list (List[Dict[Any, Any]]): list of PRs
         Returns:
-            list: list of PRs
+            List[str]: list of PR URLs
         """
         prs = []
         for pr in pr_list:
             prs.append(pr['url'])
         return prs
 
-    def sippy_pr_search(self, version: str) -> Dict[Any, Any]:
+    def sippy_pr_search(self, version: str) -> List[str]:
         """Search for PRs in sippy
 
         Args:
             version (str): version to search for
         Returns:
-            list: list of PRs
+            List[str]: list of PRs
         """
-
+        logger_instance = SingletonLogger.getLogger("Orion")
         base_url = "https://sippy.dptools.openshift.org/api/releases/pull_requests"
         filter_dict = {
             "items": [
@@ -528,9 +529,9 @@ class Utils:
             "sort": "asc"
         }
         url = f"{base_url}?{urllib.parse.urlencode(params)}"
-        response = requests.get(url)
+        response = requests.get(url, timeout=30)
         if response.status_code != 200:
-            print("Failed to search for PRs in sippy for version %s" % version)
+            logger_instance.error("Failed to search for PRs in sippy for version %s", version)
             return []
         return self.process_sippy_pr_list(response.json())
 

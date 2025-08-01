@@ -125,16 +125,12 @@ def cmd_analysis(**kwargs):
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
     if kwargs['output_format'] == cnsts.JSON :
         level = logging.ERROR
-    if kwargs["sippy_pr_search"]:
-        utils = Utils()
-        prs = utils.sippy_pr_search(kwargs["sippy_pr_search_version"])
-        print(prs)
     logger_instance = SingletonLogger(debug=level, name="Orion")
     logger_instance.info("🏹 Starting Orion in command-line mode")
     if len(kwargs["ack"]) > 1 :
         kwargs["ackMap"] = load_ack(kwargs["ack"])
     kwargs["configMap"] = load_config(kwargs["config"])
-    output, regression_flag = run(**kwargs)
+    output, regression_flag, regression_data = run(**kwargs)
     if output is None:
         logger_instance.error("Terminating test")
         sys.exit(0)
@@ -143,11 +139,19 @@ def cmd_analysis(**kwargs):
             print(test_name)
             print("=" * len(test_name))
         print(result_table)
-
         output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{kwargs['save_output_path'].split('.')[1]}"
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_table))
     if regression_flag:
+        print("Regression(s) found :")
+        for regression in regression_data:
+            formatted_prs = "\n".join([f"- {pr}" for pr in regression["prs"]])
+            print("-" * 50)
+            print(f"{'Previous Version:':<20} {regression['prev_ver']}")
+            print(f"{'Bad Version:':<20} {regression['bad_ver']}")
+            print("PR diff:")
+            print(formatted_prs)
+            print("-" * 50)
         sys.exit(2) ## regression detected
 
 

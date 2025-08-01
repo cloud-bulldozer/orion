@@ -2,6 +2,7 @@
 run test
 """
 import sys
+import json
 from typing import Any, Dict
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
@@ -79,7 +80,7 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
         algorithm_name = get_algorithm_type(kwargs)
         if algorithm_name is None:
             logger_instance.error("No algorithm configured")
-            return None, None
+            return None, None, None
         logger_instance.info("Comparison algorithm: %s", algorithm_name)
 
         algorithmFactory = AlgorithmFactory()
@@ -100,8 +101,28 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
 
         testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
         result_output[testname] = result_data
+        # Query with JSON
+        regression_data = []
+        if test_flag:
+            testname, result_data, test_flag = algorithm.output(cnsts.JSON)
+            prev_ver = None
+            bad_ver = None
+            for result in json.loads(result_data):
+                if prev_ver is not None and bad_ver is not None:
+                    regression_data.append({
+                        "prev_ver": prev_ver,
+                        "bad_ver": bad_ver,
+                        "prs": Utils().sippy_pr_diff(prev_ver, bad_ver)
+                    })
+                    prev_ver = None
+                    bad_ver = None
+
+                if result["is_changepoint"]:
+                    bad_ver = result["ocpVersion"]
+                else:
+                    prev_ver = result["ocpVersion"]
         regression_flag = regression_flag or test_flag
-    return result_output, regression_flag
+    return result_output, regression_flag, regression_data
 
 
 def get_start_timestamp(kwargs: Dict[str, Any]) -> str:
