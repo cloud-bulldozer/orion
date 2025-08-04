@@ -26,6 +26,7 @@ tests :
       labels:
         - "[Jira: PerfScale]"
       threshold: 10
+      direction: 1
 
     - name:  apiserverCPU
       metricName : containerCPU
@@ -37,6 +38,7 @@ tests :
       labels:
         - "[Jira: kube-apiserver]"
       threshold: 10
+      direction: 1
 
     - name: multusCPU
       metricName : containerCPU
@@ -48,6 +50,7 @@ tests :
       labels:
         - "[Jira: multus]"
       threshold: 10
+      direction: 1
 
     - name: monitoringCPU
       metricName : containerCPU
@@ -59,6 +62,7 @@ tests :
       labels:
         - "[Jira: monitoring]"
       threshold: 10
+      direction: 1
 
     - name:  ovnCPU
       metricName : containerCPU
@@ -70,6 +74,7 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       threshold: 10
+      direction: 1
 
     - name:  etcdCPU
       metricName : containerCPU
@@ -81,6 +86,7 @@ tests :
       labels:
         - "[Jira: etcd]"
       threshold: 10
+      direction: 1
 
     - name:  etcdDisk
       metricName : 99thEtcdDiskBackendCommitDurationSeconds
@@ -101,3 +107,4 @@ tests :
         value: cpu
         agg_type: avg
       threshold: 10
+      direction: 1
