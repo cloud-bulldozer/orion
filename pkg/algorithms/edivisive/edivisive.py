@@ -1,7 +1,6 @@
 """EDivisive Algorithm from hunter"""
 
 # pylint: disable = line-too-long
-from fmatch.logrus import SingletonLogger
 from typing import Dict, List
 import pandas as pd
 from hunter.series import ChangePoint
