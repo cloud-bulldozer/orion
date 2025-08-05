@@ -23,8 +23,9 @@ class IsolationForestWeightedMean(Algorithm):
         Returns:
             pd.Dataframe, pd.Dataframe: _description_
         """
-        self.dataframe["timestamp"] = pd.to_datetime(self.dataframe["timestamp"])
-        self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int) // 10**9
+        if not (pd.api.types.is_numeric_dtype(self.dataframe["timestamp"]) and self.dataframe["timestamp"].astype(int).min() > 1e9):
+            self.dataframe["timestamp"] = pd.to_datetime(self.dataframe["timestamp"])
+            self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int) // 10**9
         dataframe = self.dataframe.copy(deep=True)
         series = self.setup_series()
 
