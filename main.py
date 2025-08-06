@@ -9,10 +9,10 @@ import warnings
 from typing import Any
 import click
 import uvicorn
-from .logger import SingletonLogger
-from .run_test import run
-from . import constants as cnsts
-from .config import load_config, load_ack
+from orion.logger import SingletonLogger
+from orion.run_test import run
+from orion import constants as cnsts
+from orion.config import load_config, load_ack
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 warnings.filterwarnings(
