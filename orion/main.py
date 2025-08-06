@@ -9,10 +9,10 @@ import warnings
 from typing import Any
 import click
 import uvicorn
-from fmatch.logrus import SingletonLogger
-from pkg.runTest import run
-from pkg.config import load_config, load_ack
-import pkg.constants as cnsts
+from .logger import SingletonLogger
+from .run_test import run
+from . import constants as cnsts
+from .config import load_config, load_ack
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 warnings.filterwarnings(
@@ -157,7 +157,7 @@ def rundaemon(debug: bool, port: int):
     level = logging.DEBUG if debug else logging.INFO
     logger_instance = SingletonLogger(debug=level, name='Orion')
     logger_instance.info("🏹 Starting Orion in Daemon mode")
-    uvicorn.run("pkg.daemon:app", port=port)
+    uvicorn.run("orion.daemon:app", port=port)
 
 
 if __name__ == "__main__":

@@ -4,9 +4,9 @@
 import pandas as pd
 import numpy
 
-from fmatch.logrus import SingletonLogger
+from orion.logger import SingletonLogger
 from hunter.series import  ChangePoint, ComparativeStats
-from pkg.algorithms.algorithm import Algorithm
+from orion.algorithms.algorithm import Algorithm
 
 
 class CMR(Algorithm):

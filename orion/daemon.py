@@ -7,9 +7,9 @@ import os
 from typing import Any
 from fastapi import FastAPI, HTTPException
 import pkg_resources
-from fmatch.logrus import SingletonLogger
-from pkg.config import load_config
-import pkg.constants as cnsts
+from orion.logger import SingletonLogger
+from orion.config import load_config
+import orion.constants as cnsts
 
 from . import runTest
 
