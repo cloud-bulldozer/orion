@@ -7,13 +7,13 @@ from setuptools import setup, find_packages
 setup(
     name='orion',
     version='1.0',
-    py_modules=['orion'],
+    py_modules=['main'],
     install_requires=[
         'click',
     ],
     entry_points={
         'console_scripts': [
-            'orion = orion.main:cli',
+            'orion = main:cli',
         ],
     },
     packages=find_packages(),
