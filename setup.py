@@ -7,19 +7,16 @@ from setuptools import setup, find_packages
 setup(
     name='orion',
     version='1.0',
-    py_modules=['orion'],
+    py_modules=['main'],
     install_requires=[
         'click',
-        'fmatch'
     ],
     entry_points={
         'console_scripts': [
-            'orion = orion:cli',
+            'orion = main:cli',
         ],
     },
     packages=find_packages(),
-    package_data={'pkg': ['utils.py',"runTest.py","daemon.py","logrus.py"],
-                  'configs':['*.yml','*.yaml']},
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',

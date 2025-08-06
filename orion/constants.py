@@ -1,5 +1,5 @@
 """
-pkg.constants
+orion.constants
 
 Module for storing constants across orion.
 """

@@ -4,7 +4,7 @@
 from typing import Dict, List
 import pandas as pd
 from hunter.series import ChangePoint
-from pkg.algorithms.algorithm import Algorithm
+from orion.algorithms.algorithm import Algorithm
 
 
 class EDivisive(Algorithm):

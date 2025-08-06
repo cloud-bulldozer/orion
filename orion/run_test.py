@@ -3,11 +3,11 @@ run test
 """
 import sys
 from typing import Any, Dict
-from fmatch.matcher import Matcher
-from fmatch.logrus import SingletonLogger
-from pkg.algorithms import AlgorithmFactory
-import pkg.constants as cnsts
-from pkg.utils import Utils, get_subtracted_timestamp
+from orion.matcher import Matcher
+from orion.logger import SingletonLogger
+from orion.algorithms import AlgorithmFactory
+import orion.constants as cnsts
+from orion.utils import Utils, get_subtracted_timestamp
 
 def get_algorithm_type(kwargs):
     """Switch Case of getting algorithm name
