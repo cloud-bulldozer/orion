@@ -4,8 +4,8 @@
 import pandas as pd
 import numpy
 
-from orion.logger import SingletonLogger
 from hunter.series import  ChangePoint, ComparativeStats
+from orion.logger import SingletonLogger
 from orion.algorithms.algorithm import Algorithm
 
 

@@ -9,8 +9,8 @@ import sys
 from typing import Any, Dict, Set
 
 from jinja2 import Environment, Template, meta
-from orion.logger import SingletonLogger
 import yaml
+from orion.logger import SingletonLogger
 
 
 def load_config(config: str, parameters: Dict= None) -> Dict[str, Any]:

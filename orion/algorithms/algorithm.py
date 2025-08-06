@@ -5,9 +5,9 @@ from itertools import groupby
 import json
 from typing import Any, Dict, List, Tuple, Union
 import pandas as pd
-from orion.matcher import Matcher
 from hunter.report import Report, ReportType
 from hunter.series import Series, Metric, ChangePoint, ChangePointGroup
+from orion.matcher import Matcher
 import orion.constants as cnsts
 
 

@@ -1,8 +1,8 @@
 """
 Algorithm Factory to choose avaiable algorithms
 """
-from orion.matcher import Matcher
 import pandas as pd
+from orion.matcher import Matcher
 import orion.constants as cnsts
 from .edivisive import EDivisive
 from .isolationforest import IsolationForestWeightedMean

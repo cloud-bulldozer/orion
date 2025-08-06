@@ -2,8 +2,8 @@
 """The implementation module for Isolation forest and weighted mean"""
 from sklearn.ensemble import IsolationForest
 import pandas as pd
-from orion.logger import SingletonLogger
 from hunter.series import  ChangePoint, ComparativeStats
+from orion.logger import SingletonLogger
 from orion.algorithms.algorithm import Algorithm
 
 
