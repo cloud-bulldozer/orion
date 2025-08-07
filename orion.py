@@ -13,7 +13,6 @@ from fmatch.logrus import SingletonLogger
 from pkg.runTest import run
 from pkg.config import load_config, load_ack
 import pkg.constants as cnsts
-
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 warnings.filterwarnings(
     "ignore", category=UserWarning, message=".*Connecting to.*verify_certs=False.*"
@@ -82,6 +81,8 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option(
     "--save-data-path", default="data.csv", help="Path to save the output file"
 )
+@click.option("--sippy-pr-search", is_flag=True, help="Search for PRs in sippy")
+@click.option("--sippy-pr-search-version", default="", help="Version to search for PRs in sippy")
 @click.option("--debug", default=False, is_flag=True, help="log level")
 @click.option(
     "--hunter-analyze",
@@ -128,7 +129,7 @@ def cmd_analysis(**kwargs):
     if len(kwargs["ack"]) > 1 :
         kwargs["ackMap"] = load_ack(kwargs["ack"])
     kwargs["configMap"] = load_config(kwargs["config"])
-    output, regression_flag = run(**kwargs)
+    output, regression_flag, regression_data = run(**kwargs)
     if output is None:
         logger_instance.error("Terminating test")
         sys.exit(0)
@@ -137,11 +138,19 @@ def cmd_analysis(**kwargs):
             print(test_name)
             print("=" * len(test_name))
         print(result_table)
-
         output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{kwargs['save_output_path'].split('.')[1]}"
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_table))
     if regression_flag:
+        print("Regression(s) found :")
+        for regression in regression_data:
+            formatted_prs = "\n".join([f"- {pr}" for pr in regression["prs"]])
+            print("-" * 50)
+            print(f"{'Previous Version:':<20} {regression['prev_ver']}")
+            print(f"{'Bad Version:':<20} {regression['bad_ver']}")
+            print("PR diff:")
+            print(formatted_prs)
+            print("-" * 50)
         sys.exit(2) ## regression detected
 
 
