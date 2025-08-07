@@ -108,6 +108,10 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
             prev_ver = None
             bad_ver = None
             for result in json.loads(result_data):
+                if result["is_changepoint"]:
+                    bad_ver = result["ocpVersion"]
+                else:
+                    prev_ver = result["ocpVersion"]
                 if prev_ver is not None and bad_ver is not None:
                     regression_data.append({
                         "prev_ver": prev_ver,
@@ -117,10 +121,6 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
                     prev_ver = None
                     bad_ver = None
 
-                if result["is_changepoint"]:
-                    bad_ver = result["ocpVersion"]
-                else:
-                    prev_ver = result["ocpVersion"]
         regression_flag = regression_flag or test_flag
     return result_output, regression_flag, regression_data
 
