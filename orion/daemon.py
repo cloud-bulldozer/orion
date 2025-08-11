@@ -14,7 +14,7 @@ import orion.constants as cnsts
 from . import run_test
 
 app = FastAPI()
-logger_instance = SingletonLogger.getLogger("Orion")
+logger = SingletonLogger.get_logger("Orion")
 
 
 @app.get("/daemon/changepoint")

@@ -5,22 +5,15 @@ Orion stands as a powerful command-line tool/daemon designed for identifying reg
 ## Quick Start
 
 ### Podman
+
 ```bash
 $ podman build -f Dockerfile -t orion
-# Needed env vars.
-# ES/OpenSearch Server where the results live
- $ export ES_SERVER='my-opensearch.perf.com'
- # Version of OpenShift
- $ export version=4.19
- # Index where the benchmark data is stored
- $ export es_benchmark_index=ripsaw-kube-burner*
- # Index where you store the run metadata
- $ export es_metadata_index=perf_scale_ci*
- $ podman run --env-host orion orion cmd --config orion/examples/trt-external-payload-node-density.yaml --hunter-analyze
+$ podman run orion orion cmd --config examples/trt-external-payload-node-density.yaml --hunter-analyze --input-vars='{"version": "4.19"}' --es-server='https://my-opensearch.perf.com' --benchmark-index=ripsaw-kube-burner-* --metadata-index=perf_scale_ci* --lookback=15d
  ```
 
 
 ### Installation
+
 ```bash
 $ git clone <repository_url>
 $ python3.11 -m venv venv
@@ -29,12 +22,34 @@ $ pip install -r requirements.txt
 $ pip install .
 ```
 
+Using `uv`
+
+```bash
+$ uv venv --python 3.11
+$ source .venv/bin/activate
+$ uv pip install -r requirements.txt
+$ uv pip install .
+``
+
+
+
+
 ### Basic Usage
+
+Trigger hunter analysis using data from the 15 latest days 
+
 ```bash
 # Command-line mode
-$ orion cmd --hunter-analyze
+$ orion cmd --config examples/trt-external-payload-node-density.yaml --hunter-analyze --input-vars='{"version": "4.19"}' --es-server='htts://my-opensearch.perf.com' --benchmark-index=ripsaw-kube-burner-* --metadata-index=perf_scale_ci* --lookback=15d
+2025-08-12 10:45:31,965 - Orion      - INFO - file: main.py - line: 136 - 🏹 Starting Orion in command-line mode                                                                              2025-08-12 10:45:31,971 - Orion      - INFO - file: utils.py - line: 317 - The test payload-node-density has started                                                            
+2025-08-12 10:45:31,971 - Matcher    - INFO - file: matcher.py - line: 75 - Executing query against index: perf_scale_ci*                                                                     2025-08-12 10:45:33,179 - Matcher    - INFO - file: matcher.py - line: 75 - Executing query against index: perf_scale_ci*                                                      
+2025-08-12 10:45:33,441 - Matcher    - INFO - file: matcher.py - line: 75 - Executing query against index: ripsaw-kube-burner-*                                                               2025-08-12 10:45:33,715 - Orion      - INFO - file: utils.py - line: 67 - Collecting podReadyLatency                                                                            
+2025-08-12 10:45:33,716 - Matcher    - INFO - file: matcher.py - line: 75 - Executing query against index: ripsaw-kube-burner-*                                                               2025-08-12 10:45:33,896 - Orion      - INFO - file: utils.py - line: 67 - Collecting apiserverCPU                                                                               
+2025-08-12 10:45:33,897 - Matcher    - INFO - file: matcher.py - line: 75 - Executing query against index: ripsaw-kube-burner-*                                                               2025-08-12 10:45:34,697 - Orion      - INFO - file: utils.py - line: 67 - Collecting ovnCPU                                                                                                   
+etc.
+```
 
-# Daemon mode
+### Daemon mode
 $ orion daemon
 ```
 

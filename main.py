@@ -9,6 +9,7 @@ import warnings
 from typing import Any
 import click
 import uvicorn
+import json
 from orion.logger import SingletonLogger
 from orion.run_test import run
 from orion import constants as cnsts
@@ -19,6 +20,10 @@ warnings.filterwarnings(
     "ignore", category=UserWarning, message=".*Connecting to.*verify_certs=False.*"
 )
 
+class Dictionary(click.ParamType):
+    name = "dictionary"
+    def convert(self, value, param, ctx):
+        return json.loads(value)
 
 class MutuallyExclusiveOption(click.Option):
     """Class to implement mutual exclusivity between options in click
@@ -117,6 +122,10 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
 @click.option("--node-count", default=False, help="Match any node iterations count")
 @click.option("--lookback-size", type=int, default=10000, help="Maximum number of entries to be looked back")
+@click.option("--es-server", type=str, default="http://localhost:9200", help="Elasticsearch endpoint where test data is stored")
+@click.option("--benchmark-index", type=str, default="benchmark", help="Index where test data is stored")
+@click.option("--metadata-index", type=str, default="benchmark", help="Index where metadata is stored")
+@click.option("--input-vars", type=Dictionary(), default="", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
 def cmd_analysis(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
@@ -124,14 +133,14 @@ def cmd_analysis(**kwargs):
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
     if kwargs['output_format'] == cnsts.JSON :
         level = logging.ERROR
-    logger_instance = SingletonLogger(debug=level, name="Orion")
-    logger_instance.info("🏹 Starting Orion in command-line mode")
+    logger = SingletonLogger(debug=level, name="Orion")
+    logger.info("🏹 Starting Orion in command-line mode")
     if len(kwargs["ack"]) > 1 :
         kwargs["ackMap"] = load_ack(kwargs["ack"])
-    kwargs["configMap"] = load_config(kwargs["config"])
+    kwargs["config"] = load_config(kwargs["config"], kwargs["input_vars"])
     output, regression_flag, regression_data = run(**kwargs)
-    if output is None:
-        logger_instance.error("Terminating test")
+    if not output:
+        logger.error("Terminating test")
         sys.exit(0)
     for test_name, result_table in output.items():
         if kwargs['output_format'] != cnsts.JSON :
@@ -166,8 +175,8 @@ def rundaemon(debug: bool, port: int):
     \b
     """
     level = logging.DEBUG if debug else logging.INFO
-    logger_instance = SingletonLogger(debug=level, name='Orion')
-    logger_instance.info("🏹 Starting Orion in Daemon mode")
+    logger = SingletonLogger(debug=level, name='Orion')
+    logger.info("🏹 Starting Orion in Daemon mode")
     uvicorn.run("orion.daemon:app", port=port)
 
 

@@ -1,7 +1,5 @@
 tests :
   - name : quay-load-test-stable-apis
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ quay_load_test_index }}
     metadata:
       platform: AWS
       clusterType: self-managed
