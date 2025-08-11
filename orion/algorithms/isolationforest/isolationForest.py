@@ -29,8 +29,8 @@ class IsolationForestWeightedMean(Algorithm):
         dataframe = self.dataframe.copy(deep=True)
         series = self.setup_series()
 
-        logger_instance = SingletonLogger.getLogger("Orion")
-        logger_instance.info("Starting analysis using Isolation Forest")
+        logger = SingletonLogger.get_logger("Orion")
+        logger.info("Starting analysis using Isolation Forest")
         metric_columns = self.metrics_config.keys()
         dataframe_with_metrics = dataframe[metric_columns]
         model = IsolationForest(contamination="auto", random_state=42)

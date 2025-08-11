@@ -1,7 +1,5 @@
 tests :
   - name : small-scale-cluster-density-v2-report
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS

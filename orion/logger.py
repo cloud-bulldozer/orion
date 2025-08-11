@@ -37,7 +37,7 @@ class SingletonLogger:
         return logger
 
     @classmethod
-    def getLogger(cls, name: str) -> logging.Logger:
+    def get_logger(cls, name: str) -> logging.Logger:
         """Return logger in instance
 
         Args:

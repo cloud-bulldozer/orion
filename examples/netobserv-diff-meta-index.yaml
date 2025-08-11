@@ -1,7 +1,5 @@
 tests :
   - name : {{ benchmark }} 
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       platform: AWS
       clusterType: self-managed

@@ -1,7 +1,5 @@
 tests :
   - name : ols-load-generator-{{ ols_test_workers }}w-5m
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       olsTestWorkers: {{ ols_test_workers }}
       olsTestDuration: "5m"
@@ -384,8 +382,6 @@ tests :
       threshold: 10
 
   - name : ols-load-generator-{{ ols_test_workers }}w-10m
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       olsTestWorkers: {{ ols_test_workers }}
       olsTestDuration: "10m"
@@ -766,8 +762,6 @@ tests :
       threshold: 10
 
   - name : ols-load-generator-{{ ols_test_workers }}w-20m
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       olsTestWorkers: {{ ols_test_workers }}
       olsTestDuration: "20m"

@@ -1,7 +1,5 @@
 tests :
   - name : cluster-density-v2-24nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -39,8 +37,6 @@ tests :
         agg_type: avg
 
   - name : cluster-density-v2-120nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -76,8 +72,6 @@ tests :
         agg_type: avg
 
   - name : cluster-density-v2-249nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -113,8 +107,6 @@ tests :
         agg_type: avg
 
   - name : cdv2-kube-apiserver-etcd-249nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -162,8 +154,6 @@ tests :
         agg_type: avg
 
   - name : cd-v2-controller-manager-249nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -206,8 +196,6 @@ tests :
         agg_type: avg
 
   - name : cd-v2-api-request-latency-249nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -251,8 +239,6 @@ tests :
         agg_type: avg
 
   - name : cd-v2-etcd-latency-249nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
