@@ -266,13 +266,15 @@ class Utils:
             match (Matcher): the fmatch instance
         """
         test = match.get_results("", uuids, {})
-        return {run[self.uuid_field]: run[self.version_field] for run in test}
+        # Fingerprint / metadata index code path
+        if self.version_field in test[0]:
+            return {run[self.uuid_field]: run[self.version_field] for run in test}
 
         # No Fingerprint / Metatdata index used. Benchmark result index path
         result = {}
-        for uuid in uuids :
+        for uuid in uuids:
             test = match.get_results("", [uuid], {})
-            result[uuid] = test[0]["metadata"]["ocpVersion"]
+            result[uuid] = test[0]["metadata"][self.version_field]
         return result
 
     def get_build_urls(self, uuids: List[str], match: Matcher):
