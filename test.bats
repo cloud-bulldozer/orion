@@ -218,40 +218,7 @@ setup() {
   VERSION=$before_version
 }
 
-@test "orion daemon small scale cluster density with anomaly detection" {
-  orion daemon --port 8080 &
-  DAEMON_PID=$!
-  echo "Orion daemon started with PID $DAEMON_PID"
-  run_cmd curl http://127.0.0.1:8080/daemon/anomaly?convert_tinyurl=True&test_name=small-scale-cluster-density
-  if [ ! -z "$DAEMON_PID" ]; then
-    kill $DAEMON_PID
-    echo "Orion daemon with PID $DAEMON_PID killed"
-  fi
-}
-
-@test "orion daemon small scale node density cni with changepoint detection" {
-  orion daemon --port 8080 &
-  DAEMON_PID=$!
-  echo "Orion daemon started with PID $DAEMON_PID"
-  run_cmd curl http://127.0.0.1:8080/daemon/changepoint?filter_changepoints=true&test_name=small-scale-node-density-cni
-  if [ ! -z "$DAEMON_PID" ]; then
-    kill $DAEMON_PID
-    echo "Orion daemon with PID $DAEMON_PID killed"
-  fi
-}
-
-@test "orion daemon trt payload cluster density with version parameter" {
-  orion daemon --port 8080 &
-  DAEMON_PID=$!
-  echo "Orion daemon started with PID $DAEMON_PID"
-  run_cmd curl http://127.0.0.1:8080/daemon/changepoint?version=$version&filter_changepoints=false&test_name=trt-payload-cluster-density
-  if [ ! -z "$DAEMON_PID" ]; then
-    kill $DAEMON_PID
-    echo "Orion daemon with PID $DAEMON_PID killed"
-  fi
-}
-
-@test "orion cmd with netobserv configs" {
+@test "orion cmd with netobserv configs " {
   curl -s https://raw.githubusercontent.com/openshift-eng/ocp-qe-perfscale-ci/refs/heads/netobserv-perf-tests/scripts/queries/netobserv-orion-node-density-heavy.yaml -w %{http_code} -o /tmp/netobserv-node-density-heavy-ospst.yaml
   run_cmd orion cmd --config "/tmp/netobserv-node-density-heavy-ospst.yaml" --lookback 5d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"workers": 25}'
 }

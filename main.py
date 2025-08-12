@@ -172,26 +172,9 @@ def cmd_analysis(**kwargs):
             print("-" * 50)
         sys.exit(2) ## regression detected
 
-
-
-@cli.command(name="daemon")
-@click.option("--debug", default=False, is_flag=True, help="log level")
-@click.option("--port", default=8080, help="set port")
-def rundaemon(debug: bool, port: int):
-    """
-    Orion runs on daemon mode
-    \b
-    """
-    level = logging.DEBUG if debug else logging.INFO
-    logger = SingletonLogger(debug=level, name='Orion')
-    logger.info("🏹 Starting Orion in Daemon mode")
-    uvicorn.run("orion.daemon:app", port=port)
-
-
 if __name__ == "__main__":
     if len(sys.argv) <= 1:
         cli.main(["--help"])
     else:
         cli.add_command(cmd_analysis)
-        cli.add_command(rundaemon)
         cli()

@@ -1,6 +1,6 @@
 # Orion - CLI tool to find regressions
 
-Orion stands as a powerful command-line tool/daemon designed for identifying regressions within perf-scale CPT runs, leveraging metadata provided during the process. The detection mechanism relies on [hunter](https://github.com/datastax-labs/hunter).
+Orion stands as a powerful command-line tool designed for identifying regressions within perf-scale CPT runs, leveraging metadata provided during the process. The detection mechanism relies on [hunter](https://github.com/datastax-labs/hunter).
 
 ## Quick Start
 
@@ -29,10 +29,7 @@ $ uv venv --python 3.11
 $ source .venv/bin/activate
 $ uv pip install -r requirements.txt
 $ uv pip install .
-``
-
-
-
+```
 
 ### Basic Usage
 
@@ -49,16 +46,11 @@ $ orion cmd --config examples/trt-external-payload-node-density.yaml --hunter-an
 etc.
 ```
 
-### Daemon mode
-$ orion daemon
-```
-
 ## Features
 
 - **Regression Detection**: Identify performance regressions using advanced statistical methods
 - **Multiple Algorithms**: Support for Hunter, CMR, and anomaly detection
 - **Flexible Configuration**: YAML-based configuration with extensive customization options
-- **Command-line & Daemon Modes**: Use as a CLI tool or run as a service
 - **Multiple Output Formats**: JSON, CSV, and JUnit XML output support
 
 ## Documentation
@@ -66,7 +58,6 @@ $ orion daemon
 - **[Installation Guide](docs/installation.md)** - Detailed setup and build instructions
 - **[Configuration](docs/configuration.md)** - Configuration format and metrics options
 - **[Usage Guide](docs/usage.md)** - Command-line options, examples, and configurations
-- **[Daemon Mode](docs/daemon-mode.md)** - API documentation and daemon setup
 
 ## Compatibility
 

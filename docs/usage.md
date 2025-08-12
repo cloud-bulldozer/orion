@@ -395,47 +395,6 @@ orion cmd \
   --output anomalies.json
 ```
 
-## Daemon Mode Examples
-
-### Basic Daemon Usage
-```bash
-# Start daemon
-orion daemon
-
-# Query for changepoints
-curl -X POST 'http://127.0.0.1:8080/daemon/changepoint?filter_changepoints=true&test_name=cpu-monitoring'
-```
-
-### Automated Monitoring Script
-```bash
-#!/bin/bash
-# automated-monitoring.sh
-
-DAEMON_URL="http://127.0.0.1:8080"
-TEST_NAME="full-stack-monitoring"
-OUTPUT_DIR="./monitoring-results"
-
-mkdir -p "$OUTPUT_DIR"
-
-while true; do
-    timestamp=$(date +%Y%m%d-%H%M%S)
-    output_file="$OUTPUT_DIR/results-$timestamp.json"
-    
-    # Query for changepoints
-    curl -s -X POST "$DAEMON_URL/daemon/changepoint?filter_changepoints=true&test_name=$TEST_NAME" \
-         > "$output_file"
-    
-    # Check if any changepoints were detected
-    if grep -q '"is_changepoint": true' "$output_file"; then
-        echo "$(date): Changepoint detected! Check $output_file"
-        # Add your notification logic here (email, Slack, etc.)
-    fi
-    
-    # Wait 1 hour before next check
-    sleep 3600
-done
-```
-
 ## Acknowledgment Examples
 
 ### Basic Acknowledgment File
