@@ -5,13 +5,13 @@ from itertools import groupby
 import json
 from typing import Any, Dict, List, Tuple, Union
 import pandas as pd
-from fmatch.matcher import Matcher
 from hunter.report import Report, ReportType
 from hunter.series import Series, Metric, ChangePoint, ChangePointGroup
-import pkg.constants as cnsts
+from orion.matcher import Matcher
+import orion.constants as cnsts
 
 
-from pkg.utils import json_to_junit
+from orion.utils import json_to_junit
 
 
 class Algorithm(ABC):

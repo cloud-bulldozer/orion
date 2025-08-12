@@ -22,3 +22,5 @@ jobs:
     uses: ./.github/workflows/tests.yaml
     secrets: inherit
 
+  unit-tests:
+    uses: ./.github/workflows/unit_tests.yaml
