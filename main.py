@@ -83,7 +83,6 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
     "--save-data-path", default="data.csv", help="Path to save the output file"
 )
 @click.option("--sippy-pr-search", is_flag=True, help="Search for PRs in sippy")
-@click.option("--sippy-pr-search-version", default="", help="Version to search for PRs in sippy")
 @click.option("--debug", default=False, is_flag=True, help="log level")
 @click.option(
     "--hunter-analyze",
@@ -149,8 +148,10 @@ def cmd_analysis(**kwargs):
             print("-" * 50)
             print(f"{'Previous Version:':<20} {regression['prev_ver']}")
             print(f"{'Bad Version:':<20} {regression['bad_ver']}")
-            print("PR diff:")
-            print(formatted_prs)
+            if kwargs["sippy_pr_search"]:
+                print("PR diff:")
+                print(formatted_prs)
+
             print("-" * 50)
         sys.exit(2) ## regression detected
 

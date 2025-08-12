@@ -43,6 +43,7 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
     """
     logger_instance = SingletonLogger.getLogger("Orion")
     config_map = kwargs["configMap"]
+    sippy_pr_search = kwargs["sippy_pr_search"]
     result_output = {}
     regression_flag = False
     for test in config_map["tests"]:
@@ -113,11 +114,19 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
                 else:
                     prev_ver = result["ocpVersion"]
                 if prev_ver is not None and bad_ver is not None:
-                    regression_data.append({
-                        "prev_ver": prev_ver,
-                        "bad_ver": bad_ver,
-                        "prs": Utils().sippy_pr_diff(prev_ver, bad_ver)
-                    })
+                    if sippy_pr_search:
+                        prs = Utils().sippy_pr_diff(prev_ver, bad_ver)
+                        if prs:
+                            regression_data.append({
+                                "prev_ver": prev_ver,
+                                "bad_ver": bad_ver,
+                                "prs": prs})
+                    else:
+                        regression_data.append({
+                            "prev_ver": prev_ver,
+                            "bad_ver": bad_ver,
+                            "prs": []
+                        })
                     prev_ver = None
                     bad_ver = None
 
