@@ -119,8 +119,16 @@ setup() {
   run_cmd orion cmd --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze
 }
 
-@test "orion cmd chaos pod recovery " {
-  run_cmd orion cmd --config "examples/chaos_results.yaml" --lookback 10d
+@test "orion cmd chaos tests " {
+  run_cmd orion cmd --config "examples/chaos_tests.yaml" --lookback 10d
+}
+
+@test "orion cmd node scenarios " {
+  run_cmd orion cmd --config "examples/node_scenarios.yaml" --lookback 10d
+}
+
+@test "orion cmd pod disruption scenarios " {
+  run_cmd orion cmd --config "examples/pod_disruption_scenarios.yaml" --lookback 10d
 }
 
 @test "orion cmd ols configuration test " {

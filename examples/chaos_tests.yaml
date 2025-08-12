@@ -1,15 +1,17 @@
-# Pod Disruption Scenarios Configuration
-# Requires environment variables for dynamic configuration
+# Chaos Tests Example Configuration
+# 
+# This configuration uses environment variables for all metadata fields.
+# Set the following environment variables before running Orion:
 # Example usage:
 # export version=4.19
-# export scenario_type=pod_disruption_scenarios
+# export scenario_type=time_scenarios
 # export cloud_infrastructure=AWS
 # export cloud_type=self-managed
 # export total_node_count=9
 # export node_instance_type="*xlarge*"
 # export network_plugins=OVNKubernetes
-# export scenario_file="*pod_disruption_scenario.yaml"
-# orion cmd --config examples/pod_disruption_scenarios.yaml --lookback 10d
+# export scenario_file="*time_scenario.yaml"
+# orion cmd --config examples/chaos_tests_example.yaml --hunter-analyze
 
 tests:
   - name: krkn-hub-*
@@ -37,14 +39,6 @@ tests:
           value: duration
           agg_type: sum
 
-      - name: affected_pods_recovery
-        metricName.keyword: affected_pods_recovery
-        metric_of_interest: total_recovery_time
-        not:
-          type: unrecovered
-        agg:
-          value: total_recovery_time
-          agg_type: avg
 
       # ETCD Performance metrics
       - name: etcd_99th_backend_commit_duration
