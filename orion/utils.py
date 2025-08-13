@@ -15,12 +15,11 @@ import xml.dom.minidom
 from datetime import datetime, timedelta, timezone
 from functools import reduce
 from typing import List, Any, Dict, Tuple
-from tabulate import tabulate
 import pandas as pd
 import pyshorteners
 import requests
-import urllib.parse
-import json
+from tabulate import tabulate
+
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
 

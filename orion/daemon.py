@@ -53,7 +53,7 @@ async def daemon_changepoint( # pylint: disable = R0913
     filter_changepoints = (
         True if filter_changepoints == "true" else False  # pylint: disable = R1719
     )
-    result, _, _ = runTest.run(**option_arguments)
+    result, _, _ = run_test.run(**option_arguments)
     result = {k:json.loads(v) for k,v in result.items()}
     if result is None:
         return {"Error":"No UUID with given metadata"}
@@ -130,7 +130,7 @@ async def daemon_anomaly( # pylint: disable = R0913, R0914
     filter_points = (
         True if filter_points == "true" else False  # pylint: disable = R1719
     )
-    result, _, _ = runTest.run(**option_arguments)
+    result, _, _ = run_test.run(**option_arguments)
     result = {k:json.loads(v) for k,v in result.items()}
     if result is None:
         return {"Error":"No UUID with given metadata"}
