@@ -5,17 +5,21 @@ module for all utility functions orion uses
 """
 # pylint: disable = import-error
 
-from functools import reduce
+import json
 import os
 import re
 import sys
+import urllib.parse
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 from datetime import datetime, timedelta, timezone
+from functools import reduce
 from typing import List, Any, Dict, Tuple
-from tabulate import tabulate
 import pandas as pd
 import pyshorteners
+import requests
+from tabulate import tabulate
+
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
 
@@ -338,6 +342,7 @@ class Utils:
         uuids = [run[self.uuid_field] for run in runs]
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
         versions = self.get_version(uuids, match)
+        prs = {uuid : self.sippy_pr_search(version) for uuid, version in versions.items()}
         # get uuids if there is a baseline
         if options["baseline"] not in ("", None):
             uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
@@ -388,6 +393,7 @@ class Utils:
         merged_df["ocpVersion"] = merged_df[self.uuid_field].apply(
             lambda uuid: versions[uuid]
         )
+        merged_df["prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
 
         shortener = pyshorteners.Shortener(timeout=10)
         merged_df["buildUrl"] = merged_df[self.uuid_field].apply(
@@ -467,6 +473,67 @@ class Utils:
         no_blank_meta = {k: v for k, v in metadata.items() if v}
         logger_instance.debug("No blank metadata dict: " + str(no_blank_meta))
         return no_blank_meta
+
+    def sippy_pr_diff(self, base_version: str, new_version: str) -> List[str]:
+        """Get diff between two versions in sippy
+        Args:
+            base_version (str): base version
+            new_version (str): diff version
+        Returns:
+            list: list of PRs
+        """
+        logger_instance = SingletonLogger.getLogger("Orion")
+        base_url = "https://sippy.dptools.openshift.org/api/payloads/"
+        filter_url = f"diff?fromPayload={base_version}&toPayload={new_version}"
+        url = base_url + filter_url
+        response = requests.get(url, timeout=30)
+        if response.status_code != 200:
+            logger_instance.error("Failed to get diff between %s and %s in sippy", base_version, new_version)
+            return []
+        return self.process_sippy_pr_list(response.json())
+
+    def process_sippy_pr_list(self, pr_list: List[Dict[Any, Any]]) -> List[str]:
+        """Process the list of PRs
+        Args:
+            pr_list (List[Dict[Any, Any]]): list of PRs
+        Returns:
+            List[str]: list of PR URLs
+        """
+        prs = []
+        for pr in pr_list:
+            prs.append(pr['url'])
+        return prs
+
+    def sippy_pr_search(self, version: str) -> List[str]:
+        """Search for PRs in sippy
+
+        Args:
+            version (str): version to search for
+        Returns:
+            List[str]: list of PRs
+        """
+        logger_instance = SingletonLogger.getLogger("Orion")
+        base_url = "https://sippy.dptools.openshift.org/api/releases/pull_requests"
+        filter_dict = {
+            "items": [
+                {
+                    "columnField": "release_tag",
+                    "operatorValue": "equals",
+                    "value": version
+                }
+            ]
+        }
+        params = {
+            "filter": json.dumps(filter_dict),
+            "sortField": "pull_request_id",
+            "sort": "asc"
+        }
+        url = f"{base_url}?{urllib.parse.urlencode(params)}"
+        response = requests.get(url, timeout=30)
+        if response.status_code != 200:
+            logger_instance.error("Failed to search for PRs in sippy for version %s", version)
+            return []
+        return self.process_sippy_pr_list(response.json())
 
 # pylint: disable=too-many-locals
 def json_to_junit(
