@@ -3,10 +3,8 @@
 Module file for config reading and loading
 """
 
-
-import os
 import sys
-from typing import Any, Dict, Set
+from typing import Any, Dict
 
 import jinja2
 import yaml

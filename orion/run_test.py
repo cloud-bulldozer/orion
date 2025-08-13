@@ -29,16 +29,17 @@ def get_algorithm_type(kwargs):
         algorithm_name = None
     return algorithm_name
 
+# pylint: disable=too-many-locals
 def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
     """run method to start the tests
 
     Args:
       **kwargs: keyword arguments
-        config (_type_): file path to config file
+        config (str): file path to config file
         es_server (str): elasticsearch endpoint
-        output_path (_type_): output path to save the data
-        hunter_analyze (_type_): changepoint detection through hunter. defaults to True
-        output_format (_type_): output to be table or json
+        output_path (str): output path to save the data
+        hunter_analyze (bool): changepoint detection through hunter. defaults to True
+        output_format (str): output to be table or json
         lookback (str): lookback in days
 
     Returns:
