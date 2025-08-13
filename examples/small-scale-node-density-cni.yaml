@@ -3,16 +3,16 @@ tests :
     index: {{ es_metadata_index }}
     benchmarkIndex: {{ es_benchmark_index }}
     metadata:
-      platform: AWS
-      masterNodesType: m6a.xlarge
+      platform.keyword: AWS
+      masterNodesType.keyword: m6a.xlarge
       masterNodesCount: 3
-      workerNodesType: m6a.xlarge
+      workerNodesType.keyword: m6a.xlarge
       workerNodesCount: 6
       infraNodesCount: 3
       benchmark.keyword: node-density-cni
       ocpVersion: {{ version }}
-      networkType: OVNKubernetes
-      infraNodesType: r5.2xlarge
+      networkType.keyword: OVNKubernetes
+      infraNodesType.keyword: r5.xlarge
       not:
         stream: okd
     # encrypted: true
