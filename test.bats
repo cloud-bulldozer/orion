@@ -15,7 +15,7 @@ run_cmd(){
     return 0
   elif [ $EXIT_CODE -eq 3 ]; then
     echo "Exit code 3 encountered, not enough data"
-    return 0
+    return 1
   else
     return $EXIT_CODE
   fi
@@ -46,7 +46,8 @@ setup() {
           { "wildcard": { "releaseStream.keyword": "*nightly*" } },
           { "wildcard": { "releaseStream.keyword": "*rc*" } },
           { "wildcard": { "releaseStream.keyword": "*ci*" } },
-          { "wildcard": { "releaseStream.keyword": "*ec*" } }
+          { "wildcard": { "releaseStream.keyword": "*ec*" } },
+          { "wildcard": { "releaseStream.keyword": "*okd*" } }
         ]
       }
     },
@@ -60,6 +61,70 @@ setup() {
     }
   }' | jq -r '.aggregations.distinct_versions.buckets[0].key')
   export version=$(echo "$LATEST_VERSION" | cut -d. -f1,2)
+
+  CHAOS_LATEST_VERSION=$(curl -s -X POST "$ES_SERVER/krkn-telemetry*/_search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "size": 0,
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "range": {
+              "timestamp": {
+                "gte": "now-1M/M",
+                "lt": "now/M"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "aggs": {
+      "distinct_versions": {
+        "terms": {
+          "field": "cluster_version.keyword",
+          "order": { "_key": "desc" }
+        }
+      }
+    }
+  }' | jq -r '.aggregations.distinct_versions.buckets[0].key')
+  export chaos_version=$(echo "$CHAOS_LATEST_VERSION" | cut -d'.' -f1,2)
+
+  OLS_LATEST_VERSION=$(curl -s -X POST "$ES_SERVER/perf_scale_ci*/_search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "size": 0,
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "range": {
+              "timestamp": {
+                "gte": "now-1M/M",
+                "lt": "now/M"
+              }
+            }
+          },
+          {
+          "match_phrase": {
+            "benchmark.keyword": "ols-load-generator"
+          }
+        }
+        ]
+      }
+    },
+    "aggs": {
+      "distinct_versions": {
+        "terms": {
+          "field": "ocpVersion.keyword",
+          "order": { "_key": "desc" }
+        }
+      }
+    }
+  }' | jq -r '.aggregations.distinct_versions.buckets[0].key')
+  export ols_version=$(echo "$OLS_LATEST_VERSION" | cut -d'.' -f1,2)
+
 }
 
 @test "orion cmd label small scale cluster density with hunter-analyze " {
@@ -75,15 +140,15 @@ setup() {
 }
 
 @test "orion cmd readout control plane cdv2 with text output " {
-  run_cmd orion cmd --config "examples/readout-control-plane-cdv2.yaml" --hunter-analyze --output-format text --save-output-path=output.txt
+  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --hunter-analyze --output-format text --save-output-path=output.txt
 }
 
-@test "orion cmd readout control plane node-density with json output " {
-  run_cmd orion cmd --config "examples/readout-control-plane-node-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json
+@test "orion cmd label small control plane cdv2 with json output " {
+  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json
 }
 
 @test "orion cmd readout control plane node-density with json output and match all iterations " {
-  run_cmd orion cmd --config "examples/readout-control-plane-node-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json --node-count True
+  run_cmd orion cmd --config "examples/small-rosa-control-plane-node-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json --node-count True
 }
 
 @test "orion cmd readout netperf tcp with junit output " {
@@ -120,20 +185,33 @@ setup() {
 }
 
 @test "orion cmd chaos tests " {
-  version="4.19" scenario_type="pvc_scenarios" cloud_infrastructure="aws" cloud_type="self-managed" total_node_count="9" node_instance_type="m6a.xlarge" network_plugins="OVNKubernetes" scenario_file="*pvc_scenario.yaml" run_cmd orion cmd --config "examples/chaos_tests.yaml" --lookback 10d
+  before_version=$version
+  version=$chaos_version
+  scenario_type="pvc_scenarios" cloud_infrastructure="aws" cloud_type="self-managed" total_node_count="9" node_instance_type="m6a.xlarge" network_plugins="OVNKubernetes" scenario_file="*pvc_scenario.yaml" run_cmd orion cmd --config "examples/chaos_tests.yaml" --lookback 10d
+  version=$before_version
 }
 
 @test "orion cmd node scenarios " {
-  version="4.19" scenario_type="node_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*node_scenario.yaml" run_cmd orion cmd --config "examples/node_scenarios.yaml" --lookback 10d
+  before_version=$version
+  version=$chaos_version
+  scenario_type="node_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*node_scenario.yaml" run_cmd orion cmd --config "examples/node_scenarios.yaml" --lookback 10d
+  version=$before_version
 }
 
 @test "orion cmd pod disruption scenarios " {
-  version="4.19" scenario_type="pod_disruption_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*pod_disruption_scenario.yaml" run_cmd orion cmd --config "examples/pod_disruption_scenarios.yaml" --lookback 10d
+  before_version=$version
+  version=$chaos_version
+  scenario_type="pod_disruption_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*pod_scenario.yaml" run_cmd orion cmd --config "examples/pod_disruption_scenarios.yaml" --lookback 10d
+  version=$before_version
 }
 
 @test "orion cmd ols configuration test " {
+
+  before_version=$version
+  version=$ols_version
   export ols_test_workers=10
   es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion cmd --config "examples/ols-load-generator.yaml" --hunter-analyze --ack ack/4.15_ols-load-generator-10w_ack.yaml
+  version=$before_version
 }
 
 @test "orion daemon small scale cluster density with anomaly detection " {
