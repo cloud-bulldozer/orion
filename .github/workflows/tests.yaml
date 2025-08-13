@@ -43,3 +43,11 @@ jobs:
       env:
         TERM: linux      
         QE_ES_SERVER: ${{ secrets.QE_ES_SERVER }}
+    
+    - name: Upload coverage data
+      if: ${{ success() || failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: output
+        path: "*.csv"
+        if-no-files-found: error
