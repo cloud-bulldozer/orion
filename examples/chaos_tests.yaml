@@ -11,7 +11,7 @@
 # export node_instance_type="*xlarge*"
 # export network_plugins=OVNKubernetes
 # export scenario_file="*time_scenario.yaml"
-# orion cmd --config examples/chaos_tests_example.yaml --hunter-analyze
+# orion cmd --config examples/chaos_tests.yaml --hunter-analyze
 
 tests:
   - name: krkn-hub-*

@@ -583,7 +583,7 @@ def json_to_junit(
     return pretty_xml_as_string
 
 
-def generate_tabular_output(data: list, metric_name: str) -> str:
+def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uuid") -> str:
     """converts json to tabular format
 
     Args:
@@ -594,7 +594,7 @@ def generate_tabular_output(data: list, metric_name: str) -> str:
     """
     records = []
     create_record = lambda record: {  # pylint: disable = C3001
-        "uuid": record["uuid"],
+        "uuid": record[uuid_field],
         "timestamp": datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         ),

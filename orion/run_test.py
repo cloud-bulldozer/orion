@@ -111,9 +111,9 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
             bad_ver = None
             for result in json.loads(result_data):
                 if result["is_changepoint"]:
-                    bad_ver = result["ocpVersion"]
+                    bad_ver = result[version_field]
                 else:
-                    prev_ver = result["ocpVersion"]
+                    prev_ver = result[version_field]
                 if prev_ver is not None and bad_ver is not None:
                     if sippy_pr_search:
                         prs = Utils().sippy_pr_diff(prev_ver, bad_ver)
