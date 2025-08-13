@@ -22,8 +22,7 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 1
-        ref: ${{ github.event.pull_request.head.sha }}
+        fetch-depth: 0
         persist-credentials: false
 
     - name: Set up Python ${{ matrix.python-version }}
