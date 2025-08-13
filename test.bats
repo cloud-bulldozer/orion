@@ -15,7 +15,7 @@ run_cmd(){
     return 0
   elif [ $EXIT_CODE -eq 3 ]; then
     echo "Exit code 3 encountered, not enough data"
-    return 0
+    return 1
   else
     return $EXIT_CODE
   fi
