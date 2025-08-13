@@ -119,8 +119,16 @@ setup() {
   run_cmd orion cmd --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze
 }
 
-@test "orion cmd chaos pod recovery " {
-  run_cmd orion cmd --config "examples/chaos_results.yaml" --lookback 10d
+@test "orion cmd chaos tests " {
+  version="4.19" scenario_type="pvc_scenarios" cloud_infrastructure="aws" cloud_type="self-managed" total_node_count="9" node_instance_type="m6a.xlarge" network_plugins="OVNKubernetes" scenario_file="*pvc_scenario.yaml" run_cmd orion cmd --config "examples/chaos_tests.yaml" --lookback 10d
+}
+
+@test "orion cmd node scenarios " {
+  version="4.19" scenario_type="node_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*node_scenario.yaml" run_cmd orion cmd --config "examples/node_scenarios.yaml" --lookback 10d
+}
+
+@test "orion cmd pod disruption scenarios " {
+  version="4.19" scenario_type="pod_disruption_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*pod_disruption_scenario.yaml" run_cmd orion cmd --config "examples/pod_disruption_scenarios.yaml" --lookback 10d
 }
 
 @test "orion cmd ols configuration test " {

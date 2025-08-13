@@ -1,0 +1,433 @@
+# Chaos Tests Example Configuration
+# 
+# This configuration uses environment variables for all metadata fields.
+# Set the following environment variables before running Orion:
+# Example usage:
+# export version=4.19
+# export scenario_type=time_scenarios
+# export cloud_infrastructure=AWS
+# export cloud_type=self-managed
+# export total_node_count=9
+# export node_instance_type="*xlarge*"
+# export network_plugins=OVNKubernetes
+# export scenario_file="*time_scenario.yaml"
+# orion cmd --config examples/chaos_tests.yaml --hunter-analyze
+
+tests:
+  - name: krkn-hub-*
+    index: krkn-telemetry*
+    benchmarkIndex: krkn-metrics*
+    version: cluster_version
+    uuid_field: run_uuid
+    metadata:
+      cluster_version: "{{ version }}"
+      scenarios.scenario_type: "{{ scenario_type }}"
+      cloud_infrastructure: "{{ cloud_infrastructure }}"
+      cloud_type: "{{ cloud_type }}"
+      total_node_count: "{{ total_node_count }}"
+      node_summary_infos.instance_type: "{{ node_instance_type }}"
+      network_plugins: "{{ network_plugins }}"
+      scenarios.scenario: "{{ scenario_file }}"
+    metrics:
+      # Recovery & Health metrics
+      - name: health_check_recovery
+        metricName.keyword: health_check_recovery
+        metric_of_interest: duration
+        not:
+          status_code: 200
+        agg:
+          value: duration
+          agg_type: sum
+
+
+      # ETCD Performance metrics
+      - name: etcd_99th_backend_commit_duration
+        metricName.keyword: 99thEtcdDiskBackendCommit
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: avg
+
+      - name: etcd_99th_wal_fsync_duration
+        metricName.keyword: 99thEtcdDiskWalFsync
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: avg
+
+      - name: etcd_99th_round_trip_time
+        metricName.keyword: 99thEtcdRoundTripTime
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: avg
+
+      # API Server metrics
+      - name: api_inflight_requests
+        metricName.keyword: APIInflightRequests
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: max
+
+      # CPU Usage metrics
+      - name: cpu_cluster_usage_ratio
+        metricName.keyword: cpu-cluster-usage-ratio
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_crio
+        metricName.keyword: cpu-crio
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_etcd
+        metricName.keyword: cpu-etcd
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_infra
+        metricName.keyword: cpu-infra
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_kube_apiserver
+        metricName.keyword: cpu-kube-apiserver
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_kube_controller_manager
+        metricName.keyword: cpu-kube-controller-manager
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_kubelet
+        metricName.keyword: cpu-kubelet
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_masters
+        metricName.keyword: cpu-masters
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_multus
+        metricName.keyword: cpu-multus
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_openshift_apiserver
+        metricName.keyword: cpu-openshift-apiserver
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_openshift_controller_manager
+        metricName.keyword: cpu-openshift-controller-manager
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_ovn_control_plane
+        metricName.keyword: cpu-ovn-control-plane
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_ovnkube_node
+        metricName.keyword: cpu-ovnkube-node
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_prometheus
+        metricName.keyword: cpu-prometheus
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_router
+        metricName.keyword: cpu-router
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      - name: cpu_workers
+        metricName.keyword: cpu-workers
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+
+      # Max CPU metrics
+      - name: max_cpu_crio
+        metricName.keyword: max-cpu-crio
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+
+      - name: max_cpu_infra
+        metricName.keyword: max-cpu-infra
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+
+      - name: max_cpu_kube_controller_manager
+        metricName.keyword: max-cpu-kube-controller-manager
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+
+      - name: max_cpu_kubelet
+        metricName.keyword: max-cpu-kubelet
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+
+      - name: max_cpu_prometheus
+        metricName.keyword: max-cpu-prometheus
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+
+      - name: max_cpu_workers
+        metricName.keyword: max-cpu-workers
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: max
+
+      # Memory Usage metrics
+      - name: memory_cluster_usage_ratio
+        metricName.keyword: memory-cluster-usage-ratio
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_crio
+        metricName.keyword: memory-crio
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_etcd
+        metricName.keyword: memory-etcd
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_infra
+        metricName.keyword: memory-infra
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_kube_apiserver
+        metricName.keyword: memory-kube-apiserver
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_kube_controller_manager
+        metricName.keyword: memory-kube-controller-manager
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_kubelet
+        metricName.keyword: memory-kubelet
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_masters
+        metricName.keyword: memory-masters
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_multus
+        metricName.keyword: memory-multus
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_openshift_apiserver
+        metricName.keyword: memory-openshift-apiserver
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_openshift_controller_manager
+        metricName.keyword: memory-openshift-controller-manager
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_ovn_control_plane
+        metricName.keyword: memory-ovn-control-plane
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_ovnkube_node
+        metricName.keyword: memory-ovnkube-node
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_prometheus
+        metricName.keyword: memory-prometheus
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_router
+        metricName.keyword: memory-router
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_sum_workers
+        metricName.keyword: memory-sum-workers
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      - name: memory_workers
+        metricName.keyword: memory-workers
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+
+      # Max Memory metrics
+      - name: max_memory_crio
+        metricName.keyword: max-memory-crio
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      - name: max_memory_infra
+        metricName.keyword: max-memory-infra
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      - name: max_memory_kube_controller_manager
+        metricName.keyword: max-memory-kube-controller-manager
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      - name: max_memory_kubelet
+        metricName.keyword: max-memory-kubelet
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      - name: max_memory_masters
+        metricName.keyword: max-memory-masters
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      - name: max_memory_prometheus
+        metricName.keyword: max-memory-prometheus
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      - name: max_memory_sum_infra
+        metricName.keyword: max-memory-sum-infra
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      - name: max_memory_sum_kubelet
+        metricName.keyword: max-memory-sum-kubelet
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      - name: max_memory_workers
+        metricName.keyword: max-memory-workers
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: max
+
+      # Node CPU Seconds metrics
+      - name: node_cpu_seconds_infra
+        metricName.keyword: nodeCPUSeconds-Infra
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: avg
+
+      - name: node_cpu_seconds_masters
+        metricName.keyword: nodeCPUSeconds-Masters
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: avg
+
+      - name: node_cpu_seconds_workers
+        metricName.keyword: nodeCPUSeconds-Workers
+        metric_of_interest: value
+        agg:
+          value: value
+          agg_type: avg
