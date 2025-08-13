@@ -266,6 +266,9 @@ class Utils:
             match (Matcher): the fmatch instance
         """
         test = match.get_results("", uuids, {})
+        if len(test) == 0:
+            return {}
+
         # Fingerprint / metadata index code path
         if self.version_field in test[0]:
             return {run[self.uuid_field]: run[self.version_field] for run in test}
