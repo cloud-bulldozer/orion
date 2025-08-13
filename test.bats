@@ -124,7 +124,7 @@ setup() {
 }
 
 @test "orion cmd node scenarios " {
-  version="4.19" scenario_type="time_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*time_scenario.yaml" run_cmd orion cmd --config "examples/node_scenarios.yaml" --lookback 10d
+  version="4.19" scenario_type="node_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*node_scenario.yaml" run_cmd orion cmd --config "examples/node_scenarios.yaml" --lookback 10d
 }
 
 @test "orion cmd pod disruption scenarios " {
