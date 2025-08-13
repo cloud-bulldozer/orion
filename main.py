@@ -8,7 +8,6 @@ import sys
 import warnings
 from typing import Any
 import click
-import uvicorn
 from orion.logger import SingletonLogger
 from orion.run_test import run
 from orion import constants as cnsts
