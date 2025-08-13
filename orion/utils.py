@@ -18,6 +18,7 @@ from typing import List, Any, Dict, Tuple
 from tabulate import tabulate
 import pandas as pd
 import pyshorteners
+import requests
 import urllib.parse
 import json
 from orion.matcher import Matcher
