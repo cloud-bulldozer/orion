@@ -7,9 +7,9 @@ import logging
 import sys
 import warnings
 from typing import Any
+import json
 import click
 import uvicorn
-import json
 from orion.logger import SingletonLogger
 from orion.run_test import run
 from orion import constants as cnsts
@@ -21,8 +21,13 @@ warnings.filterwarnings(
 )
 
 class Dictionary(click.ParamType):
+    """Class to define a custom click type for dictionaries
+
+    Args:
+        click (ParamType):
+    """
     name = "dictionary"
-    def convert(self, value, param, ctx):
+    def convert(self, value: Any, param: Any, ctx: Any) -> dict:
         return json.loads(value)
 
 class MutuallyExclusiveOption(click.Option):
@@ -125,7 +130,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option("--es-server", type=str, default="http://localhost:9200", help="Elasticsearch endpoint where test data is stored")
 @click.option("--benchmark-index", type=str, default="benchmark", help="Index where test data is stored")
 @click.option("--metadata-index", type=str, default="benchmark", help="Index where metadata is stored")
-@click.option("--input-vars", type=Dictionary(), default="", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
+@click.option("--input-vars", type=Dictionary(), default="{}", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
 def cmd_analysis(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
