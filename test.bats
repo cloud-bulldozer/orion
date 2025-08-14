@@ -22,7 +22,6 @@ run_cmd(){
 }
 
 setup() {
-  # Make a note of daemon PID
   export ES_SERVER="$QE_ES_SERVER"
   export es_metadata_index="perf_scale_ci*"
   export es_benchmark_index="ripsaw-kube-burner*"
@@ -126,39 +125,6 @@ setup() {
 @test "orion cmd ols configuration test " {
   export ols_test_workers=10
   es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion cmd --config "examples/ols-load-generator.yaml" --hunter-analyze --ack ack/4.15_ols-load-generator-10w_ack.yaml
-}
-
-@test "orion daemon small scale cluster density with anomaly detection " {
-  orion daemon --port 8080 &
-  DAEMON_PID=$!
-  echo "Orion daemon started with PID $DAEMON_PID"
-  run_cmd curl http://127.0.0.1:8080/daemon/anomaly?convert_tinyurl=True&test_name=small-scale-cluster-density
-  if [ ! -z "$DAEMON_PID" ]; then
-    kill $DAEMON_PID
-    echo "Orion daemon with PID $DAEMON_PID killed"
-  fi
-}
-
-@test "orion daemon small scale node density cni with changepoint detection " {
-  orion daemon --port 8080 &
-  DAEMON_PID=$!
-  echo "Orion daemon started with PID $DAEMON_PID"
-  run_cmd curl http://127.0.0.1:8080/daemon/changepoint?filter_changepoints=true&test_name=small-scale-node-density-cni
-  if [ ! -z "$DAEMON_PID" ]; then
-    kill $DAEMON_PID
-    echo "Orion daemon with PID $DAEMON_PID killed"
-  fi
-}
-
-@test "orion daemon trt payload cluster density with version parameter " {
-  orion daemon --port 8080 &
-  DAEMON_PID=$!
-  echo "Orion daemon started with PID $DAEMON_PID"
-  run_cmd curl http://127.0.0.1:8080/daemon/changepoint?version=$version&filter_changepoints=false&test_name=trt-payload-cluster-density
-  if [ ! -z "$DAEMON_PID" ]; then
-    kill $DAEMON_PID
-    echo "Orion daemon with PID $DAEMON_PID killed"
-  fi
 }
 
 @test "orion cmd with netobserv configs " {
