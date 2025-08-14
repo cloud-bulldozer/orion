@@ -42,6 +42,49 @@ Specify a custom configuration file:
 orion cmd --config /path/to/config.yaml --hunter-analyze
 ```
 
+The configuration file can be a Jinja2 template, environment variables and variables passed through the `--input-vars` flag are accessible in the Jinja2 template: `{{ random_var }}`. For example
+
+Considering the following config file:
+
+```yaml
+tests:
+  - name: metal-perfscale-cpt-node-density
+    metadata:
+      platform: BareMetal
+      clusterType: self-managed
+      masterNodesType.keyword: ""
+      masterNodesCount: 3
+      workerNodesType.keyword: ""
+      workerNodesCount: 4
+      benchmark.keyword: node-density
+      ocpVersion: {{ version }}
+      networkType: OVNKubernetes
+      not:
+        stream: okd
+    metrics:
+    - name: podReadyLatency
+      metricName: podLatencyQuantilesMeasurement
+      quantileName: Ready
+      metric_of_interest: P99
+      not:
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: PodLatency]"
+      threshold: 10
+```
+
+The variable `version` can be passed through the `--input-vars` flag as follows:
+
+```shell
+$ orion cmd --config /path/to/config.yaml --input-vars='{"version": "4.20"}' --hunter-analyze
+# Or using env vars
+$ VERSION=4.20 orion cmd --config /path/to/config.yaml --hunter-analyze
+```
+
+> **info**
+>> Variables pased from the `--input-vars` take precedence over environment variables
+>> Environment variable name are lowercased
+
 ### Output Options
 Control where and how results are saved:
 
