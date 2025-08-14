@@ -4,6 +4,7 @@ Module file for config reading and loading
 """
 
 import sys
+import os
 from typing import Any, Dict
 
 import jinja2
@@ -22,6 +23,8 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
         dict: dictionary of the config file
     """
     logger = SingletonLogger.get_logger("Orion")
+    env_vars = {k.lower(): v for k, v in os.environ.items()}
+    env_vars.update(input_vars)
     try:
         with open(config_path, "r", encoding="utf-8") as template_file:
             template_content = template_file.read()
@@ -34,7 +37,7 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
         sys.exit(1)
     template = jinja2.Template(template_content, undefined=jinja2.StrictUndefined)
     try:
-        rendered_config_yaml = template.render(input_vars)
+        rendered_config_yaml = template.render(env_vars)
     except jinja2.exceptions.UndefinedError as e:
         logger.critical("Jinja rendering error: %s, define it through the input-variables flag", e)
         sys.exit(1)

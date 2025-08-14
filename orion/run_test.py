@@ -47,7 +47,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
             - Test output (dict): Test JSON output
             - regression flag (bool): Test result
     """
-    logger_instance = SingletonLogger.getLogger("Orion")
+    logger = SingletonLogger.get_logger("Orion")
     config = kwargs["config"]
     sippy_pr_search = kwargs["sippy_pr_search"]
     result_output = {}
