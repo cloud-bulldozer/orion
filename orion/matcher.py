@@ -104,7 +104,7 @@ class Matcher:
         version = str(meta[self.version_field])[:4]
 
         for field, value in meta.items():
-            if field in ["ocpVersion", "ocpMajorVersion"]:
+            if field in [self.version_field, "ocpMajorVersion"]:
                 continue
             if field != "not":
                 must_clause.append(Q("match", **{field: str(value)}))
@@ -147,7 +147,7 @@ class Matcher:
                     {
                         self.uuid_field: hit.to_dict()["_source"][self.uuid_field],
                         "buildUrl": hit.to_dict()["_source"]["buildUrl"],
-                        "ocpVersion": hit.to_dict()["_source"]["ocpVersion"],
+                        self.version_field: hit.to_dict()["_source"][self.version_field],
                     }
                 )
             else:
@@ -155,7 +155,7 @@ class Matcher:
                     {
                         self.uuid_field: hit.to_dict()["_source"][self.uuid_field],
                         "buildUrl": "http://bogus-url",
-                        "ocpVersion": hit.to_dict()["_source"]["ocpVersion"],
+                        self.version_field: hit.to_dict()["_source"][self.version_field],
                     }
                 )
         return uuids_docs
