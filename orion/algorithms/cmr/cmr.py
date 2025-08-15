@@ -25,8 +25,8 @@ class CMR(Algorithm):
             series: data series that contains attributes and full dataframe
             change_points_by_metric: list of ChangePoints
         """
-        logger_instance = SingletonLogger.getLogger("Orion")
-        logger_instance.info("Starting analysis using CMR")
+        logger = SingletonLogger.get_logger("Orion")
+        logger.info("Starting analysis using CMR")
         if not (pd.api.types.is_numeric_dtype(self.dataframe["timestamp"]) and self.dataframe["timestamp"].astype(int).min() > 1e9):
             self.dataframe["timestamp"] = pd.to_datetime(self.dataframe["timestamp"])
             self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int) // 10**9

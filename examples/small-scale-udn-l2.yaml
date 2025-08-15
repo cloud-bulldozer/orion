@@ -1,8 +1,6 @@
 # This is a template file
 tests :
   - name : aws-small-scale-udn-density-l2-pods
-    index: {{ es_metadata_index }} 
-    benchmarkIndex: {{ es_benchmark_index }} 
     metadata:
       platform: AWS
       masterNodesType: m6a.xlarge
