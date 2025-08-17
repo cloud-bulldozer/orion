@@ -6,14 +6,11 @@ import logging
 from datetime import datetime
 from typing import List, Dict, Any
 
-# pylint: disable=import-error
-from elasticsearch import Elasticsearch
-
 
 # pylint: disable=import-error
 import pandas as pd
-from elasticsearch_dsl import Search, Q
-from elasticsearch_dsl.response import Response
+from opensearchpy import OpenSearch
+from opensearch_dsl import Search, Q
 from orion.logger import SingletonLogger
 
 
@@ -43,7 +40,12 @@ class Matcher:
         self.index = index
         self.search_size = 10000
         self.logger = SingletonLogger(debug=level, name="Matcher")
-        self.es = Elasticsearch([es_url], timeout=30, verify_certs=verify_certs)
+        self.es = OpenSearch(es_url,
+                             timeout=30,
+                             verify_certs=verify_certs,
+                             http_compress=True,
+                             max_retries=3,
+                             retry_on_timeout=True)
         self.data = None
         self.version_field = version_field
         self.uuid_field = uuid_field
@@ -66,15 +68,35 @@ class Matcher:
             result = dict(hits[0].to_dict()["_source"])
         return result
 
-    def query_index(self, search: Search) -> Response:
-        """generic query function
+    def query_index(self, search: Search, return_all: bool = False):
+        """Query index using search_after
 
         Args:
-            search (Search) : Search object with query
+            search (Search): Search object with query
+            return_all (bool): Returns full list of documents (optional)
         """
         self.logger.info("Executing query against index: %s", self.index)
         self.logger.debug("Executing query \r\n%s", search.to_dict())
-        return search.execute()
+
+        all_hits = []
+        search_after = None
+        while True:
+            if search_after:
+                search = search.extra(search_after=search_after)
+
+            response = search.execute()
+            hits = response.hits.hits
+
+            if not hits:
+                break
+
+            if not return_all:
+                return response
+
+            all_hits.extend(hits)
+            search_after = response.hits[-1].meta.sort
+
+        return all_hits
 
     def get_uuid_by_metadata(
         self,
@@ -95,6 +117,7 @@ class Matcher:
             lookback_size and lookback_date get the data on the
             precedency of whichever cutoff comes first.
             Similar to a car manufacturer's warranty limits.
+            timestamp_field (str): timestamp field in data
 
         Returns:
             List[Dict[str, str]]: _description_
@@ -138,10 +161,9 @@ class Matcher:
             .sort({timestamp_field: {"order": "desc"}})
             .extra(size=lookback_size)
         )
-        result = self.query_index(s)
-        hits = result.hits.hits
+        all_hits = self.query_index(s,return_all=True)
         uuids_docs = []
-        for hit in hits:
+        for hit in all_hits:
             if "buildUrl" in hit["_source"]:
                 uuids_docs.append(
                     {
@@ -160,10 +182,12 @@ class Matcher:
                 )
         return uuids_docs
 
-    def match_kube_burner(self, uuids: List[str]) -> List[Dict[str, Any]]:
+    def match_kube_burner(self, uuids: List[str],
+                          timestamp_field: str = "timestamp") -> List[Dict[str, Any]]:
         """match kube burner runs
         Args:
             uuids (list): list of uuids
+            timestamp_field (str): timestamp field in data
         Returns:
             list : list of runs
         """
@@ -179,9 +203,10 @@ class Matcher:
             Search(using=self.es, index=self.index)
             .query(query)
             .extra(size=self.search_size)
+            .sort({timestamp_field: {"order": "desc"}})
         )
-        result = self.query_index(search)
-        runs = [item.to_dict()["_source"] for item in result.hits.hits]
+        all_hits = self.query_index(search, return_all=True)
+        runs = [hit.to_dict()["_source"] for hit in all_hits]
         return runs
 
     def filter_runs(self, pdata: Dict[Any, Any], data: Dict[Any, Any]) -> List[str]:
@@ -204,7 +229,8 @@ class Matcher:
     def get_results(
         self, uuid: str,
         uuids: List[str],
-        metrics: Dict[str, Any]
+        metrics: Dict[str, Any],
+        timestamp_field: str = "timestamp"
     ) -> Dict[Any, Any]:
         """
         Get results of elasticsearch data query based on uuid(s) and defined metrics
@@ -213,6 +239,7 @@ class Matcher:
             uuid (str): _description_
             uuids (list): _description_
             metrics (dict): _description_
+            timestamp_field (str): timestamp field in data
 
         Returns:
             dict: Resulting data from query
@@ -241,9 +268,10 @@ class Matcher:
             Search(using=self.es, index=self.index)
             .query(query)
             .extra(size=self.search_size)
+            .sort({timestamp_field: {"order": "desc"}})
         )
-        result = self.query_index(search)
-        runs = [item.to_dict()["_source"] for item in result.hits.hits]
+        all_hits = self.query_index(search, return_all=True)
+        runs = [hit.to_dict()["_source"] for hit in all_hits]
         return runs
 
     def get_agg_metric_query(
@@ -256,6 +284,8 @@ class Matcher:
         Args:
             uuids (list): List of uuids
             metrics (dict): metrics defined in es index metrics
+            timestamp_field (str): timestamp field in data
+
         """
         metric_queries = []
         not_queries = [
@@ -279,6 +309,7 @@ class Matcher:
             Search(using=self.es, index=self.index)
             .query(query)
             .extra(size=self.search_size)
+            .sort({timestamp_field: {"order": "desc"}})
         )
         agg_value = metrics["agg"]["value"]
         agg_type = metrics["agg"]["agg_type"]
