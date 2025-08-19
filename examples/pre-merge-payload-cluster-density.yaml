@@ -31,6 +31,7 @@ tests :
 
     - name:  ovsCPU
       metricName : cgroupCPU
+      labels.id.keyword : /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
         value: cpu
@@ -42,6 +43,7 @@ tests :
 
     - name:  ovsMemory
       metricName : cgroupMemoryRSS 
+      labels.id.keyword : /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
         value: mem
