@@ -19,5 +19,8 @@ ack:
     metric: ovnMem-sbdb_avg
     reason: kube-burner change on how we calculate metrics
   - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
-    metric: ovnMem-ovnk-controller_av
+    metric: ovnMem-ovnk-controller_avg
     reason: kube-burner change on how we calculate metrics
+  - uuid: 7d80399d-f455-4134-b631-d1712c42413e
+    metric: ovnMem-nbdb_avg
+    reason: https://issues.redhat.com/browse/OCPBUGS-60650
