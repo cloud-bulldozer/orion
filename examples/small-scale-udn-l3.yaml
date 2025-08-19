@@ -45,6 +45,18 @@ tests :
       direction: 1
       threshold: 10
 
+    - name: ovsVswitchdCPU
+      metricName: cgroupCPU
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
     - name:  ovnkCPU-overall
       metricName : containerCPU
       jobName.keyword: udn-density-l3-pods
@@ -132,6 +144,18 @@ tests :
       metricName : cgroupMemoryRSS-Workers
       jobName.keyword: udn-density-l3-pods
       labels.id.keyword : /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovsVswitchdMemory
+      metricName: cgroupMemoryRSS
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
         value: mem
