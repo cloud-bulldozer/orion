@@ -12,7 +12,7 @@ from .cmr import CMR
 class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-arguments, line-too-long
     """Algorithm Factory to choose algorithm
     """
-    def instantiate_algorithm(self, algorithm: str, matcher: Matcher, dataframe:pd.DataFrame, test: dict, options: dict, metrics_config: dict[str,dict]):
+    def instantiate_algorithm(self, algorithm: str, matcher: Matcher, dataframe:pd.DataFrame, test: dict, options: dict, metrics_config: dict[str,dict], version_field: str = "ocpVersion"):
         """Algorithm instantiation method
 
         Args:
@@ -28,9 +28,9 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-argu
             Algorithm : Algorithm
         """
         if algorithm == cnsts.EDIVISIVE:
-            return EDivisive(matcher, dataframe, test, options, metrics_config)
+            return EDivisive(matcher, dataframe, test, options, metrics_config, version_field)
         if algorithm == cnsts.ISOLATION_FOREST:
-            return IsolationForestWeightedMean(matcher, dataframe, test, options, metrics_config)
+            return IsolationForestWeightedMean(matcher, dataframe, test, options, metrics_config, version_field)
         if algorithm == cnsts.CMR:
-            return CMR(matcher, dataframe, test, options, metrics_config)
+            return CMR(matcher, dataframe, test, options, metrics_config, version_field)
         raise ValueError("Invalid algorithm called")

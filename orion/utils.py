@@ -379,7 +379,7 @@ class Utils:
         merged_df = merged_df.merge(uuid_timestamp_map, on=self.uuid_field, how="left")
         merged_df = merged_df.sort_values(by="timestamp")
 
-        merged_df["ocpVersion"] = merged_df[self.uuid_field].apply(
+        merged_df[self.version_field] = merged_df[self.uuid_field].apply(
             lambda uuid: versions[uuid]
         )
         merged_df["prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
@@ -440,7 +440,7 @@ class Utils:
             "workerNodesType": "",
             "infraNodesType": "",
             "totalNodesCount": 0,
-            "ocpVersion": "",
+            self.version_field: "",
             "networkType": "",
             "ipsec": "",
             "fips": "",
@@ -455,8 +455,8 @@ class Utils:
             metadata[k] = v
         if "benchmark" in test:
             metadata["benchmark.keyword"] = test["benchmark"]
-        if "ocpVersion" in metadata:
-            metadata["ocpVersion"] = str(metadata["ocpVersion"])
+        if self.version_field in metadata:
+            metadata[self.version_field] = str(metadata[self.version_field])
 
         # Remove any keys that have blank values
         no_blank_meta = {k: v for k, v in metadata.items() if v}
@@ -572,7 +572,7 @@ def json_to_junit(
     return pretty_xml_as_string
 
 
-def generate_tabular_output(data: list, metric_name: str) -> str:
+def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uuid") -> str:
     """converts json to tabular format
 
     Args:
@@ -583,7 +583,7 @@ def generate_tabular_output(data: list, metric_name: str) -> str:
     """
     records = []
     create_record = lambda record: {  # pylint: disable = C3001
-        "uuid": record["uuid"],
+        "uuid": record[uuid_field],
         "timestamp": datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         ),

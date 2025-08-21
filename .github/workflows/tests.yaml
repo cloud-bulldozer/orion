@@ -39,7 +39,15 @@ jobs:
 
     - name: Execute Tests
       run: |
-        bats -F pretty -T --print-output-on-failure test.bats
+        bats -F pretty -T --print-output-on-failure test.bats --gather-test-outputs-in outputs
       env:
         TERM: linux      
         QE_ES_SERVER: ${{ secrets.QE_ES_SERVER }}
+      
+    - name: Upload outputs data
+      if: ${{ success() || failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: outputs
+        path: outputs
+        if-no-files-found: error
