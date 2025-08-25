@@ -7,8 +7,6 @@ Orion uses YAML configuration files to define tests, metadata, and metrics. Here
 ```yaml
 tests:
   - name: test-name
-    index: index-pattern
-    benchmarkIndex: benchmark-index-pattern
     metadata:
       # metadata filters
     metrics:
@@ -20,8 +18,6 @@ tests:
 ```yaml
 tests:
   - name: payload-cluster-density-v2
-    index: ospst-perf-scale-ci-*
-    benchmarkIndex: ospst-ripsaw-kube-burner*
     metadata:
       platform: AWS
       clusterType: self-managed

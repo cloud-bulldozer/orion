@@ -206,8 +206,6 @@ orion cmd --ack ack.yaml --hunter-analyze
 ```yaml
 tests:
   - name: cpu-monitoring
-    index: performance-index-*
-    benchmarkIndex: benchmark-data-*
     metadata:
       platform: AWS
       ocpVersion: 4.17
@@ -228,8 +226,6 @@ tests:
 ```yaml
 tests:
   - name: pod-latency-check
-    index: performance-index-*
-    benchmarkIndex: benchmark-data-*
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -250,8 +246,6 @@ tests:
 ```yaml
 tests:
   - name: correlated-performance
-    index: performance-index-*
-    benchmarkIndex: benchmark-data-*
     metadata:
       platform: AWS
       ocpVersion: 4.17
@@ -283,8 +277,6 @@ tests:
 ```yaml
 tests:
   - name: full-stack-monitoring
-    index: performance-index-*
-    benchmarkIndex: benchmark-data-*
     threshold: 10  # Default threshold for all metrics
     metadata:
       platform: AWS
