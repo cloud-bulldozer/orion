@@ -15,7 +15,6 @@
 
 tests:
   - name: krkn-hub-*
-    index: krkn-telemetry*
     version: cluster_version
     uuid_field: run_uuid
     metadata:
