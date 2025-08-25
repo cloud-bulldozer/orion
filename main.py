@@ -127,9 +127,9 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
 @click.option("--node-count", default=False, help="Match any node iterations count")
 @click.option("--lookback-size", type=int, default=10000, help="Maximum number of entries to be looked back")
-@click.option("--es-server", type=str, default="http://localhost:9200", help="Elasticsearch endpoint where test data is stored")
-@click.option("--benchmark-index", type=str, default="benchmark", help="Index where test data is stored")
-@click.option("--metadata-index", type=str, default="benchmark", help="Index where metadata is stored")
+@click.option("--es-server", type=str, envvar="ES_SERVER", help="Elasticsearch endpoint where test data is stored, can be set via env var ES_SERVER", default="")
+@click.option("--benchmark-index", type=str, envvar="es_benchmark_index",  help="Index where test data is stored, can be set via env var es_benchmark_index", default="")
+@click.option("--metadata-index", type=str, envvar="es_metadata_index",  help="Index where metadata is stored, can be set via env var es_metadata_index", default="")
 @click.option("--input-vars", type=Dictionary(), default="{}", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
 def cmd_analysis(**kwargs):
     """
@@ -143,6 +143,9 @@ def cmd_analysis(**kwargs):
     if len(kwargs["ack"]) > 1 :
         kwargs["ackMap"] = load_ack(kwargs["ack"])
     kwargs["config"] = load_config(kwargs["config"], kwargs["input_vars"])
+    if not kwargs["metadata_index"] or not kwargs["es_server"]:
+        logger.error("metadata-index and es-server flags must be provided")
+        sys.exit(1)
     output, regression_flag, regression_data = run(**kwargs)
     if not output:
         logger.error("Terminating test")

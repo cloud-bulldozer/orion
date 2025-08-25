@@ -65,8 +65,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
         utils = Utils(uuid_field, version_field)
         matcher = Matcher(
             index=kwargs["metadata_index"],
-            level=logger.level,
-            es_url=kwargs["es_server"],
+            es_server=kwargs["es_server"],
             verify_certs=False,
             version_field=version_field,
             uuid_field=uuid_field

@@ -60,7 +60,7 @@ setup() {
       }
     }
   }' | jq -r '.aggregations.distinct_versions.buckets[0].key')
-  export version=$(echo "$LATEST_VERSION" | cut -d. -f1,2)
+  export VERSION=$(echo "$LATEST_VERSION" | cut -d. -f1,2)
 
   CHAOS_LATEST_VERSION=$(curl -s -X POST "$ES_SERVER/krkn-telemetry*/_search" \
   -H "Content-Type: application/json" \
