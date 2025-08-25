@@ -334,6 +334,9 @@ class Matcher:
             list: List of parsed results
         """
         res = []
+        if "aggregations" not in data:
+            return res
+
         stamps = data.aggregations.time.buckets
         agg_buckets = data.aggregations.uuid.buckets
 
