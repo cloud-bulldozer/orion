@@ -2381,7 +2381,6 @@ tests :
       context: 10
 
   - name : quay-load-test-stable-image-push-pulls
-    index: {{ es_metadata_index }}
     metadata:
       platform: AWS
       clusterType: self-managed

@@ -26,6 +26,8 @@ setup() {
   ES_SERVER="$QE_ES_SERVER"
   METADATA_INDEX="perf_scale_ci*"
   BENCHMARK_INDEX="ripsaw-kube-burner*"
+  KRKN_BENCHMARK_INDEX=krkn-metrics*
+  KRKEN_METADATA_INDEX=krkn-telemetry*
   LATEST_VERSION=$(curl -s -X POST "$ES_SERVER/perf_scale_ci*/_search" \
   -H "Content-Type: application/json" \
   -d '{
@@ -131,6 +133,11 @@ setup() {
   run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --lookback 5d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
+@test "orion cmd label small scale cluster density with hunter-analyze and using env vars for ES" {
+  export ES_SERVER=${ES_SERVER} es_metadata_index=${METADATA_INDEX} es_benchmark_index=${BENCHMARK_INDEX}
+  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --lookback 5d --hunter-analyze --input-vars='{"version": "'${VERSION}'"}'
+}
+
 @test "orion cmd payload scale" {
   run_cmd orion cmd --config "examples/payload-scale.yaml" --lookback 5d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
@@ -140,15 +147,15 @@ setup() {
 }
 
 @test "orion cmd readout control plane cdv2 with text output " {
-  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --hunter-analyze --output-format text --save-output-path=output.txt
+  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --hunter-analyze --output-format text --save-output-path=output.txt --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX}
 }
 
 @test "orion cmd label small control plane cdv2 with json output " {
-  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json
+  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX}
 }
 
 @test "orion cmd readout control plane node-density with json output and match all iterations " {
-  run_cmd orion cmd --config "examples/small-rosa-control-plane-node-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json --node-count True
+  run_cmd orion cmd --config "examples/small-rosa-control-plane-node-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json --node-count True --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX}
 }
 
 @test "orion cmd readout netperf tcp with junit output" {
@@ -185,32 +192,30 @@ setup() {
 
 @test "orion cmd chaos tests " {
   before_version=$version
-  version=$chaos_version
-  scenario_type="pvc_scenarios" cloud_infrastructure="aws" cloud_type="self-managed" total_node_count="9" node_instance_type="m6a.xlarge" network_plugins="OVNKubernetes" scenario_file="*pvc_scenario.yaml" run_cmd orion cmd --config "examples/chaos_tests.yaml" --lookback 10d
-  version=$before_version
+  scenario_type="pvc_scenarios" cloud_infrastructure="aws" cloud_type="self-managed" total_node_count="9" node_instance_type="m6a.xlarge" network_plugins="OVNKubernetes" scenario_file="*pvc_scenario.yaml" run_cmd orion cmd --config "examples/chaos_tests.yaml" --lookback 10d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX} --input-vars='{"version": "'${chaos_version}'"}'
+  VERSION=$before_version
 }
 
 @test "orion cmd node scenarios " {
   before_version=$version
-  version=$chaos_version
-  scenario_type="node_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*node_scenario.yaml" run_cmd orion cmd --config "examples/node_scenarios.yaml" --lookback 10d
-  version=$before_version
+  VERSION=$chaos_version
+  scenario_type="node_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*node_scenario.yaml" run_cmd orion cmd --config "examples/node_scenarios.yaml" --lookback 10d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX}
+  VERSION=$before_version
 }
 
 @test "orion cmd pod disruption scenarios " {
   before_version=$version
-  version=$chaos_version
-  scenario_type="pod_disruption_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*pod_scenario.yaml" run_cmd orion cmd --config "examples/pod_disruption_scenarios.yaml" --lookback 10d
-  version=$before_version
+  VERSION=$chaos_version
+  scenario_type="pod_disruption_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*pod_scenario.yaml" run_cmd orion cmd --config "examples/pod_disruption_scenarios.yaml" --lookback 10d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX}
+  VERSION=$before_version
 }
 
 @test "orion cmd ols configuration test " {
-
   before_version=$version
-  version=$ols_version
+  VERSION=$ols_version
   export ols_test_workers=10
-  es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion cmd --config "examples/ols-load-generator.yaml" --hunter-analyze --ack ack/4.15_ols-load-generator-10w_ack.yaml
-  version=$before_version
+  es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion cmd --config "examples/ols-load-generator.yaml" --hunter-analyze --ack ack/4.15_ols-load-generator-10w_ack.yaml --es-server=${ES_SERVER}
+  VERSION=$before_version
 }
 
 @test "orion daemon small scale cluster density with anomaly detection" {
