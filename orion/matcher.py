@@ -35,14 +35,13 @@ class Matcher:
     ):
         self.index = index
         self.search_size = 10000
-        self.logger = SingletonLogger(debug=level, name="Matcher")
-        self.es = OpenSearch(es_url,
+        self.logger = SingletonLogger.get_logger("Orion")
+        self.es = OpenSearch(es_server,
                              timeout=30,
                              verify_certs=verify_certs,
                              http_compress=True,
                              max_retries=3,
                              retry_on_timeout=True)
-        self.data = None
         self.version_field = version_field
         self.uuid_field = uuid_field
 
