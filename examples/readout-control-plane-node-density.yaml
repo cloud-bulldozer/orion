@@ -1,7 +1,5 @@
 tests :
   - name : node-density-heavy-24nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -51,8 +49,6 @@ tests :
         agg_type: avg
 
   - name : node-density-24nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -83,8 +79,6 @@ tests :
         agg_type: avg
 
   - name : node-density-120nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -115,8 +109,6 @@ tests :
         agg_type: avg
 
   - name : node-density-249nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -147,8 +139,6 @@ tests :
         agg_type: avg
 
   - name : node-density-cni-24nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -179,8 +169,6 @@ tests :
         agg_type: avg
 
   - name : node-density-cni-120nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -211,8 +199,6 @@ tests :
         agg_type: avg
 
   - name : node-density-cni-249nodes
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       ocpVersion: {{ version }}
       platform: AWS

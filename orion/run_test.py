@@ -3,7 +3,7 @@ run test
 """
 import sys
 import json
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
 from orion.algorithms import AlgorithmFactory
@@ -29,24 +29,30 @@ def get_algorithm_type(kwargs):
         algorithm_name = None
     return algorithm_name
 
-def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
+# pylint: disable=too-many-locals
+def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
     """run method to start the tests
 
     Args:
-        config (_type_): file path to config file
-        output_path (_type_): output path to save the data
-        hunter_analyze (_type_): changepoint detection through hunter. defaults to True
-        output_format (_type_): output to be table or json
+      **kwargs: keyword arguments
+        config (str): file path to config file
+        es_server (str): elasticsearch endpoint
+        output_path (str): output path to save the data
+        hunter_analyze (bool): changepoint detection through hunter. defaults to True
+        output_format (str): output to be table or json
+        lookback (str): lookback in days
 
     Returns:
-        _type_: _description_
+        tuple:
+            - Test output (dict): Test JSON output
+            - regression flag (bool): Test result
     """
-    logger_instance = SingletonLogger.getLogger("Orion")
-    config_map = kwargs["configMap"]
+    logger = SingletonLogger.get_logger("Orion")
+    config = kwargs["config"]
     sippy_pr_search = kwargs["sippy_pr_search"]
     result_output = {}
     regression_flag = False
-    for test in config_map["tests"]:
+    for test in config["tests"]:
         # Create fingerprint Matcher
 
         version_field = "ocpVersion"
@@ -57,11 +63,9 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
             uuid_field=test["uuid_field"]
 
         utils = Utils(uuid_field, version_field)
-        datasource = utils.get_datasource(config_map)
         matcher = Matcher(
-            index=test["index"],
-            level=logger_instance.level,
-            es_url=datasource,
+            index=kwargs["metadata_index"],
+            es_server=kwargs["es_server"],
             verify_certs=False,
             version_field=version_field,
             uuid_field=uuid_field
@@ -80,9 +84,9 @@ def run(**kwargs: dict[str, Any]) -> dict[str, Any]: #pylint: disable = R0914
 
         algorithm_name = get_algorithm_type(kwargs)
         if algorithm_name is None:
-            logger_instance.error("No algorithm configured")
+            logger.error("No algorithm configured")
             return None, None, None
-        logger_instance.info("Comparison algorithm: %s", algorithm_name)
+        logger.info("Comparison algorithm: %s", algorithm_name)
 
         algorithmFactory = AlgorithmFactory()
         algorithm = algorithmFactory.instantiate_algorithm(

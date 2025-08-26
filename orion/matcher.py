@@ -1,8 +1,6 @@
 """metadata matcher"""
 
 # pylint: disable = invalid-name, invalid-unary-operand-type, no-member
-import os
-import logging
 from datetime import datetime
 from typing import List, Dict, Any
 
@@ -15,24 +13,22 @@ from orion.logger import SingletonLogger
 
 
 class Matcher:
-    # pylint: disable=too-many-instance-attributes
     """
     A class used to match or interact with an Elasticsearch index for performance scale testing.
 
     Attributes:
         index (str): Name of the Elasticsearch index to interact with.
-        level (int): Logging level (e.g., logging.INFO).
-        es_url (str): Elasticsearch endpoint, can be specified by the environment variable ES_SERVER
+        es_url (str): Elasticsearch endpoint
         verify_certs (bool): Whether to verify SSL certificates when connecting to Elasticsearch.
         version_field (str): Name of the field containing the OpenShift version.
         uuid_field (str): Name of the field containing the UUID.
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         index: str = "ospst-perf-scale-ci",
-        level: int = logging.INFO,
-        es_url: str = os.getenv("ES_SERVER"),
+        es_server: str = "https://localhost:9200",
         verify_certs: bool = True,
         version_field: str = "ocpVersion",
         uuid_field: str = "uuid"
@@ -98,6 +94,7 @@ class Matcher:
 
         return all_hits
 
+    # pylint: disable=too-many-locals
     def get_uuid_by_metadata(
         self,
         meta: Dict[str, Any],
@@ -120,7 +117,7 @@ class Matcher:
             timestamp_field (str): timestamp field in data
 
         Returns:
-            List[Dict[str, str]]: _description_
+            List[Dict[str, str]]: List of dictionaries with uuid, buildURL and ocpVersion as keys
         """
         must_clause = []
         must_not_clause = []

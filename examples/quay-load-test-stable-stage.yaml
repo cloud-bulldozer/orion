@@ -1,7 +1,5 @@
 tests :
   - name : quay-load-test-stable-stage-image-push-pulls
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ quay_image_push_pull_index }}
     metadata:
       platform: AWS
       clusterType: self-managed

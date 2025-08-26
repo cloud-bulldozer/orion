@@ -1,7 +1,5 @@
 tests :
   - name : aws-small-scale-cluster-density-v2
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
     metadata:
       platform: AWS
       masterNodesType: m6a.xlarge

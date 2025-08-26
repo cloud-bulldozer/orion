@@ -1,7 +1,5 @@
 tests :
   - name : quay-load-test-stable-apis
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ quay_load_test_index }}
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -2383,8 +2381,6 @@ tests :
       context: 10
 
   - name : quay-load-test-stable-image-push-pulls
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ quay_image_push_pull_index }}
     metadata:
       platform: AWS
       clusterType: self-managed
