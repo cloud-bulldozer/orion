@@ -1,7 +1,7 @@
 tests :
   - name : node-density-heavy-24nodes
     metadata:
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: node-density-heavy
@@ -48,7 +48,7 @@ tests :
 
   - name : node-density-24nodes
     metadata:
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: node-density
@@ -78,7 +78,7 @@ tests :
 
   - name : node-density-120nodes
     metadata:
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: node-density
@@ -108,7 +108,7 @@ tests :
 
   - name : node-density-cni-24nodes
     metadata:
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: node-density-cni
@@ -138,7 +138,7 @@ tests :
 
   - name : node-density-cni-120nodes
     metadata:
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: node-density-cni

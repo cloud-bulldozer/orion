@@ -7,7 +7,7 @@ tests :
       workerNodesType: m6a.xlarge
       workerNodesCount: 24
       benchmark.keyword: cluster-density-v2
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
       not:
         stream: okd

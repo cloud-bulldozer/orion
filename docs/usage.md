@@ -57,7 +57,7 @@ tests:
       workerNodesType.keyword: ""
       workerNodesCount: 4
       benchmark.keyword: node-density
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
       not:
         stream: okd

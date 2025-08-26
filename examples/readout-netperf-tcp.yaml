@@ -1,7 +1,7 @@
 tests :
   - name : k8s-netperf-tcp
     metadata:
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: k8s-netperf

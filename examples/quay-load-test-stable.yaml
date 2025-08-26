@@ -8,8 +8,8 @@ tests :
       workerNodesType.keyword: m6a.8xlarge
       workerNodesCount: 5
       benchmark.keyword: quay-load-test
-      ocpVersion: {{ ocp_version }}
-      quayVersion: {{ quay_version }}
+      ocpVersion: "{{ ocp_version }}"
+      quayVersion: "{{ quay_version }}"
       networkType: OVNKubernetes
 
     metrics : 
@@ -2389,8 +2389,8 @@ tests :
       workerNodesType.keyword: m6a.8xlarge
       workerNodesCount: 5
       benchmark.keyword: quay-load-test
-      ocpVersion: {{ ocp_version }}
-      quayVersion: {{ quay_version }}
+      ocpVersion: "{{ ocp_version }}"
+      quayVersion: "{{ quay_version }}"
       networkType: OVNKubernetes
 
     metrics : 

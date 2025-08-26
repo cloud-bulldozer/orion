@@ -10,7 +10,7 @@ tests :
       workerNodesType.keyword: m6i.xlarge
       workerNodesCount: 3
       benchmark.keyword: ols-load-generator
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
       not:
         stream: okd
@@ -392,7 +392,7 @@ tests :
       workerNodesType.keyword: m6i.xlarge
       workerNodesCount: 3
       benchmark.keyword: ols-load-generator
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
 
     metrics : 
@@ -772,7 +772,7 @@ tests :
       workerNodesType.keyword: m6i.xlarge
       workerNodesCount: 3
       benchmark.keyword: ols-load-generator
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
 
     metrics : 
