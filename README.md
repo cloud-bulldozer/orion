@@ -8,7 +8,7 @@ Orion stands as a powerful command-line tool designed for identifying regression
 
 ```bash
 $ podman build -f Dockerfile -t orion
-$ podman run orion orion cmd --config examples/trt-external-payload-node-density.yaml --hunter-analyze --input-vars='{"version": "4.19"}' --es-server='https://my-opensearch.perf.com' --benchmark-index=ripsaw-kube-burner-* --metadata-index=perf_scale_ci* --lookback=15d
+$ podman run orion orion --config examples/trt-external-payload-node-density.yaml --hunter-analyze --input-vars='{"version": "4.19"}' --es-server='https://my-opensearch.perf.com' --benchmark-index=ripsaw-kube-burner-* --metadata-index=perf_scale_ci* --lookback=15d
  ```
 
 
@@ -37,7 +37,7 @@ Trigger hunter analysis using data from the 15 latest days
 
 ```bash
 # Command-line mode
-$ orion cmd --config examples/trt-external-payload-node-density.yaml --hunter-analyze --input-vars='{"version": "4.19"}' --es-server='htts://my-opensearch.perf.com' --benchmark-index=ripsaw-kube-burner-* --metadata-index=perf_scale_ci* --lookback=15d
+$ orion --config examples/trt-external-payload-node-density.yaml --hunter-analyze --input-vars='{"version": "4.19"}' --es-server='htts://my-opensearch.perf.com' --benchmark-index=ripsaw-kube-burner-* --metadata-index=perf_scale_ci* --lookback=15d
 2025-08-12 10:45:31,965 - Orion      - INFO - file: main.py - line: 136 - 🏹 Starting Orion in command-line mode                                                                              2025-08-12 10:45:31,971 - Orion      - INFO - file: utils.py - line: 317 - The test payload-node-density has started                                                            
 2025-08-12 10:45:31,971 - Matcher    - INFO - file: matcher.py - line: 75 - Executing query against index: perf_scale_ci*                                                                     2025-08-12 10:45:33,179 - Matcher    - INFO - file: matcher.py - line: 75 - Executing query against index: perf_scale_ci*                                                      
 2025-08-12 10:45:33,441 - Matcher    - INFO - file: matcher.py - line: 75 - Executing query against index: ripsaw-kube-burner-*                                                               2025-08-12 10:45:33,715 - Orion      - INFO - file: utils.py - line: 67 - Collecting podReadyLatency                                                                            

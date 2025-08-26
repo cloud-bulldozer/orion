@@ -205,24 +205,6 @@ class Utils:
         return metadata
 
 
-    def get_datasource(self, data: Dict[Any, Any]) -> str:
-        """Gets es url from config or env
-
-        Args:
-            data (_type_): config file data
-            logger (_type_): logger
-
-        Returns:
-            str: es url
-        """
-        if "ES_SERVER" in data.keys():
-            return data["ES_SERVER"]
-        if "ES_SERVER" in os.environ:
-            return os.environ.get("ES_SERVER")
-        self.logger.error("ES_SERVER environment variable/config variable not set")
-        sys.exit(1)
-
-
     def filter_uuids_on_index(
         self,
         metadata: Dict[str, Any],
