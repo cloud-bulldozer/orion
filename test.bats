@@ -6,7 +6,7 @@
 run_cmd(){
   echo "$@"
   set +e
-  ${@}
+  "${@}"
   EXIT_CODE=$?
   set -e
 
@@ -23,9 +23,11 @@ run_cmd(){
 
 setup() {
   # Make a note of daemon PID
-  export ES_SERVER="$QE_ES_SERVER"
-  export es_metadata_index="perf_scale_ci*"
-  export es_benchmark_index="ripsaw-kube-burner*"
+  ES_SERVER="$QE_ES_SERVER"
+  METADATA_INDEX="perf_scale_ci*"
+  BENCHMARK_INDEX="ripsaw-kube-burner*"
+  KRKN_BENCHMARK_INDEX=krkn-metrics*
+  KRKEN_METADATA_INDEX=krkn-telemetry*
   LATEST_VERSION=$(curl -s -X POST "$ES_SERVER/perf_scale_ci*/_search" \
   -H "Content-Type: application/json" \
   -d '{
@@ -60,7 +62,7 @@ setup() {
       }
     }
   }' | jq -r '.aggregations.distinct_versions.buckets[0].key')
-  export version=$(echo "$LATEST_VERSION" | cut -d. -f1,2)
+  export VERSION=$(echo "$LATEST_VERSION" | cut -d. -f1,2)
 
   CHAOS_LATEST_VERSION=$(curl -s -X POST "$ES_SERVER/krkn-telemetry*/_search" \
   -H "Content-Type: application/json" \
@@ -127,94 +129,96 @@ setup() {
 
 }
 
-@test "orion cmd label small scale cluster density with hunter-analyze " {
-  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --lookback 5d --hunter-analyze
+@test "orion cmd label small scale cluster density with hunter-analyze" {
+  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --lookback 5d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
-@test "orion cmd payload scale " {
-  run_cmd orion cmd --config "examples/payload-scale.yaml" --lookback 5d --hunter-analyze
+@test "orion cmd label small scale cluster density with hunter-analyze and using env vars for ES" {
+  export ES_SERVER=${ES_SERVER} es_metadata_index=${METADATA_INDEX} es_benchmark_index=${BENCHMARK_INDEX}
+  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --lookback 5d --hunter-analyze --input-vars='{"version": "'${VERSION}'"}'
 }
 
-@test "orion cmd payload scale without lookback period " {
-  run_cmd orion cmd --config "examples/payload-scale.yaml" --hunter-analyze
+@test "orion cmd payload scale" {
+  run_cmd orion cmd --config "examples/payload-scale.yaml" --lookback 5d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
+}
+
+@test "orion cmd payload scale without lookback period" {
+  run_cmd orion cmd --config "examples/payload-scale.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
 @test "orion cmd readout control plane cdv2 with text output " {
-  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --hunter-analyze --output-format text --save-output-path=output.txt
+  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --hunter-analyze --output-format text --save-output-path=output.txt --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX}
 }
 
 @test "orion cmd label small control plane cdv2 with json output " {
-  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json
+  run_cmd orion cmd --config "examples/label-small-scale-cluster-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX}
 }
 
 @test "orion cmd readout control plane node-density with json output and match all iterations " {
-  run_cmd orion cmd --config "examples/small-rosa-control-plane-node-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json --node-count True
+  run_cmd orion cmd --config "examples/small-rosa-control-plane-node-density.yaml" --hunter-analyze --output-format json --save-output-path=output.json --node-count True --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX}
 }
 
-@test "orion cmd readout netperf tcp with junit output " {
-  export es_benchmark_index="k8s-netperf"
-  run_cmd orion cmd --config "examples/readout-netperf-tcp.yaml" --output-format junit --hunter-analyze --save-output-path=output.xml
+@test "orion cmd readout netperf tcp with junit output" {
+  run_cmd orion cmd --config "examples/readout-netperf-tcp.yaml" --output-format junit --hunter-analyze --save-output-path=output.xml --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=k8s-netperf --input-vars='{"version": "'${VERSION}'"}'
 }
 
-@test "orion cmd virt-density " {
-  run_cmd orion cmd --config examples/metal-perfscale-cpt-virt-density.yaml --lookback 15d --hunter-analyze
+@test "orion cmd virt-density" {
+  run_cmd orion cmd --config examples/metal-perfscale-cpt-virt-density.yaml --lookback 15d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
-@test "orion cmd small scale cluster density with anomaly detection " {
-  run_cmd orion cmd --config "examples/small-scale-cluster-density.yaml" --lookback 5d --anomaly-detection
+@test "orion cmd small scale cluster density with anomaly detection" {
+  run_cmd orion cmd --config "examples/small-scale-cluster-density.yaml" --lookback 5d --anomaly-detection --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
-@test "orion cmd small scale node density cni anomaly detection with a window " {
-  run_cmd orion cmd --config "examples/small-scale-node-density-cni.yaml" --anomaly-detection --anomaly-window 3
+@test "orion cmd small scale node density cni anomaly detection with a window" {
+  run_cmd orion cmd --config "examples/small-scale-node-density-cni.yaml" --anomaly-detection --anomaly-window 3 --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
-@test "orion cmd trt external payload cluster density anomaly detection with a minimum percentage " {
-  run_cmd orion cmd --config "examples/trt-external-payload-cluster-density.yaml" --anomaly-detection --anomaly-window 3 --min-anomaly-percent 5
+@test "orion cmd trt external payload cluster density anomaly detection with a minimum percentage" {
+  run_cmd orion cmd --config "examples/trt-external-payload-cluster-density.yaml" --anomaly-detection --anomaly-window 3 --min-anomaly-percent 5 --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
-@test "orion cmd trt external payload crd scale with default anomaly detection " {
-  run_cmd orion cmd --config "examples/trt-external-payload-crd-scale.yaml" --anomaly-detection
+@test "orion cmd trt external payload crd scale with default anomaly detection" {
+  run_cmd orion cmd --config "examples/trt-external-payload-crd-scale.yaml" --anomaly-detection --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
-@test "orion cmd trt external payload node density " {
-  run_cmd orion cmd --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze
+@test "orion cmd trt external payload node density" {
+  run_cmd orion cmd --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
-@test "orion cmd trt external payload cluster density " {
-  run_cmd orion cmd --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze
+@test "orion cmd trt external payload cluster density" {
+  run_cmd orion cmd --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
 @test "orion cmd chaos tests " {
   before_version=$version
-  version=$chaos_version
-  scenario_type="pvc_scenarios" cloud_infrastructure="aws" cloud_type="self-managed" total_node_count="9" node_instance_type="m6a.xlarge" network_plugins="OVNKubernetes" scenario_file="*pvc_scenario.yaml" run_cmd orion cmd --config "examples/chaos_tests.yaml" --lookback 10d
-  version=$before_version
+  scenario_type="pvc_scenarios" cloud_infrastructure="aws" cloud_type="self-managed" total_node_count="9" node_instance_type="m6a.xlarge" network_plugins="OVNKubernetes" scenario_file="*pvc_scenario.yaml" run_cmd orion cmd --config "examples/chaos_tests.yaml" --lookback 10d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX} --input-vars='{"version": "'${chaos_version}'"}'
+  VERSION=$before_version
 }
 
 @test "orion cmd node scenarios " {
   before_version=$version
-  version=$chaos_version
-  scenario_type="node_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*node_scenario.yaml" run_cmd orion cmd --config "examples/node_scenarios.yaml" --lookback 10d
-  version=$before_version
+  VERSION=$chaos_version
+  scenario_type="node_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*node_scenario.yaml" run_cmd orion cmd --config "examples/node_scenarios.yaml" --lookback 10d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX}
+  VERSION=$before_version
 }
 
 @test "orion cmd pod disruption scenarios " {
   before_version=$version
-  version=$chaos_version
-  scenario_type="pod_disruption_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*pod_scenario.yaml" run_cmd orion cmd --config "examples/pod_disruption_scenarios.yaml" --lookback 10d
-  version=$before_version
+  VERSION=$chaos_version
+  scenario_type="pod_disruption_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*pod_scenario.yaml" run_cmd orion cmd --config "examples/pod_disruption_scenarios.yaml" --lookback 10d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX}
+  VERSION=$before_version
 }
 
 @test "orion cmd ols configuration test " {
-
   before_version=$version
-  version=$ols_version
+  VERSION=$ols_version
   export ols_test_workers=10
-  es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion cmd --config "examples/ols-load-generator.yaml" --hunter-analyze --ack ack/4.15_ols-load-generator-10w_ack.yaml
-  version=$before_version
+  es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion cmd --config "examples/ols-load-generator.yaml" --hunter-analyze --ack ack/4.15_ols-load-generator-10w_ack.yaml --es-server=${ES_SERVER}
+  VERSION=$before_version
 }
 
-@test "orion daemon small scale cluster density with anomaly detection " {
+@test "orion daemon small scale cluster density with anomaly detection" {
   orion daemon --port 8080 &
   DAEMON_PID=$!
   echo "Orion daemon started with PID $DAEMON_PID"
@@ -225,7 +229,7 @@ setup() {
   fi
 }
 
-@test "orion daemon small scale node density cni with changepoint detection " {
+@test "orion daemon small scale node density cni with changepoint detection" {
   orion daemon --port 8080 &
   DAEMON_PID=$!
   echo "Orion daemon started with PID $DAEMON_PID"
@@ -236,7 +240,7 @@ setup() {
   fi
 }
 
-@test "orion daemon trt payload cluster density with version parameter " {
+@test "orion daemon trt payload cluster density with version parameter" {
   orion daemon --port 8080 &
   DAEMON_PID=$!
   echo "Orion daemon started with PID $DAEMON_PID"
@@ -247,10 +251,9 @@ setup() {
   fi
 }
 
-@test "orion cmd with netobserv configs " {
+@test "orion cmd with netobserv configs" {
   curl -s https://raw.githubusercontent.com/openshift-eng/ocp-qe-perfscale-ci/refs/heads/netobserv-perf-tests/scripts/queries/netobserv-orion-node-density-heavy.yaml -w %{http_code} -o /tmp/netobserv-node-density-heavy-ospst.yaml
-  export WORKERS=25
-  run_cmd orion cmd --config "/tmp/netobserv-node-density-heavy-ospst.yaml" --lookback 5d --hunter-analyze
+  run_cmd orion cmd --config "/tmp/netobserv-node-density-heavy-ospst.yaml" --lookback 5d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"workers": 25}'
 }
 
 

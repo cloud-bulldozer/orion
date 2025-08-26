@@ -7,6 +7,7 @@ import logging
 import sys
 import warnings
 from typing import Any
+import json
 import click
 import uvicorn
 from orion.logger import SingletonLogger
@@ -19,6 +20,15 @@ warnings.filterwarnings(
     "ignore", category=UserWarning, message=".*Connecting to.*verify_certs=False.*"
 )
 
+class Dictionary(click.ParamType):
+    """Class to define a custom click type for dictionaries
+
+    Args:
+        click (ParamType):
+    """
+    name = "dictionary"
+    def convert(self, value: Any, param: Any, ctx: Any) -> dict:
+        return json.loads(value)
 
 class MutuallyExclusiveOption(click.Option):
     """Class to implement mutual exclusivity between options in click
@@ -117,6 +127,10 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
 @click.option("--node-count", default=False, help="Match any node iterations count")
 @click.option("--lookback-size", type=int, default=10000, help="Maximum number of entries to be looked back")
+@click.option("--es-server", type=str, envvar="ES_SERVER", help="Elasticsearch endpoint where test data is stored, can be set via env var ES_SERVER", default="")
+@click.option("--benchmark-index", type=str, envvar="es_benchmark_index",  help="Index where test data is stored, can be set via env var es_benchmark_index", default="")
+@click.option("--metadata-index", type=str, envvar="es_metadata_index",  help="Index where metadata is stored, can be set via env var es_metadata_index", default="")
+@click.option("--input-vars", type=Dictionary(), default="{}", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
 def cmd_analysis(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
@@ -124,14 +138,17 @@ def cmd_analysis(**kwargs):
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
     if kwargs['output_format'] == cnsts.JSON :
         level = logging.ERROR
-    logger_instance = SingletonLogger(debug=level, name="Orion")
-    logger_instance.info("🏹 Starting Orion in command-line mode")
+    logger = SingletonLogger(debug=level, name="Orion")
+    logger.info("🏹 Starting Orion in command-line mode")
     if len(kwargs["ack"]) > 1 :
         kwargs["ackMap"] = load_ack(kwargs["ack"])
-    kwargs["configMap"] = load_config(kwargs["config"])
+    kwargs["config"] = load_config(kwargs["config"], kwargs["input_vars"])
+    if not kwargs["metadata_index"] or not kwargs["es_server"]:
+        logger.error("metadata-index and es-server flags must be provided")
+        sys.exit(1)
     output, regression_flag, regression_data = run(**kwargs)
-    if output is None:
-        logger_instance.error("Terminating test")
+    if not output:
+        logger.error("Terminating test")
         sys.exit(0)
     for test_name, result_table in output.items():
         if kwargs['output_format'] != cnsts.JSON :
@@ -166,8 +183,8 @@ def rundaemon(debug: bool, port: int):
     \b
     """
     level = logging.DEBUG if debug else logging.INFO
-    logger_instance = SingletonLogger(debug=level, name='Orion')
-    logger_instance.info("🏹 Starting Orion in Daemon mode")
+    logger = SingletonLogger(debug=level, name='Orion')
+    logger.info("🏹 Starting Orion in Daemon mode")
     uvicorn.run("orion.daemon:app", port=port)
 
 

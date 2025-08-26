@@ -1,16 +1,10 @@
 """metadata matcher"""
 
 # pylint: disable = invalid-name, invalid-unary-operand-type, no-member
-import os
-import logging
 from datetime import datetime
 from typing import List, Dict, Any
 
-# pylint: disable=import-error
 from elasticsearch import Elasticsearch
-
-
-# pylint: disable=import-error
 import pandas as pd
 from elasticsearch_dsl import Search, Q
 from elasticsearch_dsl.response import Response
@@ -18,33 +12,30 @@ from orion.logger import SingletonLogger
 
 
 class Matcher:
-    # pylint: disable=too-many-instance-attributes
     """
     A class used to match or interact with an Elasticsearch index for performance scale testing.
 
     Attributes:
         index (str): Name of the Elasticsearch index to interact with.
-        level (int): Logging level (e.g., logging.INFO).
-        es_url (str): Elasticsearch endpoint, can be specified by the environment variable ES_SERVER
+        es_url (str): Elasticsearch endpoint
         verify_certs (bool): Whether to verify SSL certificates when connecting to Elasticsearch.
         version_field (str): Name of the field containing the OpenShift version.
         uuid_field (str): Name of the field containing the UUID.
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         index: str = "ospst-perf-scale-ci",
-        level: int = logging.INFO,
-        es_url: str = os.getenv("ES_SERVER"),
+        es_server: str = "https://localhost:9200",
         verify_certs: bool = True,
         version_field: str = "ocpVersion",
         uuid_field: str = "uuid"
     ):
         self.index = index
         self.search_size = 10000
-        self.logger = SingletonLogger(debug=level, name="Matcher")
-        self.es = Elasticsearch([es_url], timeout=30, verify_certs=verify_certs)
-        self.data = None
+        self.logger = SingletonLogger.get_logger("Orion")
+        self.es = Elasticsearch([es_server], timeout=30, verify_certs=verify_certs)
         self.version_field = version_field
         self.uuid_field = uuid_field
 
@@ -76,6 +67,7 @@ class Matcher:
         self.logger.debug("Executing query \r\n%s", search.to_dict())
         return search.execute()
 
+    # pylint: disable=too-many-locals
     def get_uuid_by_metadata(
         self,
         meta: Dict[str, Any],
@@ -97,7 +89,7 @@ class Matcher:
             Similar to a car manufacturer's warranty limits.
 
         Returns:
-            List[Dict[str, str]]: _description_
+            List[Dict[str, str]]: List of dictionaries with uuid, buildURL and ocpVersion as keys
         """
         must_clause = []
         must_not_clause = []
@@ -139,9 +131,8 @@ class Matcher:
             .extra(size=lookback_size)
         )
         result = self.query_index(s)
-        hits = result.hits.hits
         uuids_docs = []
-        for hit in hits:
+        for hit in result.hits.hits:
             if "buildUrl" in hit["_source"]:
                 uuids_docs.append(
                     {

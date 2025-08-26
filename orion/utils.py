@@ -38,6 +38,7 @@ class Utils:
         """
         self.uuid_field = uuid_field
         self.version_field = version_field
+        self.logger = SingletonLogger.get_logger("Orion")
 
     # pylint: disable=too-many-locals
     def get_metric_data(
@@ -54,7 +55,6 @@ class Utils:
         Returns:
             dataframe_list: dataframe of the all metrics
         """
-        logger_instance = SingletonLogger.getLogger("Orion")
         dataframe_list = []
         metrics_config = {}
 
@@ -68,7 +68,7 @@ class Utils:
             timestamp_field = metric.pop("timestamp", timestamp_field)
             correlation = metric.pop("correlation", "")
             context = metric.pop("context", 5)
-            logger_instance.info("Collecting %s", metric_name)
+            self.logger.info("Collecting %s", metric_name)
             try:
                 if "agg" in metric:
                     metric_df, metric_dataframe_name = self.process_aggregation_metric(
@@ -85,9 +85,9 @@ class Utils:
                 metric["context"] = context
                 metrics_config[metric_dataframe_name] = metric
                 dataframe_list.append(metric_df)
-                logger_instance.debug(metric_df)
+                self.logger.debug(metric_df)
             except Exception as e:
-                logger_instance.error(
+                self.logger.error(
                     "Couldn't get metrics %s, exception %s",
                     metric_name,
                     e,
@@ -199,10 +199,9 @@ class Utils:
         Returns:
             dict: dictionary of the metadata
         """
-        logger_instance = SingletonLogger.getLogger("Orion")
         metadata = test["metadata"]
         metadata[self.version_field] = str(metadata[self.version_field])
-        logger_instance.debug("metadata" + str(metadata))
+        self.logger.debug("metadata" + str(metadata))
         return metadata
 
 
@@ -216,12 +215,11 @@ class Utils:
         Returns:
             str: es url
         """
-        logger_instance = SingletonLogger.getLogger("Orion")
         if "ES_SERVER" in data.keys():
             return data["ES_SERVER"]
         if "ES_SERVER" in os.environ:
             return os.environ.get("ES_SERVER")
-        logger_instance.error("ES_SERVER environment variable/config variable not set")
+        self.logger.error("ES_SERVER environment variable/config variable not set")
         sys.exit(1)
 
 
@@ -305,19 +303,19 @@ class Utils:
         options: Dict[str, Any],
         start_timestamp: datetime
     ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
-        """generate the dataframe for the test given
+        """
+        Process a test and get the data for the test
 
         Args:
-            test (_type_): test from process test
-            match (_type_): matcher object
-            logger (_type_): logger object
-            output (_type_): output file name
+            test (dict): test configuration
+            match (Matcher): the matcher object
+            options (dict): options for the run
+            start_timestamp (datetime): start time for the run
 
         Returns:
-            _type_: merged dataframe
+            tuple: A tuple of a dataframe and a dictionary of metrics
         """
-        logger = SingletonLogger.getLogger("Orion")
-        logger.info("The test %s has started", test["name"])
+        self.logger.info("The test %s has started", test["name"])
 
         test_threshold=0
         if "threshold" in test:
@@ -350,14 +348,13 @@ class Utils:
             buildUrls = self.get_build_urls(uuids, match)
             versions = self.get_version( uuids, match)
         elif not uuids:
-            logger.info("No UUID present for given metadata")
+            self.logger.info("No UUID present for given metadata")
             return None, None
-
-        match.index = test["benchmarkIndex"]
+        match.index = options["benchmark_index"]
 
         uuids = self.filter_uuids_on_index(
             metadata,
-            test["benchmarkIndex"],
+            options["benchmark_index"],
             uuids,
             match,
             options["baseline"],
@@ -439,7 +436,6 @@ class Utils:
         Returns:
             dict: dictionary of the metadata
         """
-        logger_instance = SingletonLogger.getLogger("Orion")
         test = match.get_metadata_by_uuid(uuid)
         metadata = {
             "platform": "",
@@ -471,7 +467,7 @@ class Utils:
 
         # Remove any keys that have blank values
         no_blank_meta = {k: v for k, v in metadata.items() if v}
-        logger_instance.debug("No blank metadata dict: " + str(no_blank_meta))
+        self.logger.debug("No blank metadata dict: " + str(no_blank_meta))
         return no_blank_meta
 
     def sippy_pr_diff(self, base_version: str, new_version: str) -> List[str]:
@@ -482,13 +478,12 @@ class Utils:
         Returns:
             list: list of PRs
         """
-        logger_instance = SingletonLogger.getLogger("Orion")
         base_url = "https://sippy.dptools.openshift.org/api/payloads/"
         filter_url = f"diff?fromPayload={base_version}&toPayload={new_version}"
         url = base_url + filter_url
         response = requests.get(url, timeout=30)
         if response.status_code != 200:
-            logger_instance.error("Failed to get diff between %s and %s in sippy", base_version, new_version)
+            self.logger.error("Failed to get diff between %s and %s in sippy", base_version, new_version)
             return []
         return self.process_sippy_pr_list(response.json())
 
@@ -512,7 +507,6 @@ class Utils:
         Returns:
             List[str]: list of PRs
         """
-        logger_instance = SingletonLogger.getLogger("Orion")
         base_url = "https://sippy.dptools.openshift.org/api/releases/pull_requests"
         filter_dict = {
             "items": [
@@ -531,7 +525,7 @@ class Utils:
         url = f"{base_url}?{urllib.parse.urlencode(params)}"
         response = requests.get(url, timeout=30)
         if response.status_code != 200:
-            logger_instance.error("Failed to search for PRs in sippy for version %s", version)
+            self.logger.error("Failed to search for PRs in sippy for version %s", version)
             return []
         return self.process_sippy_pr_list(response.json())
 
@@ -637,10 +631,10 @@ def get_subtracted_timestamp(time_duration: str) -> datetime:
     Returns:
         datetime: return datetime of given timegap from now
     """
-    logger_instance = SingletonLogger.getLogger("Orion")
+    logger = SingletonLogger.get_logger("Orion")
     reg_ex = re.match(r"^(?:(\d+)d)?(?:(\d+)h)?$", time_duration)
     if not reg_ex:
-        logger_instance.error("Wrong format for time duration, please provide in XdYh")
+        logger.error("Wrong format for time duration, please provide in XdYh")
     days = int(reg_ex.group(1)) if reg_ex.group(1) else 0
     hours = int(reg_ex.group(2)) if reg_ex.group(2) else 0
     duration_to_subtract = timedelta(days=days, hours=hours)
