@@ -6,9 +6,7 @@ module for all utility functions orion uses
 # pylint: disable = import-error
 
 import json
-import os
 import re
-import sys
 import urllib.parse
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
