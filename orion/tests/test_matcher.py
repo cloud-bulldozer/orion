@@ -8,6 +8,7 @@ Unit Test file for fmatch.py
 import os
 from unittest.mock import patch
 import datetime
+import logging
 
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.response import Response
@@ -16,6 +17,7 @@ import pandas as pd
 
 # pylint: disable = import-error
 from orion.matcher import Matcher
+from orion.logger import SingletonLogger
 
 
 @pytest.fixture
@@ -31,6 +33,8 @@ def matcher_instance():
     with patch("orion.matcher.Elasticsearch") as mock_es:
         mock_es_instance = mock_es.return_value
         mock_es_instance.search.return_value = sample_output
+        # Initialize logger before creating Matcher instance
+        SingletonLogger(debug=logging.INFO, name="Orion")
         match = Matcher(index="perf-scale-ci")
         return match
 
@@ -48,6 +52,8 @@ def uuid_matcher_instance():
     with patch("orion.matcher.Elasticsearch") as mock_es:
         mock_es_instance = mock_es.return_value
         mock_es_instance.search.return_value = sample_output
+        # Initialize logger before creating Matcher instance
+        SingletonLogger(debug=logging.INFO, name="Orion")
         match = Matcher(index="krkn-telemetry",
                         uuid_field="run_uuid",
                         version_field="cluster_version")
