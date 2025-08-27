@@ -6,9 +6,7 @@ module for all utility functions orion uses
 # pylint: disable = import-error
 
 import json
-import os
 import re
-import sys
 import urllib.parse
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
@@ -203,24 +201,6 @@ class Utils:
         metadata[self.version_field] = str(metadata[self.version_field])
         self.logger.debug("metadata" + str(metadata))
         return metadata
-
-
-    def get_datasource(self, data: Dict[Any, Any]) -> str:
-        """Gets es url from config or env
-
-        Args:
-            data (_type_): config file data
-            logger (_type_): logger
-
-        Returns:
-            str: es url
-        """
-        if "ES_SERVER" in data.keys():
-            return data["ES_SERVER"]
-        if "ES_SERVER" in os.environ:
-            return os.environ.get("ES_SERVER")
-        self.logger.error("ES_SERVER environment variable/config variable not set")
-        sys.exit(1)
 
 
     def filter_uuids_on_index(

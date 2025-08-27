@@ -1,6 +1,6 @@
 # Orion - CLI tool to find regressions
 
-Orion stands as a powerful command-line tool/daemon designed for identifying regressions within perf-scale CPT runs, leveraging metadata provided during the process. The detection mechanism relies on [hunter](https://github.com/datastax-labs/hunter).
+Orion stands as a powerful command-line tool designed for identifying regressions within perf-scale CPT runs, leveraging metadata provided during the process. The detection mechanism relies on [hunter](https://github.com/datastax-labs/hunter).
 
 ## Quick Start
 
@@ -8,7 +8,7 @@ Orion stands as a powerful command-line tool/daemon designed for identifying reg
 
 ```bash
 $ podman build -f Dockerfile -t orion
-$ podman run orion orion cmd --config examples/trt-external-payload-node-density.yaml --hunter-analyze --input-vars='{"version": "4.19"}' --es-server='https://my-opensearch.perf.com' --benchmark-index=ripsaw-kube-burner-* --metadata-index=perf_scale_ci* --lookback=15d
+$ podman run orion orion --config examples/trt-external-payload-node-density.yaml --hunter-analyze --input-vars='{"version": "4.19"}' --es-server='https://my-opensearch.perf.com' --benchmark-index=ripsaw-kube-burner-* --metadata-index=perf_scale_ci* --lookback=15d
  ```
 
 
@@ -29,10 +29,7 @@ $ uv venv --python 3.11
 $ source .venv/bin/activate
 $ uv pip install -r requirements.txt
 $ uv pip install .
-``
-
-
-
+```
 
 ### Basic Usage
 
@@ -40,7 +37,7 @@ Trigger hunter analysis using data from the 15 latest days
 
 ```bash
 # Command-line mode
-$ orion cmd --config examples/trt-external-payload-node-density.yaml --hunter-analyze --input-vars='{"version": "4.19"}' --es-server='htts://my-opensearch.perf.com' --benchmark-index=ripsaw-kube-burner-* --metadata-index=perf_scale_ci* --lookback=15d
+$ orion --config examples/trt-external-payload-node-density.yaml --hunter-analyze --input-vars='{"version": "4.19"}' --es-server='htts://my-opensearch.perf.com' --benchmark-index=ripsaw-kube-burner-* --metadata-index=perf_scale_ci* --lookback=15d
 2025-08-12 10:45:31,965 - Orion      - INFO - file: main.py - line: 136 - 🏹 Starting Orion in command-line mode                                                                              2025-08-12 10:45:31,971 - Orion      - INFO - file: utils.py - line: 317 - The test payload-node-density has started                                                            
 2025-08-12 10:45:31,971 - Matcher    - INFO - file: matcher.py - line: 75 - Executing query against index: perf_scale_ci*                                                                     2025-08-12 10:45:33,179 - Matcher    - INFO - file: matcher.py - line: 75 - Executing query against index: perf_scale_ci*                                                      
 2025-08-12 10:45:33,441 - Matcher    - INFO - file: matcher.py - line: 75 - Executing query against index: ripsaw-kube-burner-*                                                               2025-08-12 10:45:33,715 - Orion      - INFO - file: utils.py - line: 67 - Collecting podReadyLatency                                                                            
@@ -49,16 +46,11 @@ $ orion cmd --config examples/trt-external-payload-node-density.yaml --hunter-an
 etc.
 ```
 
-### Daemon mode
-$ orion daemon
-```
-
 ## Features
 
 - **Regression Detection**: Identify performance regressions using advanced statistical methods
 - **Multiple Algorithms**: Support for Hunter, CMR, and anomaly detection
 - **Flexible Configuration**: YAML-based configuration with extensive customization options
-- **Command-line & Daemon Modes**: Use as a CLI tool or run as a service
 - **Multiple Output Formats**: JSON, CSV, and JUnit XML output support
 
 ## Documentation
@@ -66,7 +58,6 @@ $ orion daemon
 - **[Installation Guide](docs/installation.md)** - Detailed setup and build instructions
 - **[Configuration](docs/configuration.md)** - Configuration format and metrics options
 - **[Usage Guide](docs/usage.md)** - Command-line options, examples, and configurations
-- **[Daemon Mode](docs/daemon-mode.md)** - API documentation and daemon setup
 
 ## Compatibility
 

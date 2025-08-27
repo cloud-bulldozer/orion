@@ -9,7 +9,6 @@ import warnings
 from typing import Any
 import json
 import click
-import uvicorn
 from orion.logger import SingletonLogger
 from orion.run_test import run
 from orion import constants as cnsts
@@ -69,16 +68,8 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
             )
     return value
 
-
-@click.group()
-def cli(max_content_width=120):  # pylint: disable=unused-argument
-    """
-    Orion is a tool which can run change point detection for set of runs using statistical models
-    """
-
-
 # pylint: disable=too-many-locals
-@cli.command(name="cmd")
+@click.command()
 @click.option(
     "--cmr", 
     is_flag=True,
@@ -87,7 +78,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
     mutually_exclusive=["anomaly_detection","hunter_analyze"],
 )
 @click.option("--filter", is_flag=True, help="Generate percent difference in comparison")
-@click.option("--config", default="config.yaml", help="Path to the configuration file")
+@click.option("--config", help="Path to the configuration file", required=True)
 @click.option("--ack", default="", help="Optional ack YAML to ack known regressions")
 @click.option(
     "--save-data-path", default="data.csv", help="Path to save the output file"
@@ -131,7 +122,7 @@ def cli(max_content_width=120):  # pylint: disable=unused-argument
 @click.option("--benchmark-index", type=str, envvar="es_benchmark_index",  help="Index where test data is stored, can be set via env var es_benchmark_index", default="")
 @click.option("--metadata-index", type=str, envvar="es_metadata_index",  help="Index where metadata is stored, can be set via env var es_metadata_index", default="")
 @click.option("--input-vars", type=Dictionary(), default="{}", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
-def cmd_analysis(**kwargs):
+def main(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
     """
@@ -171,27 +162,3 @@ def cmd_analysis(**kwargs):
 
             print("-" * 50)
         sys.exit(2) ## regression detected
-
-
-
-@cli.command(name="daemon")
-@click.option("--debug", default=False, is_flag=True, help="log level")
-@click.option("--port", default=8080, help="set port")
-def rundaemon(debug: bool, port: int):
-    """
-    Orion runs on daemon mode
-    \b
-    """
-    level = logging.DEBUG if debug else logging.INFO
-    logger = SingletonLogger(debug=level, name='Orion')
-    logger.info("🏹 Starting Orion in Daemon mode")
-    uvicorn.run("orion.daemon:app", port=port)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) <= 1:
-        cli.main(["--help"])
-    else:
-        cli.add_command(cmd_analysis)
-        cli.add_command(rundaemon)
-        cli()
