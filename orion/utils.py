@@ -245,7 +245,7 @@ class Utils:
             timestamp_field (str): timestamp field in data
         """
         test = match.get_results("", uuids, {}, timestamp_field=timestamp_field)
-        return {run[self.uuid_field]: run["ocpVersion"] for run in test}
+        return {run[self.uuid_field]: run[self.version_field] for run in test}
 
     def get_build_urls(self, uuids: List[str], match: Matcher, timestamp_field: str):
         """Gets metadata of the run from each test
