@@ -13,7 +13,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'orion = main:cli',
+            'orion = main:main',
         ],
     },
     packages=find_packages(),

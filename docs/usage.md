@@ -1,13 +1,17 @@
 # Usage Guide
 
-## Command-Line Mode
+## ElasticSearch configuration
 
-Orion provides a flexible command-line interface with various options for different use cases.
+Orion uses ElasticSearch/OpenSearch (ES/OS) to fetch the data used for comparisons. It can be configured using the following flags or environment variables:
+
+- `--es-server`: Sets the URL of ES/OS; or using the `ES_SERVER` environment variable
+- `--metadata-index`: Index name of the ES/OS used to fetch metadata; or using `es_metadata_index` environment variable
+- `--benchmark-index`: Index name of the ES/OS used to fetch benchmark data; or using `es_benchmark_index` environment variable
 
 ### Basic Usage
 
 ```bash
-orion cmd --hunter-analyze
+orion --hunter-analyze
 ```
 
 ## Core Algorithms
@@ -17,21 +21,23 @@ Orion supports three main algorithms that are **mutually exclusive**:
 ### Hunter Analysis
 Uses statistical changepoint detection:
 ```bash
-orion cmd --hunter-analyze
+orion --hunter-analyze
 ```
 
 ### CMR (Compare Most Recent)
 Compares the most recent run with previous matching runs:
+
 ```bash
-orion cmd --cmr
+orion --cmr
 ```
+
 - If more than 1 previous run is found, values are averaged together
 - Use with `direction: 0` in config when using `-o json` to see percent differences
 
 ### Anomaly Detection
 Detects anomalies in your data:
 ```bash
-orion cmd --anomaly-detection
+orion --anomaly-detection
 ```
 
 ## Configuration Options
@@ -39,7 +45,7 @@ orion cmd --anomaly-detection
 ### Config File
 Specify a custom configuration file:
 ```bash
-orion cmd --config /path/to/config.yaml --hunter-analyze
+orion --config /path/to/config.yaml --hunter-analyze
 ```
 
 The configuration file can be a Jinja2 template, environment variables and variables passed through the `--input-vars` flag are accessible in the Jinja2 template: `{{ random_var }}`. For example
@@ -76,9 +82,9 @@ tests:
 The variable `version` can be passed through the `--input-vars` flag as follows:
 
 ```shell
-$ orion cmd --config /path/to/config.yaml --input-vars='{"version": "4.20"}' --hunter-analyze
+$ orion --config /path/to/config.yaml --input-vars='{"version": "4.20"}' --hunter-analyze
 # Or using env vars
-$ VERSION=4.20 orion cmd --config /path/to/config.yaml --hunter-analyze
+$ VERSION=4.20 orion --config /path/to/config.yaml --hunter-analyze
 ```
 
 > **info**
@@ -90,16 +96,16 @@ Control where and how results are saved:
 
 ```bash
 # Custom output file location
-orion cmd --output /path/to/results.csv --hunter-analyze
+orion --output /path/to/results.csv --hunter-analyze
 
 # JSON output format
-orion cmd -o json --hunter-analyze
+orion cmd o json --hunter-analyze
 
 # JUnit XML format
-orion cmd -o junit --hunter-analyze
+orion cmd o junit --hunter-analyze
 
 # Collapse output (show only changepoints and surrounding data)
-orion cmd --collapse --hunter-analyze
+orion --collapse --hunter-analyze
 ```
 
 ## UUID and Baseline Options
@@ -107,13 +113,13 @@ orion cmd --collapse --hunter-analyze
 ### Specific UUID Analysis
 Analyze a specific UUID bypassing metadata matching:
 ```bash
-orion cmd --uuid <uuid> --hunter-analyze
+orion --uuid <uuid> --hunter-analyze
 ```
 
 ### Baseline Comparison
 Compare against specific baseline UUIDs:
 ```bash
-orion cmd --uuid <current_uuid> --baseline "<uuid1>,<uuid2>,<uuid3>" --hunter-analyze
+orion --uuid <current_uuid> --baseline "<uuid1>,<uuid2>,<uuid3>" --hunter-analyze
 ```
 
 **Note:** `--baseline` should only be used with `--uuid`
@@ -124,20 +130,20 @@ orion cmd --uuid <current_uuid> --baseline "<uuid1>,<uuid2>,<uuid3>" --hunter-an
 Constrain your analysis to a specific time period:
 ```bash
 # Look back 5 days and 12 hours
-orion cmd --lookback 5d12h --hunter-analyze
+orion --lookback 5d12h --hunter-analyze
 
 # Look back 2 days
-orion cmd --lookback 2d --hunter-analyze
+orion --lookback 2d --hunter-analyze
 
 # Look back 8 hours
-orion cmd --lookback 8h --hunter-analyze
+orion --lookback 8h --hunter-analyze
 ```
 
 ### Lookback Size
 Limit the number of runs to analyze:
 ```bash
 # Analyze last 50 runs
-orion cmd --lookback-size 50 --hunter-analyze
+orion --lookback-size 50 --hunter-analyze
 ```
 
 ### Combined Lookback Options
@@ -145,7 +151,7 @@ When using both options, the more restrictive limit applies:
 
 ```bash
 # Gets whichever is shorter: last 10 runs OR last 3 days
-orion cmd --lookback 3d --lookback-size 10 --hunter-analyze
+orion --lookback 3d --lookback-size 10 --hunter-analyze
 ```
 
 **Example Scenario:**
@@ -162,7 +168,7 @@ Today is 27 Aug:
 ### Relaxed Matching
 Open match requirements to find UUIDs based on metadata without exact jobConfig.jobIterations match:
 ```bash
-orion cmd --node-count true --hunter-analyze
+orion --node-count true --hunter-analyze
 ```
 
 Default is `false` for strict matching.
@@ -172,7 +178,7 @@ Default is `false` for strict matching.
 ### Debug Mode
 Enable detailed debug logs:
 ```bash
-orion cmd --debug --hunter-analyze
+orion --debug --hunter-analyze
 ```
 
 ## Acknowledging Known Issues
@@ -190,7 +196,7 @@ ack:
 
 Apply acknowledgments:
 ```bash
-orion cmd --ack ack.yaml --hunter-analyze
+orion --ack ack.yaml --hunter-analyze
 ```
 
 **Benefits:**
@@ -329,28 +335,28 @@ tests:
 ### Basic Regression Detection
 ```bash
 # Run hunter analysis with default settings
-orion cmd --config performance-config.yaml --hunter-analyze
+orion --config performance-config.yaml --hunter-analyze
 
 # Run with debug output
-orion cmd --config performance-config.yaml --hunter-analyze --debug
+orion --config performance-config.yaml --hunter-analyze --debug
 ```
 
 ### Time-Constrained Analysis
 ```bash
 # Analyze last 7 days of data
-orion cmd --config performance-config.yaml --hunter-analyze --lookback 7d
+orion --config performance-config.yaml --hunter-analyze --lookback 7d
 
 # Analyze last 24 hours with maximum 50 runs
-orion cmd --config performance-config.yaml --hunter-analyze --lookback 24h --lookback-size 50
+orion --config performance-config.yaml --hunter-analyze --lookback 24h --lookback-size 50
 ```
 
 ### Specific UUID Analysis
 ```bash
 # Analyze specific run against historical data
-orion cmd --config metrics-only.yaml --uuid "abc123-def456-ghi789" --hunter-analyze
+orion --config metrics-only.yaml --uuid "abc123-def456-ghi789" --hunter-analyze
 
 # Compare specific run against baselines
-orion cmd --config metrics-only.yaml \
+orion --config metrics-only.yaml \
   --uuid "current-run-uuid" \
   --baseline "baseline1,baseline2,baseline3" \
   --cmr
@@ -359,15 +365,15 @@ orion cmd --config metrics-only.yaml \
 ### Output Formatting
 ```bash
 # Generate JSON output with only changepoints
-orion cmd --config performance-config.yaml --hunter-analyze -o json --collapse
+orion --config performance-config.yaml --hunter-analyze -o json --collapse
 
 # Generate JUnit XML for CI integration
-orion cmd --config performance-config.yaml --hunter-analyze -o junit --output results.xml
+orion --config performance-config.yaml --hunter-analyze -o junit --output results.xml
 ```
 
 ### Performance Analysis with Custom Thresholds
 ```bash
-orion cmd \
+orion \
   --config perf-config.yaml \
   --hunter-analyze \
   --lookback 7d \
@@ -378,7 +384,7 @@ orion cmd \
 
 ### Baseline Comparison with JSON Output
 ```bash
-orion cmd \
+orion \
   --uuid "current-run-uuid" \
   --baseline "baseline1,baseline2" \
   --cmr \
@@ -388,52 +394,11 @@ orion cmd \
 
 ### Quick Anomaly Check
 ```bash
-orion cmd \
+orion \
   --config quick-check.yaml \
   --anomaly-detection \
   --lookback 24h \
   --output anomalies.json
-```
-
-## Daemon Mode Examples
-
-### Basic Daemon Usage
-```bash
-# Start daemon
-orion daemon
-
-# Query for changepoints
-curl -X POST 'http://127.0.0.1:8080/daemon/changepoint?filter_changepoints=true&test_name=cpu-monitoring'
-```
-
-### Automated Monitoring Script
-```bash
-#!/bin/bash
-# automated-monitoring.sh
-
-DAEMON_URL="http://127.0.0.1:8080"
-TEST_NAME="full-stack-monitoring"
-OUTPUT_DIR="./monitoring-results"
-
-mkdir -p "$OUTPUT_DIR"
-
-while true; do
-    timestamp=$(date +%Y%m%d-%H%M%S)
-    output_file="$OUTPUT_DIR/results-$timestamp.json"
-    
-    # Query for changepoints
-    curl -s -X POST "$DAEMON_URL/daemon/changepoint?filter_changepoints=true&test_name=$TEST_NAME" \
-         > "$output_file"
-    
-    # Check if any changepoints were detected
-    if grep -q '"is_changepoint": true' "$output_file"; then
-        echo "$(date): Changepoint detected! Check $output_file"
-        # Add your notification logic here (email, Slack, etc.)
-    fi
-    
-    # Wait 1 hour before next check
-    sleep 3600
-done
 ```
 
 ## Acknowledgment Examples
@@ -454,7 +419,7 @@ ack:
 
 ### Using Acknowledgments
 ```bash
-orion cmd --config performance-config.yaml --hunter-analyze --ack known-issues.yaml
+orion --config performance-config.yaml --hunter-analyze --ack known-issues.yaml
 ```
 
 ## Tips and Best Practices
