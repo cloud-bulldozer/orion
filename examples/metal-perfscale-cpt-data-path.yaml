@@ -8,7 +8,7 @@ tests:
       workerNodesType.keyword: ""
       workerNodesCount: 4
       benchmark.keyword: k8s-netperf
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
       jobType: {{ jobtype | default('periodic') }}
       not:

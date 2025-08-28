@@ -8,7 +8,7 @@ tests :
       workerNodesCount: 6
       infraNodesCount: 3
       benchmark.keyword: node-density-cni
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       networkType.keyword: OVNKubernetes
       infraNodesType.keyword: r5.xlarge
       not:
