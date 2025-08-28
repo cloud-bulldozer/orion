@@ -166,7 +166,7 @@ class Utils:
         Returns:
             pd.DataFrame: _description_
         """
-        standard_metric_data = match.get_results("", uuids, metric)
+        standard_metric_data = match.get_results("", uuids, metric, timestamp_field=timestamp_field)
         if len(standard_metric_data) == 0:
             standard_metric_df = pd.DataFrame(columns=[self.uuid_field, timestamp_field, metric_value_field])
         else:
@@ -236,42 +236,31 @@ class Utils:
             ids = uuids
         return ids
 
-    def get_version(self, uuids: List[str], match: Matcher) -> dict:
+    def get_version(self, uuids: List[str], match: Matcher, timestamp_field: str) -> dict:
         """Gets the version of the run from each test
 
         Args:
             uuids (List[str]): list of uuids to find version of
             match (Matcher): the fmatch instance
+            timestamp_field (str): timestamp field in data
         """
-        test = match.get_results("", uuids, {})
-        if len(test) == 0:
-            return {}
+        test = match.get_results("", uuids, {}, timestamp_field=timestamp_field)
+        return {run[self.uuid_field]: run[self.version_field] for run in test}
 
-        # Fingerprint / metadata index code path
-        if self.version_field in test[0]:
-            return {run[self.uuid_field]: run[self.version_field] for run in test}
-
-        # No Fingerprint / Metatdata index used. Benchmark result index path
-        result = {}
-        for uuid in uuids:
-            test = match.get_results("", [uuid], {})
-            result[uuid] = test[0]["metadata"][self.version_field]
-        return result
-
-    def get_build_urls(self, uuids: List[str], match: Matcher):
+    def get_build_urls(self, uuids: List[str], match: Matcher, timestamp_field: str):
         """Gets metadata of the run from each test
             to get the build url
 
         Args:
             uuids (list): str list of uuid to find build urls of
             match: the fmatch instance
-
+            timestamp_field (str): timestamp field in data
 
         Returns:
             dict: dictionary of the metadata
         """
 
-        test = match.get_results("", uuids, {})
+        test = match.get_results("", uuids, {}, timestamp_field=timestamp_field)
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in test}
         return buildUrls
 
@@ -319,14 +308,14 @@ class Utils:
         )
         uuids = [run[self.uuid_field] for run in runs]
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
-        versions = self.get_version(uuids, match)
+        versions = self.get_version(uuids, match, timestamp_field)
         prs = {uuid : self.sippy_pr_search(version) for uuid, version in versions.items()}
         # get uuids if there is a baseline
         if options["baseline"] not in ("", None):
             uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
             uuids.append(options["uuid"])
-            buildUrls = self.get_build_urls(uuids, match)
-            versions = self.get_version( uuids, match)
+            buildUrls = self.get_build_urls(uuids, match, timestamp_field)
+            versions = self.get_version( uuids, match, timestamp_field)
         elif not uuids:
             self.logger.info("No UUID present for given metadata")
             return None, None
