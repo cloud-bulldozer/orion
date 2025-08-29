@@ -129,16 +129,16 @@ setup() {
 }
 
 @test "orion label small scale cluster density with hunter-analyze" {
-  run_cmd orion --config "examples/label-small-scale-cluster-density.yaml" --lookback 5d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
+  run_cmd orion --config "examples/label-small-scale-cluster-density.yaml" --lookback 15d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
 @test "orion label small scale cluster density with hunter-analyze and using env vars for ES" {
   export ES_SERVER=${ES_SERVER} es_metadata_index=${METADATA_INDEX} es_benchmark_index=${BENCHMARK_INDEX}
-  run_cmd orion --config "examples/label-small-scale-cluster-density.yaml" --lookback 5d --hunter-analyze --input-vars='{"version": "'${VERSION}'"}'
+  run_cmd orion --config "examples/label-small-scale-cluster-density.yaml" --lookback 15d --hunter-analyze --input-vars='{"version": "'${VERSION}'"}'
 }
 
 @test "orion payload scale" {
-  run_cmd orion --config "examples/payload-scale.yaml" --lookback 5d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
+  run_cmd orion --config "examples/payload-scale.yaml" --lookback 15d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
 @test "orion payload scale without lookback period" {
@@ -166,7 +166,7 @@ setup() {
 }
 
 @test "orion small scale cluster density with anomaly detection" {
-  run_cmd orion --config "examples/small-scale-cluster-density.yaml" --lookback 5d --anomaly-detection --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
+  run_cmd orion --config "examples/small-scale-cluster-density.yaml" --lookback 15d --anomaly-detection --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
 @test "orion small scale node density cni anomaly detection with a window" {
@@ -219,7 +219,7 @@ setup() {
 
 @test "orion with netobserv configs " {
   curl -s https://raw.githubusercontent.com/openshift-eng/ocp-qe-perfscale-ci/refs/heads/netobserv-perf-tests/scripts/queries/netobserv-orion-node-density-heavy.yaml -w %{http_code} -o /tmp/netobserv-node-density-heavy-ospst.yaml
-  run_cmd orion --config "/tmp/netobserv-node-density-heavy-ospst.yaml" --lookback 5d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"workers": 25}'
+  run_cmd orion --config "/tmp/netobserv-node-density-heavy-ospst.yaml" --lookback 15d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"workers": 25}'
 }
 
 
