@@ -19,7 +19,6 @@ import pandas as pd
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
 
-
 @pytest.fixture
 def matcher_instance():
     sample_output = {
@@ -36,6 +35,7 @@ def matcher_instance():
         # Initialize logger before creating Matcher instance
         SingletonLogger(debug=logging.INFO, name="Orion")
         match = Matcher(index="perf-scale-ci")
+
         return match
 
 

@@ -511,7 +511,7 @@ class Utils:
 
 # pylint: disable=too-many-locals
 def json_to_junit(
-    test_name: str, data_json: Dict[Any, Any], metrics_config: Dict[Any, Any]
+    test_name: str, data_json: Dict[Any, Any], metrics_config: Dict[Any, Any], uuid_field: str
 ) -> str:
     """Convert json to junit format
 
@@ -546,7 +546,7 @@ def json_to_junit(
             failures_count += 1
             failure = ET.SubElement(testcase, "failure")
             failure.text = (
-                "\n" + generate_tabular_output(data_json, metric_name=metric) + "\n"
+                "\n" + generate_tabular_output(data_json, metric_name=metric, uuid_field=uuid_field) + "\n"
             )
 
     testsuite.set("failures", str(failures_count))
@@ -568,7 +568,7 @@ def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uui
     """
     records = []
     create_record = lambda record: {  # pylint: disable = C3001
-        "uuid": record[uuid_field],
+        uuid_field: record[uuid_field],
         "timestamp": datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         ),

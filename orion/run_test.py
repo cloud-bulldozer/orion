@@ -97,6 +97,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
                 kwargs,
                 metrics_config,
                 version_field,
+                uuid_field
             )
 
         if kwargs["output_format"] != cnsts.JUNIT:

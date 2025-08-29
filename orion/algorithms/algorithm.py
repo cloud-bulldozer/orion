@@ -14,10 +14,10 @@ import orion.constants as cnsts
 from orion.utils import json_to_junit
 
 
-class Algorithm(ABC):
+class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-attributes
     """Generic Algorithm class for algorithm factory"""
 
-    def __init__(  # pylint: disable = too-many-arguments
+    def __init__(
         self,
         matcher: Matcher,
         dataframe: pd.DataFrame,
@@ -25,6 +25,7 @@ class Algorithm(ABC):
         options: dict,
         metrics_config: dict[str, dict],
         version_field: str = "ocpVersion",
+        uuid_field: str = "uuid"
     ) -> None:
         self.matcher = matcher
         self.dataframe = dataframe
@@ -33,6 +34,7 @@ class Algorithm(ABC):
         self.options = options
         self.metrics_config = metrics_config
         self.regression_flag = False
+        self.uuid_field = uuid_field
 
     def output_json(self) -> Tuple[str, str, bool]:
         """Method to output json output
@@ -112,6 +114,7 @@ class Algorithm(ABC):
             test_name=test_name,
             data_json=data_json,
             metrics_config=self.metrics_config,
+            uuid_field=self.uuid_field
         )
         return test_name, data_junit, self.regression_flag
 
@@ -164,7 +167,7 @@ class Algorithm(ABC):
         attributes = {
             column: self.dataframe[column]
             for column in self.dataframe.columns
-            if column in ["uuid", "buildUrl", self.version_field]
+            if column in [self.uuid_field, "buildUrl", self.version_field]
         }
         series = Series(
             test_name=self.test["name"],
