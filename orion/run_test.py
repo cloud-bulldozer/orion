@@ -79,6 +79,12 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
             start_timestamp
         )
 
+        # Temp solution until metadata is fixed
+        search_string = "periodic-ci-openshift-eng-ocp-qe-perfscale"
+        if test["metadata"]["jobType"] == "periodic":
+            fingerprint_matched_df = fingerprint_matched_df[(fingerprint_matched_df['buildUrl'].str.contains(search_string))]
+            fingerprint_matched_df.reset_index(drop=True, inplace=True)
+
         if fingerprint_matched_df is None:
             sys.exit(3) # No data present
 
