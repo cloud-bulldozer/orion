@@ -218,8 +218,7 @@ setup() {
 }
 
 @test "orion with netobserv configs " {
+  BENCHMARK_INDEX="prod-netobserv-datapoints*"
   curl -s https://raw.githubusercontent.com/openshift-eng/ocp-qe-perfscale-ci/refs/heads/netobserv-perf-tests/scripts/queries/netobserv-orion-node-density-heavy.yaml -w %{http_code} -o /tmp/netobserv-node-density-heavy-ospst.yaml
   run_cmd orion --config "/tmp/netobserv-node-density-heavy-ospst.yaml" --lookback 15d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"workers": 25}'
 }
-
-
