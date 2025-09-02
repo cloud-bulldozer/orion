@@ -80,6 +80,9 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
             start_timestamp
         )
 
+        if fingerprint_matched_df is None:
+            sys.exit(3) # No data present
+
         # Temp solution until metadata is fixed
         if "metadata" in test and "jobType" in test["metadata"]:
             search_string = "periodic-ci-openshift-eng-ocp-qe-perfscale"
@@ -87,9 +90,6 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
                 fingerprint_matched_df = fingerprint_matched_df[
                     (fingerprint_matched_df['buildUrl'].str.contains(search_string))]
                 fingerprint_matched_df.reset_index(drop=True, inplace=True)
-
-        if fingerprint_matched_df is None:
-            sys.exit(3) # No data present
 
         algorithm_name = get_algorithm_type(kwargs)
         if algorithm_name is None:
