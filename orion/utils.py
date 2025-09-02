@@ -18,6 +18,7 @@ import pyshorteners
 import requests
 from tabulate import tabulate
 
+import orion.constants as cnsts
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
 
@@ -621,3 +622,19 @@ def get_subtracted_timestamp(time_duration: str) -> datetime:
     current_time = datetime.now(timezone.utc)
     timestamp_before = current_time - duration_to_subtract
     return timestamp_before
+
+
+def get_output_extension(output_format: str) -> str:
+    """ Get file extension for a given output format
+
+    Args:
+        output_format (str): output format in junit, json, text
+
+    Returns:
+        str: one amoung xml, json, txt
+    """
+    if output_format == cnsts.JSON:
+        return "json"
+    if output_format == cnsts.JUNIT:
+        return "xml"
+    return "txt"
