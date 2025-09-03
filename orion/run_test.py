@@ -1,6 +1,7 @@
 """
 run test
 """
+import os
 import sys
 import json
 from typing import Any, Dict, Tuple
@@ -79,6 +80,9 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
             start_timestamp
         )
 
+        if fingerprint_matched_df is None:
+            sys.exit(3) # No data present
+
         # Temp solution until metadata is fixed
         if "metadata" in test and "jobType" in test["metadata"]:
             search_string = "periodic-ci-openshift-eng-ocp-qe-perfscale"
@@ -86,9 +90,6 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
                 fingerprint_matched_df = fingerprint_matched_df[
                     (fingerprint_matched_df['buildUrl'].str.contains(search_string))]
                 fingerprint_matched_df.reset_index(drop=True, inplace=True)
-
-        if fingerprint_matched_df is None:
-            sys.exit(3) # No data present
 
         algorithm_name = get_algorithm_type(kwargs)
         if algorithm_name is None:
@@ -106,10 +107,11 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
                 metrics_config,
                 version_field,
             )
-
-        if kwargs["output_format"] != cnsts.JUNIT:
-            testname, result_data, _ = algorithm.output(cnsts.JUNIT)
-            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{testname}.xml"
+        # This is env is only present in prow ci
+        prow_job_id = os.getenv("PROW_JOB_ID")
+        if kwargs["output_format"] != cnsts.JSON and prow_job_id and prow_job_id.strip():
+            testname, result_data, _ = algorithm.output(cnsts.JSON)
+            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{testname}.json"
             with open(output_file_name, 'w', encoding="utf-8") as file:
                 file.write(str(result_data))
 

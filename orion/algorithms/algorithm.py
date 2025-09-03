@@ -47,8 +47,10 @@ class Algorithm(ABC):
 
         for index, entry in enumerate(dataframe_json):
             entry["metrics"] = {
-                key: {"value": entry.pop(key), "percentage_change": 0}
-                for key in self.metrics_config
+                key: {"value": entry.pop(key),
+                      "percentage_change": 0,
+                      "labels": " ".join(value["labels"]) if value["labels"] else ""}
+                for key, value in self.metrics_config.items()
             }
             entry["is_changepoint"] = False
 

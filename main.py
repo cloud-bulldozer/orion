@@ -11,6 +11,7 @@ import json
 import click
 from orion.logger import SingletonLogger
 from orion.run_test import run
+from orion.utils import get_output_extension
 from orion import constants as cnsts
 from orion.config import load_config, load_ack
 
@@ -146,7 +147,7 @@ def main(**kwargs):
             print(test_name)
             print("=" * len(test_name))
         print(result_table)
-        output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{kwargs['save_output_path'].split('.')[1]}"
+        output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_table))
     if regression_flag:
