@@ -89,3 +89,47 @@ tests :
         agg_type: avg
       direction: 1
 
+    - name:  ovsCPU-irate-all
+      metricName.keyword: cgroupCPU
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      direction: 1
+      threshold: 10
+
+    - name:  ovsMemory-Workers
+      metricName.keyword : cgroupMemoryRSS-Workers
+      labels.id.keyword : /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: max
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name:  ovsMemory-Masters
+      metricName.keyword : cgroupMemoryRSS-Masters
+      labels.id.keyword : /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: max
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name:  ovsMemory-all
+      metricName.keyword: cgroupMemoryRSS
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      direction: 1
+      threshold: 10
+
