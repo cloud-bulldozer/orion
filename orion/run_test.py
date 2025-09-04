@@ -85,7 +85,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
 
         # Temp solution until metadata is fixed
         if "metadata" in test and "jobType" in test["metadata"]:
-            search_string = "periodic-ci-openshift-eng-ocp-qe-perfscale"
+            search_string = "/periodic"
             if test["metadata"]["jobType"] == "periodic":
                 fingerprint_matched_df = fingerprint_matched_df[
                     (fingerprint_matched_df['buildUrl'].str.contains(search_string))]
