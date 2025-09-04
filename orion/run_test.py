@@ -106,6 +106,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
                 kwargs,
                 metrics_config,
                 version_field,
+                uuid_field
             )
         # This is env is only present in prow ci
         prow_job_id = os.getenv("PROW_JOB_ID")
