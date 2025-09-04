@@ -151,15 +151,18 @@ def main(**kwargs):
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_table))
     if regression_flag:
-        print("Regression(s) found :")
-        for regression in regression_data:
-            formatted_prs = "\n".join([f"- {pr}" for pr in regression["prs"]])
-            print("-" * 50)
-            print(f"{'Previous Version:':<20} {regression['prev_ver']}")
-            print(f"{'Bad Version:':<20} {regression['bad_ver']}")
-            if kwargs["sippy_pr_search"]:
-                print("PR diff:")
-                print(formatted_prs)
+        if kwargs['output_format'] != cnsts.JSON :
+            print("Regression(s) found :")
+            for regression in regression_data:
+                formatted_prs = "\n".join([f"- {pr}" for pr in regression["prs"]])
+                print("-" * 50)
+                print(f"{'Previous Version:':<20} {regression['prev_ver']}")
+                print(f"{'Bad Version:':<20} {regression['bad_ver']}")
+                if kwargs["sippy_pr_search"]:
+                    print("PR diff:")
+                    print(formatted_prs)
 
-            print("-" * 50)
-        sys.exit(2) ## regression detected
+                print("-" * 50)
+            sys.exit(2) ## regression detected
+        else :
+            sys.exit(2) ## regression detected
