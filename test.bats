@@ -213,7 +213,7 @@ setup() {
 @test "orion pod disruption scenarios " {
   before_version=$version
   VERSION=$chaos_version
-  scenario_type="pod_disruption_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*pod_scenario.yaml" run_cmd orion --config "examples/pod_disruption_scenarios.yaml" --lookback 45d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX} --hunter-analyze
+  pod_namespace="openshift-etcd" scenario_type="pod_disruption_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*pod_scenario.yaml" run_cmd orion --config "examples/pod_disruption_scenarios.yaml" --lookback 45d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX} --hunter-analyze
   VERSION=$before_version
 }
 

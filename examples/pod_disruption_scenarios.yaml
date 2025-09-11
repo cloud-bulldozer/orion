@@ -24,6 +24,7 @@ tests:
       node_summary_infos.instance_type: "{{ node_instance_type }}"
       network_plugins: "{{ network_plugins }}"
       scenarios.scenario: "{{ scenario_file }}"
+      scenarios.parameters.config.namespace_pattern.keyword: "{{ pod_namespace }}"
     metrics:
       # Recovery & Health metrics
       - name: health_check_recovery
