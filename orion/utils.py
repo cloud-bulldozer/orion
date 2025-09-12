@@ -453,7 +453,7 @@ class Utils:
         url = base_url + filter_url
         response = requests.get(url, timeout=30)
         if response.status_code != 200:
-            self.logger.error("Failed to get diff between %s and %s in sippy", base_version, new_version)
+            self.logger.debug("Failed to get diff between %s and %s in sippy", base_version, new_version)
             return []
         return self.process_sippy_pr_list(response.json())
 
@@ -495,7 +495,7 @@ class Utils:
         url = f"{base_url}?{urllib.parse.urlencode(params)}"
         response = requests.get(url, timeout=30)
         if response.status_code != 200:
-            self.logger.error("Failed to search for PRs in sippy for version %s", version)
+            self.logger.debug("Failed to search for PRs in sippy for version %s", version)
             return []
         return self.process_sippy_pr_list(response.json())
 
