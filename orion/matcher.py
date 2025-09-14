@@ -24,6 +24,30 @@ class Matcher:
         uuid_field (str): Name of the field containing the UUID.
     """
 
+    def get_nested_field_value(self, source_dict: dict, field_path: str) -> dict | None:
+        """Get value from nested field path like 'tags.sw_version', such as in Telco data.
+
+        Args:
+            source_dict (dict): The _source dictionary from Elasticsearch hit
+            field_path (str): Field path like 'tags.sw_version' or 'ocpVersion'
+
+        Returns:
+            dict or None: The value at the nested field path, or None if the field path is not found
+        """
+        # Handle simple field paths like 'ocpVersion'
+        if '.' not in field_path:
+            return source_dict.get(field_path)
+
+        # Handle nested field paths like 'tags.sw_version'
+        dict_parts = field_path.split('.')
+        value = source_dict
+        for part in dict_parts:
+            if isinstance(value, dict) and part in value:
+                value = value[part]
+            else:
+                return None
+        return value
+
     # pylint: disable=too-many-arguments
     def __init__(
         self,
@@ -165,7 +189,7 @@ class Matcher:
                     {
                         self.uuid_field: hit.to_dict()["_source"][self.uuid_field],
                         "buildUrl": hit.to_dict()["_source"]["buildUrl"],
-                        self.version_field: hit.to_dict()["_source"][self.version_field],
+                        self.version_field: self.get_nested_field_value(hit.to_dict()["_source"], self.version_field),
                     }
                 )
             else:
@@ -173,7 +197,7 @@ class Matcher:
                     {
                         self.uuid_field: hit.to_dict()["_source"][self.uuid_field],
                         "buildUrl": "http://bogus-url",
-                        self.version_field: hit.to_dict()["_source"][self.version_field],
+                        self.version_field: self.get_nested_field_value(hit.to_dict()["_source"], self.version_field),
                     }
                 )
         return uuids_docs
