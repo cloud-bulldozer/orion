@@ -1,0 +1,66 @@
+tests :
+  - name : node-density-heavy-24nodes
+    metadata:
+      ocpVersion: {{ version }}
+      platform: AWS
+      clusterType: self-managed
+      masterNodesType: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType: m6a.xlarge
+      workerNodesCount: 6
+      benchmark.keyword: node-density
+      networkType: OVNKubernetes
+      jobType: {{ jobtype | default('periodic') }}
+      stream: okd
+
+    metrics:
+    - name:  podReadyLatency
+      metricName: podLatencyQuantilesMeasurement
+      quantileName: Ready
+      metric_of_interest: P99
+      not:
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: PerfScale]"
+      direction: 1
+      threshold: 10
+
+    - name:  cpu-kubelet
+      metricName.keyword: cpu-kubelet
+      metric_of_interest: value
+      labels:
+        - "[Jira: Node]"
+      agg:
+        value: cpu-kubelet
+        agg_type: avg
+      direction: 1
+      threshold: 10
+
+    - name:  max-memory-kubelet
+      metricName.keyword: max-memory-kubelet
+      metric_of_interest: value
+      labels:
+        - "[Jira: Node]"
+      agg:
+        value: max-memory-kubelet
+        agg_type: avg
+      direction: 1
+      threshold: 10
+
+    - name:  cpu-crio
+      metricName.keyword: cpu-crio
+      metric_of_interest: value
+      agg:
+        value: cpu-crio
+        agg_type: avg
+      direction: 1
+      threshold: 10
+
+    - name:  max-memory-crio
+      metricName.keyword: max-memory-crio
+      metric_of_interest: value
+      agg:
+        value: max-memory-crio
+        agg_type: avg
+      direction: 1
+      threshold: 10
