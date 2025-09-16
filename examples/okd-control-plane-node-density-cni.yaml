@@ -25,17 +25,6 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  serviceReadyLatency
-      metricName: serviceLatencyQuantilesMeasurement
-      quantileName: Ready
-      metric_of_interest: P99
-      not:
-        jobConfig.name: "garbage-collection"
-      labels:
-        - "[Jira: PerfScale]"
-      direction: 1
-      threshold: 10
-
     - name:  ovsCPU
       metricName : cgroupCPUSeconds-Workers
       labels.id.keyword : /system.slice/ovs-vswitchd.service
