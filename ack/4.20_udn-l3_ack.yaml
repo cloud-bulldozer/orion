@@ -24,3 +24,30 @@ ack:
   - uuid: 7d80399d-f455-4134-b631-d1712c42413e
     metric: ovnMem-nbdb_avg
     reason: https://issues.redhat.com/browse/OCPBUGS-60650
+  - uuid: 5af8de0e-83ab-48d2-b930-1547e1eee6e3
+    metric: ovnCPU-nbdb_avg
+    reason: job was w/o pause
+  - uuid: 5af8de0e-83ab-48d2-b930-1547e1eee6e3
+    metric: ovnCPU-sbdb_avg
+    reason: job was w/o pause
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovsCPU_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovsMemory_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovnkMem-overall_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovnMem-northd_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovnMem-nbdb_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovnMem-sbdb_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovnMem-ovncontroller_avg
+    reason: shift from w/o pause to with pause in config
