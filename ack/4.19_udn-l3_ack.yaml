@@ -52,6 +52,26 @@ ack:
     metric: ovnMem-sbdb_avg
     reason: kube-burner change on how we calculate metrics
   - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
-    metric: ovnMem-ovnk-controller_av
+    metric: ovnMem-ovnk-controller_avg
     reason: kube-burner change on how we calculate metrics
-
+  - uuid: cb90d90d-a33b-4639-a640-ace2996a708b
+    metric: ovnkMem-overall_avg
+    reason: job was w/o pause
+  - uuid: 00f7a823-5c56-430b-8e73-d5812d8bfe9f
+    metric: ovsCPU_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 00f7a823-5c56-430b-8e73-d5812d8bfe9f
+    metric: ovsMemory_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 00f7a823-5c56-430b-8e73-d5812d8bfe9f
+    metric: ovnkMem-overall_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 00f7a823-5c56-430b-8e73-d5812d8bfe9f
+    metric: ovnMem-northd_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 00f7a823-5c56-430b-8e73-d5812d8bfe9f
+    metric: ovnMem-nbdb_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 15c236e7-abff-4595-8e72-06bfd6115e21
+    metric: ovnMem-nbdb_avg
+    reason: https://issues.redhat.com/browse/OCPBUGS-60650
