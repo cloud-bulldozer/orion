@@ -501,7 +501,7 @@ class Utils:
 
 # pylint: disable=too-many-locals
 def json_to_junit(
-    test_name: str, data_json: Dict[Any, Any], metrics_config: Dict[Any, Any], uuid_field: str
+    test_name: str, data_json: Dict[Any, Any], metrics_config: Dict[Any, Any], uuid_field: str, display_field: str = None
 ) -> str:
     """Convert json to junit format
 
@@ -536,7 +536,7 @@ def json_to_junit(
             failures_count += 1
             failure = ET.SubElement(testcase, "failure")
             failure.text = (
-                "\n" + generate_tabular_output(data_json, metric_name=metric, uuid_field=uuid_field) + "\n"
+                "\n" + generate_tabular_output(data_json, metric_name=metric, uuid_field=uuid_field, display_field=display_field) + "\n"
             )
 
     testsuite.set("failures", str(failures_count))
@@ -547,26 +547,33 @@ def json_to_junit(
     return pretty_xml_as_string
 
 
-def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uuid") -> str:
+def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uuid", display_field: str = None) -> str:
     """converts json to tabular format
 
     Args:
         data (list):data in json format
         metric_name (str): metric name
+        uuid_field (str): field name for UUID
+        display_field (str): optional metadata field to display as a column
     Returns:
         str: tabular form of data
     """
     records = []
-    create_record = lambda record: {  # pylint: disable = C3001
-        uuid_field: record[uuid_field],
-        "timestamp": datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        ),
-        "buildUrl": record["buildUrl"],
-        metric_name: record["metrics"][metric_name]["value"],
-        "is_changepoint": bool(record["metrics"][metric_name]["percentage_change"]),
-        "percentage_change": record["metrics"][metric_name]["percentage_change"],
-    }
+    def create_record(record):
+        base_record = {
+            uuid_field: record[uuid_field],
+            "timestamp": datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%SZ"
+            ),
+            "buildUrl": record["buildUrl"],
+            metric_name: record["metrics"][metric_name]["value"],
+            "is_changepoint": bool(record["metrics"][metric_name]["percentage_change"]),
+            "percentage_change": record["metrics"][metric_name]["percentage_change"],
+        }
+        # Add metadata field if it exists in the record
+        if display_field and display_field in record:
+            base_record[display_field] = record[display_field]
+        return base_record
     for i in range(0, len(data)):
         records.append(create_record(data[i]))
 

@@ -174,6 +174,27 @@ class Matcher:
             uuids_docs.append(uuid_doc)
         return uuids_docs
 
+    def get_metadata_field_by_uuids(self, uuids: List[str], field_name: str) -> Dict[str, Any]:
+        """Get specific metadata field values for a list of UUIDs
+
+        Args:
+            uuids (List[str]): list of UUIDs to get metadata for
+            field_name (str): name of the metadata field to retrieve
+
+        Returns:
+            Dict[str, Any]: mapping of UUID to field value
+        """
+        field_values = {}
+
+        for uuid in uuids:
+            metadata = self.get_metadata_by_uuid(uuid)
+            if metadata and field_name in metadata:
+                field_values[uuid] = metadata[field_name]
+            else:
+                field_values[uuid] = "N/A"
+
+        return field_values
+
     def match_kube_burner(self, uuids: List[str],
                           timestamp_field: str = "timestamp") -> List[Dict[str, Any]]:
         """match kube burner runs
