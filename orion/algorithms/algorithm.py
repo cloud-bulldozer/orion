@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from itertools import groupby
 import json
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Tuple, Union
 import pandas as pd
 from tabulate import tabulate
@@ -12,7 +13,7 @@ from orion.matcher import Matcher
 import orion.constants as cnsts
 
 
-from orion.utils import json_to_junit, generate_tabular_output
+from orion.utils import json_to_junit
 
 
 class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-attributes
@@ -116,27 +117,30 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         # If display field is specified, use our custom combined table
         display_field = self.options.get("display")
         if display_field:
-            test_name, json_output, _ = self.output_json()
+            _, json_output, _ = self.output_json()
             data_json = json.loads(json_output)
 
             # Create a combined table with all metrics and the display field
-            combined_output = self._generate_combined_table_with_display(data_json, display_field)
+            combined_output = self._generate_combined_table_with_display(
+                data_json, display_field
+            )
             return self.test["name"], combined_output, self.regression_flag
-        else:
-            # Use default Hunter report
-            series, change_points_by_metric = self._analyze()
-            change_points_by_time = self.group_change_points_by_time(
-                series, change_points_by_metric
-            )
-            report = Report(series, change_points_by_time)
-            output_table = report.produce_report(
-                test_name=self.test["name"], report_type=ReportType.LOG
-            )
-            return self.test["name"], output_table, self.regression_flag
 
-    def _generate_combined_table_with_display(self, data_json: List[Dict], display_field: str) -> str:
-        """Generate a combined table with all metrics and the display field (similar to Hunter format)"""
-        from datetime import datetime, timezone
+        # Use default Hunter report
+        series, change_points_by_metric = self._analyze()
+        change_points_by_time = self.group_change_points_by_time(
+            series, change_points_by_metric
+        )
+        report = Report(series, change_points_by_time)
+        output_table = report.produce_report(
+            test_name=self.test["name"], report_type=ReportType.LOG
+        )
+        return self.test["name"], output_table, self.regression_flag
+
+    def _generate_combined_table_with_display(
+        self, data_json: List[Dict], display_field: str
+    ) -> str:
+        """Generate a combined table with all metrics and display field."""
 
         if not data_json:
             return "No data available"
@@ -147,7 +151,9 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             row = []
 
             # Add timestamp
-            timestamp = datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime("%Y-%m-%d %H:%M:%S +0000")
+            timestamp = datetime.fromtimestamp(
+                record["timestamp"], timezone.utc
+            ).strftime("%Y-%m-%d %H:%M:%S +0000")
             row.append(timestamp)
 
             # Add UUID
