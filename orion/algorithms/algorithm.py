@@ -5,13 +5,14 @@ from itertools import groupby
 import json
 from typing import Any, Dict, List, Tuple, Union
 import pandas as pd
+from tabulate import tabulate
 from hunter.report import Report, ReportType
 from hunter.series import Series, Metric, ChangePoint, ChangePointGroup
 from orion.matcher import Matcher
 import orion.constants as cnsts
 
 
-from orion.utils import json_to_junit
+from orion.utils import json_to_junit, generate_tabular_output
 
 
 class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-attributes
@@ -47,6 +48,20 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         dataframe_json = json.loads(dataframe_json)
         collapsed_json = []
 
+        # Add metadata field if --display option is provided
+        display_field = self.options.get("display")
+        metadata_values = {}
+        if display_field:
+            uuids = [entry[self.uuid_field] for entry in dataframe_json]
+            metadata_matcher = Matcher(
+                index=self.options["metadata_index"],
+                es_server=self.options["es_server"],
+                verify_certs=False,
+                version_field=self.version_field,
+                uuid_field=self.uuid_field
+            )
+            metadata_values = metadata_matcher.get_metadata_field_by_uuids(uuids, display_field)
+
         for index, entry in enumerate(dataframe_json):
             entry["metrics"] = {
                 key: {"value": entry.pop(key),
@@ -55,6 +70,10 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
                 for key, value in self.metrics_config.items()
             }
             entry["is_changepoint"] = False
+
+            # Add the metadata field if requested
+            if display_field and entry[self.uuid_field] in metadata_values:
+                entry[display_field] = metadata_values[entry[self.uuid_field]]
 
         for key, value in change_points_by_metric.items():
             for change_point in value:
@@ -94,15 +113,80 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
 
     def output_text(self) -> Tuple[str, str, bool]:
         """Outputs the data in text/tabular format"""
-        series, change_points_by_metric = self._analyze()
-        change_points_by_time = self.group_change_points_by_time(
-            series, change_points_by_metric
-        )
-        report = Report(series, change_points_by_time)
-        output_table = report.produce_report(
-            test_name=self.test["name"], report_type=ReportType.LOG
-        )
-        return self.test["name"], output_table, self.regression_flag
+        # If display field is specified, use our custom combined table
+        display_field = self.options.get("display")
+        if display_field:
+            test_name, json_output, _ = self.output_json()
+            data_json = json.loads(json_output)
+
+            # Create a combined table with all metrics and the display field
+            combined_output = self._generate_combined_table_with_display(data_json, display_field)
+            return self.test["name"], combined_output, self.regression_flag
+        else:
+            # Use default Hunter report
+            series, change_points_by_metric = self._analyze()
+            change_points_by_time = self.group_change_points_by_time(
+                series, change_points_by_metric
+            )
+            report = Report(series, change_points_by_time)
+            output_table = report.produce_report(
+                test_name=self.test["name"], report_type=ReportType.LOG
+            )
+            return self.test["name"], output_table, self.regression_flag
+
+    def _generate_combined_table_with_display(self, data_json: List[Dict], display_field: str) -> str:
+        """Generate a combined table with all metrics and the display field (similar to Hunter format)"""
+        from datetime import datetime, timezone
+
+        if not data_json:
+            return "No data available"
+
+        # Prepare data for the combined table
+        table_data = []
+        for record in data_json:
+            row = []
+
+            # Add timestamp
+            timestamp = datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime("%Y-%m-%d %H:%M:%S +0000")
+            row.append(timestamp)
+
+            # Add UUID
+            row.append(record[self.uuid_field])
+
+            # Add ocpVersion
+            row.append(record.get(self.version_field, "N/A"))
+
+            # Add buildUrl
+            row.append(record["buildUrl"])
+
+            # Add all metric values
+            for metric_name in self.metrics_config.keys():
+                if "metrics" in record and metric_name in record["metrics"]:
+                    value = record["metrics"][metric_name]["value"]
+                    # Check if this metric has a changepoint
+                    percentage_change = record["metrics"][metric_name].get("percentage_change", 0)
+                    if percentage_change != 0:
+                        row.append(f"{value}")  # We'll handle changepoint marking later
+                    else:
+                        row.append(str(value))
+                else:
+                    row.append("N/A")
+
+            # Add display field value
+            display_value = record.get(display_field, "N/A")
+            row.append(str(display_value))
+
+            table_data.append(row)
+
+        # Prepare headers
+        headers = ["time", self.uuid_field, self.version_field, "buildUrl"]
+        headers.extend(self.metrics_config.keys())
+        headers.append(display_field)
+
+        # Create the table
+        table = tabulate(table_data, headers=headers, tablefmt="simple")
+
+        return table
 
     def output_junit(self) -> Tuple[str, str, bool]:
         """Output junit format
@@ -116,7 +200,8 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             test_name=test_name,
             data_json=data_json,
             metrics_config=self.metrics_config,
-            uuid_field=self.uuid_field
+            uuid_field=self.uuid_field,
+            display_field=self.options.get("display")
         )
         return test_name, data_junit, self.regression_flag
 
