@@ -160,22 +160,18 @@ class Matcher:
         all_hits = self.query_index(s,return_all=True)
         uuids_docs = []
         for hit in all_hits:
+            uuid_doc = {
+                        self.uuid_field: hit.to_dict()["_source"][self.uuid_field],
+                        self.version_field: hit.to_dict()["_source"][self.version_field]
+                    }
             if "buildUrl" in hit["_source"]:
-                uuids_docs.append(
-                    {
-                        self.uuid_field: hit.to_dict()["_source"][self.uuid_field],
-                        "buildUrl": hit.to_dict()["_source"]["buildUrl"],
-                        self.version_field: hit.to_dict()["_source"][self.version_field],
-                    }
-                )
+                uuid_doc["buildUrl"] = hit.to_dict()["_source"]["buildUrl"]
+            elif "build_url" in hit["_source"]:
+                uuid_doc["buildUrl"] = hit.to_dict()["_source"]["build_url"]
             else:
-                uuids_docs.append(
-                    {
-                        self.uuid_field: hit.to_dict()["_source"][self.uuid_field],
-                        "buildUrl": "http://bogus-url",
-                        self.version_field: hit.to_dict()["_source"][self.version_field],
-                    }
-                )
+                uuid_doc["buildUrl"] = "http://bogus-url"
+
+            uuids_docs.append(uuid_doc)
         return uuids_docs
 
     def match_kube_burner(self, uuids: List[str],
