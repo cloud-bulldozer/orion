@@ -49,20 +49,6 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         dataframe_json = json.loads(dataframe_json)
         collapsed_json = []
 
-        # Add metadata field if --display option is provided
-        display_field = self.options.get("display")
-        metadata_values = {}
-        if display_field:
-            uuids = [entry[self.uuid_field] for entry in dataframe_json]
-            metadata_matcher = Matcher(
-                index=self.options["metadata_index"],
-                es_server=self.options["es_server"],
-                verify_certs=False,
-                version_field=self.version_field,
-                uuid_field=self.uuid_field
-            )
-            metadata_values = metadata_matcher.get_metadata_field_by_uuids(uuids, display_field)
-
         for index, entry in enumerate(dataframe_json):
             entry["metrics"] = {
                 key: {"value": entry.pop(key),
@@ -72,9 +58,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             }
             entry["is_changepoint"] = False
 
-            # Add the metadata field if requested
-            if display_field and entry[self.uuid_field] in metadata_values:
-                entry[display_field] = metadata_values[entry[self.uuid_field]]
+            # Display field data is already in the dataframe if requested
 
         for key, value in change_points_by_metric.items():
             for change_point in value:
