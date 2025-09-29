@@ -99,7 +99,8 @@ class Matcher:
         meta: Dict[str, Any],
         lookback_date: datetime = None,
         lookback_size: int = 10000,
-        timestamp_field: str = "timestamp"
+        timestamp_field: str = "timestamp",
+        additional_fields: List[str] = None
     ) -> List[Dict[str, str]]:
         """gets uuid by metadata
 
@@ -160,18 +161,28 @@ class Matcher:
         all_hits = self.query_index(s,return_all=True)
         uuids_docs = []
         for hit in all_hits:
-            uuid_doc = {
-                        self.uuid_field: hit.to_dict()["_source"][self.uuid_field],
-                        self.version_field: hit.to_dict()["_source"][self.version_field]
-                    }
-            if "buildUrl" in hit["_source"]:
-                uuid_doc["buildUrl"] = hit.to_dict()["_source"]["buildUrl"]
-            elif "build_url" in hit["_source"]:
-                uuid_doc["buildUrl"] = hit.to_dict()["_source"]["build_url"]
-            else:
-                uuid_doc["buildUrl"] = "http://bogus-url"
+            source_data = hit.to_dict()["_source"]
 
-            uuids_docs.append(uuid_doc)
+            # Base document with required fields
+            doc = {
+                self.uuid_field: source_data[self.uuid_field],
+                self.version_field: source_data[self.version_field]
+            }
+
+            # Handle buildUrl with fallback to build_url
+            if "buildUrl" in source_data:
+                doc["buildUrl"] = source_data["buildUrl"]
+            elif "build_url" in source_data:
+                doc["buildUrl"] = source_data["build_url"]
+            else:
+                doc["buildUrl"] = "http://bogus-url"
+
+            # Add additional fields if requested
+            if additional_fields:
+                for field in additional_fields:
+                    doc[field] = source_data.get(field, "N/A")
+
+            uuids_docs.append(doc)
         return uuids_docs
 
     def match_kube_burner(self, uuids: List[str],

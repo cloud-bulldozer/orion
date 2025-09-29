@@ -123,6 +123,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--benchmark-index", type=str, envvar="es_benchmark_index",  help="Index where test data is stored, can be set via env var es_benchmark_index", default="")
 @click.option("--metadata-index", type=str, envvar="es_metadata_index",  help="Index where metadata is stored, can be set via env var es_metadata_index", default="")
 @click.option("--input-vars", type=Dictionary(), default="{}", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
+@click.option("--display", type=str, help="Add metadata field as a column in the output (e.g., ocpVirt, releaseStream)")
 def main(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions

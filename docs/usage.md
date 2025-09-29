@@ -108,6 +108,11 @@ orion cmd o junit --hunter-analyze
 orion --collapse --hunter-analyze
 ```
 
+It is also possible to display custom metadata fields, like for example _ocpVirtVersion_ or _osImage_:
+```bash
+orion --display ocpVirtVersion
+```
+
 ## UUID and Baseline Options
 
 ### Specific UUID Analysis
