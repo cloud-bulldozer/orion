@@ -10,6 +10,8 @@ tests :
       benchmark.keyword: cluster-density-v2
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
+      jobType: {{ jobtype | default('periodic') }}
+      pullNumber: {{ pullnumber | default(0) }}
       not:
         stream: okd
 

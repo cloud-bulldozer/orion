@@ -294,12 +294,14 @@ class Utils:
         if "timestamp" in test:
             timestamp_field=test["timestamp"]
 
+        print("Test: ", test)
         # getting metadata
         metadata = (
             self.extract_metadata_from_test(test)
             if options["uuid"] in ("", None)
             else self.get_metadata_with_uuid(options["uuid"], match)
         )
+        print("Metadata: ", metadata)
         # get uuids, buildUrls matching with the metadata
         additional_fields = [options["display"]] if options.get("display") else None
         runs = match.get_uuid_by_metadata(
