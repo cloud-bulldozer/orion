@@ -41,7 +41,8 @@ class Matcher:
                              verify_certs=verify_certs,
                              http_compress=True,
                              max_retries=3,
-                             retry_on_timeout=True)
+                             retry_on_timeout=True,
+                             pool_maxsize=5)
         self.version_field = version_field
         self.uuid_field = uuid_field
 
@@ -124,6 +125,7 @@ class Matcher:
         version = str(meta[self.version_field])[:4]
 
         for field, value in meta.items():
+            print("Field: ", field, "Value: ", value)
             if field in [self.version_field, "ocpMajorVersion"]:
                 continue
             if field != "not":
