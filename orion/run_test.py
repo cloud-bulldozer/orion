@@ -5,13 +5,13 @@ import os
 import sys
 import json
 import copy
+import concurrent.futures
 from typing import Any, Dict, Tuple
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
 from orion.algorithms import AlgorithmFactory
 import orion.constants as cnsts
 from orion.utils import Utils, get_subtracted_timestamp
-import concurrent.futures
 
 def get_algorithm_type(kwargs):
     """Switch Case of getting algorithm name
@@ -33,7 +33,8 @@ def get_algorithm_type(kwargs):
     return algorithm_name
 
 # pylint: disable=too-many-locals
-def run(**kwargs: dict[str, Any]) -> {tuple[Dict[str, Any], bool, Any], tuple[Dict[str, Any], bool, Any]}:
+def run(**kwargs: dict[str, Any]) -> {tuple[Dict[str, Any], bool, Any],
+                                      tuple[Dict[str, Any], bool, Any]}:
     """run method to start the tests
 
     Args:
@@ -46,13 +47,14 @@ def run(**kwargs: dict[str, Any]) -> {tuple[Dict[str, Any], bool, Any], tuple[Di
         lookback (str): lookback in days
 
     Returns:
+        Two tuple objects containing the results of the tests
         tuple:
             - Test output (dict): Test JSON output
             - regression flag (bool): Test result
+            - regression data (list): Regression data
     """
-    logger = SingletonLogger.get_logger("Orion")
     config = kwargs["config"]
-    
+
     result_output, regression_flag, regression_data = {}, False, []
     result_output_pull, regression_flag_pull, regression_data_pull = {}, False, []
     for test in config["tests"]:
@@ -69,11 +71,13 @@ def run(**kwargs: dict[str, Any]) -> {tuple[Dict[str, Any], bool, Any], tuple[Di
             if test["metadata"]["jobType"] == "pull":
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                     print("Executing tasks in parallel...")
-                    futures_pull = executor.submit(analyze, test, kwargs, version_field, uuid_field)
+                    futures_pull = executor.submit(analyze, test, kwargs,
+                                                   version_field, uuid_field)
                     test_periodic = copy.deepcopy(test)
                     test_periodic["metadata"]["jobType"] = "periodic"
                     test_periodic["metadata"]["pullNumber"] = 0
-                    futures_periodic = executor.submit(analyze, test_periodic, kwargs, version_field, uuid_field)
+                    futures_periodic = executor.submit(analyze, test_periodic, kwargs,
+                                                       version_field, uuid_field)
                     concurrent.futures.wait([futures_pull, futures_periodic])
                     result_output_pull = futures_pull.result()[0]
                     regression_flag_pull = futures_pull.result()[1]
@@ -113,6 +117,15 @@ def analyze(
             version_field,
             uuid_field,
         ) -> Tuple[Dict[str, Any], bool, Any]:
+    """
+    Utils class to process the test
+
+    Args:
+        test: test object
+        kwargs: keyword arguments
+        version_field: version field
+        uuid_field: uuid field
+    """
     matcher = Matcher(
         index=kwargs["metadata_index"],
         es_server=kwargs["es_server"],
