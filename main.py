@@ -140,15 +140,24 @@ def main(**kwargs):
         logger.error("metadata-index and es-server flags must be provided")
         sys.exit(1)
     results, results_pull = run(**kwargs)
-    output(logger, kwargs, results)
+    print_output(logger, kwargs, results)
     if results_pull[0]:
-        output(logger, kwargs, results_pull, True)
+        print_output(logger, kwargs, results_pull, True)
 
-def output(
+def print_output(
         logger,
         kwargs,
         results,
         is_pull=False):
+    """
+    Print the output of the tests
+
+    Args:
+        logger: logger object
+        kwargs: keyword arguments
+        results: results of the tests
+        is_pull: whether the tests are pull requests
+    """
     print("Is Pull: ", is_pull)
     output = results[0]
     regression_flag = results[1]
