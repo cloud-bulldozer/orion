@@ -139,7 +139,20 @@ def main(**kwargs):
     if not kwargs["metadata_index"] or not kwargs["es_server"]:
         logger.error("metadata-index and es-server flags must be provided")
         sys.exit(1)
-    output, regression_flag, regression_data = run(**kwargs)
+    results, results_pull = run(**kwargs)
+    output(logger, kwargs, results)
+    if results_pull[0]:
+        output(logger, kwargs, results_pull, True)
+
+def output(
+        logger,
+        kwargs,
+        results,
+        is_pull=False):
+    print("Is Pull: ", is_pull)
+    output = results[0]
+    regression_flag = results[1]
+    regression_data = results[2]
     if not output:
         logger.error("Terminating test")
         sys.exit(0)
@@ -167,6 +180,12 @@ def main(**kwargs):
                     print(formatted_prs)
 
                 print("-" * 50)
-            sys.exit(2) ## regression detected
+            if is_pull:
+                sys.exit(0) ## regression detected
+            else:
+                sys.exit(2) ## regression detected
         else :
-            sys.exit(2) ## regression detected
+            if is_pull:
+                sys.exit(0) ## regression detected
+            else:
+                sys.exit(2) ## regression detected

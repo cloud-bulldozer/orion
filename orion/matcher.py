@@ -125,7 +125,6 @@ class Matcher:
         version = str(meta[self.version_field])[:4]
 
         for field, value in meta.items():
-            print("Field: ", field, "Value: ", value)
             if field in [self.version_field, "ocpMajorVersion"]:
                 continue
             if field != "not":
