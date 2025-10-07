@@ -33,7 +33,7 @@ def get_algorithm_type(kwargs):
     return algorithm_name
 
 # pylint: disable=too-many-locals
-def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
+def run(**kwargs: dict[str, Any]) -> {tuple[Dict[str, Any], bool, Any], tuple[Dict[str, Any], bool, Any]}:
     """run method to start the tests
 
     Args:
@@ -53,6 +53,8 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
     logger = SingletonLogger.get_logger("Orion")
     config = kwargs["config"]
     
+    result_output, regression_flag, regression_data = {}, False, []
+    result_output_pull, regression_flag_pull, regression_data_pull = {}, False, []
     for test in config["tests"]:
         # Create fingerprint Matcher
 
@@ -63,7 +65,6 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
         if "uuid_field" in test:
             uuid_field=test["uuid_field"]
 
-        result_output, regression_flag, regression_data = {}, False, []
         if "metadata" in test and "jobType" in test["metadata"]:
             if test["metadata"]["jobType"] == "pull":
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -74,13 +75,12 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
                     test_periodic["metadata"]["pullNumber"] = 0
                     futures_periodic = executor.submit(analyze, test_periodic, kwargs, version_field, uuid_field)
                     concurrent.futures.wait([futures_pull, futures_periodic])
-                    print("Results Pull:")
-                    print(futures_pull.result())
-                    print("Results Periodic:")
-                    print(futures_periodic.result())
-                    result_output = {**futures_pull.result()[0], **futures_periodic.result()[0]}
-                    regression_flag = futures_pull.result()[1] or futures_periodic.result()[1]
-                    regression_data = futures_pull.result()[2] + futures_periodic.result()[2]
+                    result_output_pull = futures_pull.result()[0]
+                    regression_flag_pull = futures_pull.result()[1]
+                    regression_data_pull = futures_pull.result()[2]
+                    result_output = futures_periodic.result()[0]
+                    regression_flag = futures_periodic.result()[1]
+                    regression_data = futures_periodic.result()[2]
             else:
                 result_output, regression_flag, regression_data = analyze(
                         test,
@@ -88,7 +88,17 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
                         version_field,
                         uuid_field
                     )
-    return result_output, regression_flag, regression_data
+    results_pull = (
+        result_output_pull,
+        regression_flag_pull,
+        regression_data_pull
+    )
+    results = (
+        result_output,
+        regression_flag,
+        regression_data
+    )
+    return results, results_pull
 
 
 def get_start_timestamp(kwargs: Dict[str, Any]) -> str:
@@ -116,7 +126,6 @@ def analyze(
     result_output = {}
     regression_flag = False
     start_timestamp = get_start_timestamp(kwargs)
-    print("Test: ", test)
     fingerprint_matched_df, metrics_config = utils.process_test(
         test,
         matcher,
