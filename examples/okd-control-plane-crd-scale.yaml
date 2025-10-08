@@ -11,6 +11,7 @@ tests :
       benchmark.keyword: crd-scale
       networkType: OVNKubernetes
       jobType: {{ jobtype | default('periodic') }}
+      pullNumber: {{ pull_number | default(0) }}
       stream: okd
 
     metrics:

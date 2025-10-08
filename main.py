@@ -140,9 +140,9 @@ def main(**kwargs):
         logger.error("metadata-index and es-server flags must be provided")
         sys.exit(1)
     results, results_pull = run(**kwargs)
-    print_output(logger, kwargs, results)
     if results_pull[0]:
         print_output(logger, kwargs, results_pull, True)
+    print_output(logger, kwargs, results)
 
 def print_output(
         logger,
@@ -158,7 +158,8 @@ def print_output(
         results: results of the tests
         is_pull: whether the tests are pull requests
     """
-    print("Is Pull: ", is_pull)
+    if is_pull:
+        print("Pull Request analysis:\n")
     output = results[0]
     regression_flag = results[1]
     regression_data = results[2]
@@ -189,12 +190,9 @@ def print_output(
                     print(formatted_prs)
 
                 print("-" * 50)
-            if is_pull:
-                sys.exit(0) ## regression detected
-            else:
+            if not is_pull:
                 sys.exit(2) ## regression detected
         else :
-            if is_pull:
-                sys.exit(0) ## regression detected
-            else:
+            if not is_pull:
                 sys.exit(2) ## regression detected
+    print("\n", "=" * 50,"\n")
