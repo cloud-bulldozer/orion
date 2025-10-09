@@ -301,11 +301,13 @@ class Utils:
             else self.get_metadata_with_uuid(options["uuid"], match)
         )
         # get uuids, buildUrls matching with the metadata
+        additional_fields = [options["display"]] if options.get("display") else None
         runs = match.get_uuid_by_metadata(
             metadata,
             lookback_date=start_timestamp,
             lookback_size=options["lookback_size"],
-            timestamp_field=timestamp_field
+            timestamp_field=timestamp_field,
+            additional_fields=additional_fields
         )
         uuids = [run[self.uuid_field] for run in runs]
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
@@ -361,6 +363,14 @@ class Utils:
             lambda uuid: versions[uuid]
         )
         merged_df["prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
+
+        # Add display field data if requested
+        if options.get("display"):
+            display_field = options["display"]
+            display_data = {run[self.uuid_field]: run.get(display_field, "N/A") for run in runs}
+            merged_df[display_field] = merged_df[self.uuid_field].apply(
+                lambda uuid: display_data.get(uuid, "N/A")
+            )
 
         shortener = pyshorteners.Shortener(timeout=10)
         merged_df["buildUrl"] = merged_df[self.uuid_field].apply(
@@ -501,7 +511,7 @@ class Utils:
 
 # pylint: disable=too-many-locals
 def json_to_junit(
-    test_name: str, data_json: Dict[Any, Any], metrics_config: Dict[Any, Any], uuid_field: str
+    test_name: str, data_json: Dict[Any, Any], metrics_config: Dict[Any, Any], uuid_field: str, display_field: str = None
 ) -> str:
     """Convert json to junit format
 
@@ -536,7 +546,7 @@ def json_to_junit(
             failures_count += 1
             failure = ET.SubElement(testcase, "failure")
             failure.text = (
-                "\n" + generate_tabular_output(data_json, metric_name=metric, uuid_field=uuid_field) + "\n"
+                "\n" + generate_tabular_output(data_json, metric_name=metric, uuid_field=uuid_field, display_field=display_field) + "\n"
             )
 
     testsuite.set("failures", str(failures_count))
@@ -547,26 +557,33 @@ def json_to_junit(
     return pretty_xml_as_string
 
 
-def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uuid") -> str:
+def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uuid", display_field: str = None) -> str:
     """converts json to tabular format
 
     Args:
         data (list):data in json format
         metric_name (str): metric name
+        uuid_field (str): field name for UUID
+        display_field (str): optional metadata field to display as a column
     Returns:
         str: tabular form of data
     """
     records = []
-    create_record = lambda record: {  # pylint: disable = C3001
-        uuid_field: record[uuid_field],
-        "timestamp": datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        ),
-        "buildUrl": record["buildUrl"],
-        metric_name: record["metrics"][metric_name]["value"],
-        "is_changepoint": bool(record["metrics"][metric_name]["percentage_change"]),
-        "percentage_change": record["metrics"][metric_name]["percentage_change"],
-    }
+    def create_record(record):
+        base_record = {
+            uuid_field: record[uuid_field],
+            "timestamp": datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%SZ"
+            ),
+            "buildUrl": record["buildUrl"],
+            metric_name: record["metrics"][metric_name]["value"],
+            "is_changepoint": bool(record["metrics"][metric_name]["percentage_change"]),
+            "percentage_change": record["metrics"][metric_name]["percentage_change"],
+        }
+        # Add metadata field if it exists in the record
+        if display_field and display_field in record:
+            base_record[display_field] = record[display_field]
+        return base_record
     for i in range(0, len(data)):
         records.append(create_record(data[i]))
 
