@@ -7,6 +7,7 @@ import json
 import copy
 import concurrent.futures
 from typing import Any, Dict, Tuple
+from tabulate import tabulate
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
 from orion.algorithms import AlgorithmFactory
@@ -33,8 +34,8 @@ def get_algorithm_type(kwargs):
     return algorithm_name
 
 # pylint: disable=too-many-locals
-def run(**kwargs: dict[str, Any]) -> {tuple[Dict[str, Any], bool, Any],
-                                      tuple[Dict[str, Any], bool, Any]}:
+def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, str, int],
+                                          Tuple[Dict[str, Any], bool, Any, str, int]]:
     """run method to start the tests
 
     Args:
@@ -57,6 +58,8 @@ def run(**kwargs: dict[str, Any]) -> {tuple[Dict[str, Any], bool, Any],
 
     result_output, regression_flag, regression_data = {}, False, []
     result_output_pull, regression_flag_pull, regression_data_pull = {}, False, []
+    average_values_df_pull, average_values_df = "", ""
+    pr = 0
     for test in config["tests"]:
         # Create fingerprint Matcher
 
@@ -73,6 +76,7 @@ def run(**kwargs: dict[str, Any]) -> {tuple[Dict[str, Any], bool, Any],
                     print("Executing tasks in parallel...")
                     futures_pull = executor.submit(analyze, test, kwargs,
                                                    version_field, uuid_field)
+                    pr = test["metadata"]["pullNumber"]
                     test_periodic = copy.deepcopy(test)
                     test_periodic["metadata"]["jobType"] = "periodic"
                     test_periodic["metadata"]["pullNumber"] = 0
@@ -82,9 +86,11 @@ def run(**kwargs: dict[str, Any]) -> {tuple[Dict[str, Any], bool, Any],
                     result_output_pull = futures_pull.result()[0]
                     regression_flag_pull = futures_pull.result()[1]
                     regression_data_pull = futures_pull.result()[2]
+                    average_values_df_pull = futures_pull.result()[3]
                     result_output = futures_periodic.result()[0]
                     regression_flag = futures_periodic.result()[1]
                     regression_data = futures_periodic.result()[2]
+                    average_values_df = futures_periodic.result()[3]
             else:
                 result_output, regression_flag, regression_data = analyze(
                         test,
@@ -95,12 +101,16 @@ def run(**kwargs: dict[str, Any]) -> {tuple[Dict[str, Any], bool, Any],
     results_pull = (
         result_output_pull,
         regression_flag_pull,
-        regression_data_pull
+        regression_data_pull,
+        average_values_df_pull,
+        pr
     )
     results = (
         result_output,
         regression_flag,
-        regression_data
+        regression_data,
+        average_values_df,
+        0
     )
     return results, results_pull
 
@@ -116,7 +126,7 @@ def analyze(
             kwargs,
             version_field,
             uuid_field,
-        ) -> Tuple[Dict[str, Any], bool, Any]:
+        ) -> Tuple[Dict[str, Any], bool, Any, str]:
     """
     Utils class to process the test
 
@@ -148,6 +158,12 @@ def analyze(
 
     if fingerprint_matched_df is None:
         sys.exit(3) # No data present
+
+    metrics = []
+    for metric_name, _ in metrics_config.items():
+        metrics.append(metric_name)
+    average_values = fingerprint_matched_df[metrics].mean()
+    tabulated_average_values = tabulate_average_values(average_values)
 
     algorithm_name = get_algorithm_type(kwargs)
     if algorithm_name is None:
@@ -211,4 +227,13 @@ def analyze(
                     bad_ver = None
 
     regression_flag = regression_flag or test_flag
-    return result_output, regression_flag, regression_data
+    return result_output, regression_flag, regression_data, tabulated_average_values
+
+
+def tabulate_average_values(avg_data) -> str:
+    headers = []
+    data = []
+    for metric, value in avg_data.items():
+        headers.append(metric)
+        data.append(value)
+    return tabulate([data], headers=headers, tablefmt="simple   ", floatfmt=".4f")
