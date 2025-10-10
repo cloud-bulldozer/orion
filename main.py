@@ -6,7 +6,7 @@ This is the cli file for orion, tool to detect regressions using hunter
 import logging
 import sys
 import warnings
-from typing import Any
+from typing import Any, Dict, Tuple
 import json
 import click
 from orion.logger import SingletonLogger
@@ -140,15 +140,20 @@ def main(**kwargs):
         logger.error("metadata-index and es-server flags must be provided")
         sys.exit(1)
     results, results_pull = run(**kwargs)
+    is_pull = False
     if results_pull[0]:
-        print_output(logger, kwargs, results_pull, True)
-    print_output(logger, kwargs, results)
+        is_pull = True
+    has_regression = print_output(logger, kwargs, results, is_pull)
+    if is_pull:
+        print_output(logger, kwargs, results_pull, is_pull)
+    if has_regression:
+        sys.exit(2) ## regression detected
 
 def print_output(
         logger,
         kwargs,
-        results,
-        is_pull=False):
+        results: Tuple[Dict[str, Any], bool, Any, str, int],
+        is_pull: bool = False) -> bool:
     """
     Print the output of the tests
 
@@ -158,20 +163,32 @@ def print_output(
         results: results of the tests
         is_pull: whether the tests are pull requests
     """
-    if is_pull:
-        print("Pull Request analysis:\n")
     output = results[0]
     regression_flag = results[1]
     regression_data = results[2]
+    average_values = results[3]
+    pr = 0
+    if is_pull and len(results) > 4:
+        pr = results[4]
     if not output:
         logger.error("Terminating test")
         sys.exit(0)
     for test_name, result_table in output.items():
         if kwargs['output_format'] != cnsts.JSON :
-            print(test_name)
-            print("=" * len(test_name))
+            text = test_name
+            if pr > 0:
+                text = test_name + " | Pull Request #" + str(pr)
+            print(text)
+            print("=" * len(text))
         print(result_table)
-        output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
+        if is_pull and pr < 1:
+            text = test_name + " | Average of above Periodic runs"
+            print("\n" + text)
+            print("=" * len(text))
+            print(average_values+"\n")
+            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
+        else:
+            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}_pull.{get_output_extension(kwargs['output_format'])}"
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_table))
     if regression_flag:
@@ -191,8 +208,7 @@ def print_output(
 
                 print("-" * 50)
             if not is_pull:
-                sys.exit(2) ## regression detected
+                return True
         else :
             if not is_pull:
-                sys.exit(2) ## regression detected
-    print("\n", "=" * 50,"\n")
+                return True
