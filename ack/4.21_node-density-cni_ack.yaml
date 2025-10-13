@@ -1,1 +1,5 @@
 ---
+ack:
+  - uuid: 5bdef865-13ce-40fb-94be-4117ecdf8f4d
+    metric: ovnCPU-ovnk-controller_avg
+    reason: "It has come back down in later runs"
