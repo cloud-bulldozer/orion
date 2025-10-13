@@ -141,7 +141,9 @@ class Utils:
         """
         if timestamp is None:
             return timestamp
-        if timestamp.isnumeric():
+        if isinstance(timestamp,(int,float)):
+            dt = pd.to_datetime(timestamp, unit='s', utc=True)
+        elif timestamp.isnumeric():
             dt = pd.to_datetime(timestamp, unit='s', utc=True)
         else:
             dt = pd.to_datetime(timestamp, utc=True)
@@ -251,6 +253,11 @@ class Utils:
             timestamp_field (str): timestamp field in data
         """
         test = match.get_results("", uuids, {}, timestamp_field=timestamp_field)
+        if "." in self.version_field:
+            return {
+                run[self.uuid_field]: match.dotDictFind(run, self.version_field)
+                for run in test
+            }
         return {run[self.uuid_field]: run[self.version_field] for run in test}
 
     def get_build_urls(self, uuids: List[str], match: Matcher, timestamp_field: str):
