@@ -141,9 +141,9 @@ class Utils:
         """
         if timestamp is None:
             return timestamp
-        if isinstance(timestamp,(int,float)):
-            dt = pd.to_datetime(timestamp, unit='s', utc=True)
-        elif timestamp.isnumeric():
+        # Check for type(int) first, then check for .isnumeric() on type(str)
+        if isinstance(timestamp, (int, float)) or \
+        (isinstance(timestamp, str) and timestamp.isnumeric()):
             dt = pd.to_datetime(timestamp, unit='s', utc=True)
         else:
             dt = pd.to_datetime(timestamp, utc=True)
