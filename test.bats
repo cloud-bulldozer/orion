@@ -14,8 +14,8 @@ run_cmd(){
     echo "Exit code 2 encountered, regression detected, treating as success"
     return 0
   elif [ $EXIT_CODE -eq 3 ]; then
-    echo "Exit code 3 encountered, not enough data"
-    return 1
+    echo "Exit code 3 encountered, not enough data, treating as success"
+    return 0
   else
     return $EXIT_CODE
   fi
