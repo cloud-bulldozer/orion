@@ -476,3 +476,106 @@ def test_data_operations(matcher_instance, tmp_path, test_type):
         csv_file = tmp_path / "test_output.csv"
         matcher_instance.save_results(mock_df, csv_file_path=str(csv_file), columns=columns)
         assert os.path.isfile(csv_file)
+
+
+# Telco-specific tests for long_int integer timestamps and nested tag structure
+@pytest.fixture
+def telco_matcher_instance():
+    """Create a matcher for telco CPU utilization data."""
+    return make_matcher_fixture(
+        index="svc_telco_cpu_util",
+        uuid_field="uuid",
+        version_field="tags.sw_version"
+    )
+
+
+@pytest.mark.parametrize(
+    "test_uuids,test_metrics,fake_hits,expected_tags",
+    [
+        # Telco data with long_int integer timestamps and nested tags
+        (
+            ["2ef518fe-64de-46c9-a571-efbf7cc7a5a0", "32007076-22e4-4500-8d41-d1779d9ece65"],
+            {"component": "infra_pods"},
+            [
+                FakeHit({
+                    "_source": {
+                        "resource_type": "mem",
+                        "component": "infra_pods",
+                        "test_phase": "steadyworkload",
+                        "result_type": "avg",
+                        "value": 2.52936192E8,
+                        "tags": {
+                            "pipeline": "ci",
+                            "rc": "0",
+                            "cluster": "cnfdf35",
+                            "cpu_type": "Intel(R) Xeon(R) Gold 6330N CPU @ 2.20GHz",
+                            "hyperthread": "2",
+                            "kernel_realtime": "true",
+                            "kernel_version": "5.14.0-427.72.1.el9_4.x86_64+rt",
+                            "power_mode": "performance",
+                            "sw_version": "4.18.17",
+                            "duration": "1m",
+                            "baseline": "false",
+                            "namespace": "openshift-sriov-network-operator",
+                            "pod": "sriov-network-config-daemon-"
+                        },
+                        "timestamp": 1750007825,
+                        "uuid": "2ef518fe-64de-46c9-a571-efbf7cc7a5a0"
+                    }
+                }),
+                FakeHit({
+                    "_source": {
+                        "resource_type": "cpu",
+                        "component": "infra_pods",
+                        "test_phase": "steadyworkload",
+                        "result_type": "max",
+                        "value": 0.7213862,
+                        "tags": {
+                            "pipeline": "ci",
+                            "rc": "0",
+                            "cluster": "ci-op-2r4mgm0g",
+                            "cpu_type": "Intel(R) Xeon(R) Gold 6433N",
+                            "hyperthread": "2",
+                            "kernel_realtime": "true",
+                            "kernel_version": "5.14.0-570.52.1.el9_6.x86_64+rt",
+                            "power_mode": "performance",
+                            "sw_version": "4.20.0-0.nightly-2025-10-13-053645",
+                            "duration": "1h",
+                            "baseline": "false"
+                        },
+                        "timestamp": 1760356258,
+                        "uuid": "32007076-22e4-4500-8d41-d1779d9ece65"
+                    }
+                }),
+            ],
+            {
+                "sw_version": "4.18.17",
+                "kernel_version": "5.14.0-427.72.1.el9_4.x86_64+rt",
+                "namespace": "openshift-sriov-network-operator",
+                "pod": "sriov-network-config-daemon-"
+            },
+        ),
+    ],
+)
+def test_telco_data_with_long_int_timestamps_and_nested_tags(
+    telco_matcher_instance,
+    monkeypatch,
+    test_uuids,
+    test_metrics,
+    fake_hits,
+    expected_tags
+):
+    """Test telco data with long_int integer timestamps and nested tags structure."""
+    monkeypatch.setattr(telco_matcher_instance, "query_index", lambda *a, **k: fake_hits)
+    result = telco_matcher_instance.get_results("", test_uuids, test_metrics)
+
+    # Verify long_int integer timestamps
+    assert len(result) == 2
+    assert all("timestamp" in doc for doc in result)
+    assert all(isinstance(doc["timestamp"], int) for doc in result)
+    assert result[0]["timestamp"] == 1750007825
+    assert result[1]["timestamp"] == 1760356258
+
+    # Verify nested tags structure
+    for field, expected_value in expected_tags.items():
+        assert result[0]["tags"][field] == expected_value
