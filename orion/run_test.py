@@ -92,7 +92,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, str,
                     regression_data = futures_periodic.result()[2]
                     average_values_df = futures_periodic.result()[3]
             else:
-                result_output, regression_flag, regression_data = analyze(
+                result_output, regression_flag, regression_data, average_values_df = analyze(
                         test,
                         kwargs,
                         version_field,
@@ -163,12 +163,15 @@ def analyze(
     for metric_name, _ in metrics_config.items():
         metrics.append(metric_name)
     average_values = fingerprint_matched_df[metrics].mean()
-    tabulated_average_values = tabulate_average_values(average_values)
+    tabulated_average_values = tabulate_average_values(
+        average_values,
+        fingerprint_matched_df.iloc[-1])
+
 
     algorithm_name = get_algorithm_type(kwargs)
     if algorithm_name is None:
         logger.error("No algorithm configured")
-        return None, None, None
+        return None, None, None, None
     logger.info("Comparison algorithm: %s", algorithm_name)
 
     algorithmFactory = AlgorithmFactory()
@@ -230,10 +233,23 @@ def analyze(
     return result_output, regression_flag, regression_data, tabulated_average_values
 
 
-def tabulate_average_values(avg_data) -> str:
-    headers = []
-    data = []
+def tabulate_average_values(avg_data, last_row) -> str:
+    """Tabulate the average values
+
+    Args:
+        avg_data: average data
+        last_row: last row of the dataframe
+
+    Returns:
+        str: tabulated average values
+    """
+    headers = ["time", "uuid", "ocpVersion", "buildUrl"]
+    data = ["0000-00-00 00:00:00 +0000",
+            "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+            "x" * len(last_row["ocpVersion"]),
+            "x" * len(last_row["buildUrl"])]
     for metric, value in avg_data.items():
         headers.append(metric)
         data.append(value)
-    return tabulate([data], headers=headers, tablefmt="simple   ", floatfmt=".4f")
+    return tabulate([data], headers=headers, tablefmt="simple",
+                    floatfmt=[".2f", ".5f", ".6f", ".5f", ".5f", ".4f"])

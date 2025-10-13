@@ -212,3 +212,4 @@ def print_output(
         else :
             if not is_pull:
                 return True
+    return False
