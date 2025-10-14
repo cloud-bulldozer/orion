@@ -141,10 +141,11 @@ class Utils:
         """
         if timestamp is None:
             return timestamp
-        # Check for type(int) first, then check for .isnumeric() on type(str)
-        if isinstance(timestamp, (int, float)) or \
-        (isinstance(timestamp, str) and timestamp.isnumeric()):
+        # Handle int timestamps and numeric strings in seconds
+        if isinstance(timestamp, int) or \
+            (isinstance(timestamp, str) and timestamp.isnumeric()):
             dt = pd.to_datetime(timestamp, unit='s', utc=True)
+        # Default to pd for float (millisec precision), ISO/RFC etc.
         else:
             dt = pd.to_datetime(timestamp, utc=True)
         return dt.replace(tzinfo=None).isoformat(timespec="seconds")

@@ -178,17 +178,12 @@ class Matcher:
         all_hits = self.query_index(s,return_all=True)
         uuids_docs = []
         for hit in all_hits:
-            if "." in self.version_field :
+            uuid_doc= {self.uuid_field: hit.to_dict()["_source"][self.uuid_field]}
+            if "." in self.version_field:
                 value = self.dotDictFind(hit.to_dict()["_source"], self.version_field)
-                uuid_doc = {
-                        self.uuid_field: hit.to_dict()["_source"][self.uuid_field],
-                        self.version_field: value
-                    }
-            else :
-                uuid_doc = {
-                        self.uuid_field: hit.to_dict()["_source"][self.uuid_field],
-                        self.version_field: hit.to_dict()["_source"][self.version_field]
-                    }
+                uuid_doc[self.version_field] = value
+            else:
+                uuid_doc[self.version_field] = hit.to_dict()["_source"][self.version_field]
             source_data = hit.to_dict()["_source"]
 
             # Handle buildUrl with fallback to build_url
