@@ -155,7 +155,10 @@ def main(**kwargs):
         if kwargs['output_format'] != cnsts.JSON :
             print("Regression(s) found :")
             for regression in regression_data:
-                formatted_prs = "\n".join([f"- {pr}" for pr in regression["prs"]])
+                if "prs" in regression:
+                    formatted_prs = "\n".join([f"- {pr}" for pr in regression["prs"]])
+                else:
+                    formatted_prs = "N/A - Payload tests have not completed yet"
                 print("-" * 50)
                 print(f"{'Previous Version:':<20} {regression['prev_ver']}")
                 print(f"{'Bad Version:':<20} {regression['bad_ver']}")
