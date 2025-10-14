@@ -132,11 +132,13 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
                 if prev_ver is not None and bad_ver is not None:
                     if sippy_pr_search:
                         prs = Utils().sippy_pr_diff(prev_ver, bad_ver)
+                        doc = {"prev_ver": prev_ver,
+                                "bad_ver": bad_ver}
+                        # We have seen where sippy_pr_diff returns an empty list of PRs
+                        # since there is a change the payload tests have not completed.
                         if prs:
-                            regression_data.append({
-                                "prev_ver": prev_ver,
-                                "bad_ver": bad_ver,
-                                "prs": prs})
+                            doc["prs"] = prs
+                        regression_data.append(doc)
                     else:
                         regression_data.append({
                             "prev_ver": prev_ver,
