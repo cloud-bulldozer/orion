@@ -151,11 +151,12 @@ class Matcher:
             lookback_date = lookback_date.strftime("%Y-%m-%dT%H:%M:%SZ")
         if isinstance(since_date, datetime):
             since_date = since_date.strftime("%Y-%m-%dT%H:%M:%SZ")
-        
+
         # Build the range query based on available dates
         if lookback_date and since_date:
             # Bound the range between lookback_date and since_date
-            filter_clause.append(Q("range", **{timestamp_field: {"gt": lookback_date, "lt": since_date}}))
+            range_query = {"gt": lookback_date, "lt": since_date}
+            filter_clause.append(Q("range", **{timestamp_field: range_query}))
         elif lookback_date:
             # Only lower bound with lookback_date
             filter_clause.append(Q("range", **{timestamp_field: {"gt": lookback_date}}))

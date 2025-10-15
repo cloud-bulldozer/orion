@@ -9,7 +9,7 @@ import json
 import re
 import urllib.parse
 import xml.etree.ElementTree as ET
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from functools import reduce
 from typing import List, Any, Dict, Tuple
 import pandas as pd
@@ -306,7 +306,7 @@ class Utils:
         )
         # get uuids, buildUrls matching with the metadata
         additional_fields = [options["display"]] if options.get("display") else None
-        
+
         # Parse since_date if provided
         since_date = None
         if options.get("since") and options["since"] != "":
@@ -314,7 +314,6 @@ class Utils:
                 since_date = datetime.strptime(options["since"], "%Y-%m-%d")
             except ValueError:
                 self.logger.warning("Invalid since date format: %s. Expected YYYY-MM-DD", options["since"])
-        
         runs = match.get_uuid_by_metadata(
             metadata,
             lookback_date=start_timestamp,

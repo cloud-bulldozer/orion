@@ -117,7 +117,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
     "--baseline", default="", help="Baseline UUID(s) to to compare against uuid"
 )
 @click.option("--lookback", help="Get data from last X days and Y hours. Format in XdYh")
-@click.option("--since", help="Lookback starting at a specific date. Format in YYYY-MM-DD")
+@click.option("--since", help="End date to bound the time range. When used with --lookback, creates a time window ending at this date. Format: YYYY-MM-DD")
 @click.option("--convert-tinyurl", is_flag=True, help="Convert buildUrls to tiny url format for better formatting")
 @click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
 @click.option("--node-count", default=False, help="Match any node iterations count")

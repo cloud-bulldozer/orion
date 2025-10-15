@@ -122,7 +122,9 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
 def get_start_timestamp(kwargs: Dict[str, Any]) -> str:
     """Get the start timestamp if lookback is provided."""
     if kwargs["since"] != "" and kwargs["since"] is not None:
-        return get_subtracted_timestamp(kwargs["lookback"],kwargs["since"]) if kwargs.get("lookback") else ""
+        if kwargs.get("lookback"):
+            return get_subtracted_timestamp(kwargs["lookback"], kwargs["since"])
+        return ""
     return (
         get_subtracted_timestamp(kwargs["lookback"]) if kwargs.get("lookback") else ""
     )
