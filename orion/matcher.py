@@ -101,7 +101,8 @@ class Matcher:
         lookback_date: datetime = None,
         lookback_size: int = 10000,
         timestamp_field: str = "timestamp",
-        additional_fields: List[str] = None
+        additional_fields: List[str] = None,
+        since_date: datetime = None
     ) -> List[Dict[str, str]]:
         """gets uuid by metadata
 
@@ -116,6 +117,9 @@ class Matcher:
             precedency of whichever cutoff comes first.
             Similar to a car manufacturer's warranty limits.
             timestamp_field (str): timestamp field in data
+            since_date (datetime, optional):
+            The end date to bound the range to. If provided, results will be 
+            bounded between lookback_date and since_date. Defaults to None.
 
         Returns:
             List[Dict[str, str]]: List of dictionaries with uuid, buildURL and ocpVersion as keys
@@ -145,8 +149,19 @@ class Matcher:
 
         if isinstance(lookback_date, datetime):
             lookback_date = lookback_date.strftime("%Y-%m-%dT%H:%M:%SZ")
-        if lookback_date:
+        if isinstance(since_date, datetime):
+            since_date = since_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        
+        # Build the range query based on available dates
+        if lookback_date and since_date:
+            # Bound the range between lookback_date and since_date
+            filter_clause.append(Q("range", **{timestamp_field: {"gt": lookback_date, "lt": since_date}}))
+        elif lookback_date:
+            # Only lower bound with lookback_date
             filter_clause.append(Q("range", **{timestamp_field: {"gt": lookback_date}}))
+        elif since_date:
+            # Only upper bound with since_date
+            filter_clause.append(Q("range", **{timestamp_field: {"lt": since_date}}))
         query = Q(
             "bool",
             must=must_clause,
