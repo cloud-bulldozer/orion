@@ -211,41 +211,37 @@ def analyze(
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_data))
 
-        testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
-        result_output[testname] = result_data
-        # Query with JSON
-        regression_data = []
-        if test_flag:
-            testname, result_data, test_flag = algorithm.output(cnsts.JSON)
-            prev_ver = None
-            bad_ver = None
-            for result in json.loads(result_data):
-                if result["is_changepoint"]:
-                    bad_ver = result[version_field]
+    testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
+    result_output[testname] = result_data
+    # Query with JSON
+    regression_data = []
+    if test_flag:
+        testname, result_data, test_flag = algorithm.output(cnsts.JSON)
+        prev_ver = None
+        bad_ver = None
+        for result in json.loads(result_data):
+            if result["is_changepoint"]:
+                bad_ver = result[version_field]
+            else:
+                prev_ver = result[version_field]
+            if prev_ver is not None and bad_ver is not None:
+                if sippy_pr_search:
+                    prs = Utils().sippy_pr_diff(prev_ver, bad_ver)
+                    doc = {"prev_ver": prev_ver,
+                            "bad_ver": bad_ver}
+                    # We have seen where sippy_pr_diff returns an empty list of PRs
+                    # since there is a change the payload tests have not completed.
+                    if prs:
+                        doc["prs"] = prs
+                    regression_data.append(doc)
                 else:
-                    prev_ver = result[version_field]
-                if prev_ver is not None and bad_ver is not None:
-                    if sippy_pr_search:
-                        prs = Utils().sippy_pr_diff(prev_ver, bad_ver)
-                        doc = {"prev_ver": prev_ver,
-                                "bad_ver": bad_ver}
-                        # We have seen where sippy_pr_diff returns an empty list of PRs
-                        # since there is a change the payload tests have not completed.
-                        if prs:
-                            doc["prs"] = prs
-                        regression_data.append(doc)
-                            regression_data.append({
-                                "prev_ver": prev_ver,
-                                "bad_ver": bad_ver,
-                                "prs": prs})
-                    else:
-                        regression_data.append({
-                            "prev_ver": prev_ver,
-                            "bad_ver": bad_ver,
-                            "prs": []
-                        })
-                    prev_ver = None
-                    bad_ver = None
+                    regression_data.append({
+                        "prev_ver": prev_ver,
+                        "bad_ver": bad_ver,
+                        "prs": []
+                    })
+                prev_ver = None
+                bad_ver = None
 
     regression_flag = regression_flag or test_flag
     return result_output, regression_flag, regression_data, average_values
