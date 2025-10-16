@@ -12,7 +12,7 @@ from orion.matcher import Matcher
 from orion.logger import SingletonLogger
 from orion.algorithms import AlgorithmFactory
 import orion.constants as cnsts
-from orion.utils import Utils, get_subtracted_timestamp
+from orion.utils import Utils, get_subtracted_timestamp, json_to_junit
 
 def get_algorithm_type(kwargs):
     """Switch Case of getting algorithm name
@@ -34,8 +34,8 @@ def get_algorithm_type(kwargs):
     return algorithm_name
 
 # pylint: disable=too-many-locals
-def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, str, int],
-                                          Tuple[Dict[str, Any], bool, Any, str, int]]:
+def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any, int],
+                                          Tuple[Dict[str, Any], bool, Any, Any, int]]:
     """run method to start the tests
 
     Args:
@@ -55,7 +55,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, str,
             - regression data (list): Regression data
     """
     config = kwargs["config"]
-
+    logger = SingletonLogger.get_logger("Orion")
     result_output, regression_flag, regression_data = {}, False, []
     result_output_pull, regression_flag_pull, regression_data_pull = {}, False, []
     average_values_df_pull, average_values_df = "", ""
@@ -73,13 +73,17 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, str,
         if "metadata" in test and "jobType" in test["metadata"]:
             if test["metadata"]["jobType"] == "pull":
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-                    print("Executing tasks in parallel...")
+                    logger.info("Executing tasks in parallel...")
                     futures_pull = executor.submit(analyze, test, kwargs,
                                                    version_field, uuid_field)
                     pr = test["metadata"]["pullNumber"]
                     test_periodic = copy.deepcopy(test)
                     test_periodic["metadata"]["jobType"] = "periodic"
                     test_periodic["metadata"]["pullNumber"] = 0
+                    # remove organization and repository from the metadata to
+                    # be able to compare with the periodic cases
+                    test_periodic["metadata"]["organization"] = ""
+                    test_periodic["metadata"]["repository"] = ""
                     futures_periodic = executor.submit(analyze, test_periodic, kwargs,
                                                        version_field, uuid_field)
                     concurrent.futures.wait([futures_pull, futures_periodic])
@@ -126,7 +130,7 @@ def analyze(
             kwargs,
             version_field,
             uuid_field,
-        ) -> Tuple[Dict[str, Any], bool, Any, str]:
+        ) -> Tuple[Dict[str, Any], bool, Any, Any]:
     """
     Utils class to process the test
 
@@ -162,17 +166,31 @@ def analyze(
     metrics = []
     for metric_name, _ in metrics_config.items():
         metrics.append(metric_name)
-    average_values = fingerprint_matched_df[metrics].mean()
-    tabulated_average_values = tabulate_average_values(
-        average_values,
-        fingerprint_matched_df.iloc[-1])
-
 
     algorithm_name = get_algorithm_type(kwargs)
     if algorithm_name is None:
         logger.error("No algorithm configured")
         return None, None, None, None
     logger.info("Comparison algorithm: %s", algorithm_name)
+
+    # Isolation forest requires no null values in the dataframe
+    if algorithm_name == cnsts.ISOLATION_FOREST:
+        fingerprint_matched_df = fingerprint_matched_df.dropna()
+
+    avg_values = fingerprint_matched_df[metrics].mean()
+    if kwargs['output_format'] == cnsts.JSON:
+        average_values = avg_values.to_json()
+    elif kwargs['output_format'] == cnsts.JUNIT:
+        average_values = json_to_junit(
+            test_name=test["name"]+"_average",
+            data_json=avg_values.to_json(),
+            metrics_config=metrics_config,
+            uuid_field=uuid_field,
+            average=True)
+    else:
+        average_values = tabulate_average_values(
+            avg_values,
+            fingerprint_matched_df.iloc[-1])
 
     algorithmFactory = AlgorithmFactory()
     algorithm = algorithmFactory.instantiate_algorithm(
@@ -230,7 +248,7 @@ def analyze(
                     bad_ver = None
 
     regression_flag = regression_flag or test_flag
-    return result_output, regression_flag, regression_data, tabulated_average_values
+    return result_output, regression_flag, regression_data, average_values
 
 
 def tabulate_average_values(avg_data, last_row) -> str:

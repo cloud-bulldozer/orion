@@ -9,7 +9,6 @@ import json
 import re
 import urllib.parse
 import xml.etree.ElementTree as ET
-import xml.dom.minidom
 from datetime import datetime, timedelta, timezone
 from functools import reduce
 from typing import List, Any, Dict, Tuple
@@ -201,6 +200,12 @@ class Utils:
         metadata = test["metadata"]
         metadata[self.version_field] = str(metadata[self.version_field])
         self.logger.debug("metadata" + str(metadata))
+        if "organization" in metadata and not metadata.get("organization"):
+            del metadata["organization"]
+            self.logger.info("organization is empty removed from metadata for it to not affect the matching process")
+        if "repository" in metadata and not metadata.get("repository"):
+            del metadata["repository"]
+            self.logger.info("repository is empty removed from metadata for it to not affect the matching process")
         return metadata
 
 
@@ -293,7 +298,6 @@ class Utils:
         timestamp_field = "timestamp"
         if "timestamp" in test:
             timestamp_field=test["timestamp"]
-
         # getting metadata
         metadata = (
             self.extract_metadata_from_test(test)
@@ -511,8 +515,13 @@ class Utils:
 
 # pylint: disable=too-many-locals
 def json_to_junit(
-    test_name: str, data_json: Dict[Any, Any], metrics_config: Dict[Any, Any], uuid_field: str, display_field: str = None
-) -> str:
+    test_name: str,
+    data_json: Dict[Any, Any],
+    metrics_config: Dict[Any, Any],
+    uuid_field: str,
+    display_field: str = None,
+    average: bool = False
+) -> ET.Element:
     """Convert json to junit format
 
     Args:
@@ -522,9 +531,8 @@ def json_to_junit(
     Returns:
         _type_: _description_
     """
-    testsuites = ET.Element("testsuites")
-    testsuite = ET.SubElement(
-        testsuites, "testsuite", name=f"{test_name} nightly compare"
+    testsuite = ET.Element(
+        "testsuite", name=f"{test_name} nightly compare"
     )
     failures_count = 0
     test_count = 0
@@ -532,29 +540,37 @@ def json_to_junit(
         test_count += 1
         labels = value["labels"]
         label_string = " ".join(labels) if labels else ""
-        testcase = ET.SubElement(
-            testsuite,
-            "testcase",
-            name=f"{label_string} {metric} regression detection",
-            timestamp=str(int(datetime.now().timestamp())),
-        )
-        if [
-            run
-            for run in data_json
-            if not run["metrics"][metric]["percentage_change"] == 0
-        ]:
-            failures_count += 1
-            failure = ET.SubElement(testcase, "failure")
-            failure.text = (
-                "\n" + generate_tabular_output(data_json, metric_name=metric, uuid_field=uuid_field, display_field=display_field) + "\n"
+        if not average:
+            testcase = ET.SubElement(
+                testsuite,
+                "testcase",
+                name=f"{label_string} {metric} regression detection",
+                timestamp=str(int(datetime.now().timestamp())),
+            )
+            if [
+                run
+                for run in data_json
+                if not run["metrics"][metric]["percentage_change"] == 0
+            ]:
+                failures_count += 1
+                failure = ET.SubElement(testcase, "failure")
+                failure.text = (
+                    "\n" + generate_tabular_output(data_json, metric_name=metric, uuid_field=uuid_field, display_field=display_field) + "\n"
+                )
+        else:
+            data = json.loads(data_json)
+            value = data.get(metric)
+            testcase = ET.SubElement(
+                testsuite,
+                "testcase",
+                name=f"{label_string} {metric} average",
+                timestamp=str(int(datetime.now().timestamp())),
+                value=str(value),
             )
 
     testsuite.set("failures", str(failures_count))
     testsuite.set("tests", str(test_count))
-    xml_str = ET.tostring(testsuites, encoding="utf8", method="xml").decode()
-    dom = xml.dom.minidom.parseString(xml_str)
-    pretty_xml_as_string = dom.toprettyxml()
-    return pretty_xml_as_string
+    return testsuite
 
 
 def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uuid", display_field: str = None) -> str:
