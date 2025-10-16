@@ -438,6 +438,17 @@ Having the AVG section will provide an easy way to compare the PR results to the
 
 | The only section that can trigger a failure in the job is the one in section one, the payload data, and it is not related to the changes in the PR.
 
+To achieve this the following input_vars should be provided
+
+- "jobtype"
+- "pull_number"
+- "organization"
+- "repository"
+
+### Input Example
+
+`--input-vars='{"jobtype": "pull","pull_number": "2790", "organization": "openshift", "repository": "test"}'`
+
 ### Example
 ```
 payload-cluster-density-v2
@@ -471,4 +482,4 @@ time                       uuid                                  ocpVersion     
 6. **Use appropriate algorithms** for your use case:
    - Hunter: General changepoint detection
    - CMR: Recent vs historical comparison
-   - Anomaly: Outlier detection 
+   - Anomaly: Outlier detection, does not support NaN in their values, all rows with NaN in any column is dropped to secure proper algorithm execution

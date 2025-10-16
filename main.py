@@ -8,6 +8,8 @@ import sys
 import warnings
 from typing import Any, Dict, Tuple
 import json
+import xml.etree.ElementTree as ET
+import xml.dom.minidom
 import click
 from orion.logger import SingletonLogger
 from orion.run_test import run
@@ -143,9 +145,14 @@ def main(**kwargs):
     is_pull = False
     if results_pull[0]:
         is_pull = True
-    has_regression = print_output(logger, kwargs, results, is_pull)
-    if is_pull:
-        print_output(logger, kwargs, results_pull, is_pull)
+    if kwargs['output_format'] == cnsts.JSON:
+        has_regression = print_json(logger, kwargs, results, results_pull, is_pull)
+    elif kwargs['output_format'] == cnsts.JUNIT:
+        has_regression = print_junit(logger, kwargs, results, results_pull, is_pull)
+    else:
+        has_regression = print_output(logger, kwargs, results, is_pull)
+        if is_pull:
+            print_output(logger, kwargs, results_pull, is_pull)
     if has_regression:
         sys.exit(2) ## regression detected
 
@@ -182,10 +189,11 @@ def print_output(
             print("=" * len(text))
         print(result_table)
         if is_pull and pr < 1:
-            text = test_name + " | Average of above Periodic runs"
-            print("\n" + text)
-            print("=" * len(text))
-            print(average_values+"\n")
+            if kwargs['output_format'] != cnsts.JSON :
+                text = test_name + " | Average of above Periodic runs"
+                print("\n" + text)
+                print("=" * len(text))
+            print(average_values)
             output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
         else:
             output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}_pull.{get_output_extension(kwargs['output_format'])}"
@@ -210,6 +218,79 @@ def print_output(
             if not is_pull:
                 return True
         else :
+            if not is_pull:
+                return True
+    return False
+
+
+def print_json(logger, kwargs, results, results_pull, is_pull):
+    """
+    Print the output of the tests in json format
+    """
+    logger.info("Printing json output")
+    output = results[0]
+    regression_flag = results[1]
+    average_values = results[3]
+    output_pull = []
+    if not output:
+        logger.error("Terminating test")
+        sys.exit(0)
+    if is_pull and len(results_pull) > 4:
+        output_pull = results_pull[0]
+    for test_name, result_table in output.items():
+        if not is_pull:
+            print(result_table)
+            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
+        else:
+            results_json = {
+                "periodic": json.loads(result_table),
+                "periodic_avg": json.loads(average_values),
+                "pull": json.loads(output_pull.get(test_name)),
+            }
+            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
+            output_file_name_pull = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}_pull.{get_output_extension(kwargs['output_format'])}"
+            print(json.dumps(results_json))
+            with open(output_file_name_pull, 'w', encoding="utf-8") as file:
+                file.write(str(output_pull.get(test_name)))
+        with open(output_file_name, 'w', encoding="utf-8") as file:
+            file.write(str(result_table))
+        if regression_flag:
+            if not is_pull:
+                return True
+    return False
+
+def print_junit(logger, kwargs, results, results_pull, is_pull):
+    """
+    Print the output of the tests in junit format
+    """
+    logger.info("Printing json output")
+    output = results[0]
+    regression_flag = results[1]
+    average_values = results[3]
+    output_pull = []
+    if not output:
+        logger.error("Terminating test")
+        sys.exit(0)
+    if is_pull and len(results_pull) > 4:
+        output_pull = results_pull[0]
+    testsuites = ET.Element("testsuites")
+    for test_name, result_table in output.items():
+        if not is_pull:
+            testsuites.append(result_table)
+        else:
+            testsuites.append(result_table)
+            average_values.tag = "periodic_avg"
+            testsuites.append(average_values)
+            output_pull.get(test_name).tag = "pull"
+            testsuites.append(output_pull.get(test_name))
+        xml_str = ET.tostring(testsuites, encoding="utf8", method="xml").decode()
+        dom = xml.dom.minidom.parseString(xml_str)
+        pretty_xml_as_string = dom.toprettyxml()
+        print(pretty_xml_as_string)
+        output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
+        with open(output_file_name, 'w', encoding="utf-8") as file:
+            file.write(str(pretty_xml_as_string))
+        if regression_flag:
             if not is_pull:
                 return True
     return False
