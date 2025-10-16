@@ -263,7 +263,7 @@ def print_junit(logger, kwargs, results, results_pull, is_pull):
     """
     Print the output of the tests in junit format
     """
-    logger.info("Printing json output")
+    logger.info("Printing junit output")
     output = results[0]
     regression_flag = results[1]
     average_values = results[3]
