@@ -175,7 +175,7 @@ def analyze(
 
     # Isolation forest requires no null values in the dataframe
     if algorithm_name == cnsts.ISOLATION_FOREST:
-        fingerprint_matched_df = fingerprint_matched_df.dropna()
+        fingerprint_matched_df = fingerprint_matched_df.dropna().reset_index()
 
     avg_values = fingerprint_matched_df[metrics].mean()
     if kwargs['output_format'] == cnsts.JSON:
