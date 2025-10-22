@@ -6,6 +6,7 @@ from typing import List, Dict, Any
 
 
 # pylint: disable=import-error
+from numpy import source
 import pandas as pd
 from opensearchpy import OpenSearch
 from opensearch_dsl import Search, Q
@@ -96,11 +97,11 @@ class Matcher:
     # pylint: disable=too-many-locals
     def get_uuid_by_metadata(
         self,
-        meta: Dict[str, Any],
+        metadata: Dict[str, Any],
         lookback_date: datetime = None,
         lookback_size: int = 10000,
         timestamp_field: str = "timestamp",
-        additional_fields: List[str] = None
+        additional_fields: List[str] = []
     ) -> List[Dict[str, str]]:
         """gets uuid by metadata
 
@@ -121,19 +122,19 @@ class Matcher:
         """
         must_clause = []
         must_not_clause = []
-        version = str(meta[self.version_field])[:4]
+        version = str(metadata[self.version_field])[:4]
 
-        for field, value in meta.items():
+        for field, value in metadata.items():
             if field in [self.version_field, "ocpMajorVersion"]:
                 continue
             if field != "not":
                 must_clause.append(Q("match", **{field: str(value)}))
             else:
-                for not_field, not_value in meta["not"].items():
+                for not_field, not_value in metadata["not"].items():
                     must_not_clause.append(Q("match", **{not_field: str(not_value)}))
 
-        if "ocpMajorVersion" in meta:
-            version = meta["ocpMajorVersion"]
+        if "ocpMajorVersion" in metadata:
+            version = metadata["ocpMajorVersion"]
             filter_clause = [
                 Q("wildcard", ocpMajorVersion=f"{version}*"),
             ]
@@ -178,9 +179,8 @@ class Matcher:
                 doc["buildUrl"] = "http://bogus-url"
 
             # Add additional fields if requested
-            if additional_fields:
-                for field in additional_fields:
-                    doc[field] = source_data.get(field, "N/A")
+            for field in additional_fields:
+                doc[field] = source_data.get(field, "N/A")
 
             uuids_docs.append(doc)
         return uuids_docs
@@ -230,7 +230,8 @@ class Matcher:
         return ids_df[self.uuid_field].to_list()
 
     def get_results(
-        self, uuid: str,
+        self,
+        uuid: str,
         uuids: List[str],
         metrics: Dict[str, Any],
         timestamp_field: str = "timestamp"
@@ -239,9 +240,9 @@ class Matcher:
         Get results of elasticsearch data query based on uuid(s) and defined metrics
 
         Args:
-            uuid (str): _description_
-            uuids (list): _description_
-            metrics (dict): _description_
+            uuid (str): uuid of the run
+            uuids (list): list of uuids
+            metrics (dict): metrics to query for
             timestamp_field (str): timestamp field in data
 
         Returns:
