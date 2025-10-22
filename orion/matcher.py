@@ -6,6 +6,7 @@ from typing import List, Dict, Any
 
 
 # pylint: disable=import-error
+from numpy import source
 import pandas as pd
 from opensearchpy import OpenSearch
 from opensearch_dsl import Search, Q
@@ -97,17 +98,17 @@ class Matcher:
     # pylint: disable=too-many-locals
     def get_uuid_by_metadata(
         self,
-        meta: Dict[str, Any],
+        metadata: Dict[str, Any],
         lookback_date: datetime = None,
         lookback_size: int = 10000,
         timestamp_field: str = "timestamp",
-        additional_fields: List[str] = None,
-        since_date: datetime = None
+        since_date: datetime = None,
+        additional_fields: List[str] = []
     ) -> List[Dict[str, str]]:
         """gets uuid by metadata
 
         Args:
-            meta (Dict[str, Any]): metadata of the runs
+            metadata (Dict[str, Any]): metadata of the runs
             lookback_date (datetime, optional):
             The cutoff date to get the uuids from. Defaults to None.
             lookback_size (int, optional):
@@ -120,25 +121,26 @@ class Matcher:
             since_date (datetime, optional):
             The end date to bound the range to. If provided, results will be 
             bounded between lookback_date and since_date. Defaults to None.
+            additional_fields (List[str], optional): Additional fields to include in the result. Defaults to [].
 
         Returns:
             List[Dict[str, str]]: List of dictionaries with uuid, buildURL and ocpVersion as keys
         """
         must_clause = []
         must_not_clause = []
-        version = str(meta[self.version_field])[:4]
+        version = str(metadata[self.version_field])[:4]
 
-        for field, value in meta.items():
+        for field, value in metadata.items():
             if field in [self.version_field, "ocpMajorVersion"]:
                 continue
             if field != "not":
                 must_clause.append(Q("match", **{field: str(value)}))
             else:
-                for not_field, not_value in meta["not"].items():
+                for not_field, not_value in metadata["not"].items():
                     must_not_clause.append(Q("match", **{not_field: str(not_value)}))
 
-        if "ocpMajorVersion" in meta:
-            version = meta["ocpMajorVersion"]
+        if "ocpMajorVersion" in metadata:
+            version = metadata["ocpMajorVersion"]
             filter_clause = [
                 Q("wildcard", ocpMajorVersion=f"{version}*"),
             ]
@@ -178,28 +180,27 @@ class Matcher:
         all_hits = self.query_index(s,return_all=True)
         uuids_docs = []
         for hit in all_hits:
-            uuid_doc= {self.uuid_field: hit.to_dict()["_source"][self.uuid_field]}
+            doc= {self.uuid_field: hit.to_dict()["_source"][self.uuid_field]}
             if "." in self.version_field:
                 value = self.dotDictFind(hit.to_dict()["_source"], self.version_field)
-                uuid_doc[self.version_field] = value
+                doc[self.version_field] = value
             else:
-                uuid_doc[self.version_field] = hit.to_dict()["_source"][self.version_field]
+                doc[self.version_field] = hit.to_dict()["_source"][self.version_field]
             source_data = hit.to_dict()["_source"]
 
             # Handle buildUrl with fallback to build_url
             if "buildUrl" in source_data:
-                uuid_doc["buildUrl"] = source_data["buildUrl"]
+                doc["buildUrl"] = source_data["buildUrl"]
             elif "build_url" in source_data:
-                uuid_doc["buildUrl"] = source_data["build_url"]
+                doc["buildUrl"] = source_data["build_url"]
             else:
-                uuid_doc["buildUrl"] = "http://bogus-url"
+                doc["buildUrl"] = "http://bogus-url"
 
             # Add additional fields if requested
-            if additional_fields:
-                for field in additional_fields:
-                    uuid_doc[field] = source_data.get(field, "N/A")
+            for field in additional_fields:
+                doc[field] = source_data.get(field, "N/A")
 
-            uuids_docs.append(uuid_doc)
+            uuids_docs.append(doc)
         return uuids_docs
 
     def match_kube_burner(self, uuids: List[str],
@@ -247,7 +248,8 @@ class Matcher:
         return ids_df[self.uuid_field].to_list()
 
     def get_results(
-        self, uuid: str,
+        self,
+        uuid: str,
         uuids: List[str],
         metrics: Dict[str, Any],
         timestamp_field: str = "timestamp"
@@ -256,9 +258,9 @@ class Matcher:
         Get results of elasticsearch data query based on uuid(s) and defined metrics
 
         Args:
-            uuid (str): _description_
-            uuids (list): _description_
-            metrics (dict): _description_
+            uuid (str): uuid of the run
+            uuids (list): list of uuids
+            metrics (dict): metrics to query for
             timestamp_field (str): timestamp field in data
 
         Returns:

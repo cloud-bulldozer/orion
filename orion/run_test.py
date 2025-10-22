@@ -208,7 +208,6 @@ def analyze(
     algorithmFactory = AlgorithmFactory()
     algorithm = algorithmFactory.instantiate_algorithm(
             algorithm_name,
-            matcher,
             fingerprint_matched_df,
             test,
             kwargs,
