@@ -301,13 +301,12 @@ class Utils:
             else self.get_metadata_with_uuid(options["uuid"], match)
         )
         # get uuids, buildUrls matching with the metadata
-        additional_fields = [options["display"]] if options.get("display") else None
         runs = match.get_uuid_by_metadata(
             metadata,
             lookback_date=start_timestamp,
             lookback_size=options["lookback_size"],
             timestamp_field=timestamp_field,
-            additional_fields=additional_fields
+            additional_fields=options.get("display", [])
         )
         uuids = [run[self.uuid_field] for run in runs]
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
@@ -365,22 +364,21 @@ class Utils:
         merged_df["prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
 
         # Add display field data if requested
-        if options.get("display"):
-            display_field = options["display"]
-            display_data = {run[self.uuid_field]: run.get(display_field, "N/A") for run in runs}
-            merged_df[display_field] = merged_df[self.uuid_field].apply(
-                lambda uuid: display_data.get(uuid, "N/A")
+        display_data = {run[self.uuid_field]: {field: run.get(field) for field in options["display"]} for run in runs}
+        for field in options.get("display", []):
+            merged_df[field] = merged_df[self.uuid_field].apply(
+                lambda uuid: display_data.get(uuid, "N/A").get(field, "N/A")
             )
-
-        shortener = pyshorteners.Shortener(timeout=10)
-        merged_df["buildUrl"] = merged_df[self.uuid_field].apply(
-            lambda uuid: (
-                self.shorten_url(shortener, buildUrls[uuid])
-                if options["convert_tinyurl"]
-                else buildUrls[uuid]
+        if options["convert_tinyurl"]:
+            shortener = pyshorteners.Shortener(timeout=10)
+            merged_df["buildUrl"] = merged_df[self.uuid_field].apply(
+                lambda uuid: (
+                    self.shorten_url(shortener, buildUrls[uuid])
+                    if options["convert_tinyurl"]
+                    else buildUrls[uuid]
+                )
+                # pylint: disable = cell-var-from-loop
             )
-            # pylint: disable = cell-var-from-loop
-        )
         merged_df = merged_df.reset_index(drop=True)
         # save the dataframe
         output_file_path = f"{options['save_data_path'].split('.')[0]}-{test['name']}.csv"

@@ -9,7 +9,6 @@ import pandas as pd
 from tabulate import tabulate
 from hunter.report import Report, ReportType
 from hunter.series import Series, Metric, ChangePoint, ChangePointGroup
-from orion.matcher import Matcher
 import orion.constants as cnsts
 
 
@@ -21,7 +20,6 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
 
     def __init__(
         self,
-        matcher: Matcher,
         dataframe: pd.DataFrame,
         test: dict,
         options: dict,
@@ -29,7 +27,6 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         version_field: str = "ocpVersion",
         uuid_field: str = "uuid"
     ) -> None:
-        self.matcher = matcher
         self.dataframe = dataframe
         self.test = test
         self.version_field = version_field
@@ -42,7 +39,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         """Method to output json output
 
         Returns:
-            Tuple[str, str]: returns test_name and json output
+            Tuple[str, str, bool]: returns test_name, json output and regression flag
         """
         _, change_points_by_metric = self._analyze()
         dataframe_json = self.dataframe.to_json(orient="records")
@@ -122,7 +119,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         return self.test["name"], output_table, self.regression_flag
 
     def _generate_combined_table_with_display(
-        self, data_json: List[Dict], display_field: str
+        self, data_json: List[Dict], display_fields: List[str]
     ) -> str:
         """Generate a combined table with all metrics and display field."""
 
@@ -143,12 +140,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             # Add UUID
             row.append(record[self.uuid_field])
 
-            # Add ocpVersion
             row.append(record.get(self.version_field, "N/A"))
-
-            # Add buildUrl
-            row.append(record["buildUrl"])
-
             # Add all metric values
             for metric_name in self.metrics_config.keys():
                 if "metrics" in record and metric_name in record["metrics"]:
@@ -163,15 +155,15 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
                     row.append("N/A")
 
             # Add display field value
-            display_value = record.get(display_field, "N/A")
-            row.append(str(display_value))
+            for display_field in display_fields:
+                row.append(str(record.get(display_field, "N/A")))
 
             table_data.append(row)
 
         # Prepare headers
-        headers = ["time", self.uuid_field, self.version_field, "buildUrl"]
+        headers = ["time", self.uuid_field, self.version_field]
         headers.extend(self.metrics_config.keys())
-        headers.append(display_field)
+        headers.extend(display_fields)
 
         # Create the table
         table = tabulate(table_data, headers=headers, tablefmt="simple")
@@ -232,9 +224,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
 
     def setup_series(self) -> Series:
         """
-        Returns series
-        Returns:
-            _type_: _description_
+        Returns hunter.Series
         """
         metrics = {
             column: Metric(value.get("direction", 1), 1.0)
@@ -244,7 +234,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         attributes = {
             column: self.dataframe[column]
             for column in self.dataframe.columns
-            if column in [self.uuid_field, "buildUrl", self.version_field]
+            if column in [self.uuid_field, self.version_field]
         }
         series = Series(
             test_name=self.test["name"],

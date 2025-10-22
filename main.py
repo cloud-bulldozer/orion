@@ -30,6 +30,18 @@ class Dictionary(click.ParamType):
     def convert(self, value: Any, param: Any, ctx: Any) -> dict:
         return json.loads(value)
 
+class List(click.ParamType):
+    """Class to define a custom click type for lists
+
+    Args:
+        click (ParamType):
+    """
+    name = "list"
+    def convert(self, value: Any, param: Any, ctx: Any) -> list:
+        if isinstance(value, list):
+            return value
+        return value.split(",") if value else []
+
 class MutuallyExclusiveOption(click.Option):
     """Class to implement mutual exclusivity between options in click
 
@@ -70,7 +82,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
     return value
 
 # pylint: disable=too-many-locals
-@click.command()
+@click.command(context_settings={"show_default": True, "max_content_width": 180})
 @click.option(
     "--cmr", 
     is_flag=True,
@@ -123,7 +135,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--benchmark-index", type=str, envvar="es_benchmark_index",  help="Index where test data is stored, can be set via env var es_benchmark_index", default="")
 @click.option("--metadata-index", type=str, envvar="es_metadata_index",  help="Index where metadata is stored, can be set via env var es_metadata_index", default="")
 @click.option("--input-vars", type=Dictionary(), default="{}", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
-@click.option("--display", type=str, help="Add metadata field as a column in the output (e.g., ocpVirt, releaseStream)")
+@click.option("--display", type=List(), default=["buildUrl"], help="Add metadata field as a column in the output (e.g. ocpVirt, upstreamJob)")
 def main(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions

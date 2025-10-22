@@ -2,7 +2,6 @@
 Algorithm Factory to choose avaiable algorithms
 """
 import pandas as pd
-from orion.matcher import Matcher
 import orion.constants as cnsts
 from .edivisive import EDivisive
 from .isolationforest import IsolationForestWeightedMean
@@ -15,7 +14,6 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-argu
     def instantiate_algorithm(  # pylint: disable = too-many-arguments
             self,
             algorithm: str,
-            matcher: Matcher,
             dataframe:pd.DataFrame,
             test: dict,
             options: dict,
@@ -27,10 +25,12 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-argu
 
         Args:
             algorithm (str): Name of the algorithm
-            matcher (Matcher): Matcher class
             dataframe (pd.Dataframe): dataframe with data
             test (dict): test information dictionary
-
+            options (dict): options for the run
+            metrics_config (dict): metrics configuration
+            version_field (str): field name for the version
+            uuid_field (str): field name for the uuid
         Raises:
             ValueError: When invalid algo is chosen
 
@@ -38,9 +38,9 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-argu
             Algorithm : Algorithm
         """
         if algorithm == cnsts.EDIVISIVE:
-            return EDivisive(matcher, dataframe, test, options, metrics_config, version_field, uuid_field)
+            return EDivisive(dataframe, test, options, metrics_config, version_field, uuid_field)
         if algorithm == cnsts.ISOLATION_FOREST:
-            return IsolationForestWeightedMean(matcher, dataframe, test, options, metrics_config, version_field, uuid_field)
+            return IsolationForestWeightedMean(dataframe, test, options, metrics_config, version_field, uuid_field)
         if algorithm == cnsts.CMR:
-            return CMR(matcher, dataframe, test, options, metrics_config, version_field, uuid_field)
+            return CMR(dataframe, test, options, metrics_config, version_field, uuid_field)
         raise ValueError("Invalid algorithm called")
