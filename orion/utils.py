@@ -306,12 +306,21 @@ class Utils:
         )
         # get uuids, buildUrls matching with the metadata
         additional_fields = [options["display"]] if options.get("display") else None
+
+        # Parse since_date if provided
+        since_date = None
+        if options.get("since") and options["since"] != "":
+            try:
+                since_date = datetime.strptime(options["since"], "%Y-%m-%d")
+            except ValueError:
+                self.logger.warning("Invalid since date format: %s. Expected YYYY-MM-DD", options["since"])
         runs = match.get_uuid_by_metadata(
             metadata,
             lookback_date=start_timestamp,
             lookback_size=options["lookback_size"],
             timestamp_field=timestamp_field,
-            additional_fields=additional_fields
+            additional_fields=additional_fields,
+            since_date=since_date
         )
         uuids = [run[self.uuid_field] for run in runs]
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
@@ -625,7 +634,7 @@ def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uui
     return highlighted_table
 
 
-def get_subtracted_timestamp(time_duration: str) -> datetime:
+def get_subtracted_timestamp(time_duration: str, start_timestamp=datetime.now(timezone.utc)) -> datetime:
     """Get subtracted datetime from now
 
     Args:
@@ -641,7 +650,11 @@ def get_subtracted_timestamp(time_duration: str) -> datetime:
     days = int(reg_ex.group(1)) if reg_ex.group(1) else 0
     hours = int(reg_ex.group(2)) if reg_ex.group(2) else 0
     duration_to_subtract = timedelta(days=days, hours=hours)
-    current_time = datetime.now(timezone.utc)
+    logger.info("Duration to subtract: %s", duration_to_subtract)
+    if isinstance(start_timestamp, str):
+        start_timestamp = datetime.strptime(start_timestamp, "%Y-%m-%d")
+    logger.info("Start timestamp: %s", start_timestamp)
+    current_time = start_timestamp
     timestamp_before = current_time - duration_to_subtract
     return timestamp_before
 

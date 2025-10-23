@@ -144,6 +144,33 @@ orion --lookback 2d --hunter-analyze
 orion --lookback 8h --hunter-analyze
 ```
 
+### Since Date
+Specify an end date to bound the time range when used with `--lookback`:
+```bash
+# Analyze data from 5 days (2024-01-10) up to 2024-01-15
+orion --lookback 5d --since 2024-01-15 --hunter-analyze
+
+# Analyze data ending at 2024-02-01 (no lookback, gets all data before this date)
+orion --since 2024-02-01 --hunter-analyze
+```
+
+The `--since` flag accepts dates in `YYYY-MM-DD` format and creates an upper bound for your time range:
+- When used **with** `--lookback`: Creates a bounded time window between (since - lookback) and since
+- When used **without** `--lookback`: Gets all data up to the specified date
+
+**Example Scenarios:**
+
+Today is 27 Aug 2024:
+- `--lookback 5d`: Gets runs from 22 Aug onwards (to now)
+- `--since 2024-08-25`: Gets all runs up to 25 Aug
+- `--lookback 5d --since 2024-08-25`: Gets runs from 20 Aug to 25 Aug (5 day window ending at 25 Aug)
+- `--lookback 3d --since 2024-08-25`: Gets runs from 22 Aug to 25 Aug (3 day window ending at 25 Aug)
+
+This is particularly useful for:
+- **Historical analysis**: Analyze a specific time period in the past
+- **Reproducible reports**: Generate consistent reports for a fixed time range
+
+
 ### Lookback Size
 Limit the number of runs to analyze:
 ```bash
@@ -152,21 +179,26 @@ orion --lookback-size 50 --hunter-analyze
 ```
 
 ### Combined Lookback Options
-When using both options, the more restrictive limit applies:
+You can combine multiple time-based filtering options. When using multiple options, the more restrictive limit applies:
 
 ```bash
 # Gets whichever is shorter: last 10 runs OR last 3 days
 orion --lookback 3d --lookback-size 10 --hunter-analyze
+
+# Get up to 20 runs from a 7-day window ending at a specific date
+orion --lookback 7d --since 2024-08-25 --lookback-size 20 --hunter-analyze
 ```
 
 **Example Scenario:**
 Consider runs on dates: 21 Aug, 22 Aug (3 runs), 23 Aug (2 runs), 24 Aug, 25 Aug, 26 Aug
 
 Today is 27 Aug:
-- `--lookback 5d`: Gets runs from 22 Aug onwards
+- `--lookback 5d`: Gets runs from 22 Aug onwards (to now)
 - `--lookback-size 6`: Gets last 6 runs  
 - `--lookback 5d --lookback-size 6`: Gets last 6 runs from 22 Aug onwards
 - `--lookback 3d --lookback-size 6`: Gets runs from 24 Aug onwards (3 days wins)
+- `--lookback 5d --since 2024-08-25`: Gets runs from 20 Aug to 25 Aug (5-day bounded window)
+- `--lookback 5d --since 2024-08-25 --lookback-size 3`: Gets up to 3 runs from 20 Aug to 25 Aug
 
 ## Node Count Filtering
 
