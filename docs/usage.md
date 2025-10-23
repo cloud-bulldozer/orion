@@ -147,7 +147,7 @@ orion --lookback 8h --hunter-analyze
 ### Since Date
 Specify an end date to bound the time range when used with `--lookback`:
 ```bash
-# Analyze data from 5 days before 2024-01-15 up to 2024-01-15
+# Analyze data from 5 days (2024-01-10) up to 2024-01-15
 orion --lookback 5d --since 2024-01-15 --hunter-analyze
 
 # Analyze data ending at 2024-02-01 (no lookback, gets all data before this date)
