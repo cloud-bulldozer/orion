@@ -255,8 +255,7 @@ def print_json(logger, kwargs, results, results_pull, is_pull):
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_table))
         if regression_flag:
-            if not is_pull:
-                return True
+            return True
     return False
 
 def print_junit(logger, kwargs, results, results_pull, is_pull):
@@ -291,6 +290,5 @@ def print_junit(logger, kwargs, results, results_pull, is_pull):
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(pretty_xml_as_string))
         if regression_flag:
-            if not is_pull:
-                return True
+            return True
     return False
