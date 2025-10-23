@@ -100,7 +100,8 @@ class CMR(Algorithm):
                 data2[column] = [mean]
             else:
                 column_list = dF[column].tolist()
-                non_numeric_joined_list = ','.join(column_list)
+                # Convert each item to string to handle lists, UUIDs, and other non-string types
+                non_numeric_joined_list = ','.join(str(item) for item in column_list)
                 data2[column] = [non_numeric_joined_list]
             i += 1
         df2 = pd.DataFrame(data2)
