@@ -75,7 +75,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                     logger.info("Executing tasks in parallel...")
                     futures_pull = executor.submit(analyze, test, kwargs,
-                                                   version_field, uuid_field)
+                                                   version_field, uuid_field, True)
                     pr = test["metadata"]["pullNumber"]
                     test_periodic = copy.deepcopy(test)
                     test_periodic["metadata"]["jobType"] = "periodic"
@@ -85,7 +85,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
                     test_periodic["metadata"]["organization"] = ""
                     test_periodic["metadata"]["repository"] = ""
                     futures_periodic = executor.submit(analyze, test_periodic, kwargs,
-                                                       version_field, uuid_field)
+                                                       version_field, uuid_field, False)
                     concurrent.futures.wait([futures_pull, futures_periodic])
                     result_output_pull = futures_pull.result()[0]
                     regression_flag_pull = futures_pull.result()[1]
@@ -133,7 +133,8 @@ def analyze(
             test,
             kwargs,
             version_field,
-            uuid_field
+            uuid_field,
+            is_pull = False
         ) -> Tuple[Dict[str, Any], bool, Any, Any]:
     """
     Utils class to process the test
@@ -165,6 +166,8 @@ def analyze(
     )
 
     if fingerprint_matched_df is None:
+        if is_pull:
+            return None, None, None, None
         sys.exit(3) # No data present
 
     metrics = []
