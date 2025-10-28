@@ -287,7 +287,7 @@ def print_junit(logger, kwargs, results, results_pull, is_pull):
         dom = xml.dom.minidom.parseString(xml_str)
         pretty_xml_as_string = dom.toprettyxml()
         print(pretty_xml_as_string)
-        output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
+        output_file_name = f"{kwargs['save_output_path'].split('.')[0]}.{get_output_extension(kwargs['output_format'])}"
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(pretty_xml_as_string))
         if regression_flag:
