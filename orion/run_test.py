@@ -195,11 +195,14 @@ def analyze(
             uuid_field=uuid_field,
             average=True)
     else:
-        average_values = tabulate_average_values(
-            avg_values,
-            fingerprint_matched_df.iloc[-1],
-            version_field,
-            uuid_field)
+        if len(fingerprint_matched_df) > 0:
+            average_values = tabulate_average_values(
+                avg_values,
+                fingerprint_matched_df.iloc[-1],
+                version_field,
+                uuid_field)
+        else:
+            average_values = ""
 
     algorithmFactory = AlgorithmFactory()
     algorithm = algorithmFactory.instantiate_algorithm(
