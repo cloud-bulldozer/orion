@@ -55,6 +55,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
             - regression data (list): Regression data
     """
     config = kwargs["config"]
+
     logger = SingletonLogger.get_logger("Orion")
     result_output, regression_flag, regression_data = {}, False, []
     result_output_pull, regression_flag_pull, regression_data_pull = {}, False, []
@@ -69,7 +70,6 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
         uuid_field = "uuid"
         if "uuid_field" in test:
             uuid_field=test["uuid_field"]
-
         if "metadata" in test and "jobType" in test["metadata"]:
             if test["metadata"]["jobType"] == "pull":
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -95,13 +95,13 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
                     regression_flag = futures_periodic.result()[1]
                     regression_data = futures_periodic.result()[2]
                     average_values_df = futures_periodic.result()[3]
-            else:
-                result_output, regression_flag, regression_data, average_values_df = analyze(
-                        test,
-                        kwargs,
-                        version_field,
-                        uuid_field
-                    )
+        elif "metadata" in test:
+            result_output, regression_flag, regression_data, average_values_df = analyze(
+                    test,
+                    kwargs,
+                    version_field,
+                    uuid_field
+                )
     results_pull = (
         result_output_pull,
         regression_flag_pull,
@@ -133,7 +133,7 @@ def analyze(
             test,
             kwargs,
             version_field,
-            uuid_field,
+            uuid_field
         ) -> Tuple[Dict[str, Any], bool, Any, Any]:
     """
     Utils class to process the test
@@ -194,7 +194,9 @@ def analyze(
     else:
         average_values = tabulate_average_values(
             avg_values,
-            fingerprint_matched_df.iloc[-1])
+            fingerprint_matched_df.iloc[-1],
+            version_field,
+            uuid_field)
 
     algorithmFactory = AlgorithmFactory()
     algorithm = algorithmFactory.instantiate_algorithm(
@@ -251,7 +253,12 @@ def analyze(
     return result_output, regression_flag, regression_data, average_values
 
 
-def tabulate_average_values(avg_data, last_row) -> str:
+def tabulate_average_values(
+        avg_data,
+        last_row,
+        version_field="ocpVersion",
+        uuid_field="uuid"
+        ) -> str:
     """Tabulate the average values
 
     Args:
@@ -261,10 +268,10 @@ def tabulate_average_values(avg_data, last_row) -> str:
     Returns:
         str: tabulated average values
     """
-    headers = ["time", "uuid", "ocpVersion", "buildUrl"]
+    headers = ["time", uuid_field, version_field, "buildUrl"]
     data = ["0000-00-00 00:00:00 +0000",
             "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-            "x" * len(last_row["ocpVersion"]),
+            "x" * len(last_row[version_field]),
             "x" * len(last_row["buildUrl"])]
     for metric, value in avg_data.items():
         headers.append(metric)
