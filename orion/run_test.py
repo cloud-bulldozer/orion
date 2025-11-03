@@ -63,15 +63,14 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
     pr = 0
     for test in config["tests"]:
         # Create fingerprint Matcher
-
         version_field = "ocpVersion"
         if "version" in test:
             version_field=test["version"]
         uuid_field = "uuid"
         if "uuid_field" in test:
             uuid_field=test["uuid_field"]
-        if "metadata" in test and "jobType" in test["metadata"]:
-            if test["metadata"]["jobType"] == "pull":
+        if "metadata" in test:
+            if "jobType" in test["metadata"] and test["metadata"]["jobType"] == "pull":
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                     logger.info("Executing tasks in parallel...")
                     futures_pull = executor.submit(analyze, test, kwargs,
@@ -95,13 +94,13 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
                     regression_flag = futures_periodic.result()[1]
                     regression_data = futures_periodic.result()[2]
                     average_values_df = futures_periodic.result()[3]
-        elif "metadata" in test:
-            result_output, regression_flag, regression_data, average_values_df = analyze(
-                    test,
-                    kwargs,
-                    version_field,
-                    uuid_field
-                )
+            else:
+                result_output, regression_flag, regression_data, average_values_df = analyze(
+                        test,
+                        kwargs,
+                        version_field,
+                        uuid_field
+                    )
     results_pull = (
         result_output_pull,
         regression_flag_pull,
