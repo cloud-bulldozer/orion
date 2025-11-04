@@ -70,9 +70,11 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
         if "uuid_field" in test:
             uuid_field=test["uuid_field"]
         if "metadata" in test:
-            if "jobType" in test["metadata"] and test["metadata"]["jobType"] == "pull":
+            if "pullNumber" in test["metadata"] and test["metadata"]["pullNumber"] > 0:
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                     logger.info("Executing tasks in parallel...")
+                    logger.info("Ensuring jobType is set to pull")
+                    test["metadata"]["jobType"] = "pull"
                     futures_pull = executor.submit(analyze, test, kwargs,
                                                    version_field, uuid_field, True)
                     pr = test["metadata"]["pullNumber"]
