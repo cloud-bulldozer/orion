@@ -3,3 +3,6 @@ ack:
   - uuid: 5bdef865-13ce-40fb-94be-4117ecdf8f4d
     metric: ovnCPU-ovnk-controller_avg
     reason: "It has come back down in later runs"
+  - uuid: 964c3ddb-9272-4693-9cf2-c749e11f1d8d
+    metric: podReadyLatency_P99
+    reason: "It has come back down in later runs"
