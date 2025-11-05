@@ -65,6 +65,13 @@ The `timestamp` field allows users to set custom timestamp fields for both metad
 - Can be set at **Metric level** (applies only to that metric)
 - Metric level takes precedence over test level
 - Defaults to `timestamp` if not set
+- Recommended type is int,str in seconds
+
+### UUID
+UUID field ensures that a set of test results from the same job are grouped together.
+
+- `uuid` should be a top level key in your json payload
+- Should be of type text with sub-field keyword in es index.
 
 ### Direction
 Controls which types of changes to detect:

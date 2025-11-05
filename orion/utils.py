@@ -141,8 +141,11 @@ class Utils:
         """
         if timestamp is None:
             return timestamp
-        if timestamp.isnumeric():
+        # Handle int timestamps and numeric strings in seconds
+        if isinstance(timestamp, int) or \
+            (isinstance(timestamp, str) and timestamp.isnumeric()):
             dt = pd.to_datetime(timestamp, unit='s', utc=True)
+        # Default to pd for float (millisec precision), ISO/RFC etc.
         else:
             dt = pd.to_datetime(timestamp, utc=True)
         return dt.replace(tzinfo=None).isoformat(timespec="seconds")
@@ -251,6 +254,11 @@ class Utils:
             timestamp_field (str): timestamp field in data
         """
         test = match.get_results("", uuids, {}, timestamp_field=timestamp_field)
+        if "." in self.version_field:
+            return {
+                run[self.uuid_field]: match.dotDictFind(run, self.version_field)
+                for run in test
+            }
         return {run[self.uuid_field]: run[self.version_field] for run in test}
 
     def get_build_urls(self, uuids: List[str], match: Matcher, timestamp_field: str):
