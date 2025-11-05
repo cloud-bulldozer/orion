@@ -335,7 +335,7 @@ class Utils:
         elif not uuids:
             self.logger.info("No UUID present for given metadata")
             return None, None
-        match.index = options["benchmark_index"]
+        match.index = options["benchmark_index"] or test["benchmark_index"]
 
         uuids = self.filter_uuids_on_index(
             metadata,

@@ -1,9 +1,10 @@
 tests :
   - name : quay-load-test-stable-stage-image-push-pulls
+    benchmark_index: {{ quay_image_push_pull_index }}
     metadata:
       platform: AWS
       clusterType: self-managed
-      masterNodesType.keyword: m6a.xlarge
+      masterNodesType.keyword: m6i.xlarge
       masterNodesCount: 3
       workerNodesType.keyword: m6a.8xlarge
       workerNodesCount: 5
