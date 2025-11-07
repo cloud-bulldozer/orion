@@ -114,7 +114,7 @@ def test_query_index(request, fixture_name, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "sample_hits,meta,lookback_date,lookback_size,expected",
+    "sample_hits,metadata,lookback_date,lookback_size,expected",
     [
         # Plain metadata match
         (
@@ -190,7 +190,8 @@ def test_query_index(request, fixture_name, monkeypatch):
 )
 def test_get_uuid_by_metadata_variants(matcher_instance,
                                        monkeypatch,
-                                       sample_hits, meta,
+                                       sample_hits,
+                                       metadata,
                                        lookback_date,
                                        lookback_size,
                                        expected):
@@ -198,7 +199,7 @@ def test_get_uuid_by_metadata_variants(matcher_instance,
     monkeypatch.setattr(matcher_instance, "query_index", lambda *a, **k: fake_hits)
 
     result = matcher_instance.get_uuid_by_metadata(
-        meta=meta,
+        metadata=metadata,
         lookback_date=lookback_date,
         lookback_size=lookback_size,
     )

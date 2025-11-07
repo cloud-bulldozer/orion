@@ -201,7 +201,8 @@ def analyze(
                 avg_values,
                 fingerprint_matched_df.iloc[-1],
                 version_field,
-                uuid_field)
+                uuid_field,
+                kwargs.get("display", []))
         else:
             average_values = ""
 
@@ -263,7 +264,8 @@ def tabulate_average_values(
         avg_data,
         last_row,
         version_field="ocpVersion",
-        uuid_field="uuid"
+        uuid_field="uuid",
+        display_fields=None
         ) -> str:
     """Tabulate the average values
 
@@ -274,13 +276,16 @@ def tabulate_average_values(
     Returns:
         str: tabulated average values
     """
-    headers = ["time", uuid_field, version_field, "buildUrl"]
+    headers = ["time", uuid_field, version_field]
     data = ["0000-00-00 00:00:00 +0000",
             "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-            "x" * len(last_row[version_field]),
-            "x" * len(last_row["buildUrl"])]
+            "x" * len(last_row[version_field])]
     for metric, value in avg_data.items():
         headers.append(metric)
         data.append(value)
+    if display_fields:
+        for display_field in display_fields:
+            headers.append(display_field)
+            data.append("x" * len(last_row[display_field]))
     return tabulate([data], headers=headers, tablefmt="simple",
                     floatfmt=[".2f", ".5f", ".6f", ".5f", ".5f", ".4f"])

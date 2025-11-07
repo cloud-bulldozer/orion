@@ -6,7 +6,6 @@ from typing import List, Dict, Any
 
 
 # pylint: disable=import-error
-from numpy import source
 import pandas as pd
 from opensearchpy import OpenSearch
 from opensearch_dsl import Search, Q
@@ -103,7 +102,7 @@ class Matcher:
         lookback_size: int = 10000,
         timestamp_field: str = "timestamp",
         since_date: datetime = None,
-        additional_fields: List[str] = []
+        additional_fields: List[str] = None
     ) -> List[Dict[str, str]]:
         """gets uuid by metadata
 
@@ -121,7 +120,8 @@ class Matcher:
             since_date (datetime, optional):
             The end date to bound the range to. If provided, results will be 
             bounded between lookback_date and since_date. Defaults to None.
-            additional_fields (List[str], optional): Additional fields to include in the result. Defaults to [].
+            additional_fields (List[str], optional): Additional fields to include
+            in the result. Defaults to None.
 
         Returns:
             List[Dict[str, str]]: List of dictionaries with uuid, buildURL and ocpVersion as keys
@@ -197,8 +197,9 @@ class Matcher:
                 doc["buildUrl"] = "http://bogus-url"
 
             # Add additional fields if requested
-            for field in additional_fields:
-                doc[field] = source_data.get(field, "N/A")
+            if additional_fields:
+                for field in additional_fields:
+                    doc[field] = source_data.get(field, "N/A")
 
             uuids_docs.append(doc)
         return uuids_docs

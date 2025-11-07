@@ -388,7 +388,7 @@ class Utils:
         display_data = {run[self.uuid_field]: {field: run.get(field) for field in options["display"]} for run in runs}
         for field in options.get("display", []):
             merged_df[field] = merged_df[self.uuid_field].apply(
-                lambda uuid: display_data.get(uuid, "N/A").get(field, "N/A")
+                lambda uuid, f=field: display_data.get(uuid, "N/A").get(f, "N/A")
             )
         if options["convert_tinyurl"]:
             shortener = pyshorteners.Shortener(timeout=10)
