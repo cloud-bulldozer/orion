@@ -6,10 +6,15 @@ from setuptools import setup, find_packages
 
 setup(
     name='orion',
-    version='1.0',
-    py_modules=['main'],
+    use_scm_version={
+        'version_scheme': 'no-guess-dev',
+        'local_scheme': 'dirty-tag',
+    },
+    setup_requires=['setuptools_scm'],
+    py_modules=['main', 'version'],
     install_requires=[
         'click',
+        'setuptools_scm>=6.2',
     ],
     entry_points={
         'console_scripts': [
@@ -17,9 +22,9 @@ setup(
         ],
     },
     packages=find_packages(),
+    license="MIT",
     classifiers=[
-        'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3.11',
         'Operating System :: OS Independent',
     ],
 )
