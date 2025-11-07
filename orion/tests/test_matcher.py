@@ -345,6 +345,101 @@ def test_get_results_variants(request,
 
 
 @pytest.mark.parametrize(
+    "fixture_name,test_uuid,test_uuids,exists_fields,\
+    timestamp_field,test_metrics,fake_hits,expected",
+    [
+        # withCustom timestamp field
+        (
+            "matcher_instance",
+            "uuid1",
+            ["uuid1", "uuid2"],
+            [],
+            "happenedAt",
+            {
+                "name": "podReadyLatency",
+                "metricName": "podLatencyQuantilesMeasurement",
+                "quantileName": "Ready",
+                "metric_of_interest": "P99",
+                "not": {"jobConfig.name": "garbage-collection"},
+            },
+            [
+                FakeHit({"_source": {"uuid": "uuid1", "field1": "value1",
+                        "happenedAt": "2024-02-09T12:00:00"}}),
+                FakeHit({"_source": {"uuid": "uuid2", "field1": "value2",
+                        "happenedAt": "2024-02-09T13:00:00"}}),
+            ],
+            [
+                {"uuid": "uuid1", "field1": "value1", "happenedAt": "2024-02-09T12:00:00"},
+                {"uuid": "uuid2", "field1": "value2", "happenedAt": "2024-02-09T13:00:00"},
+            ],
+        ),
+        # with exists fields
+        (
+            "matcher_instance",
+            "uuid1",
+            ["uuid1", "uuid2"],
+            ["buildUrl"],
+            "",
+            {
+                "metricName": "nodeCPUSeconds-Infra",
+                "mode": "iowait",
+            },
+            [
+                FakeHit({"_source": {"run_uuid": "uuid1", "field1": "value1",
+                        "buildUrl": "https://build-url-1"}}),
+                FakeHit({"_source": {"run_uuid": "uuid2", "field1": "value2",
+                        "buildUrl": "https://build-url-2"}}),
+            ],
+            [
+                {"run_uuid": "uuid1", "field1": "value1", "buildUrl": "https://build-url-1"},
+                {"run_uuid": "uuid2", "field1": "value2", "buildUrl": "https://build-url-2"},
+            ],
+        ),
+        # with both fields
+        (
+            "matcher_instance",
+            "uuid1",
+            ["uuid1", "uuid2"],
+            ["buildUrl"],
+            "happenedAt",
+            {
+                "metricName": "nodeCPUSeconds-Infra",
+                "mode": "iowait",
+            },
+            [
+                FakeHit({"_source": {"run_uuid": "uuid1", "field1": "value1",
+                        "buildUrl": "https://build-url-1", "happenedAt": "2024-02-09T12:00:00"}}),
+                FakeHit({"_source": {"run_uuid": "uuid2", "field1": "value2",
+                        "buildUrl": "https://build-url-2", "happenedAt": "2024-02-09T13:00:00"}}),
+            ],
+            [
+                {"run_uuid": "uuid1", "field1": "value1",
+                 "buildUrl": "https://build-url-1", "happenedAt": "2024-02-09T12:00:00"},
+                {"run_uuid": "uuid2", "field1": "value2",
+                 "buildUrl": "https://build-url-2", "happenedAt": "2024-02-09T13:00:00"},
+            ],
+        ),
+    ],
+)
+def test_get_results_with_exists_fields_and_timestamp_field(request,
+                              monkeypatch,
+                              fixture_name,
+                              test_uuid,
+                              test_uuids,
+                              exists_fields,
+                              timestamp_field,
+                              test_metrics,
+                              fake_hits,
+                              expected):
+    matcher = request.getfixturevalue(fixture_name)
+    monkeypatch.setattr(matcher, "query_index", lambda *a, **k: fake_hits)
+
+    result = matcher.get_results(test_uuid, test_uuids, test_metrics,
+                                exists_fields, timestamp_field)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
     "fixture_name,test_uuids,test_metrics,data_dict,expected",
     [
         # matcher_instance with values
@@ -580,3 +675,148 @@ def test_telco_data_with_long_int_timestamps_and_nested_tags(
     # Verify nested tags structure
     for field, expected_value in expected_tags.items():
         assert result[0]["tags"][field] == expected_value
+
+
+@pytest.mark.parametrize(
+    "data,find_path,expected",
+    [
+        # Simple single-level key access
+        (
+            {"key": "value"},
+            "key",
+            "value"
+        ),
+        # Multi-level nested dictionary access
+        (
+            {"level1": {"level2": {"level3": "deep_value"}}},
+            "level1.level2.level3",
+            "deep_value"
+        ),
+        # Path ending in a non-dict value (string)
+        (
+            {"tags": {"sw_version": "4.18.17"}},
+            "tags.sw_version",
+            "4.18.17"
+        ),
+        # Path ending in a non-dict value (number)
+        (
+            {"metadata": {"count": 42}},
+            "metadata.count",
+            42
+        ),
+        # Path ending in a non-dict value (list)
+        (
+            {"data": {"items": [1, 2, 3]}},
+            "data.items",
+            [1, 2, 3]
+        ),
+        # Path ending in a dict (should return the dict)
+        (
+            {"level1": {"level2": {"nested": "value"}}},
+            "level1.level2",
+            {"nested": "value"}
+        ),
+        # Two-level nested access
+        (
+            {"tags": {"sw_version": "4.20.0", "kernel_version": "5.14.0"}},
+            "tags.sw_version",
+            "4.20.0"
+        ),
+        # Path with single character keys
+        (
+            {"a": {"b": {"c": "abc"}}},
+            "a.b.c",
+            "abc"
+        ),
+        # Path with numeric string keys
+        (
+            {"1": {"2": {"3": "numeric"}}},
+            "1.2.3",
+            "numeric"
+        ),
+        # Path ending at root level dict
+        (
+            {"root": {"nested": "value"}},
+            "root",
+            {"nested": "value"}
+        ),
+    ],
+)
+def test_dotDictFind_success(matcher_instance, data, find_path, expected):
+    """Test dotDictFind with valid paths that should succeed."""
+    result = matcher_instance.dotDictFind(data, find_path)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "data,find_path",
+    [
+        # Missing key at root level
+        (
+            {"key": "value"},
+            "missing_key"
+        ),
+        # Missing key at nested level
+        (
+            {"level1": {"level2": "value"}},
+            "level1.missing_key"
+        ),
+        # Missing key in deep nested structure
+        (
+            {"level1": {"level2": {"level3": "value"}}},
+            "level1.level2.missing_key"
+        ),
+        # Empty path
+        (
+            {"key": "value"},
+            ""
+        ),
+        # Path with only dots
+        (
+            {"key": "value"},
+            "..."
+        ),
+    ],
+)
+def test_dotDictFind_key_error(matcher_instance, data, find_path):
+    """Test dotDictFind with invalid paths that should raise KeyError."""
+    with pytest.raises(KeyError):
+        matcher_instance.dotDictFind(data, find_path)
+
+
+def test_dotDictFind_empty_dict(matcher_instance):
+    """Test dotDictFind with empty dictionary."""
+    with pytest.raises(KeyError):
+        matcher_instance.dotDictFind({}, "any.key")
+
+
+def test_dotDictFind_complex_nested_structure(matcher_instance):
+    """Test dotDictFind with complex nested structure similar to telco data."""
+    data = {
+        "tags": {
+            "pipeline": "ci",
+            "rc": "0",
+            "cluster": "cnfdf35",
+            "cpu_type": "Intel(R) Xeon(R) Gold 6330N CPU @ 2.20GHz",
+            "sw_version": "4.18.17",
+            "kernel_version": "5.14.0-427.72.1.el9_4.x86_64+rt",
+            "power_mode": "performance",
+            "namespace": "openshift-sriov-network-operator",
+            "pod": "sriov-network-config-daemon-"
+        },
+        "metadata": {
+            "ocpVersion": "4.15.0-0.nightly-2024-01-15-022811",
+            "platform": "AWS"
+        }
+    }
+
+    assert matcher_instance.dotDictFind(data,
+        "tags.sw_version") == "4.18.17"
+    assert matcher_instance.dotDictFind(data,
+        "tags.kernel_version") == "5.14.0-427.72.1.el9_4.x86_64+rt"
+    assert matcher_instance.dotDictFind(data,
+        "metadata.ocpVersion") == "4.15.0-0.nightly-2024-01-15-022811"
+    assert matcher_instance.dotDictFind(data,
+         "tags") == data["tags"]
+    assert matcher_instance.dotDictFind(data,
+         "metadata") == data["metadata"]
