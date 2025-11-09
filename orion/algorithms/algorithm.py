@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from itertools import groupby
 import json
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 import pandas as pd
 from tabulate import tabulate
 from hunter.report import Report, ReportType
@@ -14,6 +14,7 @@ import orion.constants as cnsts
 
 
 from orion.utils import json_to_junit
+from orion.github_client import GitHubClient
 
 
 class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-attributes
@@ -37,6 +38,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         self.metrics_config = metrics_config
         self.regression_flag = False
         self.uuid_field = uuid_field
+        self._github_client: Optional[GitHubClient] = None
 
     def output_json(self) -> Tuple[str, str, bool]:
         """Method to output json output
@@ -88,6 +90,25 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
                             and dataframe_json[index + 1] not in collapsed_json
                         ):
                             collapsed_json.append(dataframe_json[index + 1])
+                github_client = self._get_github_client()
+                if github_client and not dataframe_json[index].get("github_context"):
+                    previous_entry = dataframe_json[index - 1] if index > 0 else None
+                    previous_version = (
+                        previous_entry.get(self.version_field) if previous_entry else None
+                    )
+                    previous_timestamp = (
+                        previous_entry.get("timestamp") if previous_entry else None
+                    )
+                    current_version = dataframe_json[index].get(self.version_field)
+                    current_timestamp = dataframe_json[index].get("timestamp")
+                    context = github_client.get_change_context(
+                        previous_timestamp=previous_timestamp,
+                        current_timestamp=current_timestamp,
+                        previous_version=previous_version,
+                        current_version=current_version,
+                    )
+                    if context:
+                        dataframe_json[index]["github_context"] = context
         return_json = collapsed_json if self.options["collapse"] else dataframe_json
 
         return (
@@ -122,8 +143,8 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         return self.test["name"], output_table, self.regression_flag
 
     def _generate_combined_table_with_display(
-        self, data_json: List[Dict], display_field: str
-    ) -> str:
+            self, data_json: List[Dict], display_field: str
+            ) -> str:
         """Generate a combined table with all metrics and display field."""
 
         if not data_json:
@@ -276,3 +297,15 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         if output_format == cnsts.JUNIT:
             return self.output_junit()
         raise ValueError("Unsupported output format {output_format} selected")
+
+    def _get_github_client(self) -> Optional[GitHubClient]:
+        if self._github_client is not None:
+            return self._github_client
+        repositories = self.options.get("github_repos") or []
+        if not repositories:
+            self._github_client = None
+            return None
+        if not isinstance(repositories, (list, tuple)):
+            repositories = [str(repositories)]
+        self._github_client = GitHubClient(list(repositories))
+        return self._github_client

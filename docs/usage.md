@@ -113,6 +113,23 @@ It is also possible to display custom metadata fields, like for example _ocpVirt
 orion --display ocpVirtVersion
 ```
 
+### GitHub Context for Changepoints
+Enrich JSON output with release and commit metadata for specific repositories:
+
+```bash
+orion \
+  --config performance-config.yaml \
+  --hunter-analyze \
+  --github-repos openshift/origin,openshift/installer \
+  -o json
+```
+
+- Provide repositories as a comma-separated list (e.g., `--github-repos org1/repo1,org2/repo2`)  
+- Each repository reports separate `releases` and `commits` sections. Each section contains an `items` array plus a `count` and optional `reason` when GitHub cannot return data (rate limiting, malformed timestamps, etc.)  
+- Orion gathers every release and commit with timestamps strictly after the previous changepoint and up to (and including) the current changepoint—no tags or SHAs are required from the CLI  
+- When changepoints are detected, the JSON entries gain a `github_context` block summarizing the interval (`start`, `end`) and the matching release/commit items for every repository  
+- Export a `GITHUB_TOKEN` (or `GH_TOKEN`) environment variable to increase GitHub API rate limits
+
 ## UUID and Baseline Options
 
 ### Specific UUID Analysis

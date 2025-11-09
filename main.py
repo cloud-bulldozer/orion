@@ -3,11 +3,12 @@ This is the cli file for orion, tool to detect regressions using hunter
 """
 
 # pylint: disable = import-error, line-too-long, no-member
+import json
 import logging
+import re
 import sys
 import warnings
-from typing import Any, Dict, Tuple
-import json
+from typing import Any, Dict, List, Optional, Tuple
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 import click
@@ -71,6 +72,20 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
             )
     return value
 
+
+def parse_github_repos(repos_value: Optional[Any]) -> List[str]:
+    """
+    Parse the --github-repos option value into a clean list of repository identifiers.
+    Supports comma-separated strings and existing lists for backwards compatibility.
+    """
+    if repos_value in ("", None):
+        return []
+    if isinstance(repos_value, (list, tuple)):
+        candidates = repos_value
+    else:
+        candidates = re.split(r"[,\s]+", str(repos_value).strip())
+    return [repo.strip() for repo in candidates if repo and repo.strip()]
+
 # pylint: disable=too-many-locals
 @click.command()
 @click.option(
@@ -85,6 +100,11 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--ack", default="", help="Optional ack YAML to ack known regressions")
 @click.option(
     "--save-data-path", default="data.csv", help="Path to save the output file"
+)
+@click.option(
+    "--github-repos",
+    default="",
+    help="Comma-separated list of GitHub repositories (owner/repo) to enrich changepoint output with release and commit info",
 )
 @click.option("--sippy-pr-search", is_flag=True, help="Search for PRs in sippy")
 @click.option("--debug", default=False, is_flag=True, help="log level")
@@ -139,6 +159,7 @@ def main(**kwargs):
     if len(kwargs["ack"]) > 1 :
         kwargs["ackMap"] = load_ack(kwargs["ack"])
     kwargs["config"] = load_config(kwargs["config"], kwargs["input_vars"])
+    kwargs["github_repos"] = parse_github_repos(kwargs.get("github_repos"))
     if not kwargs["metadata_index"] or not kwargs["es_server"]:
         logger.error("metadata-index and es-server flags must be provided")
         sys.exit(1)
