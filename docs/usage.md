@@ -14,6 +14,18 @@ Orion uses ElasticSearch/OpenSearch (ES/OS) to fetch the data used for compariso
 orion --hunter-analyze
 ```
 
+### Version Information
+
+Display the current version of Orion:
+
+```bash
+orion --version
+```
+
+This command outputs the version number, which is dynamically determined from git tags using setuptools_scm. The version format follows semantic versioning and may include additional metadata such as:
+- `.post1.dev` suffix when the current commit is ahead of the latest tag
+- `+dirty` suffix when there are uncommitted changes in the working directory
+
 ## Core Algorithms
 
 Orion supports three main algorithms that are **mutually exclusive**:
