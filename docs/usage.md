@@ -120,9 +120,32 @@ orion cmd o junit --hunter-analyze
 orion --collapse --hunter-analyze
 ```
 
-It is also possible to display custom metadata fields, like for example _ocpVirtVersion_ or _osImage_:
+### Display Metadata Fields
+Add custom metadata fields as columns in the output table:
+
 ```bash
-orion --display ocpVirtVersion
+# Display a single metadata field
+orion --display ocpVirtVersion --hunter-analyze
+
+# Display multiple metadata fields
+orion --display ocpVirtVersion,osImage,releaseStream --hunter-analyze
+```
+
+**Note:** The `buildUrl` field is optional in the output, but it is always included in the default value of `--display`. This means:
+- By default, `buildUrl` is shown as a column in the output
+- You can exclude `buildUrl` by explicitly setting `--display` to other fields only
+- You can include `buildUrl` along with other fields by adding it to the `--display` list
+
+Examples:
+```bash
+# Default behavior: buildUrl is included
+orion --config config.yaml --hunter-analyze
+
+# Include buildUrl and additional fields
+orion --display buildUrl,ocpVirtVersion --hunter-analyze
+
+# Exclude buildUrl, show only ocpVirtVersion
+orion --display ocpVirtVersion --hunter-analyze
 ```
 
 ## UUID and Baseline Options
