@@ -245,10 +245,14 @@ setup() {
   echo $version
   expected_tag=$(git tag -l | sort -V | tail -1)
   expected_tag=${expected_tag#v}
+  if [[ -z $expected_tag ]]; then
+    expected_tag=0.0
+  fi
+
   expected_version="orion ${expected_tag}"
 
   last_commit=$(git rev-parse --short=7 HEAD)
-  describe=$(git describe --tags --dirty)
+  describe=$(git describe --tags --dirty --always)
   
   if [[ "$describe" == *"$last_commit"* ]]; then
     echo "Is ahead of Tag adding '.post1.dev'"
