@@ -534,7 +534,7 @@ def json_to_junit(
     data_json: Dict[Any, Any],
     metrics_config: Dict[Any, Any],
     uuid_field: str,
-    display_field: str = None,
+    display_fields: List[str] = None,
     average: bool = False
 ) -> ET.Element:
     """Convert json to junit format
@@ -570,7 +570,7 @@ def json_to_junit(
                 failures_count += 1
                 failure = ET.SubElement(testcase, "failure")
                 failure.text = (
-                    "\n" + generate_tabular_output(data_json, metric_name=metric, uuid_field=uuid_field, display_field=display_field) + "\n"
+                    "\n" + generate_tabular_output(data_json, metric_name=metric, uuid_field=uuid_field, display_fields=display_fields) + "\n"
                 )
         else:
             data = json.loads(data_json)
@@ -588,7 +588,7 @@ def json_to_junit(
     return testsuite
 
 
-def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uuid", display_field: str = None) -> str:
+def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uuid", display_fields: List[str] = None) -> str:
     """converts json to tabular format
 
     Args:
@@ -612,8 +612,9 @@ def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uui
             "percentage_change": record["metrics"][metric_name]["percentage_change"],
         }
         # Add metadata field if it exists in the record
-        if display_field and display_field in record:
-            base_record[display_field] = record[display_field]
+        for display_field in display_fields:
+            if display_field and display_field in record:
+                base_record[display_field] = record[display_field]
         return base_record
     for i in range(0, len(data)):
         records.append(create_record(data[i]))

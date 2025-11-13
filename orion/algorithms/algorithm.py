@@ -183,7 +183,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             data_json=data_json,
             metrics_config=self.metrics_config,
             uuid_field=self.uuid_field,
-            display_field=self.options.get("display")
+            display_fields=self.options.get("display")
         )
         return test_name, data_junit, self.regression_flag
 
