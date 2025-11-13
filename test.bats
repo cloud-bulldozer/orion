@@ -238,3 +238,38 @@ setup() {
   curl -s https://raw.githubusercontent.com/openshift-eng/ocp-qe-perfscale-ci/refs/heads/netobserv-perf-tests/scripts/queries/netobserv-orion-node-density-heavy.yaml -w %{http_code} -o /tmp/netobserv-node-density-heavy-ospst.yaml
   run_cmd orion --config "/tmp/netobserv-node-density-heavy-ospst.yaml" --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"workers": 25}'
 }
+
+@test "orion version check" {
+  set +e
+  version=$(orion --version)
+  echo $version
+  expected_tag=$(git tag -l | sort -V | tail -1)
+  expected_tag=${expected_tag#v}
+  if [[ -z $expected_tag ]]; then
+    expected_tag=0.0
+  fi
+
+  expected_version="orion ${expected_tag}"
+
+  last_commit=$(git rev-parse --short=7 HEAD)
+  describe=$(git describe --tags --dirty --always)
+  
+  if [[ "$describe" == *"$last_commit"* ]]; then
+    echo "Is ahead of Tag adding '.post1.dev'"
+    expected_version+=".post1.dev"
+  fi
+
+  if [[ "$describe" == *"dirty"* ]]; then
+    if [[ ! "$version" == *"+dirty"* ]]; then
+      echo "Failed checking for dirty append"
+      exit 1
+    fi
+  fi
+
+  echo $expected_version
+
+  if [[ ! "$version" == *"$expected_version"* ]]; then
+    exit 1
+  fi
+  set -e
+}
