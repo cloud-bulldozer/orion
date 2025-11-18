@@ -221,6 +221,14 @@ setup() {
   run_cmd orion --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
+@test "orion trt external payload cluster density for pull" {
+  run_cmd orion --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'", "jobType": "pull", "pullNumber": "70897"}'
+}
+
+@test "orion trt external payload cluster density for periodic from a pull" {
+  run_cmd orion --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'", "jobType": "periodic", "pullNumber": "70897"}'
+}
+
 @test "orion chaos tests " {
   before_version=$version
   scenario_type="pvc_scenarios" cloud_infrastructure="aws" cloud_type="self-managed" total_node_count="9" node_instance_type="m6a.xlarge" network_plugins="OVNKubernetes" scenario_file="*pvc_scenario.yaml" run_cmd orion --config "examples/chaos_tests.yaml" --lookback 45d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX} --input-vars='{"version": "'${chaos_version}'"}' --output-format text
@@ -266,4 +274,39 @@ setup() {
   export quay_image_push_pull_index="quay-push-pull*"
   export es_metadata_index=${METADATA_INDEX}
   run_cmd orion --node-count false --config "examples/quay-load-test-stable-stage.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --input-vars='{"quay_version": "quayio-stage", "ocp_version": "4.18"}'
+}
+
+@test "orion version check" {
+  set +e
+  version=$(orion --version)
+  echo $version
+  expected_tag=$(git tag -l | sort -V | tail -1)
+  expected_tag=${expected_tag#v}
+  if [[ -z $expected_tag ]]; then
+    expected_tag=0.0
+  fi
+
+  expected_version="orion ${expected_tag}"
+
+  last_commit=$(git rev-parse --short=7 HEAD)
+  describe=$(git describe --tags --dirty --always)
+  
+  if [[ "$describe" == *"$last_commit"* ]]; then
+    echo "Is ahead of Tag adding '.post1.dev'"
+    expected_version+=".post1.dev"
+  fi
+
+  if [[ "$describe" == *"dirty"* ]]; then
+    if [[ ! "$version" == *"+dirty"* ]]; then
+      echo "Failed checking for dirty append"
+      exit 1
+    fi
+  fi
+
+  echo $expected_version
+
+  if [[ ! "$version" == *"$expected_version"* ]]; then
+    exit 1
+  fi
+  set -e
 }

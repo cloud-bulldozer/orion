@@ -16,6 +16,7 @@ from orion.run_test import run
 from orion.utils import get_output_extension
 from orion import constants as cnsts
 from orion.config import load_config, load_ack
+from version import __version__
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 warnings.filterwarnings(
@@ -72,6 +73,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
     return value
 
 # pylint: disable=too-many-locals
+@click.version_option(version=__version__, message="%(prog)s %(version)s")
 @click.command()
 @click.option(
     "--cmr", 
