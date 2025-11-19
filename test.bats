@@ -133,6 +133,7 @@ setup() {
     }
   }' | jq -r '.aggregations.distinct_versions.buckets[0].key')
   export ols_version=$(echo "$OLS_LATEST_VERSION" | cut -d'.' -f1,2)
+  curl -fsSL https://github.com/openshift/ols-load-generator/blob/main/ack/4.15_ols-load-generator-10w_ack.yaml -o /tmp/4.15_ols-load-generator-10w_ack.yaml
 
 }
 
@@ -245,7 +246,7 @@ setup() {
   before_version=$version
   VERSION=$ols_version
   export ols_test_workers=10
-  es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion --config "examples/ols-load-generator.yaml" --hunter-analyze --ack ack/4.15_ols-load-generator-10w_ack.yaml --es-server=${ES_SERVER}
+  es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion --config "examples/ols-load-generator.yaml" --hunter-analyze --ack /tmp/4.15_ols-load-generator-10w_ack.yaml --es-server=${ES_SERVER}
   VERSION=$before_version
 }
 
