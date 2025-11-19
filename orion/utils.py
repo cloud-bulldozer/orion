@@ -253,7 +253,7 @@ class Utils:
             match (Matcher): the fmatch instance
             timestamp_field (str): timestamp field in data
         """
-        test = match.get_results("", uuids, {}, timestamp_field=timestamp_field)
+        test = match.get_results("", uuids, {}, [self.version_field], timestamp_field=timestamp_field)
         if "." in self.version_field:
             return {
                 run[self.uuid_field]: match.dotDictFind(run, self.version_field)
@@ -274,7 +274,7 @@ class Utils:
             dict: dictionary of the metadata
         """
 
-        test = match.get_results("", uuids, {}, timestamp_field=timestamp_field)
+        test = match.get_results("", uuids, {}, ["buildUrl"], timestamp_field=timestamp_field)
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in test}
         return buildUrls
 
