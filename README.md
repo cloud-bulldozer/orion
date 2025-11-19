@@ -1,3 +1,8 @@
+
+<p align="center">
+    <img src="images/logo.jpg" alt="Orion Logo" width="300">
+</p>
+
 # Orion - CLI tool to find regressions
 
 Orion stands as a powerful command-line tool designed for identifying regressions within perf-scale CPT runs, leveraging metadata provided during the process. The detection mechanism relies on [hunter](https://github.com/datastax-labs/hunter).

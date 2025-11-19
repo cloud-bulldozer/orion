@@ -14,6 +14,18 @@ Orion uses ElasticSearch/OpenSearch (ES/OS) to fetch the data used for compariso
 orion --hunter-analyze
 ```
 
+### Version Information
+
+Display the current version of Orion:
+
+```bash
+orion --version
+```
+
+This command outputs the version number, which is dynamically determined from git tags using setuptools_scm. The version format follows semantic versioning and may include additional metadata such as:
+- `.post1.dev` suffix when the current commit is ahead of the latest tag
+- `+dirty` suffix when there are uncommitted changes in the working directory
+
 ## Core Algorithms
 
 Orion supports three main algorithms that are **mutually exclusive**:
@@ -108,9 +120,32 @@ orion cmd o junit --hunter-analyze
 orion --collapse --hunter-analyze
 ```
 
-It is also possible to display custom metadata fields, like for example _ocpVirtVersion_ or _osImage_:
+### Display Metadata Fields
+Add custom metadata fields as columns in the output table:
+
 ```bash
-orion --display ocpVirtVersion
+# Display a single metadata field
+orion --display ocpVirtVersion --hunter-analyze
+
+# Display multiple metadata fields
+orion --display ocpVirtVersion,osImage,releaseStream --hunter-analyze
+```
+
+**Note:** The `buildUrl` field is optional in the output, but it is always included in the default value of `--display`. This means:
+- By default, `buildUrl` is shown as a column in the output
+- You can exclude `buildUrl` by explicitly setting `--display` to other fields only
+- You can include `buildUrl` along with other fields by adding it to the `--display` list
+
+Examples:
+```bash
+# Default behavior: buildUrl is included
+orion --config config.yaml --hunter-analyze
+
+# Include buildUrl and additional fields
+orion --display buildUrl,ocpVirtVersion --hunter-analyze
+
+# Exclude buildUrl, show only ocpVirtVersion
+orion --display ocpVirtVersion --hunter-analyze
 ```
 
 ### GitHub Context for Changepoints

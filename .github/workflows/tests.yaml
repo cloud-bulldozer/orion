@@ -43,6 +43,7 @@ jobs:
       env:
         TERM: linux      
         QE_ES_SERVER: ${{ secrets.QE_ES_SERVER }}
+        QUAY_QE_ES_SERVER: ${{ secrets.QUAY_QE_ES_SERVER }}
       
     - name: Upload outputs data
       if: ${{ success() || failure() }}

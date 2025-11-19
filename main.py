@@ -5,10 +5,9 @@ This is the cli file for orion, tool to detect regressions using hunter
 # pylint: disable = import-error, line-too-long, no-member
 import json
 import logging
-import re
 import sys
 import warnings
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 import click
@@ -17,6 +16,7 @@ from orion.run_test import run
 from orion.utils import get_output_extension
 from orion import constants as cnsts
 from orion.config import load_config, load_ack
+from version import __version__
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 warnings.filterwarnings(
@@ -32,6 +32,18 @@ class Dictionary(click.ParamType):
     name = "dictionary"
     def convert(self, value: Any, param: Any, ctx: Any) -> dict:
         return json.loads(value)
+
+class List(click.ParamType):
+    """Class to define a custom click type for lists
+
+    Args:
+        click (ParamType):
+    """
+    name = "list"
+    def convert(self, value: Any, param: Any, ctx: Any) -> list:
+        if isinstance(value, list):
+            return value
+        return value.split(",") if value else []
 
 class MutuallyExclusiveOption(click.Option):
     """Class to implement mutual exclusivity between options in click
@@ -73,21 +85,9 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
     return value
 
 
-def parse_github_repos(repos_value: Optional[Any]) -> List[str]:
-    """
-    Parse the --github-repos option value into a clean list of repository identifiers.
-    Supports comma-separated strings and existing lists for backwards compatibility.
-    """
-    if repos_value in ("", None):
-        return []
-    if isinstance(repos_value, (list, tuple)):
-        candidates = repos_value
-    else:
-        candidates = re.split(r"[,\s]+", str(repos_value).strip())
-    return [repo.strip() for repo in candidates if repo and repo.strip()]
-
 # pylint: disable=too-many-locals
-@click.command()
+@click.version_option(version=__version__, message="%(prog)s %(version)s")
+@click.command(context_settings={"show_default": True, "max_content_width": 180})
 @click.option(
     "--cmr", 
     is_flag=True,
@@ -103,8 +103,9 @@ def parse_github_repos(repos_value: Optional[Any]) -> List[str]:
 )
 @click.option(
     "--github-repos",
-    default="",
-    help="Comma-separated list of GitHub repositories (owner/repo) to enrich changepoint output with release and commit info",
+    type=List(),
+    default=[""],
+    help="List of GitHub repositories (owner/repo) to enrich changepoint output with release and commit info",
 )
 @click.option("--sippy-pr-search", is_flag=True, help="Search for PRs in sippy")
 @click.option("--debug", default=False, is_flag=True, help="log level")
@@ -146,7 +147,7 @@ def parse_github_repos(repos_value: Optional[Any]) -> List[str]:
 @click.option("--benchmark-index", type=str, envvar="es_benchmark_index",  help="Index where test data is stored, can be set via env var es_benchmark_index", default="")
 @click.option("--metadata-index", type=str, envvar="es_metadata_index",  help="Index where metadata is stored, can be set via env var es_metadata_index", default="")
 @click.option("--input-vars", type=Dictionary(), default="{}", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
-@click.option("--display", type=str, help="Add metadata field as a column in the output (e.g., ocpVirt, releaseStream)")
+@click.option("--display", type=List(), default=["buildUrl"], help="Add metadata field as a column in the output (e.g. ocpVirt, upstreamJob)")
 def main(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
@@ -159,7 +160,6 @@ def main(**kwargs):
     if len(kwargs["ack"]) > 1 :
         kwargs["ackMap"] = load_ack(kwargs["ack"])
     kwargs["config"] = load_config(kwargs["config"], kwargs["input_vars"])
-    kwargs["github_repos"] = parse_github_repos(kwargs.get("github_repos"))
     if not kwargs["metadata_index"] or not kwargs["es_server"]:
         logger.error("metadata-index and es-server flags must be provided")
         sys.exit(1)

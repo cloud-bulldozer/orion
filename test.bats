@@ -134,6 +134,30 @@ setup() {
   }' | jq -r '.aggregations.distinct_versions.buckets[0].key')
   export ols_version=$(echo "$OLS_LATEST_VERSION" | cut -d'.' -f1,2)
 
+  QUAY_LATEST_VERSION=$(curl -s -X POST "$QUAY_QE_ES_SERVER/perf_scale_ci*/_search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "size": 0,
+    "query": {
+      "range": {
+        "timestamp": {
+          "gte": "now-3M/M",
+          "lt": "now"
+        }
+      }
+    },
+    "aggs": {
+      "latest_version": {
+        "terms": {
+          "field": "quayVersion.keyword",
+          "size": 1,
+          "order": { "_key": "desc" },
+          "exclude": "quayio-stage.*"
+        }
+      }
+    }
+  }' | jq -r '.aggregations.latest_version.buckets[0].key')
+  export quay_version=$(echo "$QUAY_LATEST_VERSION" | cut -d'.' -f1,2)
 }
 
 @test "orion label small scale cluster density with hunter-analyze" {
@@ -193,6 +217,22 @@ setup() {
   run_cmd orion --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
+@test "orion trt external payload node density json" {
+  run_cmd orion --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}' --output-format json
+}
+
+@test "orion trt external payload node density junit" {
+  run_cmd orion --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}' --output-format junit
+}
+
+@test "orion trt external payload node density json with lookback" {
+  run_cmd orion --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze --lookback 15d --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}' --output-format json
+}
+
+@test "orion trt external payload node density junit with lookback" {
+  run_cmd orion --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze --lookback 15d --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}' --output-format junit
+}
+
 @test "orion trt external payload cluster density" {
   run_cmd orion --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
@@ -237,4 +277,52 @@ setup() {
   BENCHMARK_INDEX="prod-netobserv-datapoints*"
   curl -s https://raw.githubusercontent.com/openshift-eng/ocp-qe-perfscale-ci/refs/heads/netobserv-perf-tests/scripts/queries/netobserv-orion-node-density-heavy.yaml -w %{http_code} -o /tmp/netobserv-node-density-heavy-ospst.yaml
   run_cmd orion --config "/tmp/netobserv-node-density-heavy-ospst.yaml" --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"workers": 25}'
+}
+
+@test "orion with quay config " {
+  export quay_image_push_pull_index="quay-push-pull*"
+  export quay_load_test_index="quay-vegeta-results*"
+  export es_metadata_index=${METADATA_INDEX}
+  run_cmd orion --node-count false --config "examples/quay-load-test-stable.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --input-vars='{"quay_version": "'${quay_version}'", "ocp_version": "4.18"}'
+}
+
+@test "orion with quay stage config " {
+  export quay_image_push_pull_index="quay-push-pull*"
+  export es_metadata_index=${METADATA_INDEX}
+  run_cmd orion --node-count false --config "examples/quay-load-test-stable-stage.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --input-vars='{"quay_version": "quayio-stage", "ocp_version": "4.18"}'
+}
+
+@test "orion version check" {
+  set +e
+  version=$(orion --version)
+  echo $version
+  expected_tag=$(git tag -l | sort -V | tail -1)
+  expected_tag=${expected_tag#v}
+  if [[ -z $expected_tag ]]; then
+    expected_tag=0.0
+  fi
+
+  expected_version="orion ${expected_tag}"
+
+  last_commit=$(git rev-parse --short=7 HEAD)
+  describe=$(git describe --tags --dirty --always)
+  
+  if [[ "$describe" == *"$last_commit"* ]]; then
+    echo "Is ahead of Tag adding '.post1.dev'"
+    expected_version+=".post1.dev"
+  fi
+
+  if [[ "$describe" == *"dirty"* ]]; then
+    if [[ ! "$version" == *"+dirty"* ]]; then
+      echo "Failed checking for dirty append"
+      exit 1
+    fi
+  fi
+
+  echo $expected_version
+
+  if [[ ! "$version" == *"$expected_version"* ]]; then
+    exit 1
+  fi
+  set -e
 }
