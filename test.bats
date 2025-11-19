@@ -193,6 +193,22 @@ setup() {
   run_cmd orion --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
+@test "orion trt external payload node density json" {
+  run_cmd orion --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}' --output-format json
+}
+
+@test "orion trt external payload node density junit" {
+  run_cmd orion --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}' --output-format junit
+}
+
+@test "orion trt external payload node density json with lookback" {
+  run_cmd orion --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze --lookback 15d --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}' --output-format json
+}
+
+@test "orion trt external payload node density junit with lookback" {
+  run_cmd orion --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze --lookback 15d --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}' --output-format junit
+}
+
 @test "orion trt external payload cluster density" {
   run_cmd orion --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
