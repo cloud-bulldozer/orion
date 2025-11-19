@@ -147,7 +147,7 @@ def analyze(
         uuid_field: uuid field
     """
     matcher = Matcher(
-        index=kwargs["metadata_index"],
+        index=kwargs["metadata_index"] or test["metadata_index"],
         es_server=kwargs["es_server"],
         verify_certs=False,
         version_field=version_field,
