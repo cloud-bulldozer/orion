@@ -6,3 +6,6 @@ ack:
   - uuid: e6db93d9-bcb7-47e8-a4d2-143b3db4fabc
     metric: etcdCPU_avg
     reason: "Abnormally high etcdCPU looks like it was fixed at 1890069956565929984"
+  - uuid: 0bbf62c5-0f8d-4c09-a7c9-c93f772cd2dd
+    metric: apiserverCPU_avg
+    reason: "apiserver increase from 4.19 to 4.21, no obvious reason, no code changes, rhcos didn't change either"
