@@ -133,8 +133,32 @@ setup() {
     }
   }' | jq -r '.aggregations.distinct_versions.buckets[0].key')
   export ols_version=$(echo "$OLS_LATEST_VERSION" | cut -d'.' -f1,2)
-  curl -fsSL https://github.com/openshift/ols-load-generator/blob/main/ack/4.15_ols-load-generator-10w_ack.yaml -o /tmp/4.15_ols-load-generator-10w_ack.yaml
+  curl -fsSL https://github.com/openshift/ols-load-generator/blob/main/ack/4.16_ols-load-generator-10w_ack.yaml -o /tmp/4.16_ols-load-generator-10w_ack.yaml
 
+  QUAY_LATEST_VERSION=$(curl -s -X POST "$QUAY_QE_ES_SERVER/perf_scale_ci*/_search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "size": 0,
+    "query": {
+      "range": {
+        "timestamp": {
+          "gte": "now-3M/M",
+          "lt": "now"
+        }
+      }
+    },
+    "aggs": {
+      "latest_version": {
+        "terms": {
+          "field": "quayVersion.keyword",
+          "size": 1,
+          "order": { "_key": "desc" },
+          "exclude": "quayio-stage.*"
+        }
+      }
+    }
+  }' | jq -r '.aggregations.latest_version.buckets[0].key')
+  export quay_version=$(echo "$QUAY_LATEST_VERSION" | cut -d'.' -f1,2)
 }
 
 @test "orion label small scale cluster density with hunter-analyze" {
@@ -246,7 +270,7 @@ setup() {
   before_version=$version
   VERSION=$ols_version
   export ols_test_workers=10
-  es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion --config "examples/ols-load-generator.yaml" --hunter-analyze --ack /tmp/4.15_ols-load-generator-10w_ack.yaml --es-server=${ES_SERVER}
+  es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion --config "examples/ols-load-generator.yaml" --hunter-analyze --ack /tmp/4.16_ols-load-generator-10w_ack.yaml --es-server=${ES_SERVER}
   VERSION=$before_version
 }
 
@@ -254,6 +278,19 @@ setup() {
   BENCHMARK_INDEX="prod-netobserv-datapoints*"
   curl -s https://raw.githubusercontent.com/openshift-eng/ocp-qe-perfscale-ci/refs/heads/netobserv-perf-tests/scripts/queries/netobserv-orion-node-density-heavy.yaml -w %{http_code} -o /tmp/netobserv-node-density-heavy-ospst.yaml
   run_cmd orion --config "/tmp/netobserv-node-density-heavy-ospst.yaml" --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"workers": 25}'
+}
+
+@test "orion with quay config " {
+  export quay_image_push_pull_index="quay-push-pull*"
+  export quay_load_test_index="quay-vegeta-results*"
+  export es_metadata_index=${METADATA_INDEX}
+  run_cmd orion --node-count false --config "examples/quay-load-test-stable.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --input-vars='{"quay_version": "'${quay_version}'", "ocp_version": "4.18"}'
+}
+
+@test "orion with quay stage config " {
+  export quay_image_push_pull_index="quay-push-pull*"
+  export es_metadata_index=${METADATA_INDEX}
+  run_cmd orion --node-count false --config "examples/quay-load-test-stable-stage.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --input-vars='{"quay_version": "quayio-stage", "ocp_version": "4.18"}'
 }
 
 @test "orion version check" {

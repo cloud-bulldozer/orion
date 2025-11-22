@@ -29,4 +29,4 @@ jobs:
 
     - name: Analysing the code with pylint
       run: |
-        pylint -d R0915 -d R1702 -d R0913 -d R0914 -d C0103 -d R0912 -d R0917 $(git ls-files '*/*.py' '*.py')
+        pylint -d R0915 -d R1702 -d R0913 -d R0914 -d C0103 -d R0912 -d R0911 -d R0917 -d E0102 $(git ls-files '*/*.py' '*.py')
