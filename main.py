@@ -7,7 +7,7 @@ import json
 import logging
 import sys
 import warnings
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 import click

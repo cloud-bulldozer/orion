@@ -88,6 +88,7 @@ class GitHubClient:
         except ValueError:
             return None
 
+    # pylint: disable=too-many-return-statements
     def _coerce_timestamp(self, value: Optional[Any]) -> Optional[datetime]:
         if value in (None, ""):
             return None
