@@ -3,7 +3,7 @@
 # Requires environment variables for dynamic configuration
 # Example usage:
 # export version=4.19
-# export scenario_type=time_scenarios
+# export scenario_type=node_scenarios
 # export cloud_infrastructure=AWS
 # export cloud_type=self-managed
 # export total_node_count=9
@@ -22,21 +22,15 @@ tests:
       cloud_infrastructure: "{{ cloud_infrastructure }}"
       cloud_type: "{{ cloud_type }}"
       total_node_count: "{{ total_node_count }}"
-      node_summary_infos.instance_type: "{{ node_instance_type }}"
       network_plugins: "{{ network_plugins }}"
       scenarios.scenario: "{{ scenario_file }}"
+      scenarios.exit_status: 0
+      scenarios.parameters.node_scenarios.label_selector: "{{ label_selector }}"
     metrics:
       # Recovery & Health metrics
-      - name: health_check_recovery
-        metricName.keyword: health_check_recovery
-        metric_of_interest: duration
-        not:
-          status_code: 200
-        agg:
-          value: duration
-          agg_type: sum
-
       - name: affected_nodes_recovery
+        threshold: 15
+        direction: 1
         metricName.keyword: affected_nodes_recovery
         metric_of_interest: ready_time
         agg:
@@ -45,6 +39,8 @@ tests:
 
       # ETCD Performance metrics
       - name: etcd_99th_backend_commit_duration
+        threshold: 15
+        direction: 1
         metricName.keyword: 99thEtcdDiskBackendCommit
         metric_of_interest: value
         agg:
@@ -52,6 +48,8 @@ tests:
           agg_type: avg
 
       - name: etcd_99th_wal_fsync_duration
+        threshold: 15
+        direction: 1
         metricName.keyword: 99thEtcdDiskWalFsync
         metric_of_interest: value
         agg:
@@ -59,6 +57,8 @@ tests:
           agg_type: avg
 
       - name: etcd_99th_round_trip_time
+        threshold: 15
+        direction: 1
         metricName.keyword: 99thEtcdRoundTripTime
         metric_of_interest: value
         agg:
@@ -67,6 +67,8 @@ tests:
 
       # API Server metrics
       - name: api_inflight_requests
+        threshold: 15
+        direction: 1
         metricName.keyword: APIInflightRequests
         metric_of_interest: value
         agg:
@@ -75,48 +77,35 @@ tests:
 
       # CPU Usage metrics
       - name: cpu_cluster_usage_ratio
+        threshold: 15
+        direction: 1
         metricName.keyword: cpu-cluster-usage-ratio
         metric_of_interest: value
         agg:
           value: cpu
           agg_type: avg
 
-      - name: cpu_crio
-        metricName.keyword: cpu-crio
-        metric_of_interest: value
-        agg:
-          value: cpu
-          agg_type: avg
-
       - name: cpu_etcd
+        threshold: 15
+        direction: 1
         metricName.keyword: cpu-etcd
         metric_of_interest: value
         agg:
           value: cpu
           agg_type: avg
 
-      - name: cpu_infra
-        metricName.keyword: cpu-infra
-        metric_of_interest: value
-        agg:
-          value: cpu
-          agg_type: avg
-
       - name: cpu_kube_apiserver
+        threshold: 15
+        direction: 1
         metricName.keyword: cpu-kube-apiserver
         metric_of_interest: value
         agg:
           value: cpu
           agg_type: avg
 
-      - name: cpu_kube_controller_manager
-        metricName.keyword: cpu-kube-controller-manager
-        metric_of_interest: value
-        agg:
-          value: cpu
-          agg_type: avg
-
       - name: cpu_kubelet
+        threshold: 15
+        direction: 1
         metricName.keyword: cpu-kubelet
         metric_of_interest: value
         agg:
@@ -124,6 +113,8 @@ tests:
           agg_type: avg
 
       - name: cpu_masters
+        threshold: 15
+        direction: 1
         metricName.keyword: cpu-masters
         metric_of_interest: value
         agg:
@@ -131,20 +122,26 @@ tests:
           agg_type: avg
 
       - name: cpu_multus
+        threshold: 15
+        direction: 1
         metricName.keyword: cpu-multus
         metric_of_interest: value
         agg:
           value: cpu
-          agg_type: avg
+          agg_type: max
 
       - name: cpu_openshift_apiserver
+        threshold: 15
+        direction: 1
         metricName.keyword: cpu-openshift-apiserver
         metric_of_interest: value
         agg:
           value: cpu
-          agg_type: avg
+          agg_type: max
 
       - name: cpu_openshift_controller_manager
+        threshold: 15
+        direction: 1
         metricName.keyword: cpu-openshift-controller-manager
         metric_of_interest: value
         agg:
@@ -152,6 +149,8 @@ tests:
           agg_type: avg
 
       - name: cpu_ovn_control_plane
+        threshold: 15
+        direction: 1
         metricName.keyword: cpu-ovn-control-plane
         metric_of_interest: value
         agg:
@@ -159,27 +158,17 @@ tests:
           agg_type: avg
 
       - name: cpu_ovnkube_node
+        threshold: 15
+        direction: 1
         metricName.keyword: cpu-ovnkube-node
         metric_of_interest: value
         agg:
           value: cpu
           agg_type: avg
 
-      - name: cpu_prometheus
-        metricName.keyword: cpu-prometheus
-        metric_of_interest: value
-        agg:
-          value: cpu
-          agg_type: avg
-
-      - name: cpu_router
-        metricName.keyword: cpu-router
-        metric_of_interest: value
-        agg:
-          value: cpu
-          agg_type: avg
-
       - name: cpu_workers
+        threshold: 15
+        direction: 1
         metricName.keyword: cpu-workers
         metric_of_interest: value
         agg:
@@ -188,6 +177,8 @@ tests:
 
       # Max CPU metrics
       - name: max_cpu_crio
+        threshold: 15
+        direction: 1
         metricName.keyword: max-cpu-crio
         metric_of_interest: value
         agg:
@@ -195,6 +186,8 @@ tests:
           agg_type: max
 
       - name: max_cpu_infra
+        threshold: 15
+        direction: 1
         metricName.keyword: max-cpu-infra
         metric_of_interest: value
         agg:
@@ -202,6 +195,8 @@ tests:
           agg_type: max
 
       - name: max_cpu_kube_controller_manager
+        threshold: 15
+        direction: 1
         metricName.keyword: max-cpu-kube-controller-manager
         metric_of_interest: value
         agg:
@@ -209,20 +204,17 @@ tests:
           agg_type: max
 
       - name: max_cpu_kubelet
+        threshold: 15
+        direction: 1
         metricName.keyword: max-cpu-kubelet
         metric_of_interest: value
         agg:
           value: cpu
           agg_type: max
 
-      - name: max_cpu_prometheus
-        metricName.keyword: max-cpu-prometheus
-        metric_of_interest: value
-        agg:
-          value: cpu
-          agg_type: max
-
       - name: max_cpu_workers
+        threshold: 15
+        direction: 1
         metricName.keyword: max-cpu-workers
         metric_of_interest: value
         agg:
@@ -231,6 +223,8 @@ tests:
 
       # Memory Usage metrics
       - name: memory_cluster_usage_ratio
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-cluster-usage-ratio
         metric_of_interest: value
         agg:
@@ -238,6 +232,8 @@ tests:
           agg_type: avg
 
       - name: memory_crio
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-crio
         metric_of_interest: value
         agg:
@@ -245,6 +241,8 @@ tests:
           agg_type: avg
 
       - name: memory_etcd
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-etcd
         metric_of_interest: value
         agg:
@@ -252,6 +250,8 @@ tests:
           agg_type: avg
 
       - name: memory_infra
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-infra
         metric_of_interest: value
         agg:
@@ -259,6 +259,8 @@ tests:
           agg_type: avg
 
       - name: memory_kube_apiserver
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-kube-apiserver
         metric_of_interest: value
         agg:
@@ -266,13 +268,17 @@ tests:
           agg_type: avg
 
       - name: memory_kube_controller_manager
-        metricName.keyword: memory-kube-controller-manager
+        threshold: 15
+        direction: 1
+        metricName.keyword: max-memory-kube-controller-manager
         metric_of_interest: value
         agg:
           value: mem
-          agg_type: avg
+          agg_type: max
 
       - name: memory_kubelet
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-kubelet
         metric_of_interest: value
         agg:
@@ -280,6 +286,8 @@ tests:
           agg_type: avg
 
       - name: memory_masters
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-masters
         metric_of_interest: value
         agg:
@@ -287,6 +295,8 @@ tests:
           agg_type: avg
 
       - name: memory_multus
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-multus
         metric_of_interest: value
         agg:
@@ -294,6 +304,8 @@ tests:
           agg_type: avg
 
       - name: memory_openshift_apiserver
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-openshift-apiserver
         metric_of_interest: value
         agg:
@@ -301,6 +313,8 @@ tests:
           agg_type: avg
 
       - name: memory_openshift_controller_manager
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-openshift-controller-manager
         metric_of_interest: value
         agg:
@@ -308,6 +322,8 @@ tests:
           agg_type: avg
 
       - name: memory_ovn_control_plane
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-ovn-control-plane
         metric_of_interest: value
         agg:
@@ -315,20 +331,17 @@ tests:
           agg_type: avg
 
       - name: memory_ovnkube_node
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-ovnkube-node
         metric_of_interest: value
         agg:
           value: mem
           agg_type: avg
 
-      - name: memory_prometheus
-        metricName.keyword: memory-prometheus
-        metric_of_interest: value
-        agg:
-          value: mem
-          agg_type: avg
-
       - name: memory_router
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-router
         metric_of_interest: value
         agg:
@@ -336,6 +349,8 @@ tests:
           agg_type: avg
 
       - name: memory_sum_workers
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-sum-workers
         metric_of_interest: value
         agg:
@@ -343,6 +358,8 @@ tests:
           agg_type: avg
 
       - name: memory_workers
+        threshold: 15
+        direction: 1
         metricName.keyword: memory-workers
         metric_of_interest: value
         agg:
@@ -351,6 +368,8 @@ tests:
 
       # Max Memory metrics
       - name: max_memory_crio
+        threshold: 15
+        direction: 1
         metricName.keyword: max-memory-crio
         metric_of_interest: value
         agg:
@@ -358,6 +377,8 @@ tests:
           agg_type: max
 
       - name: max_memory_infra
+        threshold: 15
+        direction: 1
         metricName.keyword: max-memory-infra
         metric_of_interest: value
         agg:
@@ -365,6 +386,8 @@ tests:
           agg_type: max
 
       - name: max_memory_kube_controller_manager
+        threshold: 15
+        direction: 1
         metricName.keyword: max-memory-kube-controller-manager
         metric_of_interest: value
         agg:
@@ -372,6 +395,8 @@ tests:
           agg_type: max
 
       - name: max_memory_kubelet
+        threshold: 15
+        direction: 1
         metricName.keyword: max-memory-kubelet
         metric_of_interest: value
         agg:
@@ -379,13 +404,26 @@ tests:
           agg_type: max
 
       - name: max_memory_masters
+        threshold: 15
+        direction: 1
         metricName.keyword: max-memory-masters
         metric_of_interest: value
         agg:
           value: mem
           agg_type: max
+          
+      - name: max_cpu_prometheus
+        threshold: 15
+        direction: 1
+        metricName.keyword: max-cpu-prometheus
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
 
       - name: max_memory_prometheus
+        threshold: 15
+        direction: 1
         metricName.keyword: max-memory-prometheus
         metric_of_interest: value
         agg:
@@ -393,6 +431,8 @@ tests:
           agg_type: max
 
       - name: max_memory_sum_infra
+        threshold: 15
+        direction: 1
         metricName.keyword: max-memory-sum-infra
         metric_of_interest: value
         agg:
@@ -400,6 +440,8 @@ tests:
           agg_type: max
 
       - name: max_memory_sum_kubelet
+        threshold: 15
+        direction: 1
         metricName.keyword: max-memory-sum-kubelet
         metric_of_interest: value
         agg:
@@ -407,6 +449,8 @@ tests:
           agg_type: max
 
       - name: max_memory_workers
+        threshold: 15
+        direction: 1
         metricName.keyword: max-memory-workers
         metric_of_interest: value
         agg:
@@ -415,6 +459,8 @@ tests:
 
       # Node CPU Seconds metrics
       - name: node_cpu_seconds_infra
+        threshold: 15
+        direction: 1
         metricName.keyword: nodeCPUSeconds-Infra
         metric_of_interest: value
         agg:
@@ -422,6 +468,8 @@ tests:
           agg_type: avg
 
       - name: node_cpu_seconds_masters
+        threshold: 15
+        direction: 1
         metricName.keyword: nodeCPUSeconds-Masters
         metric_of_interest: value
         agg:
@@ -429,6 +477,8 @@ tests:
           agg_type: avg
 
       - name: node_cpu_seconds_workers
+        threshold: 15
+        direction: 1
         metricName.keyword: nodeCPUSeconds-Workers
         metric_of_interest: value
         agg:
