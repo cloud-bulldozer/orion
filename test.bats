@@ -306,7 +306,7 @@ setup() {
 
   last_commit=$(git rev-parse --short=7 HEAD)
   describe=$(git describe --tags --dirty --always)
-  
+
   if [[ "$describe" == *"$last_commit"* ]]; then
     echo "Is ahead of Tag adding '.post1.dev'"
     expected_version+=".post1.dev"
@@ -324,5 +324,85 @@ setup() {
   if [[ ! "$version" == *"$expected_version"* ]]; then
     exit 1
   fi
+  set -e
+}
+
+@test "orion with regression should contain inline changepoint" {
+  set +e
+
+  orion --node-count true --lookback 20d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --since 2025-11-24 --input-vars='{"version": "4.21"}' > ./outputs/results.txt
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  # Check if the percentage string exists in the output file
+  if ! grep -q "+12.1%" ./outputs/results.txt; then
+    echo "Expected string '+12.1%' not found in results.txt"
+    exit 1
+  fi
+
+  # Check if the Previous Version string exists in the output file
+  if ! grep -q "Previous Version:    4.21.0-0.nightly-2025-11-11-181704" ./outputs/results.txt; then
+    echo "Expected string 'Previous Version:    4.21.0-0.nightly-2025-11-11-181704' not found in results.txt"
+    exit 1
+  fi
+
+  # Check if the Bad Version string exists in the output file
+  if ! grep -q "Bad Version:         4.21.0-0.nightly-2025-11-12-020146" ./outputs/results.txt; then
+    echo "Expected string 'Bad Version:         4.21.0-0.nightly-2025-11-12-020146' not found in results.txt"
+    exit 1
+  fi
+
+  set -e
+}
+
+@test "orion with regression should contain inline changepoint json" {
+  set +e
+
+  orion --node-count true --lookback 20d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --since 2025-11-24 --input-vars='{"version": "4.21"}' --output-format json > ./outputs/results.json
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  bad_version=$(jq -r '.[] | select(.is_changepoint == true) | .ocpVersion' ./outputs/results.json)
+
+  if [ "$bad_version" != "4.21.0-0.nightly-2025-11-12-020146" ]; then
+    echo "Version did not match. Expected '4.21.0-0.nightly-2025-11-12-020146', got '$bad_version'"
+    exit 1
+  fi
+  set -e
+}
+
+@test "orion with regression should contain inline changepoint junit" {
+  set +e
+
+  orion --node-count true --lookback 20d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --since 2025-11-24 --input-vars='{"version": "4.21"}' --output-format junit > ./outputs/results.xml
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  failure=$(echo 'failures="1"')
+  # Check if the failures string exists in the output file
+  if ! grep -q $failure ./outputs/results.xml; then
+    echo "Expected string '$failure' not found in results.xml"
+    exit 1
+  fi
+
+  changepoint=$(echo '12.0871 | -- changepoint')
+  # Check if the changepoint string exists in the output file
+  if ! grep -q '$changepoint' ./outputs/results.xml; then
+    echo "Expected string '$changepoint' not found in results.xml"
+    exit 1
+  fi
+
   set -e
 }

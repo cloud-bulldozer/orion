@@ -28,7 +28,7 @@ class Utils:
     """
 
     def __init__(self, uuid_field: str ="uuid", version_field: str ="ocpVersion"):
-        """Instanciates utils class with uuid and version fields 
+        """Instanciates utils class with uuid and version fields
 
         Args:
             uuid_field (str): key to find the uuid
@@ -134,7 +134,7 @@ class Utils:
         """Method to standardize timestamp formats
 
         Args:
-            timestamp Any: timestamp object with various formats 
+            timestamp Any: timestamp object with various formats
 
         Returns:
             str: standard timestamp in format %Y-%m-%dT%H:%M:%S
@@ -342,7 +342,7 @@ class Utils:
         elif not uuids:
             self.logger.info("No UUID present for given metadata")
             return None, None
-        match.index = options["benchmark_index"] or test["benchmark_index"]
+        match.index = options.get("benchmark_index") or test.get("benchmark_index")
 
         uuids = self.filter_uuids_on_index(
             metadata,
