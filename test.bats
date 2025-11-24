@@ -394,13 +394,15 @@ setup() {
   # Check if the failures string exists in the output file
   if ! grep -q $failure ./outputs/results.xml; then
     echo "Expected string '$failure' not found in results.xml"
+    cat ./outputs/results.xml
     exit 1
   fi
 
   changepoint=$(echo '12.0871 | -- changepoint')
   # Check if the changepoint string exists in the output file
-  if ! grep -q '$changepoint' ./outputs/results.xml; then
+  if ! grep -q $changepoint ./outputs/results.xml; then
     echo "Expected string '$changepoint' not found in results.xml"
+    cat ./outputs/results.xml
     exit 1
   fi
 
