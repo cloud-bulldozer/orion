@@ -606,7 +606,6 @@ def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uui
             "timestamp": datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime(
                 "%Y-%m-%dT%H:%M:%SZ"
             ),
-            "buildUrl": record["buildUrl"],
             metric_name: record["metrics"][metric_name]["value"],
             "is_changepoint": bool(record["metrics"][metric_name]["percentage_change"]),
             "percentage_change": record["metrics"][metric_name]["percentage_change"],
