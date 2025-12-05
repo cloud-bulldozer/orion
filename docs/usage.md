@@ -26,6 +26,12 @@ This command outputs the version number, which is dynamically determined from gi
 - `.post1.dev` suffix when the current commit is ahead of the latest tag
 - `+dirty` suffix when there are uncommitted changes in the working directory
 
+## Running with uvx
+
+```bash
+uvx --from git+https://github.com/cloud-bulldozer/orion.git -p 3.11 orion --hunter-analyze
+```
+
 ## Core Algorithms
 
 Orion supports three main algorithms that are **mutually exclusive**:
