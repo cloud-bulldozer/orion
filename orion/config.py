@@ -5,9 +5,9 @@ Module file for config reading and loading
 
 import sys
 import os
+from typing import Any, Dict, List
 import jinja2
 import yaml
-from typing import Any, Dict, List
 from orion.logger import SingletonLogger
 
 
