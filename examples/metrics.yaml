@@ -1,0 +1,34 @@
+- name:  podReadyLatency
+  metricName: podLatencyQuantilesMeasurement
+  quantileName: Ready
+  metric_of_interest: P99
+  not: 
+    jobConfig.name: "garbage-collection"
+  labels:
+    - "[Jira: PerfScale]"
+  direction: 1
+  threshold: 10
+
+- name:  apiserverCPU
+  metricName : containerCPU
+  labels.namespace.keyword: openshift-kube-apiserver
+  metric_of_interest: value
+  agg:
+    value: cpu
+    agg_type: avg
+  labels:
+    - "[Jira: kube-apiserver]"
+  direction: 1
+  threshold: 10
+
+- name:  ovnCPU
+  metricName : containerCPU
+  labels.namespace.keyword: openshift-ovn-kubernetes
+  metric_of_interest: value
+  agg:
+    value: cpu
+    agg_type: avg
+  labels:
+    - "[Jira: Networking / ovn-kubernetes]"
+  direction: 1
+  threshold: 10

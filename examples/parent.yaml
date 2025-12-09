@@ -1,0 +1,8 @@
+metadata:
+  platform: AWS
+  clusterType: self-managed
+  masterNodesType: m6a.xlarge
+  masterNodesCount: 3
+  workerNodesType: m6a.xlarge
+  workerNodesCount: 6
+  benchmark.keyword: node-density 
