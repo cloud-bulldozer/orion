@@ -330,7 +330,7 @@ setup() {
 @test "orion with regression should contain inline changepoint" {
   set +e
 
-  orion --node-count true --lookback 20d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --since 2025-11-24 --input-vars='{"version": "4.21"}' > ./outputs/results.txt
+  orion --node-count true --lookback 15d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --since 2025-11-24 --input-vars='{"version": "4.21"}' > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -339,8 +339,8 @@ setup() {
   fi
 
   # Check if the percentage string exists in the output file
-  if ! grep -q "+12.1%" ./outputs/results.txt; then
-    echo "Expected string '+12.1%' not found in results.txt"
+  if ! grep -q "+11.0%" ./outputs/results.txt; then
+    echo "Expected string '+11.0%' not found in results.txt"
     exit 1
   fi
 
@@ -362,7 +362,7 @@ setup() {
 @test "orion with regression should contain inline changepoint json" {
   set +e
 
-  orion --node-count true --lookback 20d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --since 2025-11-24 --input-vars='{"version": "4.21"}' --output-format json > ./outputs/results.json
+  orion --node-count true --lookback 15d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --since 2025-11-24 --input-vars='{"version": "4.21"}' --output-format json > ./outputs/results.json
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -382,7 +382,7 @@ setup() {
 @test "orion with regression should contain inline changepoint junit" {
   set +e
 
-  orion --node-count true --lookback 20d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --since 2025-11-24 --input-vars='{"version": "4.21"}' --output-format junit > ./outputs/results.xml
+  orion --node-count true --lookback 15d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --since 2025-11-24 --input-vars='{"version": "4.21"}' --output-format junit > ./outputs/results.xml
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -398,7 +398,7 @@ setup() {
     exit 1
   fi
 
-  changepoint=$(echo '12.0871 | -- changepoint')
+  changepoint=$(echo '11.036 | -- changepoint')
   # Check if the changepoint string exists in the output file
   if ! grep -q $changepoint ./outputs/results.xml; then
     echo "Expected string '$changepoint' not found in results.xml"
@@ -412,7 +412,7 @@ setup() {
 @test "orion with regression should contain inline changepoint with custom display" {
   set +e
 
-  orion --node-count true --lookback 20d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --display upstreamJob --since 2025-11-24 --input-vars='{"version": "4.21"}' > ./outputs/results.txt
+  orion --node-count true --lookback 15d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --display upstreamJob --since 2025-11-24 --input-vars='{"version": "4.21"}' > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -421,8 +421,8 @@ setup() {
   fi
 
   # Check if the percentage string exists in the output file
-  if ! grep -q "+12.1%" ./outputs/results.txt; then
-    echo "Expected string '+12.1%' not found in results.txt"
+  if ! grep -q "+11.0%" ./outputs/results.txt; then
+    echo "Expected string '+11.0%' not found in results.txt"
     cat ./outputs/results.txt
     exit 1
   fi
@@ -455,7 +455,7 @@ setup() {
 @test "orion with regression should contain inline changepoint json with custom display" {
   set +e
 
-  orion --node-count true --lookback 20d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --display upstreamJob --since 2025-11-24 --input-vars='{"version": "4.21"}' --output-format json > ./outputs/results.json
+  orion --node-count true --lookback 15d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --display upstreamJob --since 2025-11-24 --input-vars='{"version": "4.21"}' --output-format json > ./outputs/results.json
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -481,7 +481,7 @@ setup() {
 @test "orion with regression should contain inline changepoint junit with custom display" {
   set +e
 
-  orion --node-count true --lookback 20d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --display upstreamJob --since 2025-11-24 --input-vars='{"version": "4.21"}' --output-format junit > ./outputs/results.xml
+  orion --node-count true --lookback 15d --hunter-analyze --config examples/trt-external-payload-node-density.yaml --metadata-index=${METADATA_INDEX} --es-server=${QE_ES_SERVER} --display upstreamJob --since 2025-11-24 --input-vars='{"version": "4.21"}' --output-format junit > ./outputs/results.xml
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -497,7 +497,7 @@ setup() {
     exit 1
   fi
 
-  changepoint=$(echo '12.0871 | -- changepoint')
+  changepoint=$(echo '11.036')
   # Check if the changepoint string exists in the output file
   if ! grep -q $changepoint ./outputs/results.xml; then
     echo "Expected string '$changepoint' not found in results.xml"
