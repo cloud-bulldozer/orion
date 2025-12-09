@@ -5,10 +5,9 @@ Module file for config reading and loading
 
 import sys
 import os
-from typing import Any, Dict
-
 import jinja2
 import yaml
+from typing import Any, Dict, List
 from orion.logger import SingletonLogger
 
 
@@ -27,15 +26,11 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
     env_vars.update(input_vars)
     template_content = load_read_file(config_path, logger)
     rendered_config = render_template(template_content, env_vars, logger)
-    
-    # Extract parentConfig and metricsFile fields if they exist
-    parent_config = None
-    metrics_file = None
-    
+
     # Get the directory of the config file for resolving relative paths
     config_dir = os.path.dirname(os.path.abspath(config_path))
-    print(config_dir)
-    
+
+    parent_config = {}
     if "parentConfig" in rendered_config:
         parent_config = load_parent_config(
             rendered_config["parentConfig"],
@@ -43,8 +38,8 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
             env_vars,
             logger
         )
-        print(parent_config)
-    
+
+    metrics = {}
     if "metricsFile" in rendered_config:
         metrics = load_metrics_file(
             rendered_config["metricsFile"],
@@ -52,10 +47,15 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
             env_vars,
             logger
         )
-        print(metrics)
 
-    print(rendered_config)
+    for test in rendered_config["tests"]:
+        if parent_config:
+            test["metadata"] = merge_configs(test["metadata"], parent_config["metadata"])
+        if metrics:
+            test["metrics"] = merge_lists(test["metrics"], metrics)
+
     return rendered_config
+
 
 def load_ack(ack: str) -> Dict[str,Any]:
     """Loads acknowledgment file content.
@@ -83,9 +83,9 @@ def load_ack(ack: str) -> Dict[str,Any]:
     return rendered_config
 
 
-def load_parent_config(parent_config: str, 
-                    config_dir: str, 
-                    env_vars: Dict[str, Any], 
+def load_parent_config(parent_config: str,
+                    config_dir: str,
+                    env_vars: Dict[str, Any],
                     logger: SingletonLogger) -> Dict[str, Any]:
     """Loads parent config file content.
 
@@ -105,9 +105,10 @@ def load_parent_config(parent_config: str,
     # Load YAML content from parentConfig file
     return render_template(parent_config_content, env_vars, logger)
 
-def load_metrics_file(metrics_file: str, 
-                    config_dir: str, 
-                    env_vars: Dict[str, Any], 
+
+def load_metrics_file(metrics_file: str,
+                    config_dir: str,
+                    env_vars: Dict[str, Any],
                     logger: SingletonLogger) -> Dict[str, Any]:
     """Loads metrics file content.
 
@@ -127,6 +128,7 @@ def load_metrics_file(metrics_file: str,
     # Load YAML content from metricsFile
     # Render with Jinja2 if it contains templates
     return render_template(metrics_file_content, env_vars, logger)
+
 
 def load_read_file(file_path: str, logger: SingletonLogger) -> str:
     """Loads file content.
@@ -163,3 +165,58 @@ def render_template(template: str, env_vars: Dict[str, Any], logger: SingletonLo
         logger.critical("Jinja rendering error: %s, define it through the input-variables flag", e)
         sys.exit(1)
     return yaml.safe_load(rendered_config_yaml)
+
+
+def merge_configs(config: Dict[str, Any], inherited_config: Dict[str, Any]) -> Dict[str, Any]:
+    """Merges two config dictionaries with config taking precedence.
+
+    If a key exists in config, it will be used instead of the same key from
+    inherited_config. Keys that only exist in inherited_config will be included.
+
+    Args:
+        config (Dict[str, Any]): The primary config dictionary (takes precedence)
+        inherited_config (Dict[str, Any]): The inherited config dictionary to merge from
+
+    Returns:
+        Dict[str, Any]: Merged dictionary with config values taking precedence
+    """
+    if inherited_config is None:
+        inherited_config = {}
+    if config is None:
+        config = {}
+
+    # Start with a copy of inherited_config
+    merged = inherited_config.copy()
+    print("merged", merged)
+
+    # Iterate through config keys and add them, overriding inherited_config values
+    # If a key exists in config, skip adding it from inherited_config (config takes precedence)
+    for key in config:
+        merged[key] = config[key]
+
+    return merged
+
+def merge_lists(metrics: List[Any], inherited_metrics: List[Any]) -> List[Any]:
+    """Merges two lists with list1 taking precedence.
+
+    Args:
+        list1 (List[Any]): The primary list (takes precedence)
+        list2 (List[Any]): The inherited list to merge from
+
+    Returns:
+        List[Any]: Merged list with list1 values taking precedence
+    """
+    if inherited_metrics is None:
+        inherited_metrics = []
+    if metrics is None:
+        metrics = []
+
+    # Start with a copy of inherited_metrics
+    merged = inherited_metrics.copy()
+
+    # Iterate through metrics keys and add them, overriding inherited_metrics values
+    for metric in metrics:
+        if metric not in merged:
+            merged.append(metric)
+
+    return merged
