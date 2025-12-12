@@ -13,6 +13,7 @@ from orion.logger import SingletonLogger
 from orion.algorithms import AlgorithmFactory
 import orion.constants as cnsts
 from orion.utils import Utils, get_subtracted_timestamp, json_to_junit
+from orion.github_client import GitHubClient
 
 def get_algorithm_type(kwargs):
     """Switch Case of getting algorithm name
@@ -120,8 +121,19 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
     return results, results_pull
 
 
-def get_start_timestamp(kwargs: Dict[str, Any]) -> str:
+def get_start_timestamp(kwargs: Dict[str, Any], test: Dict[str, Any], is_pull: bool) -> str:
     """Get the start timestamp if lookback is provided."""
+    logger = SingletonLogger.get_logger("Orion")
+    if is_pull:
+        logger.info("Getting start timestamp from pull request creation date")
+        client = GitHubClient(repositories=[])
+        creation_date = client.get_pr_creation_date(test["metadata"]["organization"],
+                                                    test["metadata"]["repository"],
+                                                    test["metadata"]["pullNumber"])
+        if creation_date:
+            logger.info("Start timestamp from pull request creation date: %s",
+                        creation_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
+            return creation_date.strftime("%Y-%m-%dT%H:%M:%SZ")
     if kwargs["since"] != "" and kwargs["since"] is not None:
         if kwargs.get("lookback"):
             return get_subtracted_timestamp(kwargs["lookback"], kwargs["since"])
@@ -158,7 +170,7 @@ def analyze(
     sippy_pr_search = kwargs["sippy_pr_search"]
     result_output = {}
     regression_flag = False
-    start_timestamp = get_start_timestamp(kwargs)
+    start_timestamp = get_start_timestamp(kwargs, test, is_pull)
     fingerprint_matched_df, metrics_config = utils.process_test(
         test,
         matcher,
