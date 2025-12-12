@@ -133,6 +133,8 @@ class Matcher:
         for field, value in metadata.items():
             if field in [self.version_field, "ocpMajorVersion"]:
                 continue
+            if field == "pullNumber" and value == 0 :
+                continue
             if field != "not":
                 must_clause.append(Q("match", **{field: str(value)}))
             else:
