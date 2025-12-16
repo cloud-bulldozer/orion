@@ -32,3 +32,14 @@
     - "[Jira: Networking / ovn-kubernetes]"
   direction: 1
   threshold: 10
+
+- name: kubelet 
+  metricName : kubeletCPU 
+  metric_of_interest: value 
+  labels: 
+    - "[Jira: Node]" 
+  agg: 
+    value: cpu 
+    agg_type: avg
+  direction: 1
+  threshold: 10
