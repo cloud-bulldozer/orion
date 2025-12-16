@@ -180,6 +180,7 @@ def merge_configs(config: Dict[str, Any], inherited_config: Dict[str, Any]) -> D
     Returns:
         Dict[str, Any]: Merged dictionary with config values taking precedence
     """
+    logger = SingletonLogger.get_logger("Orion")
     if inherited_config is None:
         inherited_config = {}
     if config is None:
@@ -187,11 +188,11 @@ def merge_configs(config: Dict[str, Any], inherited_config: Dict[str, Any]) -> D
 
     # Start with a copy of inherited_config
     merged = inherited_config.copy()
-    print("merged", merged)
 
     # Iterate through config keys and add them, overriding inherited_config values
     # If a key exists in config, skip adding it from inherited_config (config takes precedence)
     for key in config:
+        logger.info("Replace key %s wiht lower level value", key)
         merged[key] = config[key]
 
     return merged
@@ -206,17 +207,23 @@ def merge_lists(metrics: List[Any], inherited_metrics: List[Any]) -> List[Any]:
     Returns:
         List[Any]: Merged list with list1 values taking precedence
     """
+    logger = SingletonLogger.get_logger("Orion")
     if inherited_metrics is None:
         inherited_metrics = []
     if metrics is None:
         metrics = []
 
-    # Start with a copy of inherited_metrics
-    merged = inherited_metrics.copy()
+    merged = []
 
     # Iterate through metrics keys and add them, overriding inherited_metrics values
-    for metric in metrics:
-        if metric not in merged:
-            merged.append(metric)
+    for m in inherited_metrics:
+        found = False
+        for metric in metrics:
+            if metric["name"] == m["name"] and metric["metricName"] == m["metricName"]:
+                logger.info("Use metric in lower level config file %s - %s", m["name"], m["metricName"])
+                found = True
+        if not found:
+            merged.append(m)
+    merged.extend(metrics)
 
     return merged
