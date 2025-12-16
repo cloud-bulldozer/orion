@@ -16,6 +16,9 @@ tests:
       repository: {{ repository | default('') }}
       not:
         stream: okd
+        serviceMeshMode:
+          - ambient
+          - sidecar
 
     metrics:
     - name:  n2n-tput-64-1p
