@@ -13,6 +13,116 @@ tests:
       # metric definitions
 ```
 
+## Configuration Inheritance
+
+Orion supports configuration inheritance to reduce duplication and improve maintainability. You can inherit metadata from a parent configuration file and load metrics from an external file.
+
+### Parent Configuration (`parentConfig`)
+
+The `parentConfig` field allows you to inherit metadata from a parent configuration file. This is useful when multiple test configurations share common metadata settings.
+
+**How it works:**
+- The parent configuration file should contain a `metadata` section
+- Metadata from the parent is merged into each test's metadata
+- **Child configuration takes precedence** - if a key exists in both parent and child, the child value is used
+- Paths can be relative (to the config file directory) or absolute
+
+**Example:**
+
+`parent.yaml`:
+```yaml
+metadata:
+  platform: AWS
+  clusterType: self-managed
+  masterNodesType: m6a.xlarge
+  masterNodesCount: 3
+  workerNodesType: m6a.xlarge
+  workerNodesCount: 6
+  benchmark.keyword: node-density
+```
+
+`child.yaml`:
+```yaml
+parentConfig: parent.yaml
+tests:
+  - name: payload-node-density
+    metadata:
+      ocpVersion: "4.17"
+      networkType: OVNKubernetes
+      # Inherits all metadata from parent.yaml
+      # Can override parent values if needed
+    metrics:
+      # metric definitions
+```
+
+### External Metrics File (`metricsFile`)
+
+The `metricsFile` field allows you to load metrics from an external file. This is useful for sharing common metrics across multiple test configurations.
+
+**How it works:**
+- The metrics file should contain a list of metric definitions
+- Metrics from the external file are merged with metrics defined in the test
+- **Test-level metrics take precedence** - if a metric with the same `name` and `metricName` exists in both, the test-level metric is used
+- Paths can be relative (to the config file directory) or absolute
+- Metrics are merged: inherited metrics that don't conflict are included, then test-level metrics are added
+
+**Example:**
+
+`metrics.yaml`:
+```yaml
+- name: podReadyLatency
+  metricName: podLatencyQuantilesMeasurement
+  quantileName: Ready
+  metric_of_interest: P99
+  labels:
+    - "[Jira: PerfScale]"
+  direction: 1
+  threshold: 10
+
+- name: apiserverCPU
+  metricName: containerCPU
+  labels.namespace.keyword: openshift-kube-apiserver
+  metric_of_interest: value
+  agg:
+    value: cpu
+    agg_type: avg
+  labels:
+    - "[Jira: kube-apiserver]"
+  direction: 1
+  threshold: 10
+```
+
+`config.yaml`:
+```yaml
+metricsFile: metrics.yaml
+tests:
+  - name: my-test
+    metadata:
+      # metadata filters
+    metrics:
+      # Additional metrics specific to this test
+      # Metrics from metrics.yaml are automatically included
+      - name: customMetric
+        # ... metric definition
+```
+
+### Combined Usage
+
+You can use both `parentConfig` and `metricsFile` together:
+
+```yaml
+parentConfig: parent.yaml
+metricsFile: metrics.yaml
+tests:
+  - name: payload-node-density
+    metadata:
+      ocpVersion: "4.17"
+      # Inherits metadata from parent.yaml
+    metrics:
+      # Inherits metrics from metrics.yaml
+      # Can add test-specific metrics here
+```
+
 ## Complete Example
 
 ```yaml
