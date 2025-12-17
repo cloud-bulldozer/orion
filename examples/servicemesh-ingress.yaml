@@ -1,0 +1,74 @@
+tests :
+  - name : servicemesh-{{ service_mesh_mode }}-ingress-perf
+    metadata:
+      ocpVersion: "{{ version }}"
+      platform: AWS
+      clusterType: self-managed
+      benchmark.keyword: ingress-perf
+      masterNodesCount: 3
+      workerNodesCount: 5
+      infraNodesCount: 3
+      masterNodesType: m6i.xlarge
+      workerNodesType: m6i.2xlarge
+      infraNodesType: c6i.4xlarge
+      networkType: OVNKubernetes
+      encrypted: false
+      fips: false
+      ipsec: false
+      serviceMeshMode: {{ service_mesh_mode }}
+      not:
+        stream: okd
+
+    metrics: 
+
+    - name: http_avg_rps
+      config.termination: http
+      metric_of_interest: total_avg_rps
+      not:
+        config.requestRate: 5000
+      agg:
+        value: total_avg_rps
+        agg_type: avg
+
+    - name: http_avg_cpu_usage_ingress_gateway_pods
+      config.termination: http
+      metric_of_interest: infra_metrics.avg_cpu_usage_ingress_gateway_pods
+      not:
+        config.requestRate: 5000
+      agg:
+        value: infra_metrics.avg_cpu_usage_ingress_gateway_pods
+        agg_type: avg
+
+    - name:  http_avg_lat
+      config.termination: http
+      config.requestRate: 5000
+      metric_of_interest: avg_lat_us
+      agg:
+        value: avg_lat_us
+        agg_type: avg
+       
+    - name: edge_avg_rps
+      config.termination: edge
+      metric_of_interest: total_avg_rps
+      not:
+        config.requestRate: 5000
+      agg:
+        value: total_avg_rps
+        agg_type: avg
+
+    - name: edge_avg_cpu_usage_ingress_gateway_pods
+      config.termination: edge
+      metric_of_interest: infra_metrics.avg_cpu_usage_ingress_gateway_pods
+      not:
+        config.requestRate: 5000
+      agg:
+        value: infra_metrics.avg_cpu_usage_ingress_gateway_pods
+        agg_type: avg
+
+    - name: edge_avg_lat
+      config.termination: edge
+      config.requestRate: 5000
+      metric_of_interest: avg_lat_us
+      agg:
+        value: avg_lat_us
+        agg_type: avg

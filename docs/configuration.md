@@ -157,6 +157,15 @@ not:
   jobConfig.name: "garbage-collection"
 ```
 
+To exclude multiple values, use a list:
+
+```yaml
+not:
+  service_mesh_mode:
+    - "ambient"
+    - "sidecar"
+```
+
 ## Test-Level Settings
 
 Settings that can be applied at the test level and inherited by all metrics:

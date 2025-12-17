@@ -15,6 +15,9 @@ tests :
       ipsec: false
       not:
         stream: okd
+        serviceMeshMode:
+          - ambient
+          - sidecar
 
     metrics : 
     - name:  passthrough_avg_rps
