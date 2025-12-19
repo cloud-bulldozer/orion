@@ -18,7 +18,7 @@ tests :
         stream: okd
 
     metrics : 
-    - name:  podReadyLatency
+    - name: podReadyLatency
       metricName: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
@@ -26,7 +26,12 @@ tests :
         jobConfig.name: "garbage-collection"
       labels:
         - "[Jira: PerfScale]"
-      direction: 1
+      threshold: 10
+
+    - name: podReadyLatency
+      metricName: podLatencyQuantilesMeasurement
+      quantileName: ContainersStarted
+      metric_of_interest: P99
       threshold: 10
 
     - name:  apiserverCPU
