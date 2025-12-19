@@ -28,6 +28,12 @@ tests:
         - "[Jira: PodLatency]"
       threshold: 10
 
+    - name: podReadyLatency
+      metricName: podLatencyQuantilesMeasurement
+      quantileName: ContainersStarted
+      metric_of_interest: P99
+      threshold: 10
+
     - name: apiserverCPU
       metricName: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
