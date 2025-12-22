@@ -1,0 +1,20 @@
+tests:
+  - name: rhbok
+    metadata:
+      ocpVersion: ""
+      upstreamJob.keyword: periodic-ci-openshift-kueue-operator-main-perfscale-kueue-operator-9nodes
+
+    metrics: 
+    - name: jobReadyLatency-Completion
+      metricName: jobLatencyQuantilesMeasurement
+      quantileName: Complete
+      metric_of_interest: P99
+      direction: 1
+      threshold: 25
+
+    - name: jobReadyLatency-StartTime
+      metricName: jobLatencyQuantilesMeasurement
+      quantileName: StartTime
+      metric_of_interest: P99
+      direction: 1
+      threshold: 25
