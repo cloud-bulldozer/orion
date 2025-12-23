@@ -28,10 +28,12 @@ tests :
       direction: 1
       threshold: 10
 
-    - name: podReadyLatency
+    - name: containersStartedLatency
       metricName: podLatencyQuantilesMeasurement
       quantileName: ContainersStarted
       metric_of_interest: P99
+      labels:
+        - "[Jira: PodLatency]"
       direction: 1
       threshold: 10
 
