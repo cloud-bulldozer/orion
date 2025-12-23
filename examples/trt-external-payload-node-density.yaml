@@ -26,11 +26,14 @@ tests :
         jobConfig.name: "garbage-collection"
       labels:
         - "[Jira: PerfScale]"
+      direction: 1
       threshold: 10
 
-    - name: podReadyLatency
+    - name: containersStartedLatency
       metricName: podLatencyQuantilesMeasurement
       quantileName: ContainersStarted
+      labels:
+        - "[Jira: PodLatency]"
       metric_of_interest: P99
       threshold: 10
 
