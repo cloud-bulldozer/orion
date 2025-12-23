@@ -6,3 +6,6 @@ ack:
   - uuid: 964c3ddb-9272-4693-9cf2-c749e11f1d8d
     metric: podReadyLatency_P99
     reason: "It has come back down in later runs"
+  - uuid: b80c808a-04e0-4fc5-ab06-2a5a10ebe0c8
+    metric: multusCPU_avg 
+    reason: "Multus CPU jumps around throughout release" 

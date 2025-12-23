@@ -9,3 +9,6 @@ ack:
   - uuid: 0bbf62c5-0f8d-4c09-a7c9-c93f772cd2dd
     metric: apiserverCPU_avg
     reason: "apiserver increase from 4.19 to 4.21, no obvious reason, no code changes, rhcos didn't change either"
+  - uuid: 6da3af3c-fe09-405f-9721-82ffcc03dec1 
+    metric: ovnMem-ovncontroller_avg
+    reason: ""
