@@ -201,8 +201,8 @@ class Utils:
             dict: dictionary of the metadata
         """
         metadata = test["metadata"]
-        metadata[self.version_field] = metadata.get(self.version_field, "")
-        self.logger.debug("metadata" + str(metadata))
+        metadata[self.version_field] = str(metadata.get(self.version_field, ""))
+        self.logger.debug("metadata: %s", metadata)
         if "organization" in metadata and not metadata.get("organization"):
             del metadata["organization"]
             self.logger.info("organization is empty removed from metadata for it to not affect the matching process")

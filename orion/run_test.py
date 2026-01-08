@@ -90,7 +90,10 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
                     regression_data = futures_periodic.result()[2]
                     average_values_df = futures_periodic.result()[3]
             else:
-                result_output, regression_flag, regression_data, average_values_df = analyze(test, kwargs)
+                result_output, regression_flag, regression_data, average_values_df = analyze(
+                    test,
+                    kwargs
+                )
     results_pull = (
         result_output_pull,
         regression_flag_pull,
