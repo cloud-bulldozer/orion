@@ -35,6 +35,7 @@ tests :
       labels:
         - "[Jira: PodLatency]"
       metric_of_interest: P99
+      direction: 1
       threshold: 10
 
     - name:  apiserverCPU
