@@ -18,8 +18,6 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-argu
             test: dict,
             options: dict,
             metrics_config: dict[str,dict],
-            version_field: str = "ocpVersion",
-            uuid_field: str = "uuid"
         ):
         """Algorithm instantiation method
 
@@ -29,8 +27,6 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-argu
             test (dict): test information dictionary
             options (dict): options for the run
             metrics_config (dict): metrics configuration
-            version_field (str): field name for the version
-            uuid_field (str): field name for the uuid
         Raises:
             ValueError: When invalid algo is chosen
 
@@ -38,9 +34,9 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-argu
             Algorithm : Algorithm
         """
         if algorithm == cnsts.EDIVISIVE:
-            return EDivisive(dataframe, test, options, metrics_config, version_field, uuid_field)
+            return EDivisive(dataframe, test, options, metrics_config)
         if algorithm == cnsts.ISOLATION_FOREST:
-            return IsolationForestWeightedMean(dataframe, test, options, metrics_config, version_field, uuid_field)
+            return IsolationForestWeightedMean(dataframe, test, options, metrics_config)
         if algorithm == cnsts.CMR:
-            return CMR(dataframe, test, options, metrics_config, version_field, uuid_field)
+            return CMR(dataframe, test, options, metrics_config)
         raise ValueError("Invalid algorithm called")

@@ -201,7 +201,7 @@ class Utils:
             dict: dictionary of the metadata
         """
         metadata = test["metadata"]
-        metadata[self.version_field] = str(metadata[self.version_field])
+        metadata[self.version_field] = metadata.get(self.version_field, "")
         self.logger.debug("metadata" + str(metadata))
         if "organization" in metadata and not metadata.get("organization"):
             del metadata["organization"]

@@ -42,6 +42,9 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
         logger.critical("Jinja rendering error: %s, define it through the input-variables flag", e)
         sys.exit(1)
     rendered_config = yaml.safe_load(rendered_config_yaml)
+    for test in rendered_config["tests"]:
+        test.setdefault("version_field", "ocpVersion")
+        test.setdefault("uuid_field", "uuid")
     return rendered_config
 
 def load_ack(ack: str) -> Dict[str,Any]:
