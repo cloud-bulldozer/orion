@@ -70,8 +70,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
                     logger.info("Executing tasks in parallel...")
                     logger.info("Ensuring jobType is set to pull")
                     test["metadata"]["jobType"] = "pull"
-                    futures_pull = executor.submit(analyze, test, kwargs,
-                                                   version_field, uuid_field, True)
+                    futures_pull = executor.submit(analyze, test, kwargs, True)
                     pr = test["metadata"]["pullNumber"]
                     test_periodic = copy.deepcopy(test)
                     test_periodic["metadata"]["jobType"] = "periodic"
@@ -80,8 +79,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
                     # be able to compare with the periodic cases
                     test_periodic["metadata"]["organization"] = ""
                     test_periodic["metadata"]["repository"] = ""
-                    futures_periodic = executor.submit(analyze, test_periodic, kwargs,
-                                                       version_field, uuid_field, False)
+                    futures_periodic = executor.submit(analyze, test_periodic, kwargs, False)
                     concurrent.futures.wait([futures_pull, futures_periodic])
                     result_output_pull = futures_pull.result()[0]
                     regression_flag_pull = futures_pull.result()[1]
@@ -92,12 +90,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
                     regression_data = futures_periodic.result()[2]
                     average_values_df = futures_periodic.result()[3]
             else:
-                result_output, regression_flag, regression_data, average_values_df = analyze(
-                        test,
-                        kwargs,
-                        version_field,
-                        uuid_field
-                    )
+                result_output, regression_flag, regression_data, average_values_df = analyze(test, kwargs)
     results_pull = (
         result_output_pull,
         regression_flag_pull,
@@ -136,19 +129,13 @@ def get_start_timestamp(kwargs: Dict[str, Any], test: Dict[str, Any], is_pull: b
         get_subtracted_timestamp(kwargs["lookback"]) if kwargs.get("lookback") else ""
     )
 
-def analyze(
-            test,
-            kwargs,
-            is_pull = False
-        ) -> Tuple[Dict[str, Any], bool, Any, Any]:
+def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, Any]:
     """
     Utils class to process the test
 
     Args:
         test: test object
         kwargs: keyword arguments
-        version_field: version field
-        uuid_field: uuid field
     """
     matcher = Matcher(
         index=kwargs["metadata_index"] or test["metadata_index"],
