@@ -19,3 +19,17 @@ tests:
       metric_of_interest: P99
       direction: 1
       threshold: 25
+
+    - name: podReadyLatency
+      metricName: podLatencyQuantilesMeasurement
+      quantileName: Ready
+      metric_of_interest: P99
+      direction: 1
+      threshold: 25
+
+    - name: containersStartedLatency
+      metricName: podLatencyQuantilesMeasurement
+      quantileName: ContainersStarted
+      metric_of_interest: P99
+      direction: 1
+      threshold: 25
