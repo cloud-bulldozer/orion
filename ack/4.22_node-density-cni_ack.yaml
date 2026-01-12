@@ -1,1 +1,5 @@
 ---
+ack:
+  - uuid: ade4d0f9-84d8-4edf-926a-4aa88ca14f61
+    metric: ovnCPU-ovncontroller_avg
+    reason: "Random CPU spike"
