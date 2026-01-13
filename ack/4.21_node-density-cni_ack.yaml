@@ -7,5 +7,8 @@ ack:
     metric: podReadyLatency_P99
     reason: "It has come back down in later runs"
   - uuid: b80c808a-04e0-4fc5-ab06-2a5a10ebe0c8
-    metric: multusCPU_avg 
-    reason: "Multus CPU jumps around throughout release" 
+    metric: multusCPU_avg
+    reason: "Multus CPU jumps around throughout release"
+  - uuid: 10c07387-55e9-4721-a5c8-8ab006297be1
+    metric: ovnCPU-ovncontroller_avg
+    reason: "ovnk-controller cpu spike (random)"
