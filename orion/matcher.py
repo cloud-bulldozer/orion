@@ -128,7 +128,8 @@ class Matcher:
         """
         must_clause = []
         must_not_clause = []
-        version = str(metadata[self.version_field])[:4]
+        if self.version_field in metadata :
+            version = str(metadata[self.version_field])[:4]
 
         for field, value in metadata.items():
             if field in [self.version_field, "ocpMajorVersion"]:
@@ -149,10 +150,12 @@ class Matcher:
             filter_clause = [
                 Q("wildcard", ocpMajorVersion=f"{version}*"),
             ]
-        else:
+        elif self.version_field in metadata:
             filter_clause = [
                 Q("wildcard", **{self.version_field: {"value": f"{version}*"}}),
             ]
+        else :
+            filter_clause = []
 
         if isinstance(lookback_date, datetime):
             lookback_date = lookback_date.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -189,8 +192,10 @@ class Matcher:
             if "." in self.version_field:
                 value = self.dotDictFind(hit.to_dict()["_source"], self.version_field)
                 doc[self.version_field] = value
-            else:
+            elif self.version_field in hit.to_dict()["_source"]:
                 doc[self.version_field] = hit.to_dict()["_source"][self.version_field]
+            else :
+                doc[self.version_field] = "No Version"
             source_data = hit.to_dict()["_source"]
 
             # Handle buildUrl with fallback to build_url

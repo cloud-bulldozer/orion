@@ -269,9 +269,14 @@ def tabulate_average_values(
         str: tabulated average values
     """
     headers = ["time", uuid_field, version_field]
-    data = ["0000-00-00 00:00:00 +0000",
-            "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-            "x" * len(last_row[version_field])]
+    if version_field in last_row :
+        data = ["0000-00-00 00:00:00 +0000",
+                "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                "x" * len(last_row[version_field])]
+    else :
+        data = ["0000-00-00 00:00:00 +0000",
+                "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                "x" * len("No Version")]
     for metric, value in avg_data.items():
         headers.append(metric)
         data.append(value)
