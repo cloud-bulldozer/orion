@@ -64,20 +64,13 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
     pr = 0
     for test in config["tests"]:
         # Create fingerprint Matcher
-        version_field = "ocpVersion"
-        if "version" in test:
-            version_field=test["version"]
-        uuid_field = "uuid"
-        if "uuid_field" in test:
-            uuid_field=test["uuid_field"]
         if "metadata" in test:
             if "pullNumber" in test["metadata"] and test["metadata"]["pullNumber"] > 0:
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                     logger.info("Executing tasks in parallel...")
                     logger.info("Ensuring jobType is set to pull")
                     test["metadata"]["jobType"] = "pull"
-                    futures_pull = executor.submit(analyze, test, kwargs,
-                                                   version_field, uuid_field, True)
+                    futures_pull = executor.submit(analyze, test, kwargs, True)
                     pr = test["metadata"]["pullNumber"]
                     test_periodic = copy.deepcopy(test)
                     test_periodic["metadata"]["jobType"] = "periodic"
@@ -86,8 +79,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
                     # be able to compare with the periodic cases
                     test_periodic["metadata"]["organization"] = ""
                     test_periodic["metadata"]["repository"] = ""
-                    futures_periodic = executor.submit(analyze, test_periodic, kwargs,
-                                                       version_field, uuid_field, False)
+                    futures_periodic = executor.submit(analyze, test_periodic, kwargs, False)
                     concurrent.futures.wait([futures_pull, futures_periodic])
                     result_output_pull = futures_pull.result()[0]
                     regression_flag_pull = futures_pull.result()[1]
@@ -99,11 +91,9 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
                     average_values_df = futures_periodic.result()[3]
             else:
                 result_output, regression_flag, regression_data, average_values_df = analyze(
-                        test,
-                        kwargs,
-                        version_field,
-                        uuid_field
-                    )
+                    test,
+                    kwargs
+                )
     results_pull = (
         result_output_pull,
         regression_flag_pull,
@@ -142,30 +132,22 @@ def get_start_timestamp(kwargs: Dict[str, Any], test: Dict[str, Any], is_pull: b
         get_subtracted_timestamp(kwargs["lookback"]) if kwargs.get("lookback") else ""
     )
 
-def analyze(
-            test,
-            kwargs,
-            version_field,
-            uuid_field,
-            is_pull = False
-        ) -> Tuple[Dict[str, Any], bool, Any, Any]:
+def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, Any]:
     """
     Utils class to process the test
 
     Args:
         test: test object
         kwargs: keyword arguments
-        version_field: version field
-        uuid_field: uuid field
     """
     matcher = Matcher(
         index=kwargs["metadata_index"] or test["metadata_index"],
         es_server=kwargs["es_server"],
         verify_certs=False,
-        version_field=version_field,
-        uuid_field=uuid_field
+        version_field=test["version_field"],
+        uuid_field=test["uuid_field"]
     )
-    utils = Utils(uuid_field, version_field)
+    utils = Utils(test["uuid_field"], test["version_field"])
     logger = SingletonLogger.get_logger("Orion")
     sippy_pr_search = kwargs["sippy_pr_search"]
     result_output = {}
@@ -205,15 +187,15 @@ def analyze(
             test_name=test["name"]+"_average",
             data_json=avg_values.to_json(),
             metrics_config=metrics_config,
-            uuid_field=uuid_field,
+            uuid_field=test["uuid_field"],
             average=True)
     else:
         if len(fingerprint_matched_df) > 0:
             average_values = tabulate_average_values(
                 avg_values,
                 fingerprint_matched_df.iloc[-1],
-                version_field,
-                uuid_field,
+                test["version_field"],
+                test["uuid_field"],
                 kwargs.get("display", []))
         else:
             average_values = ""
@@ -225,8 +207,6 @@ def analyze(
             test,
             kwargs,
             metrics_config,
-            version_field,
-            uuid_field
         )
     # This is env is only present in prow ci
     prow_job_id = os.getenv("PROW_JOB_ID")
@@ -246,9 +226,9 @@ def analyze(
         bad_ver = None
         for result in json.loads(result_data):
             if result["is_changepoint"]:
-                bad_ver = result[version_field]
+                bad_ver = result[test["version_field"]]
             else:
-                prev_ver = result[version_field]
+                prev_ver = result[test["version_field"]]
             if prev_ver is not None and bad_ver is not None:
                 if sippy_pr_search:
                     prs = Utils().sippy_pr_diff(prev_ver, bad_ver)

@@ -15,7 +15,7 @@
 
 tests:
   - name: krkn-hub-*
-    version: cluster_version
+    version_field: cluster_version
     uuid_field: run_uuid
     metadata:
       cluster_version: "{{ version }}"

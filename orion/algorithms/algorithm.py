@@ -25,16 +25,12 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         test: dict,
         options: dict,
         metrics_config: dict[str, dict],
-        version_field: str = "ocpVersion",
-        uuid_field: str = "uuid"
     ) -> None:
         self.dataframe = dataframe
         self.test = test
-        self.version_field = version_field
         self.options = options
         self.metrics_config = metrics_config
         self.regression_flag = False
-        self.uuid_field = uuid_field
         self._github_client: Optional[GitHubClient] = None
 
     def output_json(self) -> Tuple[str, str, bool]:
@@ -91,12 +87,12 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
                 if github_client and not dataframe_json[index].get("github_context"):
                     previous_entry = dataframe_json[index - 1] if index > 0 else None
                     previous_version = (
-                        previous_entry.get(self.version_field) if previous_entry else None
+                        previous_entry.get(self.test["version_field"]) if previous_entry else None
                     )
                     previous_timestamp = (
                         previous_entry.get("timestamp") if previous_entry else None
                     )
-                    current_version = dataframe_json[index].get(self.version_field)
+                    current_version = dataframe_json[index].get(self.test["version_field"])
                     current_timestamp = dataframe_json[index].get("timestamp")
                     context = github_client.get_change_context(
                         previous_timestamp=previous_timestamp,
@@ -189,9 +185,9 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             row.append(timestamp)
 
             # Add UUID
-            row.append(record[self.uuid_field])
+            row.append(record[self.test["uuid_field"]])
 
-            row.append(record.get(self.version_field, "N/A"))
+            row.append(record.get(self.test["version_field"], "N/A"))
             # Add all metric values
             for metric_name in self.metrics_config.keys():
                 if "metrics" in record and metric_name in record["metrics"]:
@@ -212,7 +208,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             table_data.append(row)
 
         # Prepare headers
-        headers = ["time", self.uuid_field, self.version_field]
+        headers = ["time", self.test["uuid_field"], self.test["version_field"]]
         headers.extend(self.metrics_config.keys())
         headers.extend(display_fields)
 
@@ -233,7 +229,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             test_name=test_name,
             data_json=data_json,
             metrics_config=self.metrics_config,
-            uuid_field=self.uuid_field,
+            uuid_field=self.test["uuid_field"],
             display_fields=self.options.get("display")
         )
         return test_name, data_junit, self.regression_flag
@@ -285,7 +281,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         attributes = {
             column: self.dataframe[column]
             for column in self.dataframe.columns
-            if column in [self.uuid_field, self.version_field]
+            if column in [self.test["uuid_field"], self.test["version_field"]]
         }
         series = Series(
             test_name=self.test["name"],
