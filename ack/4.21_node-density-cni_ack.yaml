@@ -12,3 +12,12 @@ ack:
   - uuid: 10c07387-55e9-4721-a5c8-8ab006297be1
     metric: ovnCPU-ovncontroller_avg
     reason: "ovnk-controller cpu spike (random)"
+  - uuid: 10c07387-55e9-4721-a5c8-8ab006297be1 
+    metric: ovnkCPU-overall_avg 
+    reason: "old CPU spike"
+  - uuid: 10c07387-55e9-4721-a5c8-8ab006297be1 
+    metric: ovnCPU-ovncontroller_avg 
+    reason: "old CPU spike"
+  - uuid: 10c07387-55e9-4721-a5c8-8ab006297be1 
+    metric: ovnCPU-ovnk-controller_avg
+    reason: "old CPU spike"
