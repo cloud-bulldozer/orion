@@ -12,4 +12,10 @@ ack:
   - uuid: a5b3a3a7-2e3e-4b93-8931-16ea85e34abb
     metric: ovnMem-ovncontroller_avg
     reason: "recovered in subsequent runs"
+  - uuid: 6ce3a213-8481-4282-84ce-af2368ba3051 
+    metric: ovnkCPU-overall_avg 
+    reason: "old cpu spike"
+  - uuid: 6ce3a213-8481-4282-84ce-af2368ba3051 
+    metric: ovnCPU-ovnk-controller_avg 
+    reason: "old cpu spike"
 
