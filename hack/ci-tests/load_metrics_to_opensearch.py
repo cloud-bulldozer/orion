@@ -27,18 +27,18 @@ def parse_es_server(es_server: str) -> tuple:
     base_url = f"{parsed.scheme}://{parsed.hostname}"
     if parsed.port:
         base_url += f":{parsed.port}"
-    
+
     auth = None
     if parsed.username and parsed.password:
         auth = (parsed.username, parsed.password)
-    
+
     return base_url, auth
 
 
 def load_json_file(filepath: str) -> Any:
     """Load and parse a JSON file."""
     try:
-        with open(filepath, 'r') as f:
+        with open(filepath, 'r', encoding='utf-8') as f:
             return json.load(f)
     except FileNotFoundError:
         print(f"Error: File not found: {filepath}")
@@ -58,7 +58,7 @@ def create_metric_documents(
 ) -> List[Dict[str, Any]]:
     """
     Create multiple metric documents for a given UUID.
-    
+
     Args:
         metric_template: Template metric document
         uuid: UUID to use for the documents
@@ -66,33 +66,36 @@ def create_metric_documents(
         base_timestamp: Starting timestamp
         count: Number of documents to create
         interval_seconds: Seconds between each document timestamp
-    
+
     Returns:
         List of metric documents
     """
     documents = []
-    
+
     for i in range(count):
         # Create a copy of the template
         doc = json.loads(json.dumps(metric_template))  # Deep copy
-        
+
         # Replace UUID
         doc['uuid'] = uuid
-        
+
         # Update timestamp (30 seconds apart)
         timestamp = base_timestamp + timedelta(seconds=i * interval_seconds)
         doc['timestamp'] = timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-        
+
         # Update ocpVersion in metadata if it exists
         if 'metadata' in doc and isinstance(doc['metadata'], dict):
             doc['metadata']['ocpVersion'] = ocp_version
             # Extract major version if possible
             if ocp_version:
-                major_version = ocp_version.split('.')[0] + '.' + ocp_version.split('.')[1] if '.' in ocp_version else ocp_version.split('.')[0]
+                if '.' in ocp_version:
+                    major_version = ocp_version.split('.')[0] + '.' + ocp_version.split('.')[1]
+                else:
+                    major_version = ocp_version.split('.')[0]
                 doc['metadata']['ocpMajorVersion'] = major_version
-        
+
         documents.append(doc)
-    
+
     return documents
 
 
@@ -105,21 +108,22 @@ def post_document(
 ) -> tuple:
     """
     Post a single document to OpenSearch.
-    
+
     Returns:
         (success, http_code, response_text)
     """
     url = f"{base_url}/{index}/_doc"
-    
+
     # Use UUID + timestamp as document ID to ensure uniqueness
     if 'uuid' in document and 'timestamp' in document:
         # Create unique ID from UUID and timestamp
-        timestamp_id = document['timestamp'].replace(':', '').replace('.', '').replace('-', '').replace('T', '').replace('Z', '')
+        timestamp_id = document['timestamp'].replace(':', '').replace(
+            '.', '').replace('-', '').replace('T', '').replace('Z', '')
         doc_id = f"{document['uuid']}-{timestamp_id}"
         url = f"{base_url}/{index}/_doc/{doc_id}"
-    
+
     headers = {'Content-Type': 'application/json'}
-    
+
     try:
         response = requests.post(
             url,
@@ -129,7 +133,7 @@ def post_document(
             verify=verify_ssl,
             timeout=30
         )
-        
+
         success = response.status_code in (200, 201)
         return success, response.status_code, response.text
     except requests.exceptions.RequestException as e:
@@ -145,7 +149,7 @@ def ensure_index_exists(
     """Check if index exists, create it if it doesn't."""
     url = f"{base_url}/{index}"
     headers = {'Content-Type': 'application/json'}
-    
+
     # Check if index exists
     try:
         response = requests.head(
@@ -158,7 +162,7 @@ def ensure_index_exists(
             return True
     except requests.exceptions.RequestException:
         pass
-    
+
     # Create index
     try:
         response = requests.put(
@@ -181,6 +185,7 @@ def ensure_index_exists(
 
 
 def main():
+    """Main function to load metric data to OpenSearch."""
     parser = argparse.ArgumentParser(
         description='Load metric data to OpenSearch for integration testing',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -199,7 +204,7 @@ Examples:
   python load_metrics_to_opensearch.py
         """
     )
-    
+
     parser.add_argument(
         '--es-server',
         default=os.getenv('ES_SERVER', 'https://localhost:9200'),
@@ -238,12 +243,12 @@ Examples:
         default=False,
         help='Verify SSL certificates (default: False)'
     )
-    
+
     args = parser.parse_args()
-    
+
     # Parse ES server URL
     base_url, auth = parse_es_server(args.es_server)
-    
+
     print(f"OpenSearch server: {base_url}")
     print(f"Index: {args.index}")
     print(f"Metadata file: {args.metadata_file}")
@@ -251,19 +256,19 @@ Examples:
     print(f"Documents per UUID: {args.count}")
     print(f"Timestamp interval: {args.interval} seconds")
     print("\n")
-    
+
     # Load files
     print("Loading files...")
     metadata_list = load_json_file(args.metadata_file)
     metric_template = load_json_file(args.metric_file)
-    
+
     if not isinstance(metadata_list, list):
         print("Error: metadata_data.json must contain a JSON array")
         sys.exit(1)
-    
+
     print(f"Found {len(metadata_list)} UUIDs in metadata file")
     print("\n")
-    
+
     # Test connection
     print(f"Testing connection to OpenSearch at {base_url}...")
     try:
@@ -275,35 +280,35 @@ Examples:
     except requests.exceptions.RequestException as e:
         print(f"Warning: Could not connect to OpenSearch: {e}")
         print("Continuing anyway...")
-    
+
     print("\n")
-    
+
     # Ensure index exists
     print(f"Ensuring index '{args.index}' exists...")
     if ensure_index_exists(base_url, args.index, auth, args.verify_ssl):
         print("✓ Index ready")
     else:
         print("Warning: Index creation may have failed, but continuing...")
-    
+
     print("\n")
-    
+
     # Process each UUID
-    total_docs = (len(metadata_list) * args.count)
+    total_docs = len(metadata_list) * args.count
     print(f"Generating and loading {total_docs} metric documents...")
     print("\n")
-    
+
     success_count = 0
     fail_count = 0
-    
+
     for metadata_idx, metadata in enumerate(metadata_list):
         uuid = metadata.get('uuid')
         ocp_version = metadata.get('ocpVersion', '')
         execution_date = metadata.get('executionDate', metadata.get('timestamp', ''))
-        
+
         if not uuid:
             print(f"Warning: Entry {metadata_idx + 1} has no UUID, skipping...")
             continue
-        
+
         # Parse base timestamp from executionDate or use current time
         try:
             if execution_date:
@@ -316,7 +321,7 @@ Examples:
                 base_timestamp = datetime.utcnow()
         except (ValueError, AttributeError):
             base_timestamp = datetime.utcnow()
-        
+
         # Create metric documents for this UUID
         documents = create_metric_documents(
             metric_template,
@@ -350,7 +355,7 @@ Examples:
                 auth,
                 args.verify_ssl
             )
-            
+
             if success:
                 success_count += 1
                 if (doc_idx + 1) % 10 == 0 or doc_idx == len(documents) - 1:
@@ -360,9 +365,9 @@ Examples:
                 print(f"  [{doc_idx + 1}/{args.count}] ✗ Failed (HTTP {http_code})")
                 if http_code != 0:
                     print(f"    Response: {response_text[:200]}")
-        
+
         print("\n")
-    
+
     # Summary
     print("=" * 50)
     print("Summary:")
@@ -370,10 +375,10 @@ Examples:
     print(f"  Failed: {fail_count} documents")
     print(f"  Total: {total_docs} documents")
     print("=" * 50)
-    
+
     if fail_count > 0:
         sys.exit(1)
-    
+
     print("\n✓ All documents loaded successfully!")
 
 
