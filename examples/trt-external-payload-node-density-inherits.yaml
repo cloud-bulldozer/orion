@@ -34,5 +34,5 @@ tests :
         value: cpu 
         agg_type: avg
       direction: 1
-      threshold: 10
+      threshold: 5
 

@@ -186,15 +186,18 @@ def merge_configs(config: Dict[str, Any], inherited_config: Dict[str, Any]) -> D
     if config is None:
         config = {}
 
+    logger.debug(f"config: {config}")
+    logger.debug(f"inherited_config: {inherited_config}")
     # Start with a copy of inherited_config
     merged = inherited_config.copy()
 
     # Iterate through config keys and add them, overriding inherited_config values
     # If a key exists in config, skip adding it from inherited_config (config takes precedence)
     for key in config:
-        logger.info("Replace key %s wiht lower level value", key)
+        logger.info("Adding key %s with value %s", key, config[key])
         merged[key] = config[key]
 
+    logger.debug(f"merged config: {merged}")
     return merged
 
 def merge_lists(metrics: List[Any], inherited_metrics: List[Any]) -> List[Any]:
@@ -213,6 +216,8 @@ def merge_lists(metrics: List[Any], inherited_metrics: List[Any]) -> List[Any]:
     if metrics is None:
         metrics = []
 
+    logger.debug(f"metrics: {metrics}")
+    logger.debug(f"inherited_metrics: {inherited_metrics}")
     merged = []
 
     # Iterate through metrics keys and add them, overriding inherited_metrics values
@@ -226,4 +231,5 @@ def merge_lists(metrics: List[Any], inherited_metrics: List[Any]) -> List[Any]:
             merged.append(m)
     merged.extend(metrics)
 
+    logger.debug(f"merged metrics: {merged}")
     return merged
