@@ -49,6 +49,10 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
         )
 
     for test in rendered_config["tests"]:
+        if "uuid_field" not in test:
+            test["uuid_field"] = "uuid"
+        if "version_field" not in test:
+            test["version_field"] = "ocpVersion"
         if parent_config:
             test["metadata"] = merge_configs(test["metadata"], parent_config["metadata"])
         if metrics:
