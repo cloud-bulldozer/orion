@@ -1,0 +1,19 @@
+tests :
+  - name : olm-integration-test
+    version_field: "metadata.ocpMajorVersion"
+    metadata:
+      jobName: "create-clusterextensions"
+      metadata.ocpMajorVersion: "4.20"
+
+    metrics :
+    - name:  OCP-84094_catalogdCPU_GCP
+      metricName : catalogd_cpu_usage_cores
+      metric_of_interest: value
+      not: 
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: OLM]"
+      threshold: 1
