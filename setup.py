@@ -16,7 +16,8 @@ setup(
     install_requires=[
         'click==8.1.7',
         'setuptools_scm>=6.2',
-        "apache-otava @ git+https://github.com/apache/otava.git@3b3d59a787ea03749e972c3509241114b861c99e",
+        "apache-otava @ \
+        git+https://github.com/apache/otava.git@3b3d59a787ea03749e972c3509241114b861c99e",
         'elastic-transport==8.11.0',
         'opensearch-dsl==2.1.0',
         'opensearch-py==3.0.0',
@@ -24,6 +25,7 @@ setup(
         'PyYAML==6.0.1',
         'pyshorteners==1.0.1',
         "numpy==2.2.0; python_version=='3.11'",
+        'scikit-learn==1.5.0',
         "pandas==2.3.1; python_version=='3.11'",
         'tabulate==0.9.0',
     ],

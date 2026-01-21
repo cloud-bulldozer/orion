@@ -60,9 +60,10 @@ class IsolationForestWeightedMean(Algorithm):
                     ) * 100
                     if abs(pct_change) > (10 if self.options.get("min_anomaly_percent",None) is None else int(self.options.get("min_anomaly_percent",None))):
                         if (pct_change * self.metrics_config[feature]["direction"] > 0) or self.metrics_config[feature]["direction"]==0:
-                            change_point = ChangePoint(metric=feature,
-                                                       index=idx,
-                                                       time=row['timestamp'],
+                            change_point = ChangePoint[feature](index=idx,
+                                                        qhat=0.0,
+                                                       #metric=feature,
+                                                       #time=row['timestamp'],
                                                        stats=GenericStats(
                                                            mean_1=moving_averages.at[idx, feature],
                                                            mean_2=row[feature],
