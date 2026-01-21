@@ -60,9 +60,9 @@ class CMR(Algorithm):
 
         for column in metric_columns:
 
-            change_point = ChangePoint(metric=column,
-                                            index=1,
-                                            time=0,
+            change_point = ChangePoint[column](index=1,
+                                            qhat=0.0,
+                                            #time=0,
                                             stats=GenericStats(
                                                 mean_1=dataframe_list[column][0],
                                                 mean_2=dataframe_list[column][1],
