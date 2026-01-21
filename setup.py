@@ -10,7 +10,7 @@ setup(
         'version_scheme': 'no-guess-dev',
         'local_scheme': 'dirty-tag',
     },
-    python_requires='>=3.14,<3.15',
+    python_requires='>=3.11,<3.15',
     setup_requires=['setuptools_scm'],
     py_modules=['main', 'version'],
     install_requires=[
