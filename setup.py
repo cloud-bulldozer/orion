@@ -10,7 +10,7 @@ setup(
         'version_scheme': 'no-guess-dev',
         'local_scheme': 'dirty-tag',
     },
-    python_requires='>=3.11,<3.12',
+    python_requires='>=3.14,<3.15',
     setup_requires=['setuptools_scm'],
     py_modules=['main', 'version'],
     install_requires=[
@@ -24,9 +24,9 @@ setup(
         'Jinja2==3.1.3',
         'PyYAML==6.0.1',
         'pyshorteners==1.0.1',
-        "numpy==2.2.0; python_version=='3.11'",
+        "numpy==2.2.0; python_version=='3.14'",
         'scikit-learn==1.5.0',
-        "pandas==2.3.1; python_version=='3.11'",
+        "pandas==2.3.1; python_version=='3.14'",
         'tabulate==0.9.0',
     ],
     entry_points={
@@ -37,7 +37,7 @@ setup(
     packages=find_packages(),
     license="MIT",
     classifiers=[
-        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.14',
         'Operating System :: OS Independent',
     ],
 )
