@@ -2,7 +2,7 @@
 """The implementation module for Isolation forest and weighted mean"""
 from sklearn.ensemble import IsolationForest
 import pandas as pd
-from hunter.series import  ChangePoint, ComparativeStats
+from otava.analysis import  ChangePoint, GenericStats
 from orion.logger import SingletonLogger
 from orion.algorithms.algorithm import Algorithm
 
@@ -63,7 +63,7 @@ class IsolationForestWeightedMean(Algorithm):
                             change_point = ChangePoint(metric=feature,
                                                        index=idx,
                                                        time=row['timestamp'],
-                                                       stats=ComparativeStats(
+                                                       stats=GenericStats(
                                                            mean_1=moving_averages.at[idx, feature],
                                                            mean_2=row[feature],
                                                            std_1=0,
