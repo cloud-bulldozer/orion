@@ -4,7 +4,7 @@
 import pandas as pd
 import numpy
 
-from hunter.series import  ChangePoint, ComparativeStats
+from otava.analysis import  ChangePoint, GenericStats
 from orion.logger import SingletonLogger
 from orion.algorithms.algorithm import Algorithm
 
@@ -63,7 +63,7 @@ class CMR(Algorithm):
             change_point = ChangePoint(metric=column,
                                             index=1,
                                             time=0,
-                                            stats=ComparativeStats(
+                                            stats=GenericStats(
                                                 mean_1=dataframe_list[column][0],
                                                 mean_2=dataframe_list[column][1],
                                                 std_1=0,
