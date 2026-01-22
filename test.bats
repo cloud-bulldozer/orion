@@ -687,3 +687,35 @@ setup() {
 
   set -e
 }
+
+
+@test "orion with regression should contain inline changepoint inheriting config" {
+  set +e
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-inherits.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  # Check if the percentage string exists in the output file
+  if ! grep -q "+404.5%" ./outputs/results.txt; then
+    echo "Expected string '+404.5%' not found in results.txt"
+    exit 1
+  fi
+
+  # Check if the Previous Version string exists in the output file
+  if ! grep -q "Previous Version:    4.20.0-0.nightly-2026-01-14-195655" ./outputs/results.txt; then
+    echo "Expected string 'Previous Version:    4.20.0-0.nightly-2026-01-14-195655' not found in results.txt"
+    exit 1
+  fi
+
+  # Check if the Bad Version string exists in the output file
+  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-15-195655" ./outputs/results.txt; then
+    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
+    exit 1
+  fi
+
+  set -e
+}
