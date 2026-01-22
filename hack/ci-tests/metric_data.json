@@ -1,0 +1,12 @@
+{
+    "timestamp": "2026-01-19T10:45:53.551Z",
+    "value": 1.5699015877283817,
+    "uuid": "UUID",
+    "query": "sum(rate(container_cpu_usage_seconds_total{namespace=\"openshift-catalogd\"}[1m]))",
+    "metricName": "catalogd_cpu_usage_cores",
+    "jobName": "create-clusterextensions",
+    "metadata": {
+      "ocpMajorVersion": "4.20",
+      "ocpVersion": "4.20.0-0.nightly-2026-01-18-195655"
+    }
+}

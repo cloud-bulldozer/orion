@@ -329,7 +329,7 @@ class Utils:
             additional_fields=options.get("display", []),
             since_date=since_date
         )
-        uuids = [run[self.uuid_field] for run in runs]
+        uuids = list(dict.fromkeys([run[self.uuid_field] for run in runs]))
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
         versions = self.get_version(uuids, match, timestamp_field)
         prs = {uuid : self.sippy_pr_search(version) for uuid, version in versions.items()}

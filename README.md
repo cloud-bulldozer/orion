@@ -60,6 +60,7 @@ etc.
 - **[Installation Guide](docs/installation.md)** - Detailed setup and build instructions
 - **[Configuration](docs/configuration.md)** - Configuration format and metrics options
 - **[Usage Guide](docs/usage.md)** - Command-line options, examples, and configurations
+- **[CI Tests](hack/ci-tests/ci-tests.md)** - CI Tests data generation
 
 ## Compatibility
 
