@@ -1,0 +1,180 @@
+tests :
+  - name : servicemesh-{{ service_mesh_mode }}-k8s-netperf-tcp
+    metadata:
+      ocpVersion: "{{ version }}"
+      platform: AWS
+      clusterType: self-managed
+      benchmark.keyword: k8s-netperf
+      masterNodesCount: 3
+      workerNodesCount: 5
+      infraNodesCount: 3
+      masterNodesType: m6i.xlarge
+      workerNodesType: m6i.2xlarge
+      infraNodesType: c6i.4xlarge
+      networkType: OVNKubernetes
+      encrypted: false
+      fips: false
+      ipsec: false
+      serviceMeshMode: {{ service_mesh_mode }}
+      not:
+        stream: okd
+
+    metrics: 
+
+    # throughput tests
+    - name: throughput_64_1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 64
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name: throughput_1024_1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+    
+    - name: throughput_8192_1p
+      parallelism: 1
+      profile: TCP_STREAM
+      messageSize: 8192
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name: throughput_64_2p
+      parallelism: 2
+      profile: TCP_STREAM
+      messageSize: 64
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name: throughput_1024_2p
+      parallelism: 2
+      profile: TCP_STREAM
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+    
+    - name: throughput_8192_2p
+      parallelism: 2
+      profile: TCP_STREAM
+      messageSize: 8192
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name: throughput_64_4p
+      parallelism: 4
+      profile: TCP_STREAM
+      messageSize: 64
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    - name: throughput_1024_4p
+      parallelism: 4
+      profile: TCP_STREAM
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+    
+    - name: throughput_8192_4p
+      parallelism: 4
+      profile: TCP_STREAM
+      messageSize: 8192
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: throughput
+      agg:
+        value: throughput
+        agg_type: avg
+
+    # latency tests
+    - name:  latency_64_1p
+      parallelism: 1
+      profile: TCP_RR
+      messageSize: 64
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: latency
+      agg:
+        value: latency
+        agg_type: avg
+
+    - name: latency_1024_1p
+      parallelism: 1
+      profile: TCP_RR
+      messageSize: 1024
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: latency
+      agg:
+        value: latency
+        agg_type: avg
+
+    - name: latency_8192_1p
+      parallelism: 1
+      profile: TCP_RR
+      messageSize: 8192
+      driver.keyword: netperf
+      hostNetwork: false
+      service: true
+      acrossAZ: false
+      metric_of_interest: latency
+      agg:
+        value: latency
+        agg_type: avg

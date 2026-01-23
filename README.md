@@ -5,7 +5,7 @@
 
 # Orion - CLI tool to find regressions
 
-Orion stands as a powerful command-line tool designed for identifying regressions within perf-scale CPT runs, leveraging metadata provided during the process. The detection mechanism relies on [hunter](https://github.com/datastax-labs/hunter).
+Orion stands as a powerful command-line tool designed for identifying regressions within perf-scale CPT runs, leveraging metadata provided during the process. The detection mechanism relies on [hunter now apache otava](https://github.com/apache/otava).
 
 ## Quick Start
 
@@ -30,10 +30,7 @@ $ pip install .
 Using `uv`
 
 ```bash
-$ uv venv --python 3.11
-$ source .venv/bin/activate
-$ uv pip install -r requirements.txt
-$ uv pip install .
+$ uv tool install -p 3.11 orion --from git+https://github.com/cloud-bulldozer/orion.git
 ```
 
 ### Basic Usage
@@ -63,6 +60,7 @@ etc.
 - **[Installation Guide](docs/installation.md)** - Detailed setup and build instructions
 - **[Configuration](docs/configuration.md)** - Configuration format and metrics options
 - **[Usage Guide](docs/usage.md)** - Command-line options, examples, and configurations
+- **[CI Tests](hack/ci-tests/ci-tests.md)** - CI Tests data generation
 
 ## Compatibility
 

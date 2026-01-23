@@ -88,6 +88,7 @@ class GitHubClient:
         except ValueError:
             return None
 
+    # pylint: disable=too-many-return-statements
     def _coerce_timestamp(self, value: Optional[Any]) -> Optional[datetime]:
         if value in (None, ""):
             return None
@@ -428,3 +429,47 @@ class GitHubClient:
 
         self._context_cache[cache_key] = context
         return context
+
+    def get_pr_creation_date(
+        self,
+        organization: str,
+        repository: str,
+        pr_number: int,
+    ) -> Optional[datetime]:
+        """
+        Returns the creation date of a PR.
+
+        Args:
+            organization: The GitHub organization/owner name
+            repository: The repository name
+            pr_number: The pull request number
+
+        Returns:
+            The creation date as a datetime object in UTC, or None if the PR
+            cannot be found or an error occurs.
+        """
+        repo = f"{organization}/{repository}"
+
+        url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
+        payload, error = self._request_json(url)
+
+        if error or not payload:
+            self.logger.warning(
+                "Failed to fetch PR #%d from %s: %s",
+                pr_number,
+                repo,
+                error or "empty response",
+            )
+            return None
+
+        created_at_str = payload.get("created_at")
+        if not created_at_str:
+            self.logger.warning(
+                "PR #%d from %s does not have a created_at field",
+                pr_number,
+                repo,
+            )
+            return None
+
+        creation_date = self._parse_iso_datetime(created_at_str)
+        return creation_date

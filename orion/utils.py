@@ -28,7 +28,7 @@ class Utils:
     """
 
     def __init__(self, uuid_field: str ="uuid", version_field: str ="ocpVersion"):
-        """Instanciates utils class with uuid and version fields 
+        """Instanciates utils class with uuid and version fields
 
         Args:
             uuid_field (str): key to find the uuid
@@ -134,7 +134,7 @@ class Utils:
         """Method to standardize timestamp formats
 
         Args:
-            timestamp Any: timestamp object with various formats 
+            timestamp Any: timestamp object with various formats
 
         Returns:
             str: standard timestamp in format %Y-%m-%dT%H:%M:%S
@@ -201,8 +201,8 @@ class Utils:
             dict: dictionary of the metadata
         """
         metadata = test["metadata"]
-        metadata[self.version_field] = str(metadata[self.version_field])
-        self.logger.debug("metadata" + str(metadata))
+        metadata[self.version_field] = str(metadata.get(self.version_field, ""))
+        self.logger.debug("metadata: %s", metadata)
         if "organization" in metadata and not metadata.get("organization"):
             del metadata["organization"]
             self.logger.info("organization is empty removed from metadata for it to not affect the matching process")
@@ -329,7 +329,7 @@ class Utils:
             additional_fields=options.get("display", []),
             since_date=since_date
         )
-        uuids = [run[self.uuid_field] for run in runs]
+        uuids = list(dict.fromkeys([run[self.uuid_field] for run in runs]))
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
         versions = self.get_version(uuids, match, timestamp_field)
         prs = {uuid : self.sippy_pr_search(version) for uuid, version in versions.items()}
@@ -342,7 +342,7 @@ class Utils:
         elif not uuids:
             self.logger.info("No UUID present for given metadata")
             return None, None
-        match.index = options["benchmark_index"] or test["benchmark_index"]
+        match.index = options.get("benchmark_index") or test.get("benchmark_index")
 
         uuids = self.filter_uuids_on_index(
             metadata,
@@ -606,7 +606,6 @@ def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uui
             "timestamp": datetime.fromtimestamp(record["timestamp"], timezone.utc).strftime(
                 "%Y-%m-%dT%H:%M:%SZ"
             ),
-            "buildUrl": record["buildUrl"],
             metric_name: record["metrics"][metric_name]["value"],
             "is_changepoint": bool(record["metrics"][metric_name]["percentage_change"]),
             "percentage_change": record["metrics"][metric_name]["percentage_change"],

@@ -133,11 +133,16 @@ class Matcher:
         for field, value in metadata.items():
             if field in [self.version_field, "ocpMajorVersion"]:
                 continue
+            if field == "pullNumber" and value == 0 :
+                continue
             if field != "not":
                 must_clause.append(Q("match", **{field: str(value)}))
             else:
                 for not_field, not_value in metadata["not"].items():
-                    must_not_clause.append(Q("match", **{not_field: str(not_value)}))
+                    # Handle not_value as single value or list
+                    values = not_value if isinstance(not_value, list) else [not_value]
+                    for val in values:
+                        must_not_clause.append(Q("match", **{not_field: str(val)}))
 
         if "ocpMajorVersion" in metadata:
             version = metadata["ocpMajorVersion"]

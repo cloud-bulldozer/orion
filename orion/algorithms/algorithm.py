@@ -25,16 +25,12 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         test: dict,
         options: dict,
         metrics_config: dict[str, dict],
-        version_field: str = "ocpVersion",
-        uuid_field: str = "uuid"
     ) -> None:
         self.dataframe = dataframe
         self.test = test
-        self.version_field = version_field
         self.options = options
         self.metrics_config = metrics_config
         self.regression_flag = False
-        self.uuid_field = uuid_field
         self._github_client: Optional[GitHubClient] = None
 
     def output_json(self) -> Tuple[str, str, bool]:
@@ -91,12 +87,12 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
                 if github_client and not dataframe_json[index].get("github_context"):
                     previous_entry = dataframe_json[index - 1] if index > 0 else None
                     previous_version = (
-                        previous_entry.get(self.version_field) if previous_entry else None
+                        previous_entry.get(self.test["version_field"]) if previous_entry else None
                     )
                     previous_timestamp = (
                         previous_entry.get("timestamp") if previous_entry else None
                     )
-                    current_version = dataframe_json[index].get(self.version_field)
+                    current_version = dataframe_json[index].get(self.test["version_field"])
                     current_timestamp = dataframe_json[index].get("timestamp")
                     context = github_client.get_change_context(
                         previous_timestamp=previous_timestamp,
@@ -116,23 +112,53 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
 
     def output_text(self) -> Tuple[str, str, bool]:
         """Outputs the data in text/tabular format"""
-        # If display field is specified, use our custom combined table
-        display_field = self.options.get("display")
-        if display_field:
+        # If display field is specified, extract the data from the json output
+        display_fields = self.options.get("display")
+        display_data = {}
+        if display_fields:
             _, json_output, _ = self.output_json()
             data_json = json.loads(json_output)
-
-            # Create a combined table with all metrics and the display field
-            combined_output = self._generate_combined_table_with_display(
-                data_json, display_field
-            )
-            return self.test["name"], combined_output, self.regression_flag
+            for display_field in display_fields:
+                display_data[display_field] = []
+                for record in data_json:
+                    display_data[display_field].append(str(record.get(display_field, "N/A")))
 
         # Use default Hunter report
         series, change_points_by_metric = self._analyze()
+
+        # Append display_data to series.data in the same format
+        if display_data and display_fields:
+            for display_field in display_fields:
+                if display_field in self.dataframe.columns:
+                    # If display field exists in dataframe, use it directly
+                    series.data[display_field] = self.dataframe[display_field]
+                elif display_field in display_data:
+                    # Otherwise, use the display_data and convert list to pandas Series
+                    values_list = display_data[display_field]
+                    # Convert list to pandas Series to match the format of series.data
+                    # The length should match the dataframe length
+                    if len(values_list) == len(self.dataframe):
+                        series.data[display_field] = pd.Series(
+                            values_list, index=self.dataframe.index
+                            )
+                    else:
+                        # If lengths don't match,
+                        # create a Series with N/A for positions not in data_json
+                        series_length = len(self.dataframe)
+                        series_values = ["N/A"] * series_length
+                        # Map values from data_json back to dataframe indices
+                        # This assumes data_json maintains the original order
+                        for i, value in enumerate(values_list):
+                            if i < series_length:
+                                series_values[i] = value
+                        series.data[display_field] = pd.Series(
+                            series_values, index=self.dataframe.index
+                            )
+
         change_points_by_time = self.group_change_points_by_time(
             series, change_points_by_metric
         )
+
         report = Report(series, change_points_by_time)
         output_table = report.produce_report(
             test_name=self.test["name"], report_type=ReportType.LOG
@@ -159,9 +185,9 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             row.append(timestamp)
 
             # Add UUID
-            row.append(record[self.uuid_field])
+            row.append(record[self.test["uuid_field"]])
 
-            row.append(record.get(self.version_field, "N/A"))
+            row.append(record.get(self.test["version_field"], "N/A"))
             # Add all metric values
             for metric_name in self.metrics_config.keys():
                 if "metrics" in record and metric_name in record["metrics"]:
@@ -182,7 +208,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             table_data.append(row)
 
         # Prepare headers
-        headers = ["time", self.uuid_field, self.version_field]
+        headers = ["time", self.test["uuid_field"], self.test["version_field"]]
         headers.extend(self.metrics_config.keys())
         headers.extend(display_fields)
 
@@ -203,7 +229,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             test_name=test_name,
             data_json=data_json,
             metrics_config=self.metrics_config,
-            uuid_field=self.uuid_field,
+            uuid_field=self.test["uuid_field"],
             display_fields=self.options.get("display")
         )
         return test_name, data_junit, self.regression_flag
@@ -255,7 +281,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         attributes = {
             column: self.dataframe[column]
             for column in self.dataframe.columns
-            if column in [self.uuid_field, self.version_field]
+            if column in [self.test["uuid_field"], self.test["version_field"]]
         }
         series = Series(
             test_name=self.test["name"],

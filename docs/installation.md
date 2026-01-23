@@ -39,6 +39,14 @@ export ES_SERVER=<es_server_url>
 pip install .
 ```
 
+## Install with `uv`
+
+You will need to have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed, then you should run:
+
+```bash
+uv tool install -p 3.11 orion --from git+https://github.com/cloud-bulldozer/orion.git
+```
+
 ## Verification
 
 After installation, verify that Orion is working correctly:

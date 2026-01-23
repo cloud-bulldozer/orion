@@ -206,8 +206,16 @@ setup() {
   run_cmd orion --config "examples/small-scale-node-density-cni.yaml" --anomaly-detection --anomaly-window 3 --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
-@test "orion trt external payload cluster density anomaly detection with a minimum percentage" {
-  run_cmd orion --config "examples/trt-external-payload-cluster-density.yaml" --anomaly-detection --anomaly-window 3 --min-anomaly-percent 5 --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
+@test "orion trt external payload cluster density" {
+  run_cmd orion --config "examples/trt-external-payload-cluster-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
+}
+
+@test "orion trt external payload cluster density for pull" {
+  run_cmd orion --config "examples/trt-external-payload-cluster-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'", "jobType": "pull", "pullNumber": "70897"}'
+}
+
+@test "orion trt external payload cluster density for periodic from a pull" {
+  run_cmd orion --config "examples/trt-external-payload-cluster-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'", "jobType": "periodic", "pullNumber": "70897"}'
 }
 
 @test "orion trt external payload crd scale with default anomaly detection" {
@@ -232,18 +240,6 @@ setup() {
 
 @test "orion trt external payload node density junit with lookback" {
   run_cmd orion --config "examples/trt-external-payload-node-density.yaml" --hunter-analyze --lookback 15d --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}' --output-format junit
-}
-
-@test "orion trt external payload cluster density" {
-  run_cmd orion --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
-}
-
-@test "orion trt external payload cluster density for pull" {
-  run_cmd orion --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'", "jobType": "pull", "pullNumber": "70897"}'
-}
-
-@test "orion trt external payload cluster density for periodic from a pull" {
-  run_cmd orion --config "examples/trt-payload-cluster-density.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'", "jobType": "periodic", "pullNumber": "70897"}'
 }
 
 @test "orion chaos tests " {
@@ -307,7 +303,7 @@ setup() {
 
   last_commit=$(git rev-parse --short=7 HEAD)
   describe=$(git describe --tags --dirty --always)
-  
+
   if [[ "$describe" == *"$last_commit"* ]]; then
     echo "Is ahead of Tag adding '.post1.dev'"
     expected_version+=".post1.dev"
@@ -325,5 +321,224 @@ setup() {
   if [[ ! "$version" == *"$expected_version"* ]]; then
     exit 1
   fi
+  set -e
+}
+
+@test "orion with regression should contain inline changepoint" {
+  set +e
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  # Check if the percentage string exists in the output file
+  if ! grep -q "+404.5%" ./outputs/results.txt; then
+    echo "Expected string '+404.5%' not found in results.txt"
+    exit 1
+  fi
+
+  # Check if the Previous Version string exists in the output file
+  if ! grep -q "Previous Version:    4.20.0-0.nightly-2026-01-14-195655" ./outputs/results.txt; then
+    echo "Expected string 'Previous Version:    4.20.0-0.nightly-2026-01-14-195655' not found in results.txt"
+    exit 1
+  fi
+
+  # Check if the Bad Version string exists in the output file
+  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-15-195655" ./outputs/results.txt; then
+    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
+    exit 1
+  fi
+
+  set -e
+}
+
+@test "orion with regression should contain inline changepoint json" {
+  set +e
+
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json > ./outputs/results.json
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  bad_version=$(jq -r '.[] | select(.is_changepoint == true) | .ocpVersion' ./outputs/results.json)
+
+  if [ "$bad_version" != "4.20.0-0.nightly-2026-01-15-195655" ]; then
+    echo "Version did not match. Expected '4.20.0-0.nightly-2026-01-15-195655', got '$bad_version'"
+    exit 1
+  fi
+  set -e
+}
+
+@test "orion with regression should contain inline changepoint junit" {
+  set +e
+
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit > ./outputs/results.xml
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  failure=$(echo 'failures="1"')
+  # Check if the failures string exists in the output file
+  if ! grep -q $failure ./outputs/results.xml; then
+    echo "Expected string '$failure' not found in results.xml"
+    cat ./outputs/results.xml
+    exit 1
+  fi
+
+  changepoint=$(echo '404.549 | https://prow.ci/2013174937652563968 | -- changepoint')
+  # Check if the changepoint string exists in the output file
+  if ! grep -q $changepoint ./outputs/results.xml; then
+    echo "Expected string '$changepoint' not found in results.xml"
+    cat ./outputs/results.xml
+    exit 1
+  fi
+
+  set -e
+}
+
+@test "orion with regression should contain inline changepoint with custom display" {
+  set +e
+
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --display upstreamJob > ./outputs/results.txt
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  # Check if the percentage string exists in the output file
+  if ! grep -q "+404.5%" ./outputs/results.txt; then
+    echo "Expected string '+404.5%' not found in results.txt"
+    cat ./outputs/results.txt
+    exit 1
+  fi
+
+  # Check if the Previous Version string exists in the output file
+  if ! grep -q "Previous Version:    4.20.0-0.nightly-2026-01-14-195655" ./outputs/results.txt; then
+    echo "Expected string 'Previous Version:    4.20.0-0.nightly-2026-01-14-195655' not found in results.txt"
+    cat ./outputs/results.txt
+    exit 1
+  fi
+
+  # Check if the Bad Version string exists in the output file
+  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-15-195655" ./outputs/results.txt; then
+    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
+    cat ./outputs/results.txt
+    exit 1
+  fi
+
+  customDisplay="upstreamJob"
+  # Check if the customDisplay string exists in the output file
+  if ! grep -q $customDisplay ./outputs/results.txt; then
+    echo "Expected string '$customDisplay' not found in results.txt"
+    cat ./outputs/results.txt
+    exit 1
+  fi
+
+  set -e
+}
+
+@test "orion with regression should contain inline changepoint json with custom display" {
+  set +e
+
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json --display upstreamJob > ./outputs/results.json
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  bad_version=$(jq -r '.[] | select(.is_changepoint == true) | .ocpVersion' ./outputs/results.json)
+  if [ "$bad_version" != "4.20.0-0.nightly-2026-01-15-195655" ]; then
+    echo "Version did not match. Expected '4.20.0-0.nightly-2026-01-15-195655', got '$bad_version'"
+    exit 1
+  fi
+
+  upstreamJob=$(jq -r '.[] | select(.is_changepoint == true) | .upstreamJob' ./outputs/results.json)
+  if [ "$upstreamJob" != "periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.20-nightly-x86-olmv1-benchmark-test" ]; then
+    echo "upstreamJob did not match. Expected 'periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.20-nightly-x86-olmv1-benchmark-test', got '$upstreamJob'"
+    exit 1
+  fi  
+
+  set -e
+}
+
+@test "orion with regression should contain inline changepoint junit with custom display" {
+  set +e
+
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit --display upstreamJob > ./outputs/results.xml
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  failure=$(echo 'failures="1"')
+  # Check if the failures string exists in the output file
+  if ! grep -q $failure ./outputs/results.xml; then
+    echo "Expected string '$failure' not found in results.xml"
+    cat ./outputs/results.xml
+    exit 1
+  fi
+
+  changepoint=$(echo '404.549')
+  # Check if the changepoint string exists in the output file
+  if ! grep -q $changepoint ./outputs/results.xml; then
+    echo "Expected string '$changepoint' not found in results.xml"
+    cat ./outputs/results.xml
+    exit 1
+  fi
+
+  customDisplay="upstreamJob"
+  # Check if the customDisplay string exists in the output file
+  if ! grep -q $customDisplay ./outputs/results.xml; then
+    echo "Expected string '$customDisplay' not found in results.xml"
+    cat ./outputs/results.xml
+    exit 1
+  fi
+
+  set -e
+}
+
+@test "orion with regression should contain inline changepoint no metadata index" {
+  set +e
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-metrics-only.yaml --metadata-index "orion-integration-test-metrics*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  # Check if the percentage string exists in the output file
+  if ! grep -q "+404.5%" ./outputs/results.txt; then
+    echo "Expected string '+404.5%' not found in results.txt"
+    exit 1
+  fi
+
+  # Check if the Previous Version string exists in the output file
+  if ! grep -q "Previous Version:    4.20" ./outputs/results.txt; then
+    echo "Expected string 'Previous Version:    4.20' not found in results.txt"
+    exit 1
+  fi
+
+  # Check if the Bad Version string exists in the output file
+  if ! grep -q "Bad Version:         4.20" ./outputs/results.txt; then
+    echo "Expected string 'Bad Version:         4.20' not found in results.txt"
+    exit 1
+  fi
+
   set -e
 }
