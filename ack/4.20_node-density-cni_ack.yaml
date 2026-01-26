@@ -15,7 +15,13 @@ ack:
   - uuid: 6ce3a213-8481-4282-84ce-af2368ba3051 
     metric: ovnkCPU-overall_avg 
     reason: "old cpu spike"
-  - uuid: 6ce3a213-8481-4282-84ce-af2368ba3051 
-    metric: ovnCPU-ovnk-controller_avg 
+  - uuid: 6ce3a213-8481-4282-84ce-af2368ba3051
+    metric: ovnCPU-ovnk-controller_avg
     reason: "old cpu spike"
+  - uuid: fb6be24f-ab09-4302-87f4-56634145ad9d
+    metric: kubelet_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-74474"
+  - uuid: fb6be24f-ab09-4302-87f4-56634145ad9d
+    metric: ovsCPU-Workers_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-74474"
 
