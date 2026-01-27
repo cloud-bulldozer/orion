@@ -7,8 +7,8 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple, Union
 import pandas as pd
 from tabulate import tabulate
-from hunter.report import Report, ReportType
-from hunter.series import Series, Metric, ChangePoint, ChangePointGroup
+from otava.report import Report, ReportType
+from otava.series import Series, Metric, ChangePoint, ChangePointGroup
 import orion.constants as cnsts
 
 
@@ -123,7 +123,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
                 for record in data_json:
                     display_data[display_field].append(str(record.get(display_field, "N/A")))
 
-        # Use default Hunter report
+        # Use default apache_otava report
         series, change_points_by_metric = self._analyze()
 
         # Append display_data to series.data in the same format
@@ -271,7 +271,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
 
     def setup_series(self) -> Series:
         """
-        Returns hunter.Series
+        Returns apache_otava.Series
         """
         metrics = {
             column: Metric(value.get("direction", 1), 1.0)

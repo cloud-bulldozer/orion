@@ -14,9 +14,9 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
-        python-version: 3.11
+        python-version: 3.14
 
     - name: Install dependencies
       run: |

@@ -2,7 +2,8 @@
 """The implementation module for Isolation forest and weighted mean"""
 from sklearn.ensemble import IsolationForest
 import pandas as pd
-from hunter.series import  ChangePoint, ComparativeStats
+from otava.analysis import TTestStats
+from otava.series import  ChangePoint
 from orion.logger import SingletonLogger
 from orion.algorithms.algorithm import Algorithm
 
@@ -60,16 +61,17 @@ class IsolationForestWeightedMean(Algorithm):
                     ) * 100
                     if abs(pct_change) > (10 if self.options.get("min_anomaly_percent",None) is None else int(self.options.get("min_anomaly_percent",None))):
                         if (pct_change * self.metrics_config[feature]["direction"] > 0) or self.metrics_config[feature]["direction"]==0:
-                            change_point = ChangePoint(metric=feature,
-                                                       index=idx,
-                                                       time=row['timestamp'],
-                                                       stats=ComparativeStats(
-                                                           mean_1=moving_averages.at[idx, feature],
-                                                           mean_2=row[feature],
-                                                           std_1=0,
-                                                           std_2=0,
-                                                           pvalue=1
-                                                       ))
+                            change_point = ChangePoint(index=idx,
+                                                    qhat=0.0,
+                                                    metric=feature,
+                                                    time=row['timestamp'],
+                                                    stats=TTestStats(
+                                                        mean_1=moving_averages.at[idx, feature],
+                                                        mean_2=row[feature],
+                                                        std_1=0.0,
+                                                        std_2=0.0,
+                                                        pvalue=1.0
+                                                    ))
                             change_points_by_metric[feature].append(change_point)
         if [val for li in change_points_by_metric.values() for val in li]:
             self.regression_flag=True
