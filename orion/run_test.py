@@ -296,10 +296,8 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
     # Query with JSON to check for early and late changepoints
     regression_data = []
     if test_flag:
-        logger.info(">>> WINDOWING LOGIC: Checking for early/late changepoints...")
         testname, result_data, test_flag = algorithm.output(cnsts.JSON)
         result_data_json = json.loads(result_data)
-        logger.info(">>> WINDOWING LOGIC: Total data points: %d", len(result_data_json))
         
         # Check if any changepoint is in the last 5 data points (insufficient future data)
         # This check happens BEFORE window expansion - if late, ignore immediately
@@ -314,9 +312,6 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
             test_flag = False
         # Check if any changepoint is in the first 5 data points (needs validation with more history)
         elif has_early_changepoint(result_data_json, max_early_index=5):
-            logger.info(">>> WINDOWING LOGIC: EARLY CHANGEPOINT DETECTED in first 5 data points!")
-            logger.info("Early changepoint detected in first 5 data points. Expanding lookback window by 10 days and increasing lookback-size to ensure 5 samples before changepoint.")
-            
             # Create a copy of kwargs with expanded lookback and lookback-size
             expanded_kwargs = copy.deepcopy(kwargs)
             original_lookback = kwargs.get("lookback", "")
@@ -328,10 +323,6 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
             required_lookback_size = current_points + 5
             original_lookback_size = kwargs.get("lookback_size", 10000)
             expanded_kwargs["lookback_size"] = required_lookback_size
-            
-            logger.info("Original lookback: %s, Expanded lookback: %s", original_lookback, expanded_lookback)
-            logger.info("Original lookback-size: %s, Expanded lookback-size: %s (current points: %s + 5)", 
-                       original_lookback_size, required_lookback_size, current_points)
             
             # Re-run analysis with expanded lookback window
             expanded_start_timestamp = get_start_timestamp(expanded_kwargs, test, is_pull)
@@ -361,8 +352,6 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 
                 # Check if changepoint still exists after expansion
                 if expanded_test_flag:
-                    logger.info(">>> WINDOWING LOGIC: Changepoint CONFIRMED after expansion - flagging as regression")
-                    logger.info("Changepoint still detected after expanding lookback window. Flagging as regression.")
                     # Use the expanded results
                     result_data_json = expanded_result_data_json
                     test_flag = expanded_test_flag
@@ -370,15 +359,10 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                     expanded_testname, expanded_result_data_formatted, _ = expanded_algorithm.output(kwargs["output_format"])
                     result_output[expanded_testname] = expanded_result_data_formatted
                 else:
-                    logger.info(">>> WINDOWING LOGIC: Changepoint DISMISSED after expansion - was false positive")
-                    logger.info("No changepoint detected after expanding lookback window. "
-                              "Original changepoint was likely a false positive. Not flagging as regression.")
                     # No changepoint after expansion, so don't flag as regression
                     test_flag = False
                     result_data_json = expanded_result_data_json
             else:
-                logger.warning("Expanded lookback did not retrieve additional data. "
-                             "Proceeding with original analysis results.")
                 # Use original results if expansion didn't help
                 result_data_json = result_data_json
         
@@ -386,7 +370,6 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
         if test_flag:
             logger.info(">>> WINDOWING LOGIC: Processing regression data (changepoint validated)")
         else:
-            logger.info(">>> WINDOWING LOGIC: No regression (changepoint filtered or dismissed)")
             prev_ver = None
             bad_ver = None
             for result in result_data_json:
