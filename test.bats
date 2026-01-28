@@ -325,17 +325,20 @@ setup() {
 
 @test "orion with regression should contain inline changepoint" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
-  EXIT_CODE=$?
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' 2>&1 | tee ./outputs/results.txt
+  EXIT_CODE=${PIPESTATUS[0]}
 
   if [ ! $EXIT_CODE -eq 2 ]; then
     echo "no regression found"
+    echo "--- Orion output (results.txt) ---"
+    cat ./outputs/results.txt
     exit 1
   fi
 
   # Check if the percentage string exists in the output file
   if ! grep -q "+404.5%" ./outputs/results.txt; then
     echo "Expected string '+404.5%' not found in results.txt"
+    cat ./outputs/results.txt
     exit 1
   fi
 
@@ -356,9 +359,10 @@ setup() {
 
 @test "orion with regression should contain inline changepoint json" {
   set +e
-
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json > ./outputs/results.json
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json 2> ./outputs/orion_stderr.log > ./outputs/results.json
   EXIT_CODE=$?
+  echo "--- Orion log (changepoint detection / window expansion) ---"
+  cat ./outputs/orion_stderr.log
 
   if [ ! $EXIT_CODE -eq 2 ]; then
     echo "no regression found"
@@ -376,9 +380,10 @@ setup() {
 
 @test "orion with regression should contain inline changepoint junit" {
   set +e
-
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit > ./outputs/results.xml
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit 2> ./outputs/orion_stderr.log > ./outputs/results.xml
   EXIT_CODE=$?
+  echo "--- Orion log (changepoint detection / window expansion) ---"
+  cat ./outputs/orion_stderr.log
 
   if [ ! $EXIT_CODE -eq 2 ]; then
     echo "no regression found"
@@ -406,9 +411,8 @@ setup() {
 
 @test "orion with regression should contain inline changepoint with custom display" {
   set +e
-
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --display upstreamJob > ./outputs/results.txt
-  EXIT_CODE=$?
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --display upstreamJob 2>&1 | tee ./outputs/results.txt
+  EXIT_CODE=${PIPESTATUS[0]}
 
   if [ ! $EXIT_CODE -eq 2 ]; then
     echo "no regression found"
@@ -449,9 +453,10 @@ setup() {
 
 @test "orion with regression should contain inline changepoint json with custom display" {
   set +e
-
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json --display upstreamJob > ./outputs/results.json
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json --display upstreamJob 2> ./outputs/orion_stderr.log > ./outputs/results.json
   EXIT_CODE=$?
+  echo "--- Orion log (changepoint detection / window expansion) ---"
+  cat ./outputs/orion_stderr.log
 
   if [ ! $EXIT_CODE -eq 2 ]; then
     echo "no regression found"
@@ -475,9 +480,10 @@ setup() {
 
 @test "orion with regression should contain inline changepoint junit with custom display" {
   set +e
-
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit --display upstreamJob > ./outputs/results.xml
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit --display upstreamJob 2> ./outputs/orion_stderr.log > ./outputs/results.xml
   EXIT_CODE=$?
+  echo "--- Orion log (changepoint detection / window expansion) ---"
+  cat ./outputs/orion_stderr.log
 
   if [ ! $EXIT_CODE -eq 2 ]; then
     echo "no regression found"
@@ -513,11 +519,13 @@ setup() {
 
 @test "orion with regression should contain inline changepoint no metadata index" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-metrics-only.yaml --metadata-index "orion-integration-test-metrics*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
-  EXIT_CODE=$?
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-metrics-only.yaml --metadata-index "orion-integration-test-metrics*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' 2>&1 | tee ./outputs/results.txt
+  EXIT_CODE=${PIPESTATUS[0]}
 
   if [ ! $EXIT_CODE -eq 2 ]; then
     echo "no regression found"
+    echo "--- Orion output (results.txt) ---"
+    cat ./outputs/results.txt
     exit 1
   fi
 

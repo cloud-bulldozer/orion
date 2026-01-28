@@ -175,6 +175,30 @@ def has_late_changepoint(result_data_json: list, max_late_index: int = 5) -> boo
     return False
 
 
+def has_insufficient_future_data(result_data_json: list, min_future_points: int = 5) -> bool:
+    """Check if any changepoint has insufficient future data for validation.
+
+    Args:
+        result_data_json: List of result dictionaries from algorithm output
+        min_future_points: Minimum number of points needed after changepoint
+            (default: 5)
+
+    Returns:
+        bool: True if any changepoint has fewer than min_future_points after it
+    """
+    total_points = len(result_data_json)
+    if total_points == 0:
+        return False
+
+    for index, result in enumerate(result_data_json):
+        if result.get("is_changepoint", False):
+            # Calculate how many points are after this changepoint
+            points_after = total_points - index - 1
+            if points_after < min_future_points:
+                return True
+    return False
+
+
 def increase_lookback(lookback_str: str, days_to_add: int = 10) -> str:
     """Increase lookback duration by adding days.
 
@@ -295,6 +319,22 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
     testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
     result_output[testname] = result_data
 
+    current_points = len(fingerprint_matched_df)
+    if test_flag:
+        logger.info(
+            "Changepoint detected: algorithm reported regression (test=%s, "
+            "points=%d)",
+            test["name"],
+            current_points,
+        )
+    else:
+        logger.info(
+            "No changepoint detected: algorithm reported no regression (test=%s, "
+            "points=%d)",
+            test["name"],
+            current_points,
+        )
+
     # Query with JSON to check for early and late changepoints
     regression_data = []
     if test_flag:
@@ -303,10 +343,12 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
 
         # Check if any changepoint is in the first 5 data points
         # (needs validation with more history)
-        # This check happens BEFORE late check because if a changepoint
-        # is both early and late (small dataset), we want to try to
-        # validate it with expansion rather than immediately rejecting it
         if has_early_changepoint(result_data_json, max_early_index=5):
+            logger.info(
+                "Early changepoint detected (in first 5 points): attempting "
+                "window expansion for test=%s",
+                test["name"],
+            )
             # Create a copy of kwargs with expanded lookback and lookback-size
             expanded_kwargs = copy.deepcopy(kwargs)
             original_lookback = kwargs.get("lookback", "")
@@ -317,9 +359,14 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
 
             # Calculate required lookback-size: current points + 5
             # (to ensure 5 points before changepoint)
-            current_points = len(fingerprint_matched_df)
             required_lookback_size = current_points + 5
             expanded_kwargs["lookback_size"] = required_lookback_size
+            logger.info(
+                "Window expansion: lookback %s -> %s, lookback_size -> %d",
+                original_lookback or "(none)",
+                expanded_lookback,
+                required_lookback_size,
+            )
 
             # Re-run analysis with expanded lookback window
             expanded_start_timestamp = get_start_timestamp(
@@ -332,6 +379,37 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 expanded_start_timestamp
             )
 
+            expanded_points = (
+                len(expanded_fingerprint_matched_df)
+                if expanded_fingerprint_matched_df is not None
+                else 0
+            )
+            if expanded_fingerprint_matched_df is None:
+                logger.info(
+                    "Window expansion: expanded fetch returned no data; "
+                    "keeping original changepoint result (test=%s)",
+                    test["name"],
+                )
+            elif expanded_points <= current_points:
+                logger.info(
+                    "Window expansion: no additional data (original=%d, "
+                    "expanded=%d); keeping original changepoint result (test=%s)",
+                    current_points,
+                    expanded_points,
+                    test["name"],
+                )
+            else:
+                logger.info(
+                    "Window expansion: got more data (original=%d, expanded=%d); "
+                    "re-running algorithm (test=%s)",
+                    current_points,
+                    expanded_points,
+                    test["name"],
+                )
+
+            # Only re-run algorithm when we actually got MORE data. If we were
+            # unable to fetch previous data (same or fewer points, or None),
+            # keep the original changepoint result (see else branch below).
             if (expanded_fingerprint_matched_df is not None and
                     len(expanded_fingerprint_matched_df) >
                     len(fingerprint_matched_df)):
@@ -358,6 +436,11 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
 
                 # Check if changepoint still exists after expansion
                 if expanded_test_flag:
+                    logger.info(
+                        "Window expansion: expanded run still has changepoint; "
+                        "using expanded results (test=%s)",
+                        test["name"],
+                    )
                     # Use the expanded results
                     result_data_json = expanded_result_data_json
                     test_flag = expanded_test_flag
@@ -369,47 +452,44 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                         expanded_result_data_formatted
                     )
                 else:
+                    logger.info(
+                        "Window expansion: expanded run has no changepoint; "
+                        "discarding regression (test=%s)",
+                        test["name"],
+                    )
                     # No changepoint after expansion, so don't flag as
                     # regression
                     test_flag = False
                     result_data_json = expanded_result_data_json
             else:
-                # Expansion didn't find more data, but changepoint is early
-                # Log warning but keep original changepoint since we can't
-                # validate it (insufficient historical data available)
-                logger.warning(
-                    ">>> WINDOWING LOGIC: EARLY CHANGEPOINT detected but "
-                    "expansion didn't find additional data. "
-                    "Keeping original changepoint detection."
-                )
-                # Keep original result_data_json and test_flag (already True)
+                # Unable to fetch more data: expanded fetch returned None, or
+                # same/fewer points (no additional history). Keep original
+                # changepoint result and test_flag (already True).
+                pass
 
-        # Check if any changepoint is in the last 5 data points
-        # (insufficient future data)
-        # This check happens AFTER early check to avoid filtering out
-        # changepoints that are both early and late in small datasets
+        # Check if any changepoint has insufficient future data for validation
+        # Only filter if there are very few points after (0-1), since hunter
+        # already requires 10 samples minimum and has validated the changepoint.
+        # Having 2+ points after provides some validation context.
         if (test_flag and
-                has_late_changepoint(result_data_json, max_late_index=5) and
+                has_insufficient_future_data(result_data_json, min_future_points=2) and
                 not has_early_changepoint(result_data_json, max_early_index=5)):
-            # Only filter out if it's late but NOT early
-            # (if it's both, we already tried to validate it above)
-            logger.warning(
-                ">>> WINDOWING LOGIC: LATE CHANGEPOINT DETECTED "
-                "in last 5 data points!"
+            logger.info(
+                "Discarding regression: changepoint has insufficient future "
+                "data for validation (test=%s)",
+                test["name"],
             )
-            logger.warning(
-                "Changepoint detected in last 5 data points. "
-                "Insufficient future data to validate. "
-                "Ignoring changepoint to avoid false positives. "
-                "If this is a real changepoint, it will be detected "
-                "in the next cycle when more data is available."
-            )
-            # Don't flag as regression if changepoint is at the end
+            # Don't flag as regression if changepoint has very little future data
+            # (0-1 points) for validation. Hunter already validated it with 10+
+            # samples, so we only filter extreme cases.
             test_flag = False
 
         # Process regression data from final results
         if test_flag:
-            logger.info(">>> WINDOWING LOGIC: Processing regression data (changepoint validated)")
+            logger.info(
+                "Regression reported: changepoint validated (test=%s)",
+                test["name"],
+            )
         else:
             prev_ver = None
             bad_ver = None
