@@ -490,7 +490,7 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 "Regression reported: changepoint validated (test=%s)",
                 test["name"],
             )
-        else:
+            # Build regression_data (prev_ver / bad_ver) when we report a regression
             prev_ver = None
             bad_ver = None
             for result in result_data_json:
