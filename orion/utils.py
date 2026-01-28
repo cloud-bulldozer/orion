@@ -201,8 +201,9 @@ class Utils:
             dict: dictionary of the metadata
         """
         metadata = test["metadata"]
-        metadata[self.version_field] = str(metadata.get(self.version_field, ""))
-        self.logger.debug("metadata: %s", metadata)
+        if self.version_field in metadata:
+            metadata[self.version_field] = str(metadata.get(self.version_field,""))
+        self.logger.debug("metadata" + str(metadata))
         if "organization" in metadata and not metadata.get("organization"):
             del metadata["organization"]
             self.logger.info("organization is empty removed from metadata for it to not affect the matching process")
@@ -329,7 +330,7 @@ class Utils:
             additional_fields=options.get("display", []),
             since_date=since_date
         )
-        uuids = list(dict.fromkeys([run[self.uuid_field] for run in runs]))
+        uuids = list(set(run[self.uuid_field] for run in runs))
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
         versions = self.get_version(uuids, match, timestamp_field)
         prs = {uuid : self.sippy_pr_search(version) for uuid, version in versions.items()}
@@ -379,10 +380,11 @@ class Utils:
         merged_df = merged_df.merge(uuid_timestamp_map, on=self.uuid_field, how="left")
         merged_df = merged_df.sort_values(by="timestamp")
 
-        merged_df[self.version_field] = merged_df[self.uuid_field].apply(
-            lambda uuid: versions[uuid]
-        )
-        merged_df["prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
+        if len(versions) > 0 :
+            merged_df[self.version_field] = merged_df[self.uuid_field].apply(
+                lambda uuid: versions[uuid]
+            )
+            merged_df["prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
 
         # Add display field data if requested
         display_data = {run[self.uuid_field]: {field: run.get(field) for field in options["display"]} for run in runs}
