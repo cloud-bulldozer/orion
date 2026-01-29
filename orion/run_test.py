@@ -246,9 +246,6 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
     )
     utils = Utils(test["uuid_field"], test["version_field"])
     logger = SingletonLogger.get_logger("Orion")
-    logger.info("=" * 80)
-    logger.info("USING UPDATED CODE: Windowing logic enabled (early/late changepoint detection)")
-    logger.info("=" * 80)
     sippy_pr_search = kwargs["sippy_pr_search"]
     result_output = {}
     regression_flag = False
@@ -409,7 +406,7 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
 
             # Only re-run algorithm when we actually got MORE data. If we were
             # unable to fetch previous data (same or fewer points, or None),
-            # keep the original changepoint result (see else branch below).
+            # keep the original changepoint result
             if (expanded_fingerprint_matched_df is not None and
                     len(expanded_fingerprint_matched_df) >
                     len(fingerprint_matched_df)):
@@ -468,11 +465,11 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 pass
 
         # Check if any changepoint has insufficient future data for validation
-        # Only filter if there are very few points after (0-1), since hunter
+        # Only filter if there are very few points after (4-5), since hunter
         # already requires 10 samples minimum and has validated the changepoint.
-        # Having 2+ points after provides some validation context.
+        # Having 4+ points after provides some validation context.
         if (test_flag and
-                has_insufficient_future_data(result_data_json, min_future_points=2) and
+                has_insufficient_future_data(result_data_json, min_future_points=5) and
                 not has_early_changepoint(result_data_json, max_early_index=5)):
             logger.info(
                 "Discarding regression: changepoint has insufficient future "
@@ -480,7 +477,7 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 test["name"],
             )
             # Don't flag as regression if changepoint has very little future data
-            # (0-1 points) for validation. Hunter already validated it with 10+
+            # (4-5 points) for validation. Hunter already validated it with 10+
             # samples, so we only filter extreme cases.
             test_flag = False
 
