@@ -133,7 +133,7 @@ setup() {
     }
   }' | jq -r '.aggregations.distinct_versions.buckets[0].key')
   export ols_version=$(echo "$OLS_LATEST_VERSION" | cut -d'.' -f1,2)
-  curl -fsSL https://github.com/openshift/ols-load-generator/blob/main/ack/4.16_ols-load-generator-10w_ack.yaml -o /tmp/4.16_ols-load-generator-10w_ack.yaml
+  curl -fsSL https://raw.githubusercontent.com/openshift/ols-load-generator/main/ack/4.16_ols-load-generator-10w_ack.yaml -o /tmp/4.16_ols-load-generator-10w_ack.yaml
 
   QUAY_LATEST_VERSION=$(curl -s -X POST "$QUAY_QE_ES_SERVER/perf_scale_ci*/_search" \
   -H "Content-Type: application/json" \
