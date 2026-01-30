@@ -30,3 +30,6 @@ ack:
   - uuid: 3a6b3569-356a-4895-9877-4b722ca0844f
     metric: ovnMem-ovncontroller_avg
     reason: "https://issues.redhat.com/browse/OCPBUGS-74474"
+  - uuid: 539402f9-9dd1-435e-9128-ae7e6417a047
+    metric: podReadyLatency_P99
+    reason: "https://issues.redhat.com/browse/OCPBUGS-74474"
