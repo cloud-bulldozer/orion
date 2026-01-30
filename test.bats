@@ -133,6 +133,7 @@ setup() {
     }
   }' | jq -r '.aggregations.distinct_versions.buckets[0].key')
   export ols_version=$(echo "$OLS_LATEST_VERSION" | cut -d'.' -f1,2)
+  curl -fsSL https://raw.githubusercontent.com/openshift/ols-load-generator/main/ack/4.16_ols-load-generator-10w_ack.yaml -o /tmp/4.16_ols-load-generator-10w_ack.yaml
 
   QUAY_LATEST_VERSION=$(curl -s -X POST "$QUAY_QE_ES_SERVER/perf_scale_ci*/_search" \
   -H "Content-Type: application/json" \
@@ -265,7 +266,7 @@ setup() {
   before_version=$version
   VERSION=$ols_version
   export ols_test_workers=10
-  es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion --config "examples/ols-load-generator.yaml" --hunter-analyze --ack ack/4.15_ols-load-generator-10w_ack.yaml --es-server=${ES_SERVER}
+  es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion --config "examples/ols-load-generator.yaml" --hunter-analyze --ack /tmp/4.16_ols-load-generator-10w_ack.yaml --es-server=${ES_SERVER}
   VERSION=$before_version
 }
 
