@@ -306,7 +306,14 @@ class Utils:
             test_threshold=test["threshold"]
         timestamp_field = "timestamp"
         if "timestamp" in test:
-            timestamp_field=test["timestamp"]
+            timestamp_field = test["timestamp"]
+        elif test.get("metrics"):
+            # Use timestamp from first metric when test has no top-level timestamp
+            # (e.g. Quay push-pull index uses end_time, not timestamp)
+            for metric in test["metrics"]:
+                if "timestamp" in metric:
+                    timestamp_field = metric["timestamp"]
+                    break
         # getting metadata
         metadata = (
             self.extract_metadata_from_test(test)

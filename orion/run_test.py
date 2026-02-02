@@ -478,3 +478,4 @@ def tabulate_average_values(
             data.append("x" * len(last_row[display_field]))
     return tabulate([data], headers=headers, tablefmt="simple",
                     floatfmt=[".2f", ".5f", ".6f", ".5f", ".5f", ".4f"])
+                    
