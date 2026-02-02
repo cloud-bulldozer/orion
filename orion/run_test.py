@@ -389,8 +389,7 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
             # discard early changepoint (skip regression) so it can be validated
             # with more history later.
             if (expanded_fingerprint_matched_df is not None and
-                    len(expanded_fingerprint_matched_df) >
-                    len(fingerprint_matched_df)):
+                    expanded_points > len(fingerprint_matched_df)):
                 # Isolation forest requires no null values in the dataframe
                 if algorithm_name == cnsts.ISOLATION_FOREST:
                     expanded_fingerprint_matched_df = (
@@ -445,8 +444,10 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 # changepoint (don't report regression) so it can be validated
                 # when more history is available.
                 logger.info(
-                    "Window expansion: no additional data; skipping early "
-                    "changepoint (test=%s)",
+                    "Window expansion: no additional data (original=%d, "
+                    "expanded=%d); skipping early changepoint (test=%s)",
+                    current_points,
+                    expanded_points,
                     test["name"],
                 )
                 test_flag = False
