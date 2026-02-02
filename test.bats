@@ -280,13 +280,13 @@ setup() {
   export quay_image_push_pull_index="quay-push-pull*"
   export quay_load_test_index="quay-vegeta-results*"
   export es_metadata_index=${METADATA_INDEX}
-  run_cmd orion --node-count false --config "examples/quay-load-test-stable.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --input-vars='{"quay_version": "'${quay_version}'", "ocp_version": "4.18"}'
+  run_cmd orion --node-count false --config "examples/quay-load-test-stable.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --max-early 0 --min-future 0 --input-vars='{"quay_version": "'${quay_version}'", "ocp_version": "4.18"}'
 }
 
 @test "orion with quay stage config " {
   export quay_image_push_pull_index="quay-push-pull*"
   export es_metadata_index=${METADATA_INDEX}
-  run_cmd orion --node-count false --config "examples/quay-load-test-stable-stage.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --input-vars='{"quay_version": "quayio-stage", "ocp_version": "4.18"}'
+  run_cmd orion --node-count false --config "examples/quay-load-test-stable-stage.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --max-early 0 --min-future 0 --input-vars='{"quay_version": "quayio-stage", "ocp_version": "4.18"}'
 }
 
 @test "orion version check" {
