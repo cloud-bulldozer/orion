@@ -338,12 +338,14 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
         testname, result_data, test_flag = algorithm.output(cnsts.JSON)
         result_data_json = json.loads(result_data)
 
-        # Check if any changepoint is in the first 5 data points
-        # (needs validation with more history)
-        if has_early_changepoint(result_data_json, max_early_index=5):
+        max_early = kwargs.get("max_early_index", 5)
+        # Check if any changepoint is in the first N data points
+        # (needs validation with more history); max_early_index=0 disables this
+        if max_early > 0 and has_early_changepoint(result_data_json, max_early_index=max_early):
             logger.info(
-                "Early changepoint detected (in first 5 points): attempting "
+                "Early changepoint detected (in first %d points): attempting "
                 "window expansion for test=%s",
+                max_early,
                 test["name"],
             )
             # Create a copy of kwargs with expanded lookback and lookback-size
@@ -381,32 +383,11 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 if expanded_fingerprint_matched_df is not None
                 else 0
             )
-            if expanded_fingerprint_matched_df is None:
-                logger.info(
-                    "Window expansion: expanded fetch returned no data; "
-                    "keeping original changepoint result (test=%s)",
-                    test["name"],
-                )
-            elif expanded_points <= current_points:
-                logger.info(
-                    "Window expansion: no additional data (original=%d, "
-                    "expanded=%d); keeping original changepoint result (test=%s)",
-                    current_points,
-                    expanded_points,
-                    test["name"],
-                )
-            else:
-                logger.info(
-                    "Window expansion: got more data (original=%d, expanded=%d); "
-                    "re-running algorithm (test=%s)",
-                    current_points,
-                    expanded_points,
-                    test["name"],
-                )
 
             # Only re-run algorithm when we actually got MORE data. If we were
             # unable to fetch previous data (same or fewer points, or None),
-            # keep the original changepoint result
+            # discard early changepoint (skip regression) so it can be validated
+            # with more history later.
             if (expanded_fingerprint_matched_df is not None and
                     len(expanded_fingerprint_matched_df) >
                     len(fingerprint_matched_df)):
@@ -460,17 +441,21 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                     result_data_json = expanded_result_data_json
             else:
                 # Unable to fetch more data: expanded fetch returned None, or
-                # same/fewer points (no additional history). Keep original
-                # changepoint result and test_flag (already True).
-                pass
+                # same/fewer points (no additional history). Skip this early
+                # changepoint (don't report regression) so it can be validated
+                # when more history is available.
+                logger.info(
+                    "Window expansion: no additional data; skipping early "
+                    "changepoint (test=%s)",
+                    test["name"],
+                )
+                test_flag = False
 
         # Check if any changepoint has insufficient future data for validation
-        # Only filter if there are very few points after (4-5), since hunter
-        # already requires 10 samples minimum and has validated the changepoint.
-        # Having 4+ points after provides some validation context.
+        min_future = kwargs.get("min_future_points", 5)
         if (test_flag and
-                has_insufficient_future_data(result_data_json, min_future_points=5) and
-                not has_early_changepoint(result_data_json, max_early_index=5)):
+                has_insufficient_future_data(result_data_json, min_future_points=min_future) and
+                not has_early_changepoint(result_data_json, max_early_index=max_early)):
             logger.info(
                 "Discarding regression: changepoint has insufficient future "
                 "data for validation (test=%s)",

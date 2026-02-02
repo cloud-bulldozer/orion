@@ -2382,7 +2382,6 @@ tests :
       context: 10
 
   - name : quay-load-test-stable-image-push-pulls
-    timestamp: end_time
     benchmark_index: {{ quay_image_push_pull_index }}
     metadata:
       platform: AWS
@@ -2459,3 +2458,4 @@ tests :
       context: 10
       timestamp: end_time
       correlation: image_pushes_success_count
+      

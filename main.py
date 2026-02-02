@@ -143,6 +143,8 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
 @click.option("--node-count", default=False, help="Match any node iterations count")
 @click.option("--lookback-size", type=int, default=10000, help="Maximum number of entries to be looked back")
+@click.option("--max-early-index", type=int, default=5, help="Maximum index (0-based) to consider a changepoint as early; 0 disables early-changepoint expansion/skip (default: 5)")
+@click.option("--min-future-points", type=int, default=5, help="Minimum points after a changepoint to keep it; 0 disables insufficient-future-data filter (default: 5)")
 @click.option("--es-server", type=str, envvar="ES_SERVER", help="Elasticsearch endpoint where test data is stored, can be set via env var ES_SERVER", default="")
 @click.option("--benchmark-index", type=str, envvar="es_benchmark_index",  help="Index where test data is stored, can be set via env var es_benchmark_index", default="")
 @click.option("--metadata-index", type=str, envvar="es_metadata_index",  help="Index where metadata is stored, can be set via env var es_metadata_index", default="")

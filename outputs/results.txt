@@ -1,0 +1,33 @@
+2026-02-01 20:29:01,888 - Orion      - INFO - file: main.py - line: 161 - 🏹 Starting Orion in command-line mode
+2026-02-01 20:29:01,890 - Orion      - INFO - file: utils.py - line: 659 - Duration to subtract: 15 days, 0:00:00
+2026-02-01 20:29:01,890 - Orion      - INFO - file: utils.py - line: 662 - Start timestamp: 2026-01-20 00:00:00
+2026-02-01 20:29:01,890 - Orion      - INFO - file: utils.py - line: 301 - The test olm-integration-test has started
+2026-02-01 20:29:01,891 - Orion      - INFO - file: matcher.py - line: 74 - Executing query against index: orion-integration-test-metrics*
+2026-02-01 20:29:02,081 - Orion      - INFO - file: matcher.py - line: 74 - Executing query against index: orion-integration-test-metrics*
+2026-02-01 20:29:03,305 - Orion      - INFO - file: utils.py - line: 69 - Collecting OCP-84094_catalogdCPU_GCP
+2026-02-01 20:29:03,306 - Orion      - INFO - file: matcher.py - line: 74 - Executing query against index: orion-integration-test-metrics*
+2026-02-01 20:29:03,376 - Orion      - INFO - file: run_test.py - line: 273 - Comparison algorithm: EDivisive
+2026-02-01 20:29:03,380 - Orion      - INFO - file: run_test.py - line: 321 - Changepoint detected: algorithm reported regression (test=olm-integration-test, points=10)
+2026-02-01 20:29:03,381 - Orion      - INFO - file: run_test.py - line: 471 - Regression reported: changepoint validated (test=olm-integration-test)
+olm-integration-test
+====================
+time                       uuid                                    metadata.ocpMajorVersion    OCP-84094_catalogdCPU_GCP_avg  buildUrl
+-------------------------  ------------------------------------  --------------------------  -------------------------------  ----------
+2026-01-10 10:33:15 +0000  d0e1f2a3-b4c5-4678-d901-e2f3a4b5c678                         4.2                          1.5699   N/A
+2026-01-11 10:33:15 +0000  c9d0e1f2-a3b4-4567-c890-d1e2f3a4b567                         4.2                          1.5699   N/A
+2026-01-12 10:33:15 +0000  b8c9d0e1-f2a3-4456-b789-c0d1e2f3a456                         4.2                          1.5699   N/A
+2026-01-13 10:33:15 +0000  a7b8c9d0-e1f2-4345-a678-b9c0d1e2f345                         4.2                          1.5699   N/A
+2026-01-14 10:33:15 +0000  f6a7b8c9-d0e1-4234-f567-a8b9c0d1e234                         4.2                          1.5699   N/A
+2026-01-15 10:33:15 +0000  e5f6a7b8-c9d0-4123-e456-f7a8b9c0d123                         4.2                          1.5699   N/A
+                                                                                             ·······························              
+                                                                                                                     +404.5%              
+                                                                                             ·······························              
+2026-01-16 10:33:15 +0000  d4e5f6a7-b8c9-4012-d345-e6f7a8b9c012                         4.2                          6.5699   N/A
+2026-01-17 10:33:15 +0000  c3d4e5f6-a7b8-4901-c234-d5e6f7a8b901                         4.2                          7.85699  N/A
+2026-01-18 10:33:15 +0000  b2c3d4e5-f6a7-4890-b123-c4d5e6f7a890                         4.2                          8.0199   N/A
+2026-01-19 10:33:15 +0000  a1b2c3d4-e5f6-4789-a012-b3c4d5e6f789                         4.2                          9.2369   N/A
+Regression(s) found :
+--------------------------------------------------
+Previous Version:    4.20
+Bad Version:         4.20
+--------------------------------------------------
