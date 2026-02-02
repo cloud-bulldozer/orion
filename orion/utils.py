@@ -201,8 +201,9 @@ class Utils:
             dict: dictionary of the metadata
         """
         metadata = test["metadata"]
-        metadata[self.version_field] = str(metadata.get(self.version_field, ""))
-        self.logger.debug("metadata: %s", metadata)
+        if self.version_field in metadata:
+            metadata[self.version_field] = str(metadata.get(self.version_field,""))
+        self.logger.debug("metadata" + str(metadata))
         if "organization" in metadata and not metadata.get("organization"):
             del metadata["organization"]
             self.logger.info("organization is empty removed from metadata for it to not affect the matching process")
@@ -321,27 +322,24 @@ class Utils:
                 since_date = datetime.strptime(options["since"], "%Y-%m-%d")
             except ValueError:
                 self.logger.warning("Invalid since date format: %s. Expected YYYY-MM-DD", options["since"])
-        # Metadata index (e.g. perf_scale_ci*) uses "timestamp"; test timestamp_field
-        # (e.g. end_time) is for the benchmark index. Use metadata field for UUID lookup.
-        metadata_timestamp_field = "timestamp"
         runs = match.get_uuid_by_metadata(
             metadata,
             lookback_date=start_timestamp,
             lookback_size=options["lookback_size"],
-            timestamp_field=metadata_timestamp_field,
+            timestamp_field=timestamp_field,
             additional_fields=options.get("display", []),
             since_date=since_date
         )
-        uuids = list(dict.fromkeys([run[self.uuid_field] for run in runs]))
+        uuids = list(set(run[self.uuid_field] for run in runs))
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
-        versions = self.get_version(uuids, match, metadata_timestamp_field)
+        versions = self.get_version(uuids, match, timestamp_field)
         prs = {uuid : self.sippy_pr_search(version) for uuid, version in versions.items()}
         # get uuids if there is a baseline
         if options["baseline"] not in ("", None):
             uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
             uuids.append(options["uuid"])
-            buildUrls = self.get_build_urls(uuids, match, metadata_timestamp_field)
-            versions = self.get_version( uuids, match, metadata_timestamp_field)
+            buildUrls = self.get_build_urls(uuids, match, timestamp_field)
+            versions = self.get_version( uuids, match, timestamp_field)
         elif not uuids:
             self.logger.info("No UUID present for given metadata")
             return None, None
@@ -382,10 +380,11 @@ class Utils:
         merged_df = merged_df.merge(uuid_timestamp_map, on=self.uuid_field, how="left")
         merged_df = merged_df.sort_values(by="timestamp")
 
-        merged_df[self.version_field] = merged_df[self.uuid_field].apply(
-            lambda uuid: versions[uuid]
-        )
-        merged_df["prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
+        if len(versions) > 0 :
+            merged_df[self.version_field] = merged_df[self.uuid_field].apply(
+                lambda uuid: versions[uuid]
+            )
+            merged_df["prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
 
         # Add display field data if requested
         display_data = {run[self.uuid_field]: {field: run.get(field) for field in options["display"]} for run in runs}
