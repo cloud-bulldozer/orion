@@ -2383,6 +2383,7 @@ tests :
 
   - name : quay-load-test-stable-image-push-pulls
     benchmark_index: {{ quay_image_push_pull_index }}
+    timestamp: end_time
     metadata:
       platform: AWS
       clusterType: self-managed
