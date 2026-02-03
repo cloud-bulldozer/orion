@@ -6,3 +6,13 @@ ack:
   - uuid: f1c30ca0-1e88-4a65-9c98-2a47f162c771
     metric: monitoringCPU_avg
     reason: "https://issues.redhat.com/browse/PERFSCALE-4043"
+  - uuid: fb9dd3a10-3c94-4667-8ae4-943a5ba4de13
+    metric: multusCPU_avg
+    reason: "Missing data in ES, indexing failures"
+  - uuid: b9dd3a10-3c94-4667-8ae4-943a5ba4de13
+    metric: multusCPU_avg
+    reason: "Missing data in ES, indexing failures"
+  - uuid: b9dd3a10-3c94-4667-8ae4-943a5ba4de13
+    metric: ovnCPU_av
+    reason: "Missing data in ES, indexing failures"
+
