@@ -19,7 +19,7 @@ tests :
 
     metrics : 
     - name: openshift-monitoring-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-monitoring
       metric_of_interest: value
       agg:
@@ -28,7 +28,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-ovn-kubernetes-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -37,7 +37,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-cluster-csi-drivers-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-cluster-csi-drivers
       metric_of_interest: value
       agg:
@@ -46,7 +46,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-multus-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-multus
       metric_of_interest: value
       agg:
@@ -55,7 +55,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-machine-config-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-machine-config-operator
       metric_of_interest: value
       agg:
@@ -64,7 +64,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-etcd-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
@@ -73,7 +73,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-e2e-loki-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-e2e-loki
       metric_of_interest: value
       agg:
@@ -82,7 +82,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-dns-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-dns
       metric_of_interest: value
       agg:
@@ -91,7 +91,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-kube-apiserver-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
@@ -100,7 +100,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-machine-api-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-machine-api
       metric_of_interest: value
       agg:
@@ -109,7 +109,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-kube-controller-manager-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-controller-manager
       metric_of_interest: value
       agg:
@@ -118,7 +118,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-insights-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-insights
       metric_of_interest: value
       agg:
@@ -127,7 +127,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-kube-scheduler-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-scheduler
       metric_of_interest: value
       agg:
@@ -136,7 +136,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-cluster-node-tuning-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-cluster-node-tuning-operator
       metric_of_interest: value
       agg:
@@ -145,7 +145,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-network-diagnostics-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-network-diagnostics
       metric_of_interest: value
       agg:
@@ -154,7 +154,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-image-registry-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-image-registry
       metric_of_interest: value
       agg:
@@ -163,7 +163,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-operator-lifecycle-manager-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-operator-lifecycle-manager
       metric_of_interest: value
       agg:
@@ -172,7 +172,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-apiserver-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-apiserver
       metric_of_interest: value
       agg:
@@ -181,7 +181,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-network-node-identity-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-network-node-identity
       metric_of_interest: value
       agg:
@@ -190,7 +190,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-network-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-network-operator
       metric_of_interest: value
       agg:
@@ -199,7 +199,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-marketplace-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-marketplace
       metric_of_interest: value
       agg:
@@ -208,7 +208,7 @@ tests :
       direction: 1
       threshold: 10
     - name: kube-system-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: kube-system
       metric_of_interest: value
       agg:
@@ -217,7 +217,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-cluster-storage-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-cluster-storage-operator
       metric_of_interest: value
       agg:
@@ -226,7 +226,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-console-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-console
       metric_of_interest: value
       agg:
@@ -235,7 +235,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-cloud-credential-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-cloud-credential-operator
       metric_of_interest: value
       agg:
@@ -244,7 +244,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-ingress-canary-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ingress-canary
       metric_of_interest: value
       agg:
@@ -253,7 +253,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-cloud-controller-manager-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-cloud-controller-manager-operator
       metric_of_interest: value
       agg:
@@ -262,7 +262,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-authentication-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-authentication
       metric_of_interest: value
       agg:
@@ -271,7 +271,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-route-controller-manager-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-route-controller-manager
       metric_of_interest: value
       agg:
@@ -280,7 +280,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-cluster-samples-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-cluster-samples-operator
       metric_of_interest: value
       agg:
@@ -289,7 +289,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-dns-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-dns-operator
       metric_of_interest: value
       agg:
@@ -298,7 +298,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-ingress-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ingress-operator
       metric_of_interest: value
       agg:
@@ -307,7 +307,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-cloud-controller-manager-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-cloud-controller-manager
       metric_of_interest: value
       agg:
@@ -316,7 +316,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-cluster-machine-approver-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-cluster-machine-approver
       metric_of_interest: value
       agg:
@@ -325,7 +325,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-kube-storage-version-migrator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-storage-version-migrator
       metric_of_interest: value
       agg:
@@ -334,7 +334,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-authentication-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-authentication-operator
       metric_of_interest: value
       agg:
@@ -343,7 +343,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-oauth-apiserver-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-oauth-apiserver
       metric_of_interest: value
       agg:
@@ -352,7 +352,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-controller-manager-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-controller-manager
       metric_of_interest: value
       agg:
@@ -361,7 +361,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-ingress-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ingress
       metric_of_interest: value
       agg:
@@ -370,7 +370,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-kube-scheduler-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-scheduler-operator
       metric_of_interest: value
       agg:
@@ -379,7 +379,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-operator-controller-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-operator-controller
       metric_of_interest: value
       agg:
@@ -388,7 +388,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-apiserver-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-apiserver-operator
       metric_of_interest: value
       agg:
@@ -397,7 +397,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-cluster-olm-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-cluster-olm-operator
       metric_of_interest: value
       agg:
@@ -406,7 +406,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-controller-manager-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-controller-manager-operator
       metric_of_interest: value
       agg:
@@ -415,7 +415,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-etcd-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd-operator
       metric_of_interest: value
       agg:
@@ -424,7 +424,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-kube-apiserver-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver-operator
       metric_of_interest: value
       agg:
@@ -433,7 +433,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-cloud-network-config-controller-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-cloud-network-config-controller
       metric_of_interest: value
       agg:
@@ -442,7 +442,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-cluster-version-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-cluster-version
       metric_of_interest: value
       agg:
@@ -451,7 +451,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-kube-controller-manager-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-controller-manager-operator
       metric_of_interest: value
       agg:
@@ -460,7 +460,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-service-ca-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-service-ca-operator
       metric_of_interest: value
       agg:
@@ -469,7 +469,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-console-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-console-operator
       metric_of_interest: value
       agg:
@@ -478,7 +478,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-service-ca-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-service-ca
       metric_of_interest: value
       agg:
@@ -487,7 +487,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-catalogd-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-catalogd
       metric_of_interest: value
       agg:
@@ -496,7 +496,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-config-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-config-operator
       metric_of_interest: value
       agg:
@@ -505,7 +505,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-kube-storage-version-migrator-operator-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-storage-version-migrator-operator
       metric_of_interest: value
       agg:
@@ -514,7 +514,7 @@ tests :
       direction: 1
       threshold: 10
     - name: openshift-network-console-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-network-console
       metric_of_interest: value
       agg:
@@ -523,7 +523,7 @@ tests :
       direction: 1
       threshold: 10
     - name: default-ns-CPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: default
       metric_of_interest: value
       agg:

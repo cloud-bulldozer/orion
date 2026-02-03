@@ -87,7 +87,7 @@ tests:
         stream: okd
     metrics:
     - name: podReadyLatency
-      metricName: podLatencyQuantilesMeasurement
+      metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
       not:
@@ -312,7 +312,7 @@ tests:
       ocpVersion: 4.17
     metrics:
       - name: apiserverCPU
-        metricName: containerCPU
+        metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-kube-apiserver
         metric_of_interest: value
         agg:
@@ -333,7 +333,7 @@ tests:
       benchmark.keyword: cluster-density-v2
     metrics:
       - name: podReadyLatency
-        metricName: podLatencyQuantilesMeasurement
+        metricName.keyword: podLatencyQuantilesMeasurement
         quantileName: Ready
         metric_of_interest: P99
         labels:
@@ -353,7 +353,7 @@ tests:
     metrics:
       # Base metric - must come first
       - name: ovnCPU
-        metricName: containerCPU
+        metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
         agg:
@@ -364,7 +364,7 @@ tests:
 
       # Correlated metric - only alerts if ovnCPU has changepoint
       - name: podReadyLatency
-        metricName: podLatencyQuantilesMeasurement
+        metricName.keyword: podLatencyQuantilesMeasurement
         quantileName: Ready
         metric_of_interest: P99
         correlation: ovnCPU_avg  # References the base metric
@@ -387,7 +387,7 @@ tests:
       ocpVersion: 4.17
     metrics:
       - name: apiserverCPU
-        metricName: containerCPU
+        metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-kube-apiserver
         metric_of_interest: value
         agg:
@@ -397,7 +397,7 @@ tests:
           - "[Jira: kube-apiserver]"
 
       - name: etcdCPU
-        metricName: containerCPU
+        metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-etcd
         metric_of_interest: value
         agg:
@@ -407,7 +407,7 @@ tests:
           - "[Jira: etcd]"
 
       - name: etcdDisk
-        metricName: 99thEtcdDiskBackendCommitDurationSeconds
+        metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
         metric_of_interest: value
         agg:
           value: duration
@@ -416,7 +416,7 @@ tests:
           - "[Jira: etcd]"
 
       - name: kubeletCPU
-        metricName: kubeletCPU
+        metricName.keyword: kubeletCPU
         metric_of_interest: value
         agg:
           value: cpu

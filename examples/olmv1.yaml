@@ -13,7 +13,7 @@ tests :
         stream: okd
     metrics : 
     - name: OCP-84092_catalogdMemory_GCP
-      metricName: catalogd_memory_peak_usage_5m
+      metricName.keyword: catalogd_memory_peak_usage_5m
       metric_of_interest: value
       quantileName: Ready
       not: 
@@ -21,7 +21,7 @@ tests :
       labels:
         - "[Jira: OLM]"
     - name: OCP-84093_controllerMemory_GCP
-      metricName: operator-controller_memory_peak_usage_5m
+      metricName.keyword: operator-controller_memory_peak_usage_5m
       metric_of_interest: value
       quantileName: Ready
       not: 
@@ -51,7 +51,7 @@ tests :
       labels:
         - "[Jira: OLM]"
     - name: OCP-84096_catalogdDisk_GCP
-      metricName: catalogd_disk_usage
+      metricName.keyword: catalogd_disk_usage
       metric_of_interest: value
       quantileName: Ready
       not: 
@@ -59,7 +59,7 @@ tests :
       labels:
         - "[Jira: OLM]"
     - name: OCP-84097_controllerDisk_GCP
-      metricName: controller_disk_usage
+      metricName.keyword: controller_disk_usage
       metric_of_interest: value
       quantileName: Ready
       not: 
@@ -67,7 +67,7 @@ tests :
       labels:
         - "[Jira: OLM]"
     - name: OCP-84098_catalogd_5xx_error_GCP
-      metricName: catalogd_http_5xx_error_count
+      metricName.keyword: catalogd_http_5xx_error_count
       metric_of_interest: value
       quantileName: Ready
       not: 
@@ -75,7 +75,7 @@ tests :
       labels:
         - "[Jira: OLM]"
     - name: OCP-84099_catalog_error_rate_GCP
-      metricName: clustercatalog_error_rate
+      metricName.keyword: clustercatalog_error_rate
       metric_of_interest: value
       quantileName: Ready
       not: 
@@ -83,7 +83,7 @@ tests :
       labels:
         - "[Jira: OLM]"
     - name: OCP-84100_extension_error_rate_GCP
-      metricName: clusterextension_error_rate
+      metricName.keyword: clusterextension_error_rate
       metric_of_interest: value
       quantileName: Ready
       not: 
@@ -91,7 +91,7 @@ tests :
       labels:
         - "[Jira: OLM]"
     - name: OCP-84101_catalogd_workqueue_latency_GCP
-      metricName: catalogd-clustercatalog_workqueue_latency_p99
+      metricName.keyword: catalogd-clustercatalog_workqueue_latency_p99
       metric_of_interest: value
       quantileName: Ready
       not: 
@@ -99,7 +99,7 @@ tests :
       labels:
         - "[Jira: OLM]"
     - name: OCP-84102_extension_workqueue_latency_GCP
-      metricName: clusterextension_workqueue_latency_p99
+      metricName.keyword: clusterextension_workqueue_latency_p99
       metric_of_interest: value
       quantileName: Ready
       not: 
@@ -107,7 +107,7 @@ tests :
       labels:
         - "[Jira: OLM]"
     - name: OCP-84103_controller_reconcile_p99_GCP
-      metricName: operator-controller-controller_reconcile_p99
+      metricName.keyword: operator-controller-controller_reconcile_p99
       metric_of_interest: value
       quantileName: Ready
       not: 
@@ -115,7 +115,7 @@ tests :
       labels:
         - "[Jira: OLM]"
     - name: OCP-84104_catalogd_reconcile_p99_GCP
-      metricName: catalogd-controller_reconcile_p99
+      metricName.keyword: catalogd-controller_reconcile_p99
       metric_of_interest: value
       quantileName: Ready
       not: 

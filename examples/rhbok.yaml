@@ -7,28 +7,28 @@ tests:
 
     metrics: 
     - name: jobReadyLatency-Completion
-      metricName: jobLatencyQuantilesMeasurement
+      metricName.keyword:keyword: jobLatencyQuantilesMeasurement
       quantileName: Complete
       metric_of_interest: P99
       direction: 1
       threshold: 25
 
     - name: jobReadyLatency-StartTime
-      metricName: jobLatencyQuantilesMeasurement
+      metricName.keyword:keyword: jobLatencyQuantilesMeasurement
       quantileName: StartTime
       metric_of_interest: P99
       direction: 1
       threshold: 25
 
     - name: podReadyLatency
-      metricName: podLatencyQuantilesMeasurement
+      metricName.keyword:keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
       direction: 1
       threshold: 25
 
     - name: containersStartedLatency
-      metricName: podLatencyQuantilesMeasurement
+      metricName.keyword:keyword: podLatencyQuantilesMeasurement
       quantileName: ContainersStarted
       metric_of_interest: P99
       direction: 1

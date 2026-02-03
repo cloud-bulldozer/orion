@@ -22,7 +22,7 @@ tests :
 
     metrics : 
     - name:  podReadyLatency
-      metricName: podLatencyQuantilesMeasurement
+      metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       jobName.keyword: udn-density-l2-pods
       metric_of_interest: P99

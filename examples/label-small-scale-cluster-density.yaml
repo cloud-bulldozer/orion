@@ -17,7 +17,7 @@ tests :
 
     metrics : 
     - name:  podReadyLatency
-      metricName: podLatencyQuantilesMeasurement
+      metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
       not: 
@@ -25,7 +25,7 @@ tests :
       labels:
         - "[Jira: PodLatency]"
     - name:  apiserverCPU
-      metricName : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
@@ -35,7 +35,7 @@ tests :
         - "[Jira: kube-apiserver]"
 
     - name:  ovnCPU
-      metricName : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -45,7 +45,7 @@ tests :
         - "[Jira: ovnKubernetes]"
 
     - name:  etcdCPU
-      metricName : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
@@ -55,7 +55,7 @@ tests :
         - "[Jira: etcd]"
     
     - name:  etcdDisk
-      metricName : 99thEtcdDiskBackendCommitDurationSeconds
+      metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
         value: duration
