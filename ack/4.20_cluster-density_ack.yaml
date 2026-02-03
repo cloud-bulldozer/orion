@@ -13,6 +13,6 @@ ack:
     metric: multusCPU_avg
     reason: "Missing data in ES, indexing failures"
   - uuid: b9dd3a10-3c94-4667-8ae4-943a5ba4de13
-    metric: ovnCPU_av
+    metric: ovnCPU_avg
     reason: "Missing data in ES, indexing failures"
 
