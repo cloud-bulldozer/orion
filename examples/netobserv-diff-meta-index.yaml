@@ -8,7 +8,7 @@ tests :
       workerNodesType: m5.2xlarge
       workerNodesCount: 24 
       jobConfig.name: {{ benchmark }}
-      metricName: jobSummary
+      metricName.keyword: jobSummary
       ocpVersion: "{{ version }}"
       ocpMajorVersion: "{{ version }}"
       sdnType: OVNKubernetes
@@ -17,7 +17,7 @@ tests :
 
     metrics : 
     - name:  ovnCPU
-      metricName : containerCPU
+      metricName.keyword : containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -28,7 +28,7 @@ tests :
       direction: 1
 
     - name:  ovsCPU
-      metricName : ovsVswitchdCPU
+      metricName.keyword : ovsVswitchdCPU
       metric_of_interest: value
       agg:
         value: cpu
@@ -37,7 +37,7 @@ tests :
         - "[Jira: Networking / ovn-kubernetes]"
 
     - name:  ovsMemory
-      metricName : ovsVswitchdMemory 
+      metricName.keyword : ovsVswitchdMemory 
       metric_of_interest: value
       agg:
         value: mem
@@ -46,7 +46,7 @@ tests :
         - "[Jira: Networking / ovn-kubernetes]"
 
     - name:  ovsCPU
-      metricName : ovsVswitchdCPU
+      metricName.keyword : ovsVswitchdCPU
       metric_of_interest: value
       agg:
         value: cpu
@@ -55,7 +55,7 @@ tests :
         - "[Jira: Networking / ovn-kubernetes]"
 
     - name:  ovsMemory
-      metricName : ovsVswitchdMemory 
+      metricName.keyword : ovsVswitchdMemory 
       metric_of_interest: value
       agg:
         value: mem
@@ -64,7 +64,7 @@ tests :
         - "[Jira: Networking / ovn-kubernetes]"
 
     - name: netobserv-flow-cpu 
-      metricName : containerCPU
+      metricName.keyword : containerCPU
       labels.namespace.keyword: openshift-netobserv 
       metric_of_interest: value
       agg:
@@ -86,7 +86,7 @@ tests :
       direction: 1
 
     - name: netobserv-flow-cpu 
-      metricName : containerCPU
+      metricName.keyword : containerCPU
       labels.namespace.keyword: openshift-netobserv 
       metric_of_interest: value
       agg:
@@ -97,7 +97,7 @@ tests :
       direction: 1
 
     - name: netobserv-agent-cpu
-      metricName : containerCPU
+      metricName.keyword : containerCPU
       labels.namespace.keyword: openshift-netobserv-privileged 
       metric_of_interest: value
       agg:

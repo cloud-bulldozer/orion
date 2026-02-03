@@ -23,7 +23,7 @@ tests :
 
     metrics : 
     - name:  Pod_Ready_Latency
-      metricName: podLatencyQuantilesMeasurement
+      metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
       not: 

@@ -19,7 +19,7 @@ tests:
 
     metrics:
     - name: podReadyLatency
-      metricName: podLatencyQuantilesMeasurement
+      metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
       not:
@@ -29,7 +29,7 @@ tests:
       threshold: 10
 
     - name: apiserverCPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
@@ -40,7 +40,7 @@ tests:
       threshold: 10
 
     - name: multusCPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-multus
       metric_of_interest: value
       agg:
@@ -51,7 +51,7 @@ tests:
       threshold: 10
 
     - name: monitoringCPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-monitoring
       metric_of_interest: value
       agg:
@@ -62,7 +62,7 @@ tests:
       threshold: 10
 
     - name: ovnCPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -73,7 +73,7 @@ tests:
       threshold: 10
 
     - name: etcdCPU
-      metricName: containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
@@ -84,7 +84,7 @@ tests:
       threshold: 10
 
     - name: etcdDisk
-      metricName: 99thEtcdDiskBackendCommitDurationSeconds
+      metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
         value: duration
@@ -94,7 +94,7 @@ tests:
       threshold: 10
 
     - name: kubelet
-      metricName: kubeletCPU
+      metricName.keyword: kubeletCPU
       metric_of_interest: value
       labels:
         - "[Jira: Node]"

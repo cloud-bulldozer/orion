@@ -19,7 +19,7 @@ tests :
 
     metrics :
     - name:  vmiReadyLatency
-      metricName: vmiLatencyQuantilesMeasurement
+      metricName.keyword: vmiLatencyQuantilesMeasurement
       quantileName: VMReady
       metric_of_interest: P99
       not:

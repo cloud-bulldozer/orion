@@ -31,7 +31,7 @@ tests:
 
     metrics:
       - name: podReadyLatency
-        metricName: podLatencyQuantilesMeasurement
+        metricName.keyword: podLatencyQuantilesMeasurement
         quantileName: Ready
         metric_of_interest: P99
         not:
@@ -44,7 +44,7 @@ tests:
         context: 5
 
       - name: apiserverCPU
-        metricName: containerCPU
+        metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-kube-apiserver
         metric_of_interest: value
         agg:
@@ -130,7 +130,7 @@ For metrics that require aggregation:
 
 ```yaml
 - name: apiserverCPU
-  metricName: containerCPU
+  metricName.keyword: containerCPU
   labels.namespace.keyword: openshift-kube-apiserver
   metric_of_interest: value
   agg:
