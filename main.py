@@ -139,6 +139,8 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 )
 @click.option("--lookback", help="Get data from last X days and Y hours. Format in XdYh")
 @click.option("--since", help="End date to bound the time range. When used with --lookback, creates a time window ending at this date. Format: YYYY-MM-DD")
+@click.option("--max-early", type=int, default=5, help="Maximum number of initial data points to consider as early changepoint; early changepoints trigger lookback expansion for validation (default: 5)")
+@click.option("--min-future", type=int, default=5, help="Minimum number of data points after a changepoint required to conclude it; changepoints with insufficient future data are ignored (default: 5)")
 @click.option("--convert-tinyurl", is_flag=True, help="Convert buildUrls to tiny url format for better formatting")
 @click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
 @click.option("--node-count", default=False, help="Match any node iterations count")
