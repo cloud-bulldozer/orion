@@ -1,5 +1,5 @@
-tests :
-  - name : okd-crd-scale-6nodes
+tests: 
+  - name: okd-crd-scale-6nodes
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -17,8 +17,8 @@ tests :
       stream: okd
 
     metrics:
-    - name:  apiserverCPU
-      metricName : containerCPU
+    - name: apiserverCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
@@ -29,8 +29,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  etcdCPU
-      metricName : containerCPU
+    - name: etcdCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:

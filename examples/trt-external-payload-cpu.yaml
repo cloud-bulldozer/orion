@@ -1,5 +1,5 @@
-tests :
-  - name : payload-{{benchmark}}-scale
+tests: 
+  - name: payload-{{benchmark}}-scale
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -17,7 +17,7 @@ tests :
       not:
         stream: okd
 
-    metrics : 
+    metrics: 
     - name: openshift-monitoring-ns-CPU
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-monitoring

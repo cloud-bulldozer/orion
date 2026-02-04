@@ -1,5 +1,5 @@
-tests :
-  - name : ols-load-generator-{{ ols_test_workers }}w-5m
+tests: 
+  - name: ols-load-generator-{{ ols_test_workers }}w-5m
     metadata:
       olsTestWorkers: {{ ols_test_workers }}
       olsTestDuration: "5m"
@@ -15,8 +15,8 @@ tests :
       not:
         stream: okd
 
-    metrics : 
-    - name:  postQuery_5m
+    metrics: 
+    - name: postQuery_5m
       metricName.keyword:keyword: post_query
       metric_of_interest: p99Latency
       direction: 1
@@ -30,63 +30,63 @@ tests :
       threshold: 10
       context: 10
       correlation: postStreamingQuery_5m_statusCodes.200
-    - name:  postQueryWithCache_5m
+    - name: postQueryWithCache_5m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: postQueryWithCache_5m_statusCodes.200
-    - name:  postStreamingQueryWithCache_5m
+    - name: postStreamingQueryWithCache_5m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: postStreamingQueryWithCache_5m_statusCodes.200
-    - name:  getFeedbackStatus_5m
+    - name: getFeedbackStatus_5m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: getFeedbackStatus_5m_statusCodes.200
-    - name:  postFeedback_5m
+    - name: postFeedback_5m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: postFeedback_5m_statusCodes.200
-    - name:  postAuthorized_5m
+    - name: postAuthorized_5m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: postAuthorized_5m_statusCodes.200
-    - name:  getLiveness_5m
+    - name: getLiveness_5m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: getLiveness_5m_statusCodes.200
-    - name:  getReadiness_5m
+    - name: getReadiness_5m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: getReadiness_5m_statusCodes.200
-    - name:  getMetrics_5m
+    - name: getMetrics_5m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: getMetrics_5m_statusCodes.200
-    - name:  postQuery_5m
+    - name: postQuery_5m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.200
       direction: -1
@@ -98,55 +98,55 @@ tests :
       direction: -1
       threshold: 10
       context: 10
-    - name:  postQueryWithCache_5m
+    - name: postQueryWithCache_5m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  postStreamingQueryWithCache_5m
+    - name: postStreamingQueryWithCache_5m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  getFeedbackStatus_5m
+    - name: getFeedbackStatus_5m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  postFeedback_5m
+    - name: postFeedback_5m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  postAuthorized_5m
+    - name: postAuthorized_5m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  getLiveness_5m
+    - name: getLiveness_5m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  getReadiness_5m
+    - name: getReadiness_5m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  getMetrics_5m
+    - name: getMetrics_5m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  postQuery_403_5m
+    - name: postQuery_403_5m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.403
       direction: 1
@@ -156,47 +156,47 @@ tests :
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postQueryWithCache_403_5m
+    - name: postQueryWithCache_403_5m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postStreamingQueryWithCache_403_5m
+    - name: postStreamingQueryWithCache_403_5m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  getFeedbackStatus_403_5m
+    - name: getFeedbackStatus_403_5m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postFeedback_403_5m
+    - name: postFeedback_403_5m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postAuthorized_403_5m
+    - name: postAuthorized_403_5m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  getLiveness_403_5m
+    - name: getLiveness_403_5m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  getReadiness_403_5m
+    - name: getReadiness_403_5m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  getMetrics_403_5m
+    - name: getMetrics_403_5m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postQuery_413_5m
+    - name: postQuery_413_5m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.413
       direction: 1
@@ -206,47 +206,47 @@ tests :
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postQueryWithCache_413_5m
+    - name: postQueryWithCache_413_5m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postStreamingQueryWithCache_413_5m
+    - name: postStreamingQueryWithCache_413_5m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  getFeedbackStatus_413_5m
+    - name: getFeedbackStatus_413_5m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postFeedback_413_5m
+    - name: postFeedback_413_5m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postAuthorized_413_5m
+    - name: postAuthorized_413_5m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  getLiveness_413_5m
+    - name: getLiveness_413_5m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  getReadiness_413_5m
+    - name: getReadiness_413_5m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  getMetrics_413_5m
+    - name: getMetrics_413_5m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postQuery_422_5m
+    - name: postQuery_422_5m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.422
       direction: 1
@@ -256,47 +256,47 @@ tests :
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postQueryWithCache_422_5m
+    - name: postQueryWithCache_422_5m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postStreamingQueryWithCache_422_5m
+    - name: postStreamingQueryWithCache_422_5m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  getFeedbackStatus_422_5m
+    - name: getFeedbackStatus_422_5m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postFeedback_422_5m
+    - name: postFeedback_422_5m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postAuthorized_422_5m
+    - name: postAuthorized_422_5m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  getLiveness_422_5m
+    - name: getLiveness_422_5m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  getReadiness_422_5m
+    - name: getReadiness_422_5m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  getMetrics_422_5m
+    - name: getMetrics_422_5m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postQuery_500_5m
+    - name: postQuery_500_5m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.500
       direction: 1
@@ -306,47 +306,47 @@ tests :
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  postQueryWithCache_500_5m
+    - name: postQueryWithCache_500_5m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  postStreamingQueryWithCache_500_5m
+    - name: postStreamingQueryWithCache_500_5m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  getFeedbackStatus_500_5m
+    - name: getFeedbackStatus_500_5m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  postFeedback_500_5m
+    - name: postFeedback_500_5m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  postAuthorized_500_5m
+    - name: postAuthorized_500_5m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  getLiveness_500_5m
+    - name: getLiveness_500_5m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  getReadiness_500_5m
+    - name: getReadiness_500_5m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  getMetrics_500_5m
+    - name: getMetrics_500_5m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  LLMCallFailures_5m
+    - name: LLMCallFailures_5m
       metricName.keyword: avg-llm-call-failures
       metric_of_interest: value
       agg:
@@ -354,7 +354,7 @@ tests :
         agg_type: avg
       direction: 1
       threshold: 10
-    - name:  LLMValidationErros_5m
+    - name: LLMValidationErros_5m
       metricName.keyword: avg-llm-validation-errors
       metric_of_interest: value
       agg:
@@ -362,7 +362,7 @@ tests :
         agg_type: avg
       direction: 1
       threshold: 10
-    - name:  lightSpeedCPU_5m
+    - name: lightSpeedCPU_5m
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-lightspeed
       metric_of_interest: value
@@ -371,7 +371,7 @@ tests :
         agg_type: avg
       direction: 1
       threshold: 10
-    - name:  lightSpeedMemory_5m
+    - name: lightSpeedMemory_5m
       metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-lightspeed
       metric_of_interest: value
@@ -381,7 +381,7 @@ tests :
       direction: 1
       threshold: 10
 
-  - name : ols-load-generator-{{ ols_test_workers }}w-10m
+  - name: ols-load-generator-{{ ols_test_workers }}w-10m
     metadata:
       olsTestWorkers: {{ ols_test_workers }}
       olsTestDuration: "10m"
@@ -395,8 +395,8 @@ tests :
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
 
-    metrics : 
-    - name:  postQuery_10m
+    metrics: 
+    - name: postQuery_10m
       metricName.keyword:keyword: post_query
       metric_of_interest: p99Latency
       direction: 1
@@ -410,63 +410,63 @@ tests :
       threshold: 10
       context: 10
       correlation: postStreamingQuery_10m_statusCodes.200
-    - name:  postQueryWithCache_10m
+    - name: postQueryWithCache_10m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: postQueryWithCache_10m_statusCodes.200
-    - name:  postStreamingQueryWithCache_10m
+    - name: postStreamingQueryWithCache_10m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: postStreamingQueryWithCache_10m_statusCodes.200
-    - name:  getFeedbackStatus_10m
+    - name: getFeedbackStatus_10m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: getFeedbackStatus_10m_statusCodes.200
-    - name:  postFeedback_10m
+    - name: postFeedback_10m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: postFeedback_10m_statusCodes.200
-    - name:  postAuthorized_10m
+    - name: postAuthorized_10m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: postAuthorized_10m_statusCodes.200
-    - name:  getLiveness_10m
+    - name: getLiveness_10m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: getLiveness_10m_statusCodes.200
-    - name:  getReadiness_10m
+    - name: getReadiness_10m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: getReadiness_10m_statusCodes.200
-    - name:  getMetrics_10m
+    - name: getMetrics_10m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: getMetrics_10m_statusCodes.200
-    - name:  postQuery_10m
+    - name: postQuery_10m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.200
       direction: -1
@@ -478,55 +478,55 @@ tests :
       direction: -1
       threshold: 10
       context: 10
-    - name:  postQueryWithCache_10m
+    - name: postQueryWithCache_10m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  postStreamingQueryWithCache_10m
+    - name: postStreamingQueryWithCache_10m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  getFeedbackStatus_10m
+    - name: getFeedbackStatus_10m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  postFeedback_10m
+    - name: postFeedback_10m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  postAuthorized_10m
+    - name: postAuthorized_10m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  getLiveness_10m
+    - name: getLiveness_10m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  getReadiness_10m
+    - name: getReadiness_10m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  getMetrics_10m
+    - name: getMetrics_10m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  postQuery_403_10m
+    - name: postQuery_403_10m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.403
       direction: 1
@@ -536,47 +536,47 @@ tests :
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postQueryWithCache_403_10m
+    - name: postQueryWithCache_403_10m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postStreamingQueryWithCache_403_10m
+    - name: postStreamingQueryWithCache_403_10m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  getFeedbackStatus_403_10m
+    - name: getFeedbackStatus_403_10m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postFeedback_403_10m
+    - name: postFeedback_403_10m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postAuthorized_403_10m
+    - name: postAuthorized_403_10m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  getLiveness_403_10m
+    - name: getLiveness_403_10m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  getReadiness_403_10m
+    - name: getReadiness_403_10m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  getMetrics_403_10m
+    - name: getMetrics_403_10m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postQuery_413_10m
+    - name: postQuery_413_10m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.413
       direction: 1
@@ -586,47 +586,47 @@ tests :
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postQueryWithCache_413_10m
+    - name: postQueryWithCache_413_10m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postStreamingQueryWithCache_413_10m
+    - name: postStreamingQueryWithCache_413_10m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  getFeedbackStatus_413_10m
+    - name: getFeedbackStatus_413_10m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postFeedback_413_10m
+    - name: postFeedback_413_10m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postAuthorized_413_10m
+    - name: postAuthorized_413_10m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  getLiveness_413_10m
+    - name: getLiveness_413_10m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  getReadiness_413_10m
+    - name: getReadiness_413_10m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  getMetrics_413_10m
+    - name: getMetrics_413_10m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postQuery_422_10m
+    - name: postQuery_422_10m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.422
       direction: 1
@@ -636,47 +636,47 @@ tests :
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postQueryWithCache_422_10m
+    - name: postQueryWithCache_422_10m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postStreamingQueryWithCache_422_10m
+    - name: postStreamingQueryWithCache_422_10m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  getFeedbackStatus_422_10m
+    - name: getFeedbackStatus_422_10m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postFeedback_422_10m
+    - name: postFeedback_422_10m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postAuthorized_422_10m
+    - name: postAuthorized_422_10m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  getLiveness_422_10m
+    - name: getLiveness_422_10m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  getReadiness_422_10m
+    - name: getReadiness_422_10m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  getMetrics_422_10m
+    - name: getMetrics_422_10m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postQuery_500_10m
+    - name: postQuery_500_10m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.500
       direction: 1
@@ -686,47 +686,47 @@ tests :
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  postQueryWithCache_500_10m
+    - name: postQueryWithCache_500_10m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  postStreamingQueryWithCache_500_10m
+    - name: postStreamingQueryWithCache_500_10m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  getFeedbackStatus_500_10m
+    - name: getFeedbackStatus_500_10m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  postFeedback_500_10m
+    - name: postFeedback_500_10m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  postAuthorized_500_10m
+    - name: postAuthorized_500_10m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  getLiveness_500_10m
+    - name: getLiveness_500_10m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  getReadiness_500_10m
+    - name: getReadiness_500_10m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  getMetrics_500_10m
+    - name: getMetrics_500_10m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  LLMCallFailures_10m
+    - name: LLMCallFailures_10m
       metricName.keyword: avg-llm-call-failures
       metric_of_interest: value
       agg:
@@ -734,7 +734,7 @@ tests :
         agg_type: avg
       direction: 1
       threshold: 10
-    - name:  LLMValidationErros_10m
+    - name: LLMValidationErros_10m
       metricName.keyword: avg-llm-validation-errors
       metric_of_interest: value
       agg:
@@ -742,7 +742,7 @@ tests :
         agg_type: avg
       direction: 1
       threshold: 10
-    - name:  lightSpeedCPU_10m
+    - name: lightSpeedCPU_10m
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-lightspeed
       metric_of_interest: value
@@ -751,7 +751,7 @@ tests :
         agg_type: avg
       direction: 1
       threshold: 10
-    - name:  lightSpeedMemory_10m
+    - name: lightSpeedMemory_10m
       metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-lightspeed
       metric_of_interest: value
@@ -761,7 +761,7 @@ tests :
       direction: 1
       threshold: 10
 
-  - name : ols-load-generator-{{ ols_test_workers }}w-20m
+  - name: ols-load-generator-{{ ols_test_workers }}w-20m
     metadata:
       olsTestWorkers: {{ ols_test_workers }}
       olsTestDuration: "20m"
@@ -775,8 +775,8 @@ tests :
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
 
-    metrics : 
-    - name:  postQuery_20m
+    metrics: 
+    - name: postQuery_20m
       metricName.keyword:keyword: post_query
       metric_of_interest: p99Latency
       direction: 1
@@ -790,63 +790,63 @@ tests :
       threshold: 10
       context: 10
       correlation: postStreamingQuery_20m_statusCodes.200
-    - name:  postQueryWithCache_20m
+    - name: postQueryWithCache_20m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: postQueryWithCache_20m_statusCodes.200
-    - name:  postStreamingQueryWithCache_20m
+    - name: postStreamingQueryWithCache_20m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: postStreamingQueryWithCache_20m_statusCodes.200
-    - name:  getFeedbackStatus_20m
+    - name: getFeedbackStatus_20m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: getFeedbackStatus_20m_statusCodes.200
-    - name:  postFeedback_20m
+    - name: postFeedback_20m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: postFeedback_20m_statusCodes.200
-    - name:  postAuthorized_20m
+    - name: postAuthorized_20m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: postAuthorized_20m_statusCodes.200
-    - name:  getLiveness_20m
+    - name: getLiveness_20m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: getLiveness_20m_statusCodes.200
-    - name:  getReadiness_20m
+    - name: getReadiness_20m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: getReadiness_20m_statusCodes.200
-    - name:  getMetrics_20m
+    - name: getMetrics_20m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: p99Latency
       direction: 1
       threshold: 10
       context: 10
       correlation: getMetrics_20m_statusCodes.200
-    - name:  postQuery_20m
+    - name: postQuery_20m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.200
       direction: -1
@@ -858,55 +858,55 @@ tests :
       direction: -1
       threshold: 10
       context: 10
-    - name:  postQueryWithCache_20m
+    - name: postQueryWithCache_20m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  postStreamingQueryWithCache_20m
+    - name: postStreamingQueryWithCache_20m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  getFeedbackStatus_20m
+    - name: getFeedbackStatus_20m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  postFeedback_20m
+    - name: postFeedback_20m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  postAuthorized_20m
+    - name: postAuthorized_20m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  getLiveness_20m
+    - name: getLiveness_20m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  getReadiness_20m
+    - name: getReadiness_20m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  getMetrics_20m
+    - name: getMetrics_20m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  postQuery_403_20m
+    - name: postQuery_403_20m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.403
       direction: 1
@@ -916,47 +916,47 @@ tests :
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postQueryWithCache_403_20m
+    - name: postQueryWithCache_403_20m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postStreamingQueryWithCache_403_20m
+    - name: postStreamingQueryWithCache_403_20m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  getFeedbackStatus_403_20m
+    - name: getFeedbackStatus_403_20m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postFeedback_403_20m
+    - name: postFeedback_403_20m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postAuthorized_403_20m
+    - name: postAuthorized_403_20m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  getLiveness_403_20m
+    - name: getLiveness_403_20m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  getReadiness_403_20m
+    - name: getReadiness_403_20m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  getMetrics_403_20m
+    - name: getMetrics_403_20m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.403
       direction: 1
       threshold: 10
-    - name:  postQuery_413_20m
+    - name: postQuery_413_20m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.413
       direction: 1
@@ -966,47 +966,47 @@ tests :
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postQueryWithCache_413_20m
+    - name: postQueryWithCache_413_20m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postStreamingQueryWithCache_413_20m
+    - name: postStreamingQueryWithCache_413_20m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  getFeedbackStatus_413_20m
+    - name: getFeedbackStatus_413_20m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postFeedback_413_20m
+    - name: postFeedback_413_20m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postAuthorized_413_20m
+    - name: postAuthorized_413_20m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  getLiveness_413_20m
+    - name: getLiveness_413_20m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  getReadiness_413_20m
+    - name: getReadiness_413_20m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  getMetrics_413_20m
+    - name: getMetrics_413_20m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.413
       direction: 1
       threshold: 10
-    - name:  postQuery_422_20m
+    - name: postQuery_422_20m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.422
       direction: 1
@@ -1016,47 +1016,47 @@ tests :
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postQueryWithCache_422_20m
+    - name: postQueryWithCache_422_20m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postStreamingQueryWithCache_422_20m
+    - name: postStreamingQueryWithCache_422_20m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  getFeedbackStatus_422_20m
+    - name: getFeedbackStatus_422_20m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postFeedback_422_20m
+    - name: postFeedback_422_20m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postAuthorized_422_20m
+    - name: postAuthorized_422_20m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  getLiveness_422_20m
+    - name: getLiveness_422_20m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  getReadiness_422_20m
+    - name: getReadiness_422_20m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  getMetrics_422_20m
+    - name: getMetrics_422_20m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.422
       direction: 1
       threshold: 10
-    - name:  postQuery_500_20m
+    - name: postQuery_500_20m
       metricName.keyword:keyword: post_query
       metric_of_interest: statusCodes.500
       direction: 1
@@ -1066,47 +1066,47 @@ tests :
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  postQueryWithCache_500_20m
+    - name: postQueryWithCache_500_20m
       metricName.keyword:keyword: post_query_with_cache
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  postStreamingQueryWithCache_500_20m
+    - name: postStreamingQueryWithCache_500_20m
       metricName.keyword:keyword: post_streaming_query_with_cache
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  getFeedbackStatus_500_20m
+    - name: getFeedbackStatus_500_20m
       metricName.keyword:keyword: get_feedback_status
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  postFeedback_500_20m
+    - name: postFeedback_500_20m
       metricName.keyword:keyword: post_feedback
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  postAuthorized_500_20m
+    - name: postAuthorized_500_20m
       metricName.keyword:keyword: post_authorized
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  getLiveness_500_20m
+    - name: getLiveness_500_20m
       metricName.keyword:keyword: get_liveness
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  getReadiness_500_20m
+    - name: getReadiness_500_20m
       metricName.keyword:keyword: get_readiness
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  getMetrics_500_20m
+    - name: getMetrics_500_20m
       metricName.keyword:keyword: get_metrics
       metric_of_interest: statusCodes.500
       direction: 1
       threshold: 10
-    - name:  LLMCallFailures_20m
+    - name: LLMCallFailures_20m
       metricName.keyword: avg-llm-call-failures
       metric_of_interest: value
       agg:
@@ -1114,7 +1114,7 @@ tests :
         agg_type: avg
       direction: 1
       threshold: 10
-    - name:  LLMValidationErros_20m
+    - name: LLMValidationErros_20m
       metricName.keyword: avg-llm-validation-errors
       metric_of_interest: value
       agg:
@@ -1122,7 +1122,7 @@ tests :
         agg_type: avg
       direction: 1
       threshold: 10
-    - name:  lightSpeedCPU_20m
+    - name: lightSpeedCPU_20m
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-lightspeed
       metric_of_interest: value
@@ -1131,7 +1131,7 @@ tests :
         agg_type: avg
       direction: 1
       threshold: 10
-    - name:  lightSpeedMemory_20m
+    - name: lightSpeedMemory_20m
       metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-lightspeed
       metric_of_interest: value

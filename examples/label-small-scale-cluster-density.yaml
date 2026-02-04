@@ -1,5 +1,5 @@
-tests :
-  - name : small-scale-cluster-density-v2
+tests:
+  - name: small-scale-cluster-density-v2
     metadata:
       platform: AWS
       masterNodesType: m6a.xlarge
@@ -15,8 +15,8 @@ tests :
       # fips: false
       # ipsec: false
 
-    metrics : 
-    - name:  podReadyLatency
+    metrics:
+    - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
@@ -24,7 +24,7 @@ tests :
         jobConfig.name: "garbage-collection"
       labels:
         - "[Jira: PodLatency]"
-    - name:  apiserverCPU
+    - name: apiserverCPU
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
@@ -34,7 +34,7 @@ tests :
       labels:
         - "[Jira: kube-apiserver]"
 
-    - name:  ovnCPU
+    - name: ovnCPU
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
@@ -44,7 +44,7 @@ tests :
       labels:
         - "[Jira: ovnKubernetes]"
 
-    - name:  etcdCPU
+    - name: etcdCPU
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
@@ -54,7 +54,7 @@ tests :
       labels:
         - "[Jira: etcd]"
     
-    - name:  etcdDisk
+    - name: etcdDisk
       metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:

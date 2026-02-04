@@ -1,5 +1,5 @@
-tests :
-  - name : metal-perfscale-cpt-virtudndensity
+tests: 
+  - name: metal-perfscale-cpt-virtudndensity
     metadata:
       platform: BareMetal
       clusterType: self-managed
@@ -17,8 +17,8 @@ tests :
       not:
         stream: okd
 
-    metrics :
-    - name:  vmiReadyLatency
+    metrics: 
+    - name: vmiReadyLatency
       metricName.keyword: vmiLatencyQuantilesMeasurement
       quantileName: VMReady
       metric_of_interest: P99
@@ -29,8 +29,8 @@ tests :
       threshold: 10
       direction: 1
 
-    - name:  apiserverCPU
-      metricName : containerCPU
+    - name: apiserverCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
@@ -42,7 +42,7 @@ tests :
       direction: 1
 
     - name: multusCPU
-      metricName : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-multus
       metric_of_interest: value
       agg:
@@ -54,7 +54,7 @@ tests :
       direction: 1
 
     - name: monitoringCPU
-      metricName : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-monitoring
       metric_of_interest: value
       agg:
@@ -65,8 +65,8 @@ tests :
       threshold: 10
       direction: 1
 
-    - name:  ovnCPU
-      metricName : containerCPU
+    - name: ovnCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -77,8 +77,8 @@ tests :
       threshold: 10
       direction: 1
 
-    - name:  etcdCPU
-      metricName : containerCPU
+    - name: etcdCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
@@ -89,8 +89,8 @@ tests :
       threshold: 10
       direction: 1
 
-    - name:  etcdDisk
-      metricName : 99thEtcdDiskBackendCommitDurationSeconds
+    - name: etcdDisk
+      metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
         value: duration
@@ -100,7 +100,7 @@ tests :
       threshold: 10
 
     - name: kubelet
-      metricName : kubeletCPU
+      metricName.keyword: kubeletCPU
       metric_of_interest: value
       labels:
         - "[Jira: Node]"

@@ -1,5 +1,5 @@
-tests :
-  - name : olmv1-GCP
+tests: 
+  - name: olmv1-GCP
     metadata:
       platform: GCP
       clusterType: self-managed
@@ -11,7 +11,7 @@ tests :
       ocpVersion: "{{ version }}"
       not:
         stream: okd
-    metrics : 
+    metrics: 
     - name: OCP-84092_catalogdMemory_GCP
       metricName.keyword: catalogd_memory_peak_usage_5m
       metric_of_interest: value
@@ -28,8 +28,8 @@ tests :
         jobConfig.name: "garbage-collection"
       labels:
         - "[Jira: OLM]"
-    - name:  OCP-84094_catalogdCPU_GCP
-      metricName : catalogd_cpu_usage_cores
+    - name: OCP-84094_catalogdCPU_GCP
+      metricName.keyword: catalogd_cpu_usage_cores
       metric_of_interest: value
       labels.namespace.keyword: openshift-catalogd
       not: 
@@ -39,8 +39,8 @@ tests :
         agg_type: avg
       labels:
         - "[Jira: OLM]"
-    - name:  OCP-84095_controllerCPU_GCP
-      metricName : operator-controller_cpu_usage_cores
+    - name: OCP-84095_controllerCPU_GCP
+      metricName.keyword: operator-controller_cpu_usage_cores
       metric_of_interest: value
       labels.namespace.keyword: openshift-operator-controller
       not: 

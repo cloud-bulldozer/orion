@@ -1,5 +1,5 @@
-tests :
-  - name : aws-small-scale-cluster-density-v2
+tests: 
+  - name: aws-small-scale-cluster-density-v2
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -13,45 +13,45 @@ tests :
       not:
         stream: okd
 
-    metrics : 
-    - name:  podReadyLatency
+    metrics: 
+    - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
       not: 
         jobConfig.name: "garbage-collection"
       
-    - name:  apiserverCPU
-      metricName : containerCPU
+    - name: apiserverCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
         value: cpu
         agg_type: avg
 
-    - name:  ovnCPU
-      metricName : containerCPU
+    - name: ovnCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
         value: cpu
         agg_type: avg
 
-    - name:  etcdCPU
-      metricName : containerCPU
+    - name: etcdCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
         value: cpu
         agg_type: avg
     
-    - name:  etcdDisk
-      metricName : 99thEtcdDiskBackendCommitDurationSeconds
+    - name: etcdDisk
+      metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
         value: duration
         agg_type: avg
-  - name : aws-payload-scale-node-density
+  - name: aws-payload-scale-node-density
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -63,40 +63,40 @@ tests :
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
 
-    metrics : 
-    - name:  podReadyLatency
+    metrics: 
+    - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
       not: 
         jobConfig.name: "garbage-collection"
       
-    - name:  apiserverCPU
-      metricName : containerCPU
+    - name: apiserverCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
         value: cpu
         agg_type: avg
 
-    - name:  ovnCPU
-      metricName : containerCPU
+    - name: ovnCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
         value: cpu
         agg_type: avg
 
-    - name:  etcdCPU
-      metricName : containerCPU
+    - name: etcdCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
         value: cpu
         agg_type: avg
     
-    - name:  etcdDisk
-      metricName : 99thEtcdDiskBackendCommitDurationSeconds
+    - name: etcdDisk
+      metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
         value: duration

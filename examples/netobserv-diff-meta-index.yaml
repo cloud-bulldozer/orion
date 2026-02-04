@@ -1,5 +1,5 @@
-tests :
-  - name : {{ benchmark }} 
+tests: 
+  - name: {{ benchmark }} 
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -15,9 +15,9 @@ tests :
       not:
         stream: okd
 
-    metrics : 
-    - name:  ovnCPU
-      metricName.keyword : containerCPU
+    metrics: 
+    - name: ovnCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -27,8 +27,8 @@ tests :
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
 
-    - name:  ovsCPU
-      metricName.keyword : ovsVswitchdCPU
+    - name: ovsCPU
+      metricName.keyword: ovsVswitchdCPU
       metric_of_interest: value
       agg:
         value: cpu
@@ -36,8 +36,8 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
 
-    - name:  ovsMemory
-      metricName.keyword : ovsVswitchdMemory 
+    - name: ovsMemory
+      metricName.keyword: ovsVswitchdMemory 
       metric_of_interest: value
       agg:
         value: mem
@@ -45,8 +45,8 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
 
-    - name:  ovsCPU
-      metricName.keyword : ovsVswitchdCPU
+    - name: ovsCPU
+      metricName.keyword: ovsVswitchdCPU
       metric_of_interest: value
       agg:
         value: cpu
@@ -54,8 +54,8 @@ tests :
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
 
-    - name:  ovsMemory
-      metricName.keyword : ovsVswitchdMemory 
+    - name: ovsMemory
+      metricName.keyword: ovsVswitchdMemory 
       metric_of_interest: value
       agg:
         value: mem
@@ -64,7 +64,7 @@ tests :
         - "[Jira: Networking / ovn-kubernetes]"
 
     - name: netobserv-flow-cpu 
-      metricName.keyword : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-netobserv 
       metric_of_interest: value
       agg:
@@ -75,7 +75,7 @@ tests :
       direction: 1
 
     - name: netobserv-agent-cpu
-      metricName : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-netobserv-privileged 
       metric_of_interest: value
       agg:
@@ -86,7 +86,7 @@ tests :
       direction: 1
 
     - name: netobserv-flow-cpu 
-      metricName.keyword : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-netobserv 
       metric_of_interest: value
       agg:
@@ -97,7 +97,7 @@ tests :
       direction: 1
 
     - name: netobserv-agent-cpu
-      metricName.keyword : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-netobserv-privileged 
       metric_of_interest: value
       agg:
@@ -108,7 +108,7 @@ tests :
       direction: 1
 
     - name: netobserv-flow-mem 
-      metricName : containerMemory
+      metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-netobserv 
       metric_of_interest: value
       agg:
@@ -119,7 +119,7 @@ tests :
       direction: 1
 
     - name: netobserv-agent-mem
-      metricName : containerMemory
+      metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-netobserv-privileged 
       metric_of_interest: value
       agg:
@@ -130,7 +130,7 @@ tests :
       direction: 1
 
     - name: netobserv-flow-mem 
-      metricName : containerMemory
+      metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-netobserv 
       metric_of_interest: value
       agg:
@@ -141,7 +141,7 @@ tests :
       direction: 1
 
     - name: netobserv-agent-mem
-      metricName : containerMemory
+      metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-netobserv-privileged 
       metric_of_interest: value
       agg:

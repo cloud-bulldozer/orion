@@ -1,5 +1,5 @@
-tests :
-  - name : quay-load-test-stable-stage-image-push-pulls
+tests: 
+  - name: quay-load-test-stable-stage-image-push-pulls
     benchmark_index: {{ quay_image_push_pull_index }}
     metadata:
       platform: AWS
@@ -13,7 +13,7 @@ tests :
       quayVersion: "{{ quay_version }}"
       networkType: OVNKubernetes
 
-    metrics : 
+    metrics: 
     - name: image_pulls_success_count
       targets: image_pulls
       metric_of_interest: success_count

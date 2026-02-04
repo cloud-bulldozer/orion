@@ -1,5 +1,5 @@
-tests :
-  - name : aws-small-scale-node-density-cni
+tests: 
+  - name: aws-small-scale-node-density-cni
     metadata:
       platform.keyword: AWS
       masterNodesType.keyword: m6a.xlarge
@@ -17,46 +17,46 @@ tests :
     # fips: false
     # ipsec: false
 
-    metrics : 
-    - name:  podReadyLatency
+    metrics: 
+    - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
       not: 
         jobConfig.name: "garbage-collection"
       
-    - name:  apiserverCPU
-      metricName : containerCPU
+    - name: apiserverCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
         value: cpu
         agg_type: avg
 
-    - name:  ovnCPU
-      metricName : containerCPU
+    - name: ovnCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
         value: cpu
         agg_type: avg
 
-    - name:  etcdCPU
-      metricName : containerCPU
+    - name: etcdCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
         value: cpu
         agg_type: avg
     
-    - name:  etcdDisk
-      metricName : 99thEtcdDiskBackendCommitDurationSeconds
+    - name: etcdDisk
+      metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
         value: duration
         agg_type: avg
 
-    - name:  ovsCPU-irate-all
+    - name: ovsCPU-irate-all
       metricName.keyword: cgroupCPU
       labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
@@ -66,9 +66,9 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovsMemory-Workers
-      metricName.keyword : cgroupMemoryRSS-Workers
-      labels.id.keyword : /system.slice/ovs-vswitchd.service
+    - name: ovsMemory-Workers
+      metricName.keyword: cgroupMemoryRSS-Workers
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
         value: mem
@@ -76,9 +76,9 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovsMemory-Masters
-      metricName.keyword : cgroupMemoryRSS-Masters
-      labels.id.keyword : /system.slice/ovs-vswitchd.service
+    - name: ovsMemory-Masters
+      metricName.keyword: cgroupMemoryRSS-Masters
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
         value: mem
@@ -86,7 +86,7 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovsMemory-all
+    - name: ovsMemory-all
       metricName.keyword: cgroupMemoryRSS
       labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value

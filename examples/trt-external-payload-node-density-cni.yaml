@@ -1,5 +1,5 @@
-tests :
-  - name : payload-node-density-cni
+tests: 
+  - name: payload-node-density-cni
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -17,8 +17,8 @@ tests :
       not:
         stream: okd
 
-    metrics : 
-    - name:  podReadyLatency
+    metrics: 
+    - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
@@ -29,7 +29,7 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  serviceReadyLatency
+    - name: serviceReadyLatency
       metricName.keyword: serviceLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
@@ -40,8 +40,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  apiserverCPU
-      metricName : containerCPU
+    - name: apiserverCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
@@ -53,7 +53,7 @@ tests :
       threshold: 10
 
     - name: multusCPU
-      metricName : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-multus
       metric_of_interest: value
       agg:
@@ -65,7 +65,7 @@ tests :
       threshold: 10
 
     - name: monitoringCPU
-      metricName : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-monitoring
       metric_of_interest: value
       agg:
@@ -76,8 +76,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  etcdCPU
-      metricName : containerCPU
+    - name: etcdCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
@@ -89,7 +89,7 @@ tests :
       threshold: 10
 
     - name: kubelet 
-      metricName : kubeletCPU 
+      metricName.keyword: kubeletCPU 
       metric_of_interest: value 
       labels: 
         - "[Jira: Node]" 
@@ -99,9 +99,9 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovsCPU-Workers
-      metricName.keyword : cgroupCPUSeconds-Workers
-      labels.id.keyword : /system.slice/ovs-vswitchd.service
+    - name: ovsCPU-Workers
+      metricName.keyword: cgroupCPUSeconds-Workers
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
         value: cpu
@@ -111,7 +111,7 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovsCPU-irate-all
+    - name: ovsCPU-irate-all
       metricName.keyword: cgroupCPU
       labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
@@ -123,8 +123,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnkCPU-overall
-      metricName : containerCPU
+    - name: ovnkCPU-overall
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -135,8 +135,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnCPU-ovncontroller
-      metricName : containerCPU
+    - name: ovnCPU-ovncontroller
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: ovn-controller 
       metric_of_interest: value
@@ -148,8 +148,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnCPU-northd
-      metricName : containerCPU
+    - name: ovnCPU-northd
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: northd
       metric_of_interest: value
@@ -161,8 +161,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnCPU-nbdb
-      metricName : containerCPU
+    - name: ovnCPU-nbdb
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: nbdb 
       metric_of_interest: value
@@ -174,8 +174,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnCPU-sbdb
-      metricName : containerCPU
+    - name: ovnCPU-sbdb
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: sbdb 
       metric_of_interest: value
@@ -187,8 +187,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnCPU-ovnk-controller
-      metricName : containerCPU
+    - name: ovnCPU-ovnk-controller
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: ovnkube-controller 
       metric_of_interest: value
@@ -200,9 +200,9 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovsMemory-Workers
-      metricName.keyword : cgroupMemoryRSS-Workers
-      labels.id.keyword : /system.slice/ovs-vswitchd.service
+    - name: ovsMemory-Workers
+      metricName.keyword: cgroupMemoryRSS-Workers
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
         value: mem
@@ -212,9 +212,9 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovsMemory-Masters
-      metricName.keyword : cgroupMemoryRSS-Masters
-      labels.id.keyword : /system.slice/ovs-vswitchd.service
+    - name: ovsMemory-Masters
+      metricName.keyword: cgroupMemoryRSS-Masters
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
         value: mem
@@ -224,7 +224,7 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovsMemory-all
+    - name: ovsMemory-all
       metricName.keyword: cgroupMemoryRSS
       labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
@@ -236,8 +236,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnkMem-overall
-      metricName : containerMemory
+    - name: ovnkMem-overall
+      metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -248,8 +248,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnMem-ovncontroller
-      metricName : containerMemory
+    - name: ovnMem-ovncontroller
+      metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: ovn-controller 
       metric_of_interest: value
@@ -261,8 +261,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnMem-northd
-      metricName : containerMemory
+    - name: ovnMem-northd
+      metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: northd
       metric_of_interest: value
@@ -274,8 +274,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnMem-nbdb
-      metricName : containerMemory
+    - name: ovnMem-nbdb
+      metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: nbdb 
       metric_of_interest: value
@@ -287,8 +287,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnMem-sbdb
-      metricName : containerMemory
+    - name: ovnMem-sbdb
+      metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: sbdb 
       metric_of_interest: value
@@ -300,8 +300,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnMem-ovnk-controller
-      metricName : containerMemory
+    - name: ovnMem-ovnk-controller
+      metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-ovn-kubernetes
       labels.container.keyword: ovnkube-controller 
       metric_of_interest: value

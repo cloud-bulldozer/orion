@@ -1,5 +1,5 @@
-tests :
-  - name : k8s-netperf-tcp
+tests: 
+  - name: k8s-netperf-tcp
     metadata:
       ocpVersion: "{{ version }}"
       platform: AWS
@@ -22,8 +22,8 @@ tests :
           - ambient
           - sidecar
 
-    metrics : 
-    - name:  n2n-tput-64-1p
+    metrics: 
+    - name: n2n-tput-64-1p
       parallelism: 1
       profile: TCP_STREAM
       messageSize: 64
@@ -35,7 +35,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  n2n-tput-64-2p
+    - name: n2n-tput-64-2p
       parallelism: 2
       profile: TCP_STREAM
       messageSize: 64
@@ -47,7 +47,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  n2n-tput-1024-1p
+    - name: n2n-tput-1024-1p
       parallelism: 1
       profile: TCP_STREAM
       messageSize: 1024
@@ -60,7 +60,7 @@ tests :
         agg_type: avg
 
 
-    - name:  n2n-tput-1024-2p
+    - name: n2n-tput-1024-2p
       parallelism: 2
       profile: TCP_STREAM
       messageSize: 1024
@@ -72,7 +72,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  n2n-tput-4096-1p
+    - name: n2n-tput-4096-1p
       parallelism: 1
       profile: TCP_STREAM
       messageSize: 4096
@@ -84,7 +84,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  n2n-tput-4096-2p
+    - name: n2n-tput-4096-2p
       parallelism: 2
       profile: TCP_STREAM
       messageSize: 4096
@@ -96,7 +96,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  n2n-tput-8192-1p
+    - name: n2n-tput-8192-1p
       parallelism: 1
       profile: TCP_STREAM
       messageSize: 8192
@@ -108,7 +108,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  n2n-tput-8192-2p
+    - name: n2n-tput-8192-2p
       parallelism: 2
       profile: TCP_STREAM
       messageSize: 8192
@@ -120,7 +120,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  n2n-ltcy-1024-1p
+    - name: n2n-ltcy-1024-1p
       parallelism: 1
       profile: TCP_RR
       messageSize: 1024
@@ -132,7 +132,7 @@ tests :
         value: latency
         agg_type: avg
 
-    - name:  n2n-ltcy-1024-2p
+    - name: n2n-ltcy-1024-2p
       parallelism: 2
       profile: TCP_RR
       messageSize: 1024
@@ -146,7 +146,7 @@ tests :
 
 
 # p2p
-    - name:  p2p-tput-64-1p
+    - name: p2p-tput-64-1p
       parallelism: 1
       profile: TCP_STREAM
       messageSize: 64
@@ -158,7 +158,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  p2p-tput-64-2p
+    - name: p2p-tput-64-2p
       parallelism: 2
       profile: TCP_STREAM
       messageSize: 64
@@ -170,7 +170,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  p2p-tput-1024-1p
+    - name: p2p-tput-1024-1p
       parallelism: 1
       profile: TCP_STREAM
       messageSize: 1024
@@ -183,7 +183,7 @@ tests :
         agg_type: avg
 
 
-    - name:  p2p-tput-1024-2p
+    - name: p2p-tput-1024-2p
       parallelism: 2
       profile: TCP_STREAM
       messageSize: 1024
@@ -195,7 +195,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  p2p-tput-4096-1p
+    - name: p2p-tput-4096-1p
       parallelism: 1
       profile: TCP_STREAM
       messageSize: 4096
@@ -207,7 +207,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  p2p-tput-4096-2p
+    - name: p2p-tput-4096-2p
       parallelism: 2
       profile: TCP_STREAM
       messageSize: 4096
@@ -219,7 +219,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  p2p-tput-8192-1p
+    - name: p2p-tput-8192-1p
       parallelism: 1
       profile: TCP_STREAM
       messageSize: 8192
@@ -231,7 +231,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  p2p-tput-8192-2p
+    - name: p2p-tput-8192-2p
       parallelism: 2
       profile: TCP_STREAM
       messageSize: 8192
@@ -243,7 +243,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  p2p-ltcy-1024-1p
+    - name: p2p-ltcy-1024-1p
       parallelism: 1
       profile: TCP_RR
       messageSize: 1024
@@ -255,7 +255,7 @@ tests :
         value: latency
         agg_type: avg
 
-    - name:  p2p-ltcy-1024-2p
+    - name: p2p-ltcy-1024-2p
       parallelism: 2
       profile: TCP_RR
       messageSize: 1024
@@ -269,7 +269,7 @@ tests :
 
 
 #p2s
-    - name:  p2s-tput-64-1p
+    - name: p2s-tput-64-1p
       parallelism: 1
       profile: TCP_STREAM
       messageSize: 64
@@ -282,7 +282,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  p2s-tput-1024-1p
+    - name: p2s-tput-1024-1p
       parallelism: 1
       profile: TCP_STREAM
       messageSize: 1024
@@ -295,7 +295,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  p2s-tput-4096-1p
+    - name: p2s-tput-4096-1p
       parallelism: 1
       profile: TCP_STREAM
       messageSize: 4096
@@ -308,7 +308,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  p2s-tput-8192-1p
+    - name: p2s-tput-8192-1p
       parallelism: 1
       profile: TCP_STREAM
       messageSize: 8192
@@ -321,7 +321,7 @@ tests :
         value: throughput
         agg_type: avg
 
-    - name:  p2s-ltcy-1024-1p
+    - name: p2s-ltcy-1024-1p
       parallelism: 1
       profile: TCP_RR
       messageSize: 1024
