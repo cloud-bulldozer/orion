@@ -45,7 +45,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
         config (str): file path to config file
         es_server (str): elasticsearch endpoint
         output_path (str): output path to save the data
-        hunter_analyze (bool): changepoint detection through hunter. defaults to True
+        hunter_analyze (bool): changepoint detection through apache_otava. defaults to True
         output_format (str): output to be table or json
         lookback (str): lookback in days
 
