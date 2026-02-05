@@ -1,5 +1,5 @@
-tests :
-  - name : olm-integration-test
+tests:
+  - name: olm-integration-test
     metadata:
       platform: GCP
       clusterType: self-managed
@@ -17,9 +17,9 @@ tests :
       not:
         stream: okd
 
-    metrics :
-    - name:  OCP-84094_catalogdCPU_GCP
-      metricName : catalogd_cpu_usage_cores
+    metrics:
+    - name: OCP-84094_catalogdCPU_GCP
+      metricName.keyword: catalogd_cpu_usage_cores
       metric_of_interest: value
       not: 
         jobConfig.name: "garbage-collection"

@@ -1,5 +1,5 @@
-tests :
-  - name : okd-node-density-6nodes
+tests: 
+  - name: okd-node-density-6nodes
     metadata:
       ocpVersion: {{ version }}
       platform: AWS
@@ -17,7 +17,7 @@ tests :
       stream: okd
 
     metrics:
-    - name:  podReadyLatency
+    - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
@@ -37,7 +37,7 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  cpu-kubelet
+    - name: cpu-kubelet
       metricName.keyword: cpu-kubelet
       metric_of_interest: value
       labels:
@@ -48,7 +48,7 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  max-memory-kubelet
+    - name: max-memory-kubelet
       metricName.keyword: max-memory-kubelet
       metric_of_interest: value
       labels:
@@ -59,7 +59,7 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  cpu-crio
+    - name: cpu-crio
       metricName.keyword: cpu-crio
       metric_of_interest: value
       agg:
@@ -68,7 +68,7 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  max-memory-crio
+    - name: max-memory-crio
       metricName.keyword: max-memory-crio
       metric_of_interest: value
       agg:

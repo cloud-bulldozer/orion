@@ -1,5 +1,5 @@
-tests :
-  - name : servicemesh-{{ service_mesh_mode }}-k8s-netperf-tcp
+tests: 
+  - name: servicemesh-{{ service_mesh_mode }}-k8s-netperf-tcp
     metadata:
       ocpVersion: "{{ version }}"
       platform: AWS
@@ -140,7 +140,7 @@ tests :
         agg_type: avg
 
     # latency tests
-    - name:  latency_64_1p
+    - name: latency_64_1p
       parallelism: 1
       profile: TCP_RR
       messageSize: 64
