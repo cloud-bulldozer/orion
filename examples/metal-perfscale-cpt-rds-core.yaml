@@ -1,0 +1,696 @@
+tests :
+  - name : metal-perfscale-cpt-rds-core
+    metadata:
+      platform: BareMetal
+      clusterType: self-managed
+      masterNodesType.keyword: ""
+      masterNodesCount: 3
+      workerNodesType.keyword: ""
+      workerNodesCount: 4
+      benchmark.keyword: rds-core
+      ocpVersion: "{{ version }}"
+      networkType: OVNKubernetes
+      jobType: {{ jobtype | default('periodic') }}
+      pullNumber: {{ pull_number | default(0) }}
+      organization: {{ organization | default('') }}
+      repository: {{ repository | default('') }}
+      not:
+        stream: okd
+    metrics :
+    - name:  podReadyLatency
+      metricName.keyword: podLatencyQuantilesMeasurement
+      quantileName: Ready
+      metric_of_interest: P99
+      not:
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: PodReadyLatency]"
+      agg:
+        value: P99
+        agg_type: avg
+      direction: 1
+    - name: kubeletCPU 
+      metricName.keyword: kubeletCPU 
+      metric_of_interest: value 
+      labels: 
+        - "[Jira: Node]" 
+      agg: 
+        value: cpu 
+        agg_type: avg
+      direction: 1
+    - name: kubeletMemory 
+      metricName.keyword: kubeletMemory 
+      metric_of_interest: value 
+      labels: 
+        - "[Jira: Node]" 
+      agg: 
+        value: mem 
+        agg_type: avg
+      direction: 1
+    - name: max-cpu-kubelet
+      metricName.keyword : max-cpu-kubelet
+      metric_of_interest: value
+      labels:
+        - "[Jira: max-cpu-kubelet]"
+      agg:
+        value: cpu
+        agg_type: max
+      direction: 1
+    - name: cpu-kubelet
+      metricName.keyword : cpu-kubelet
+      metric_of_interest: value
+      labels:
+        - "[Jira: cpu-kubelet]"
+      agg:
+        value: cpu-kubelet
+        agg_type: avg
+      direction: 1
+    - name: max-memory-kubelet
+      metricName.keyword : max-memory-kubelet
+      metric_of_interest: value
+      labels:
+        - "[Jira: max-memory-kubelet]"
+      agg:
+        value: max-memory-kubelet
+        agg_type: max
+      direction: 1
+    - name: memory-kubelet
+      metricName.keyword : memory-kubelet
+      metric_of_interest: value
+      labels:
+        - "[Jira: memory-kubelet]"
+      agg:
+        value: memory-kubelet
+        agg_type: avg
+      direction: 1
+    - name: crioCPU 
+      metricName.keyword : crioCPU 
+      metric_of_interest: value 
+      labels: 
+        - "[Jira: crioCPU]" 
+      agg: 
+        value: cpu 
+        agg_type: avg
+      direction: 1
+    - name: crioMemory 
+      metricName.keyword : crioMemory 
+      metric_of_interest: value 
+      labels: 
+        - "[Jira: crioMemory]" 
+      agg: 
+        value: mem 
+        agg_type: avg
+      direction: 1
+    - name: cpu-crio
+      metricName.keyword: max-cpu-crio
+      metric_of_interest: value
+      labels:
+        - "[Jira: max-cpu-crio]"
+      agg:
+        value: max-cpu-crio
+        agg_type: max
+      direction: 1
+    - name:  cpu-crio
+      metricName.keyword: cpu-crio
+      metric_of_interest: value
+      labels:
+        - "[Jira: cpu-crio]"
+      agg:
+        value: cpu-crio
+        agg_type: avg
+    - name: memory-crio
+      metricName.keyword: max-memory-crio
+      metric_of_interest: value
+      labels:
+        - "[Jira: max-memory-crio]"
+      agg:
+        value: max-memory-crio
+        agg_type: max
+      direction: 1
+    - name: memory-crio
+      metricName.keyword: memory-crio
+      metric_of_interest: value
+      labels:
+        - "[Jira: memory-crio]"
+      agg:
+        value: memory-crio
+        agg_type: avg
+      direction: 1
+    - name:  apiserverCPU
+      metricName.keyword: containerCPU
+      labels.namespace.keyword: openshift-kube-apiserver
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: max
+      labels:
+        - "[Jira: kube-apiserver]"
+      direction: 1
+    - name:  apiserverCPU
+      metricName.keyword: containerCPU
+      labels.namespace.keyword: openshift-kube-apiserver
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: kube-apiserver]"
+      direction: 1
+    - name: cpu-openshift-apiserver
+      metricName.keyword: cpu-openshift-apiserver
+      metric_of_interest: value
+      labels:
+        - "[Jira: kube-apiserver]"
+      agg:
+        value: cpu
+        agg_type: avg
+      direction: 1
+    - name: memory-openshift-apiserver
+      metricName.keyword: memory-openshift-apiserver
+      metric_of_interest: value
+      labels:
+        - "[Jira: kube-apiserver]"
+      agg:
+        value: mem
+        agg_type: max
+      direction: 1
+    - name: memory-openshift-apiserver
+      metricName.keyword: memory-openshift-apiserver
+      metric_of_interest: value
+      labels:
+        - "[Jira: kube-apiserver]"
+      agg:
+        value: mem
+        agg_type: avg
+      direction: 1
+    - name:  schedulingThroughput
+      metricName.keyword : schedulingThroughput
+      metric_of_interest: value
+      agg:
+        value: latency
+        agg_type: avg
+      labels:
+        - "[Jira: schedulingThroughput]"
+      direction: 1
+    - name:  readOnlyAPICallsLatency
+      metricName.keyword : readOnlyAPICallsLatency
+      metric_of_interest: value
+      agg:
+        value: latency
+        agg_type: avg
+      labels:
+        - "[Jira: readOnlyAPICallsLatency]"
+      direction: 1
+    - name:  mutatingAPICallsLatency
+      metricName.keyword : mutatingAPICallsLatency
+      metric_of_interest: value
+      agg:
+        value: latency
+        agg_type: avg
+      labels:
+        - "[Jira: mutatingAPICallsLatency]"
+      direction: 1
+    - name:  ro-apicalls-latency
+      metricName.keyword : max-ro-apicalls-latency
+      metric_of_interest: value
+      agg:
+        value: latency
+        agg_type: max
+      labels:
+        - "[Jira: max-ro-apicalls-latency]"
+      direction: 1
+    - name:  ro-apicalls-latency
+      metricName.keyword : avg-ro-apicalls-latency
+      metric_of_interest: value
+      agg:
+        value: latency
+        agg_type: avg
+      labels:
+        - "[Jira: avg-ro-apicalls-latency]"
+      direction: 1
+    - name:  mutating-apicalls-latency
+      metricName.keyword : max-mutating-apicalls-latency
+      metric_of_interest: value
+      agg:
+        value: latency
+        agg_type: max
+      labels:
+        - "[Jira: max-mutating-apicalls-latency]"
+      direction: 1
+    - name:  mutating-apicalls-latency
+      metricName.keyword : avg-mutating-apicalls-latency
+      metric_of_interest: value
+      agg:
+        value: latency
+        agg_type: avg
+      labels:
+        - "[Jira: avg-mutating-apicalls-latency]"
+      direction: 1
+    - name:  99thEtcdRoundTripTime
+      metricName.keyword: 99thEtcdRoundTripTime
+      metric_of_interest: value
+      agg:
+        value: latency
+        agg_type: avg
+      labels:
+        - "[Jira: 99thEtcdRoundTripTime]""
+    - name:  etcdCPU
+      metricName.keyword : containerCPU
+      labels.namespace.keyword: openshift-etcd
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: max
+      labels:
+        - "[Jira: max-cpu-etcd]"
+      direction: 1
+    - name:  etcdCPU
+      metricName.keyword : containerCPU
+      labels.namespace.keyword: openshift-etcd
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: avg-cpu-etcd]"
+      direction: 1
+    - name:  etcdRSS
+      metricName.keyword : containerMemory
+      labels.namespace.keyword: openshift-etcd
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: max
+      labels:
+        - "[Jira: max-mem-etcd]"
+      direction: 1
+    - name:  etcdRSS
+      metricName.keyword : containerMemory
+      labels.namespace.keyword: openshift-etcd
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: avg-mem-etcd]"
+      direction: 1
+    - name:  max-cpu-etcd
+      metricName.keyword: max-cpu-etcd
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: max
+    - name:  cpu-etcd
+      metricName.keyword: cpu-etcd
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+    - name:  max-memory-etcd
+      metricName.keyword: max-memory-etcd
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: max
+    - name:  memory-etcd
+      metricName.keyword: memory-etcd
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+    - name:  99thEtcdRoundTripTimeSeconds
+      metricName.keyword : 99thEtcdRoundTripTimeSeconds
+      metric_of_interest: value
+      agg:
+        value: P99
+        agg_type: avg
+      labels:
+        - "[Jira: 99thEtcdRoundTripTimeSeconds]"
+      direction: 1
+    - name:  99thEtcdRoundTripTime
+      metricName.keyword : 99thEtcdRoundTripTime
+      metric_of_interest: value
+      agg:
+        value: P99
+        agg_type: avg
+      labels:
+        - "[Jira: 99thEtcdRoundTripTime]"
+    - name:  99thEtcdDiskWalFsync
+      metricName.keyword: 99thEtcdDiskWalFsync
+      metric_of_interest: value
+      agg:
+        value: P99
+        agg_type: avg
+    - name:  99thEtcdDiskBackendCommit
+      metricName.keyword: 99thEtcdDiskBackendCommit
+      metric_of_interest: value
+      agg:
+        value: P99
+        agg_type: avg
+    - name:  99thEtcdDiskBackendCommitDurationSeconds
+      metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
+      metric_of_interest: value
+      agg:
+        value: P99
+        agg_type: avg
+    - name:  99thEtcdDiskWalFsyncDurationSeconds
+      metricName.keyword: 99thEtcdDiskWalFsyncDurationSeconds
+      metric_of_interest: value
+      agg:
+        value: P99
+        agg_type: avg
+    #nodes: control-plane and worker
+    - name:  nodeCPU-Masters
+      metricName.keyword: nodeCPU-Masters
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+    - name:  nodeCPU-Workers
+      metricName.keyword: nodeCPU-Workers
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+    - name:  nodeMemoryUtilization-Masters
+      metricName.keyword: nodeMemoryUtilization-Masters
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+    - name:  nodeMemoryUtilization-Workers
+      metricName.keyword: nodeMemoryUtilization-Workers
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+    - name:  max-memory-masters
+      metricName.keyword : max-memory-masters
+      metric_of_interest: value
+      not:
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: mem
+        agg_type: max
+      labels:
+        - "[Jira: max-memory-masters]"
+    - name:  memory-masters
+      metricName.keyword : memory-masters
+      metric_of_interest: value
+      not:
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: memory-masters]"
+    - name:  max-memory-workers
+      metricName.keyword : max-memory-workers
+      metric_of_interest: value
+      not:
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: mem
+        agg_type: max
+      labels:
+        - "[Jira: max-memory-workers]"
+    - name:  memory-workers
+      metricName.keyword : memory-workers
+      metric_of_interest: value
+      not:
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: memory-workers]"
+    - name:  max-cpu-masters
+      metricName.keyword : max-cpu-masters
+      metric_of_interest: value
+      not:
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: cpu
+        agg_type: max
+      labels:
+        - "[Jira: max-cpu-masters]"
+    - name:  cpu-masters
+      metricName.keyword : cpu-masters
+      metric_of_interest: value
+      not:
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: cpu-masters]"
+    - name:  max-cpu-workers
+      metricName.keyword : max-cpu-workers
+      metric_of_interest: value
+      not:
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: cpu
+        agg_type: max
+      labels:
+        - "[Jira: max-cpu-workers]"
+    - name:  cpu-workers
+      metricName.keyword : cpu-workers
+      metric_of_interest: value
+      not:
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: cpu-workers]"
+    #ovn and ovs
+    - name:  ovsCPU
+      metricName : cgroupCPUSeconds-Workers
+      labels.id.keyword : /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovs]"
+    - name:  cpu_ovn_control_plane
+      metricName.keyword: cpu-ovn-control-plane
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: max
+    - name:  cpu_ovn_control_plane
+      metricName.keyword: cpu-ovn-control-plane
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+    - name:  cpu_ovnkube_node
+      metricName.keyword: cpu-ovnkube-node
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: max
+    - name:  cpu_ovnkube_node
+      metricName.keyword: cpu-ovnkube-node
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+
+    - name:  memory-ovn-control-plane
+      metricName.keyword: memory-ovn-control-plane
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: max
+    - name:  memory-ovn-control-plane
+      metricName.keyword: memory-ovn-control-plane
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+    - name:  memory-ovnkube-node
+      metricName.keyword: memory-ovnkube-node
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: max
+    - name:  memory-ovnkube-node
+      metricName.keyword: memory-ovnkube-node
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+    - name:  ovnkCPU-overall
+      metricName.keyword : containerCPU
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+    - name:  ovnCPU-ovncontroller
+      metricName.keyword : containerCPU
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: ovn-controller
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+    - name:  ovnCPU-ovnk-controller
+      metricName.keyword : containerCPU
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: ovnkube-controller
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+    - name:  ovnCPU-northd
+      metricName.keyword : containerCPU
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: northd
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+    - name:  ovnCPU-nbdb
+      metricName.keyword : containerCPU
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: nbdb
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+    - name:  ovnCPU-sbdb
+      metricName.keyword : containerCPU
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: sbdb
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+    - name:  ovsMemory
+      metricName.keyword : cgroupMemoryRSS-Workers
+      labels.id.keyword : /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+    - name:  ovnkMem-overall
+      metricName.keyword : containerMemory
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+    - name:  ovnMem-ovncontroller
+      metricName.keyword : containerMemory
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: ovn-controller
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+    - name:  ovnMem-ovnk-controller
+      metricName.keyword : containerMemory
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: ovnkube-controller
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+    - name:  ovnMem-northd
+      metricName.keyword : containerMemory
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: northd
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+    - name:  ovnMem-nbdb
+      metricName.keyword : containerMemory
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: nbdb
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+    - name:  ovnMem-sbdb
+      metricName.keyword : containerMemory
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: sbdb
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+    #multus
+    - name:  multusCPU
+      metricName.keyword : containerCPU
+      labels.namespace.keyword: openshift-multus
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: max
+      labels:
+        - "[Jira: max-cpu-multus]"
+      direction: 1
+    - name: multusCPU
+      metricName.keyword : containerCPU
+      labels.namespace.keyword: openshift-multus
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: multus]"
+      direction: 1
+    #monitoring
+    - name: monitoringCPU
+      metricName.keyword : containerCPU
+      labels.namespace.keyword: openshift-monitoring
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: monitoring]"
+      direction: 1
