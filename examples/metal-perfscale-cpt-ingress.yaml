@@ -27,22 +27,62 @@ tests:
 
     metrics:
 
+    - name: passthrough_avg_rps
+      config.termination: passthrough
+      metric_of_interest: total_avg_rps
+      agg:
+        value: total_avg_rps
+        agg_type: avg
+
+    - name: passthrough_avg_lat
+      config.termination: passthrough
+      metric_of_interest: avg_lat_us
+      agg:
+        value: avg_lat_us
+        agg_type: avg
+
     - name: http_avg_rps
       config.termination: http
       metric_of_interest: total_avg_rps
       direction: -1
-      not:
-        config.requestRate: 5000
+      config.tool: wrk
       agg:
         value: total_avg_rps
+        agg_type: avg
+
+    - name: http_avg_lat
+      config.termination: http
+      metric_of_interest: avg_lat_us
+      agg:
+        value: avg_lat_us
+        agg_type: avg
+
+    - name: reencrypt_avg_rps
+      config.termination: reencrypt
+      metric_of_interest: total_avg_rps
+      agg:
+        value: total_avg_rps
+        agg_type: avg
+
+    - name: reencrypt_avg_lat
+      config.termination: reencrypt
+      metric_of_interest: avg_lat_us
+      agg:
+        value: avg_lat_us
         agg_type: avg
 
     - name: edge_avg_rps
       config.termination: edge
       metric_of_interest: total_avg_rps
       direction: -1
-      not:
-        config.requestRate: 5000
+      config.tool: wrk
       agg:
         value: total_avg_rps
+        agg_type: avg
+
+    - name: edge_avg_lat
+      config.termination: edge
+      metric_of_interest: avg_lat_us
+      agg:
+        value: avg_lat_us
         agg_type: avg
