@@ -284,7 +284,7 @@ orion --min-future 0 --config performance-config.yaml --hunter-analyze
 orion --min-future 10 --config performance-config.yaml --hunter-analyze
 ```
 
-Use `--max-early 0` and `--min-future 0` when you want to restrict analysis strictly to the requested time window without expansion and without requiring future data (e.g. in CI or for fixed windows).
+Use `--max-early 0` and `--min-future 0` when you want to restrict analysis strictly to the requested time window without expansion and without requiring future data.
 
 ## Node Count Filtering
 
