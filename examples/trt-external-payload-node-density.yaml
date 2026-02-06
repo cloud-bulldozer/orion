@@ -1,5 +1,5 @@
-tests :
-  - name : payload-node-density
+tests: 
+  - name: payload-node-density
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -17,7 +17,7 @@ tests :
       not:
         stream: okd
 
-    metrics : 
+    metrics: 
     - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
@@ -38,8 +38,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  apiserverCPU
-      metricName : containerCPU
+    - name: apiserverCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
@@ -50,8 +50,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnCPU
-      metricName : containerCPU
+    - name: ovnCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -62,8 +62,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  etcdCPU
-      metricName : containerCPU
+    - name: etcdCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
@@ -75,7 +75,7 @@ tests :
       threshold: 10
 
     - name: kubelet 
-      metricName : kubeletCPU 
+      metricName.keyword: kubeletCPU 
       metric_of_interest: value 
       labels: 
         - "[Jira: Node]" 

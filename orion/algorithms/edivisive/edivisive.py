@@ -1,14 +1,14 @@
-"""EDivisive Algorithm from hunter"""
+"""EDivisive Algorithm from apache_otava"""
 
 # pylint: disable = line-too-long
 from typing import Dict, List
 import pandas as pd
-from hunter.series import ChangePoint
+from otava.analysis import ChangePoint
 from orion.algorithms.algorithm import Algorithm
 
 
 class EDivisive(Algorithm):
-    """Implementation of the EDivisive algorithm using hunter
+    """Implementation of the EDivisive algorithm using apache_otava
 
     Args:
         Algorithm (Algorithm): Inherits

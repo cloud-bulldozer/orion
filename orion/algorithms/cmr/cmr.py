@@ -4,7 +4,8 @@
 import pandas as pd
 import numpy
 
-from hunter.series import  ChangePoint, ComparativeStats
+from otava.analysis import TTestStats
+from otava.series import  ChangePoint
 from orion.logger import SingletonLogger
 from orion.algorithms.algorithm import Algorithm
 
@@ -61,15 +62,16 @@ class CMR(Algorithm):
         for column in metric_columns:
 
             change_point = ChangePoint(metric=column,
-                                            index=1,
-                                            time=0,
-                                            stats=ComparativeStats(
-                                                mean_1=dataframe_list[column][0],
-                                                mean_2=dataframe_list[column][1],
-                                                std_1=0,
-                                                std_2=0,
-                                                pvalue=1
-                                            ))
+                                index=1,
+                                qhat=0.0,
+                                time=0,
+                                stats=TTestStats(
+                                        mean_1=dataframe_list[column][0],
+                                        mean_2=dataframe_list[column][1],
+                                        std_1=0.0,
+                                        std_2=0.0,
+                                        pvalue=1.0
+                                    ))
             change_points_by_metric[column].append(change_point)
 
         # based on change point generate pass/fail

@@ -1,5 +1,5 @@
-tests :
-  - name : payload-crd-scale
+tests: 
+  - name: payload-crd-scale
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -17,9 +17,9 @@ tests :
       not:
         stream: okd
 
-    metrics : 
-    - name:  apiserverCPU
-      metricName : containerCPU
+    metrics: 
+    - name: apiserverCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
@@ -30,8 +30,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  etcdCPU
-      metricName : containerCPU
+    - name: etcdCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:

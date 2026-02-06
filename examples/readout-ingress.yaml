@@ -1,5 +1,5 @@
-tests :
-  - name : ingress-perf
+tests: 
+  - name: ingress-perf
     metadata:
       ocpVersion: "{{ version }}"
       platform: AWS
@@ -19,15 +19,15 @@ tests :
           - ambient
           - sidecar
 
-    metrics : 
-    - name:  passthrough_avg_rps
+    metrics: 
+    - name: passthrough_avg_rps
       config.termination: passthrough
       metric_of_interest: total_avg_rps
       agg:
         value: total_avg_rps
         agg_type: avg
 
-    - name:  passthrough_avg_lat
+    - name: passthrough_avg_lat
       config.termination: passthrough
       metric_of_interest: avg_lat_us
       agg:
@@ -41,7 +41,7 @@ tests :
         value: total_avg_rps
         agg_type: avg
 
-    - name:  http_avg_lat
+    - name: http_avg_lat
       config.termination: http
       metric_of_interest: avg_lat_us
       agg:
@@ -55,7 +55,7 @@ tests :
         value: total_avg_rps
         agg_type: avg
 
-    - name:  reencrypt_avg_lat
+    - name: reencrypt_avg_lat
       config.termination: reencrypt
       metric_of_interest: avg_lat_us
       agg:

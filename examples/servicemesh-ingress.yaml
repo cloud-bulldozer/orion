@@ -1,5 +1,5 @@
-tests :
-  - name : servicemesh-{{ service_mesh_mode }}-ingress-perf
+tests: 
+  - name: servicemesh-{{ service_mesh_mode }}-ingress-perf
     metadata:
       ocpVersion: "{{ version }}"
       platform: AWS
@@ -39,7 +39,7 @@ tests :
         value: infra_metrics.avg_cpu_usage_ingress_gateway_pods
         agg_type: avg
 
-    - name:  http_avg_lat
+    - name: http_avg_lat
       config.termination: http
       config.requestRate: 5000
       metric_of_interest: avg_lat_us

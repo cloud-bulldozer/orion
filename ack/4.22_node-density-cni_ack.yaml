@@ -18,3 +18,6 @@ ack:
   - uuid: f7567913-9543-444c-9e1d-2203ce467696
     metric: kubelet_avg
     reason: "https://issues.redhat.com/browse/OCPBUGS-74474"
+  - uuid: 6ca8825c-3a47-4f0f-9cfe-b4a45986bd37
+    metric: kubelet_avg
+    reason: "EXTRA_FLAGS issue wrt node-density-cni test"

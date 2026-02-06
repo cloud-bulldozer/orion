@@ -1,5 +1,5 @@
-tests :
-  - name : node-density-heavy-24nodes
+tests: 
+  - name: node-density-heavy-24nodes
     metadata:
       ocpVersion: "{{ version }}"
       platform: AWS
@@ -22,33 +22,33 @@ tests :
       not:
         stream: okd
 
-    metrics : 
-    - name:  cpu-kubelet
+    metrics: 
+    - name: cpu-kubelet
       metricName.keyword: cpu-kubelet
       metric_of_interest: value
       agg:
         value: cpu-kubelet
         agg_type: avg
-    - name:  max-memory-kubelet
+    - name: max-memory-kubelet
       metricName.keyword: max-memory-kubelet
       metric_of_interest: value
       agg:
         value: max-memory-kubelet
         agg_type: avg
-    - name:  cpu-crio
+    - name: cpu-crio
       metricName.keyword: cpu-crio
       metric_of_interest: value
       agg:
         value: cpu-crio
         agg_type: avg
-    - name:  max-memory-crio
+    - name: max-memory-crio
       metricName.keyword: max-memory-crio
       metric_of_interest: value
       agg:
         value: max-memory-crio
         agg_type: avg
 
-  - name : node-density-24nodes
+  - name: node-density-24nodes
     metadata:
       ocpVersion: "{{ version }}"
       platform: AWS
@@ -69,8 +69,8 @@ tests :
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics : 
-    - name:  P99
+    metrics: 
+    - name: P99
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName.keyword: Ready
       metric_of_interest: P99
@@ -78,7 +78,7 @@ tests :
         value: P99
         agg_type: avg
 
-  - name : node-density-120nodes
+  - name: node-density-120nodes
     metadata:
       ocpVersion: "{{ version }}"
       platform: AWS
@@ -99,8 +99,8 @@ tests :
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics : 
-    - name:  P99
+    metrics: 
+    - name: P99
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName.keyword: Ready
       metric_of_interest: P99
@@ -108,7 +108,7 @@ tests :
         value: P99
         agg_type: avg
 
-  - name : node-density-249nodes
+  - name: node-density-249nodes
     metadata:
       ocpVersion: "{{ version }}"
       platform: AWS
@@ -129,8 +129,8 @@ tests :
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics : 
-    - name:  P99
+    metrics: 
+    - name: P99
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName.keyword: Ready
       metric_of_interest: P99
@@ -138,7 +138,7 @@ tests :
         value: P99
         agg_type: avg
 
-  - name : node-density-cni-24nodes
+  - name: node-density-cni-24nodes
     metadata:
       ocpVersion: "{{ version }}"
       platform: AWS
@@ -159,8 +159,8 @@ tests :
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics : 
-    - name:  P99
+    metrics: 
+    - name: P99
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName.keyword: Ready
       metric_of_interest: P99
@@ -168,7 +168,7 @@ tests :
         value: P99
         agg_type: avg
 
-  - name : node-density-cni-120nodes
+  - name: node-density-cni-120nodes
     metadata:
       ocpVersion: "{{ version }}"
       platform: AWS
@@ -189,8 +189,8 @@ tests :
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics : 
-    - name:  P99
+    metrics: 
+    - name: P99
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName.keyword: Ready
       metric_of_interest: P99
@@ -198,7 +198,7 @@ tests :
         value: P99
         agg_type: avg
 
-  - name : node-density-cni-249nodes
+  - name: node-density-cni-249nodes
     metadata:
       ocpVersion: "{{ version }}"
       platform: AWS
@@ -219,8 +219,8 @@ tests :
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics : 
-    - name:  P99
+    metrics: 
+    - name: P99
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName.keyword: Ready
       metric_of_interest: P99

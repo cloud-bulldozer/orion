@@ -1,5 +1,5 @@
-tests :
-  - name : small-scale-cluster-density-v2-report
+tests: 
+  - name: small-scale-cluster-density-v2-report
     metadata:
       ocpVersion: "{{ version }}"
       platform: AWS
@@ -21,114 +21,114 @@ tests :
       not:
         stream: okd
 
-    metrics : 
-    - name:  Pod_Ready_Latency
+    metrics: 
+    - name: Pod_Ready_Latency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
       not: 
         jobConfig.name: "garbage-collection"
-    - name:  CPU_usage_masters
+    - name: CPU_usage_masters
       metricName.keyword: cpu-masters
       metric_of_interest: value
       agg:
         value: avg
         agg_type: avg
-    - name:  Maximum_aggregated_memory_usage_masters
+    - name: Maximum_aggregated_memory_usage_masters
       metricName.keyword: max-memory-sum-masters
       metric_of_interest: value
       agg:
         value: avg
         agg_type: avg
-    - name:  CPU_Usage_kube-apiserver
+    - name: CPU_Usage_kube-apiserver
       metricName.keyword: cpu-kube-apiserver
       metric_of_interest: value
       agg:
         value: kube_apiserver
         agg_type: avg
-    - name:  Max_Aggregated_RSS_Usage_kube-apiserver
+    - name: Max_Aggregated_RSS_Usage_kube-apiserver
       metricName.keyword: max-memory-sum-kube-apiserver
       metric_of_interest: value
       agg:
         value: kube_apiserver
         agg_type: avg
-    - name:  CPU_Usage_etcd
+    - name: CPU_Usage_etcd
       metricName.keyword: cpu-etcd
       metric_of_interest: value
       agg:
         value: etcd
         agg_type: avg
-    - name:  Max_Aggregated_RSS_Usage_etcd
+    - name: Max_Aggregated_RSS_Usage_etcd
       metricName.keyword: max-memory-etcd
       metric_of_interest: value
       agg:
         value: etcd
         agg_type: avg
-    - name:  Avg_Read_Only_API_request_P99_latency_namespace_scoped
+    - name: Avg_Read_Only_API_request_P99_latency_namespace_scoped
       metricName.keyword: avg-ro-apicalls-latency
       labels.scope.keyword: namespace
       metric_of_interest: value
       agg:
         value: namespace_scoped
         agg_type: avg
-    - name:  Max_Read_Only_API_request_P99_latency_namespace_scoped
+    - name: Max_Read_Only_API_request_P99_latency_namespace_scoped
       metricName.keyword: max-ro-apicalls-latency
       labels.scope.keyword: namespace
       metric_of_interest: value
       agg:
         value: namespace_scoped
         agg_type: avg
-    - name:  Avg_Read_Only_API_request_P99_latency_cluster_scoped
+    - name: Avg_Read_Only_API_request_P99_latency_cluster_scoped
       metricName.keyword: avg-ro-apicalls-latency
       labels.scope.keyword: cluster
       metric_of_interest: value
       agg:
         value: cluster_scoped
         agg_type: avg
-    - name:  Max_Read_Only_API_request_P99_latency_cluster_scoped
+    - name: Max_Read_Only_API_request_P99_latency_cluster_scoped
       metricName.keyword: max-ro-apicalls-latency
       labels.scope.keyword: cluster
       metric_of_interest: value
       agg:
         value: cluster_scoped
         agg_type: avg
-    - name:  Avg_Mutating_API_request_P99_latency
+    - name: Avg_Mutating_API_request_P99_latency
       metricName.keyword: avg-mutating-apicalls-latency
       metric_of_interest: value
       agg:
         value: avg
         agg_type: avg
-    - name:  Max_Mutating_API_request_P99_latency
+    - name: Max_Mutating_API_request_P99_latency
       metricName.keyword: max-mutating-apicalls-latency
       metric_of_interest: value
       agg:
         value: avg
         agg_type: avg
-    - name:  99th_WAL_fsync
+    - name: 99th_WAL_fsync
       metricName.keyword: 99thEtcdDiskWalFsync
       metric_of_interest: value
       agg:
         value: avg
         agg_type: avg
-    - name:  99th_Backend_I/O
+    - name: 99th_Backend_I/O
       metricName.keyword: 99thEtcdDiskBackendCommit
       metric_of_interest: value
       agg:
         value: avg
         agg_type: avg
-    - name:  99th_Roundtrip
+    - name: 99th_Roundtrip
       metricName.keyword: 99thEtcdRoundTripTime
       metric_of_interest: value
       agg:
         value: avg
         agg_type: avg
-    - name:  cpu_ovn_control_plane
+    - name: cpu_ovn_control_plane
       metricName.keyword: cpu-ovn-control-plane
       metric_of_interest: value
       agg:
         value: avg
         agg_type: avg
-    - name:  cpu_ovnkube_node
+    - name: cpu_ovnkube_node
       metricName.keyword: cpu-ovnkube-node
       metric_of_interest: value
       agg:

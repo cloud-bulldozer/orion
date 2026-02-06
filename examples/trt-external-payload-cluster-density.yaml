@@ -1,5 +1,5 @@
-tests :
-  - name : payload-cluster-density-v2
+tests: 
+  - name: payload-cluster-density-v2
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -17,8 +17,8 @@ tests :
       not:
         stream: okd
 
-    metrics : 
-    - name:  podReadyLatency
+    metrics: 
+    - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
@@ -29,8 +29,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  apiserverCPU
-      metricName : containerCPU
+    - name: apiserverCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
@@ -42,7 +42,7 @@ tests :
       threshold: 10
 
     - name: multusCPU
-      metricName : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-multus
       metric_of_interest: value
       agg:
@@ -54,7 +54,7 @@ tests :
       threshold: 10
 
     - name: monitoringCPU
-      metricName : containerCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-monitoring
       metric_of_interest: value
       agg:
@@ -65,8 +65,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovnCPU
-      metricName : containerCPU
+    - name: ovnCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
@@ -77,8 +77,8 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  etcdCPU
-      metricName : containerCPU
+    - name: etcdCPU
+      metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
@@ -90,7 +90,7 @@ tests :
       threshold: 10
 
     - name: kubelet 
-      metricName : kubeletCPU 
+      metricName.keyword: kubeletCPU 
       metric_of_interest: value 
       labels: 
         - "[Jira: Node]" 
@@ -100,7 +100,7 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovsCPU-irate-all
+    - name: ovsCPU-irate-all
       metricName.keyword: cgroupCPU
       labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
@@ -112,9 +112,9 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovsMemory-Workers
-      metricName.keyword : cgroupMemoryRSS-Workers
-      labels.id.keyword : /system.slice/ovs-vswitchd.service
+    - name: ovsMemory-Workers
+      metricName.keyword: cgroupMemoryRSS-Workers
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
         value: mem
@@ -124,9 +124,9 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovsMemory-Masters
-      metricName.keyword : cgroupMemoryRSS-Masters
-      labels.id.keyword : /system.slice/ovs-vswitchd.service
+    - name: ovsMemory-Masters
+      metricName.keyword: cgroupMemoryRSS-Masters
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
         value: mem
@@ -136,7 +136,7 @@ tests :
       direction: 1
       threshold: 10
 
-    - name:  ovsMemory-all
+    - name: ovsMemory-all
       metricName.keyword: cgroupMemoryRSS
       labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value

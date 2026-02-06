@@ -1,5 +1,5 @@
-tests :
-  - name : quay-load-test-stable-apis
+tests: 
+  - name: quay-load-test-stable-apis
     benchmark_index: {{ quay_load_test_index }}
     metadata:
       platform: AWS
@@ -13,7 +13,7 @@ tests :
       quayVersion: "{{ quay_version }}"
       networkType: OVNKubernetes
 
-    metrics : 
+    metrics: 
     - name: create_users_latency
       targets: create_users
       metric_of_interest: p99_latency
@@ -21,85 +21,85 @@ tests :
       threshold: 10
       context: 10
       correlation: create_users_status_codes.200
-    - name:  create_users_0
+    - name: create_users_0
       targets: create_users
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_200
+    - name: create_users_200
       targets: create_users
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_201
+    - name: create_users_201
       targets: create_users
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_204
+    - name: create_users_204
       targets: create_users
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_400
+    - name: create_users_400
       targets: create_users
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_401
+    - name: create_users_401
       targets: create_users
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_403
+    - name: create_users_403
       targets: create_users
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_404
+    - name: create_users_404
       targets: create_users
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_405
+    - name: create_users_405
       targets: create_users
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_408
+    - name: create_users_408
       targets: create_users
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_500
+    - name: create_users_500
       targets: create_users
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_502
+    - name: create_users_502
       targets: create_users
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_503
+    - name: create_users_503
       targets: create_users
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_users_504
+    - name: create_users_504
       targets: create_users
       metric_of_interest: status_codes.504
       direction: -1
@@ -112,85 +112,85 @@ tests :
       threshold: 10
       context: 10
       correlation: update_passwords_status_codes.200
-    - name:  update_passwords_0
+    - name: update_passwords_0
       targets: update_passwords
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_200
+    - name: update_passwords_200
       targets: update_passwords
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_201
+    - name: update_passwords_201
       targets: update_passwords
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_204
+    - name: update_passwords_204
       targets: update_passwords
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_400
+    - name: update_passwords_400
       targets: update_passwords
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_401
+    - name: update_passwords_401
       targets: update_passwords
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_403
+    - name: update_passwords_403
       targets: update_passwords
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_404
+    - name: update_passwords_404
       targets: update_passwords
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_405
+    - name: update_passwords_405
       targets: update_passwords
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_408
+    - name: update_passwords_408
       targets: update_passwords
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_500
+    - name: update_passwords_500
       targets: update_passwords
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_502
+    - name: update_passwords_502
       targets: update_passwords
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_503
+    - name: update_passwords_503
       targets: update_passwords
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_passwords_504
+    - name: update_passwords_504
       targets: update_passwords
       metric_of_interest: status_codes.504
       direction: -1
@@ -203,85 +203,85 @@ tests :
       threshold: 10
       context: 10
       correlation: list_users_status_codes.200
-    - name:  list_users_0
+    - name: list_users_0
       targets: list_users
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_200
+    - name: list_users_200
       targets: list_users
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_201
+    - name: list_users_201
       targets: list_users
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_204
+    - name: list_users_204
       targets: list_users
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_400
+    - name: list_users_400
       targets: list_users
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_401
+    - name: list_users_401
       targets: list_users
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_403
+    - name: list_users_403
       targets: list_users
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_404
+    - name: list_users_404
       targets: list_users
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_405
+    - name: list_users_405
       targets: list_users
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_408
+    - name: list_users_408
       targets: list_users
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_500
+    - name: list_users_500
       targets: list_users
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_502
+    - name: list_users_502
       targets: list_users
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_503
+    - name: list_users_503
       targets: list_users
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_504
+    - name: list_users_504
       targets: list_users
       metric_of_interest: status_codes.504
       direction: -1
@@ -294,85 +294,85 @@ tests :
       threshold: 10
       context: 10
       correlation: get_users_status_codes.200
-    - name:  get_users_0
+    - name: get_users_0
       targets: get_users
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_200
+    - name: get_users_200
       targets: get_users
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_201
+    - name: get_users_201
       targets: get_users
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_204
+    - name: get_users_204
       targets: get_users
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_400
+    - name: get_users_400
       targets: get_users
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_401
+    - name: get_users_401
       targets: get_users
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_403
+    - name: get_users_403
       targets: get_users
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_404
+    - name: get_users_404
       targets: get_users
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_405
+    - name: get_users_405
       targets: get_users
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_408
+    - name: get_users_408
       targets: get_users
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_500
+    - name: get_users_500
       targets: get_users
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_502
+    - name: get_users_502
       targets: get_users
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_503
+    - name: get_users_503
       targets: get_users
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_504
+    - name: get_users_504
       targets: get_users
       metric_of_interest: status_codes.504
       direction: -1
@@ -385,85 +385,85 @@ tests :
       threshold: 10
       context: 10
       correlation: delete_users_status_codes.200
-    - name:  delete_users_0
+    - name: delete_users_0
       targets: delete_users
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_200
+    - name: delete_users_200
       targets: delete_users
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_201
+    - name: delete_users_201
       targets: delete_users
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_204
+    - name: delete_users_204
       targets: delete_users
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_400
+    - name: delete_users_400
       targets: delete_users
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_401
+    - name: delete_users_401
       targets: delete_users
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_403
+    - name: delete_users_403
       targets: delete_users
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_404
+    - name: delete_users_404
       targets: delete_users
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_405
+    - name: delete_users_405
       targets: delete_users
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_408
+    - name: delete_users_408
       targets: delete_users
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_500
+    - name: delete_users_500
       targets: delete_users
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_502
+    - name: delete_users_502
       targets: delete_users
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_503
+    - name: delete_users_503
       targets: delete_users
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_504
+    - name: delete_users_504
       targets: delete_users
       metric_of_interest: status_codes.504
       direction: -1
@@ -476,85 +476,85 @@ tests :
       threshold: 10
       context: 10
       correlation: create_teams_status_codes.200
-    - name:  create_teams_0
+    - name: create_teams_0
       targets: create_teams
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_200
+    - name: create_teams_200
       targets: create_teams
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_201
+    - name: create_teams_201
       targets: create_teams
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_204
+    - name: create_teams_204
       targets: create_teams
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_400
+    - name: create_teams_400
       targets: create_teams
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_401
+    - name: create_teams_401
       targets: create_teams
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_403
+    - name: create_teams_403
       targets: create_teams
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_404
+    - name: create_teams_404
       targets: create_teams
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_405
+    - name: create_teams_405
       targets: create_teams
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_408
+    - name: create_teams_408
       targets: create_teams
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_500
+    - name: create_teams_500
       targets: create_teams
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_502
+    - name: create_teams_502
       targets: create_teams
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_503
+    - name: create_teams_503
       targets: create_teams
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_teams_504
+    - name: create_teams_504
       targets: create_teams
       metric_of_interest: status_codes.504
       direction: -1
@@ -567,85 +567,85 @@ tests :
       threshold: 10
       context: 10
       correlation: delete_teams_status_codes.200
-    - name:  delete_teams_0
+    - name: delete_teams_0
       targets: delete_teams
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_200
+    - name: delete_teams_200
       targets: delete_teams
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_201
+    - name: delete_teams_201
       targets: delete_teams
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_204
+    - name: delete_teams_204
       targets: delete_teams
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_400
+    - name: delete_teams_400
       targets: delete_teams
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_401
+    - name: delete_teams_401
       targets: delete_teams
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_403
+    - name: delete_teams_403
       targets: delete_teams
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_404
+    - name: delete_teams_404
       targets: delete_teams
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_405
+    - name: delete_teams_405
       targets: delete_teams
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_408
+    - name: delete_teams_408
       targets: delete_teams
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_500
+    - name: delete_teams_500
       targets: delete_teams
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_502
+    - name: delete_teams_502
       targets: delete_teams
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_503
+    - name: delete_teams_503
       targets: delete_teams
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_504
+    - name: delete_teams_504
       targets: delete_teams
       metric_of_interest: status_codes.504
       direction: -1
@@ -658,85 +658,85 @@ tests :
       threshold: 10
       context: 10
       correlation: add_team_members_status_codes.200
-    - name:  add_team_members_0
+    - name: add_team_members_0
       targets: add_team_members
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_200
+    - name: add_team_members_200
       targets: add_team_members
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_201
+    - name: add_team_members_201
       targets: add_team_members
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_204
+    - name: add_team_members_204
       targets: add_team_members
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_400
+    - name: add_team_members_400
       targets: add_team_members
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_401
+    - name: add_team_members_401
       targets: add_team_members
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_403
+    - name: add_team_members_403
       targets: add_team_members
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_404
+    - name: add_team_members_404
       targets: add_team_members
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_405
+    - name: add_team_members_405
       targets: add_team_members
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_408
+    - name: add_team_members_408
       targets: add_team_members
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_500
+    - name: add_team_members_500
       targets: add_team_members
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_502
+    - name: add_team_members_502
       targets: add_team_members
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_503
+    - name: add_team_members_503
       targets: add_team_members
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_team_members_504
+    - name: add_team_members_504
       targets: add_team_members
       metric_of_interest: status_codes.504
       direction: -1
@@ -749,85 +749,85 @@ tests :
       threshold: 10
       context: 10
       correlation: list_team_members_status_codes.200
-    - name:  list_team_members_0
+    - name: list_team_members_0
       targets: list_team_members
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_200
+    - name: list_team_members_200
       targets: list_team_members
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_201
+    - name: list_team_members_201
       targets: list_team_members
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_204
+    - name: list_team_members_204
       targets: list_team_members
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_400
+    - name: list_team_members_400
       targets: list_team_members
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_401
+    - name: list_team_members_401
       targets: list_team_members
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_403
+    - name: list_team_members_403
       targets: list_team_members
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_404
+    - name: list_team_members_404
       targets: list_team_members
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_405
+    - name: list_team_members_405
       targets: list_team_members
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_408
+    - name: list_team_members_408
       targets: list_team_members
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_500
+    - name: list_team_members_500
       targets: list_team_members
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_502
+    - name: list_team_members_502
       targets: list_team_members
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_503
+    - name: list_team_members_503
       targets: list_team_members
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_members_504
+    - name: list_team_members_504
       targets: list_team_members
       metric_of_interest: status_codes.504
       direction: -1
@@ -840,85 +840,85 @@ tests :
       threshold: 10
       context: 10
       correlation: delete_team_members_status_codes.200
-    - name:  delete_team_members_0
+    - name: delete_team_members_0
       targets: delete_team_members
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_200
+    - name: delete_team_members_200
       targets: delete_team_members
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_201
+    - name: delete_team_members_201
       targets: delete_team_members
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_204
+    - name: delete_team_members_204
       targets: delete_team_members
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_400
+    - name: delete_team_members_400
       targets: delete_team_members
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_401
+    - name: delete_team_members_401
       targets: delete_team_members
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_403
+    - name: delete_team_members_403
       targets: delete_team_members
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_404
+    - name: delete_team_members_404
       targets: delete_team_members
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_405
+    - name: delete_team_members_405
       targets: delete_team_members
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_408
+    - name: delete_team_members_408
       targets: delete_team_members
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_500
+    - name: delete_team_members_500
       targets: delete_team_members
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_502
+    - name: delete_team_members_502
       targets: delete_team_members
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_503
+    - name: delete_team_members_503
       targets: delete_team_members
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_team_members_504
+    - name: delete_team_members_504
       targets: delete_team_members
       metric_of_interest: status_codes.504
       direction: -1
@@ -931,85 +931,85 @@ tests :
       threshold: 10
       context: 10
       correlation: list_tags_for_user_repos_status_codes.200
-    - name:  list_tags_for_user_repos_0
+    - name: list_tags_for_user_repos_0
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_200
+    - name: list_tags_for_user_repos_200
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_201
+    - name: list_tags_for_user_repos_201
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_204
+    - name: list_tags_for_user_repos_204
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_400
+    - name: list_tags_for_user_repos_400
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_401
+    - name: list_tags_for_user_repos_401
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_403
+    - name: list_tags_for_user_repos_403
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_404
+    - name: list_tags_for_user_repos_404
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_405
+    - name: list_tags_for_user_repos_405
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_408
+    - name: list_tags_for_user_repos_408
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_500
+    - name: list_tags_for_user_repos_500
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_502
+    - name: list_tags_for_user_repos_502
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_503
+    - name: list_tags_for_user_repos_503
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_tags_for_user_repos_504
+    - name: list_tags_for_user_repos_504
       targets: list_tags_for_user_repos
       metric_of_interest: status_codes.504
       direction: -1
@@ -1022,85 +1022,85 @@ tests :
       threshold: 10
       context: 10
       correlation: get_catalog_status_codes.200
-    - name:  get_catalog_0
+    - name: get_catalog_0
       targets: get_catalog
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_200
+    - name: get_catalog_200
       targets: get_catalog
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_201
+    - name: get_catalog_201
       targets: get_catalog
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_204
+    - name: get_catalog_204
       targets: get_catalog
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_400
+    - name: get_catalog_400
       targets: get_catalog
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_401
+    - name: get_catalog_401
       targets: get_catalog
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_403
+    - name: get_catalog_403
       targets: get_catalog
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_404
+    - name: get_catalog_404
       targets: get_catalog
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_405
+    - name: get_catalog_405
       targets: get_catalog
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_408
+    - name: get_catalog_408
       targets: get_catalog
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_500
+    - name: get_catalog_500
       targets: get_catalog
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_502
+    - name: get_catalog_502
       targets: get_catalog
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_503
+    - name: get_catalog_503
       targets: get_catalog
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_catalog_504
+    - name: get_catalog_504
       targets: get_catalog
       metric_of_interest: status_codes.504
       direction: -1
@@ -1113,85 +1113,85 @@ tests :
       threshold: 10
       context: 10
       correlation: delete_repository_tags_status_codes.200
-    - name:  delete_repository_tags_0
+    - name: delete_repository_tags_0
       targets: delete_repository_tags
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_200
+    - name: delete_repository_tags_200
       targets: delete_repository_tags
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_201
+    - name: delete_repository_tags_201
       targets: delete_repository_tags
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_204
+    - name: delete_repository_tags_204
       targets: delete_repository_tags
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_400
+    - name: delete_repository_tags_400
       targets: delete_repository_tags
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_401
+    - name: delete_repository_tags_401
       targets: delete_repository_tags
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_403
+    - name: delete_repository_tags_403
       targets: delete_repository_tags
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_404
+    - name: delete_repository_tags_404
       targets: delete_repository_tags
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_405
+    - name: delete_repository_tags_405
       targets: delete_repository_tags
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_408
+    - name: delete_repository_tags_408
       targets: delete_repository_tags
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_500
+    - name: delete_repository_tags_500
       targets: delete_repository_tags
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_502
+    - name: delete_repository_tags_502
       targets: delete_repository_tags
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_503
+    - name: delete_repository_tags_503
       targets: delete_repository_tags
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repository_tags_504
+    - name: delete_repository_tags_504
       targets: delete_repository_tags
       metric_of_interest: status_codes.504
       direction: -1
@@ -1204,85 +1204,85 @@ tests :
       threshold: 10
       context: 10
       correlation: create_repositories_status_codes.200
-    - name:  create_repositories_0
+    - name: create_repositories_0
       targets: create_repositories
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_200
+    - name: create_repositories_200
       targets: create_repositories
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_201
+    - name: create_repositories_201
       targets: create_repositories
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_204
+    - name: create_repositories_204
       targets: create_repositories
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_400
+    - name: create_repositories_400
       targets: create_repositories
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_401
+    - name: create_repositories_401
       targets: create_repositories
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_403
+    - name: create_repositories_403
       targets: create_repositories
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_404
+    - name: create_repositories_404
       targets: create_repositories
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_405
+    - name: create_repositories_405
       targets: create_repositories
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_408
+    - name: create_repositories_408
       targets: create_repositories
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_500
+    - name: create_repositories_500
       targets: create_repositories
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_502
+    - name: create_repositories_502
       targets: create_repositories
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_503
+    - name: create_repositories_503
       targets: create_repositories
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  create_repositories_504
+    - name: create_repositories_504
       targets: create_repositories
       metric_of_interest: status_codes.504
       direction: -1
@@ -1295,85 +1295,85 @@ tests :
       threshold: 10
       context: 10
       correlation: update_repositories_status_codes.200
-    - name:  update_repositories_0
+    - name: update_repositories_0
       targets: update_repositories
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_200
+    - name: update_repositories_200
       targets: update_repositories
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_201
+    - name: update_repositories_201
       targets: update_repositories
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_204
+    - name: update_repositories_204
       targets: update_repositories
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_400
+    - name: update_repositories_400
       targets: update_repositories
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_401
+    - name: update_repositories_401
       targets: update_repositories
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_403
+    - name: update_repositories_403
       targets: update_repositories
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_404
+    - name: update_repositories_404
       targets: update_repositories
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_405
+    - name: update_repositories_405
       targets: update_repositories
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_408
+    - name: update_repositories_408
       targets: update_repositories
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_500
+    - name: update_repositories_500
       targets: update_repositories
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_502
+    - name: update_repositories_502
       targets: update_repositories
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_503
+    - name: update_repositories_503
       targets: update_repositories
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  update_repositories_504
+    - name: update_repositories_504
       targets: update_repositories
       metric_of_interest: status_codes.504
       direction: -1
@@ -1386,85 +1386,85 @@ tests :
       threshold: 10
       context: 10
       correlation: get_repositories_status_codes.200
-    - name:  get_repositories_0
+    - name: get_repositories_0
       targets: get_repositories
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_200
+    - name: get_repositories_200
       targets: get_repositories
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_201
+    - name: get_repositories_201
       targets: get_repositories
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_204
+    - name: get_repositories_204
       targets: get_repositories
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_400
+    - name: get_repositories_400
       targets: get_repositories
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_401
+    - name: get_repositories_401
       targets: get_repositories
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_403
+    - name: get_repositories_403
       targets: get_repositories
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_404
+    - name: get_repositories_404
       targets: get_repositories
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_405
+    - name: get_repositories_405
       targets: get_repositories
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_408
+    - name: get_repositories_408
       targets: get_repositories
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_500
+    - name: get_repositories_500
       targets: get_repositories
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_502
+    - name: get_repositories_502
       targets: get_repositories
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_503
+    - name: get_repositories_503
       targets: get_repositories
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_repositories_504
+    - name: get_repositories_504
       targets: get_repositories
       metric_of_interest: status_codes.504
       direction: -1
@@ -1477,85 +1477,85 @@ tests :
       threshold: 10
       context: 10
       correlation: delete_repositories_status_codes.200
-    - name:  delete_repositories_0
+    - name: delete_repositories_0
       targets: delete_repositories
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_200
+    - name: delete_repositories_200
       targets: delete_repositories
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_201
+    - name: delete_repositories_201
       targets: delete_repositories
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_204
+    - name: delete_repositories_204
       targets: delete_repositories
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_400
+    - name: delete_repositories_400
       targets: delete_repositories
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_401
+    - name: delete_repositories_401
       targets: delete_repositories
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_403
+    - name: delete_repositories_403
       targets: delete_repositories
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_404
+    - name: delete_repositories_404
       targets: delete_repositories
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_405
+    - name: delete_repositories_405
       targets: delete_repositories
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_408
+    - name: delete_repositories_408
       targets: delete_repositories
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_500
+    - name: delete_repositories_500
       targets: delete_repositories
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_502
+    - name: delete_repositories_502
       targets: delete_repositories
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_503
+    - name: delete_repositories_503
       targets: delete_repositories
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_repositories_504
+    - name: delete_repositories_504
       targets: delete_repositories
       metric_of_interest: status_codes.504
       direction: -1
@@ -1568,85 +1568,85 @@ tests :
       threshold: 10
       context: 10
       correlation: add_teams_to_organizations_repos_status_codes.200
-    - name:  add_teams_to_organizations_repos_0
+    - name: add_teams_to_organizations_repos_0
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_200
+    - name: add_teams_to_organizations_repos_200
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_201
+    - name: add_teams_to_organizations_repos_201
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_204
+    - name: add_teams_to_organizations_repos_204
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_400
+    - name: add_teams_to_organizations_repos_400
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_401
+    - name: add_teams_to_organizations_repos_401
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_403
+    - name: add_teams_to_organizations_repos_403
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_404
+    - name: add_teams_to_organizations_repos_404
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_405
+    - name: add_teams_to_organizations_repos_405
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_408
+    - name: add_teams_to_organizations_repos_408
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_500
+    - name: add_teams_to_organizations_repos_500
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_502
+    - name: add_teams_to_organizations_repos_502
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_503
+    - name: add_teams_to_organizations_repos_503
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_teams_to_organizations_repos_504
+    - name: add_teams_to_organizations_repos_504
       targets: add_teams_to_organizations_repos
       metric_of_interest: status_codes.504
       direction: -1
@@ -1659,85 +1659,85 @@ tests :
       threshold: 10
       context: 10
       correlation: add_users_to_organizations_repos_status_codes.200
-    - name:  add_users_to_organizations_repos_0
+    - name: add_users_to_organizations_repos_0
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_200
+    - name: add_users_to_organizations_repos_200
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_201
+    - name: add_users_to_organizations_repos_201
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_204
+    - name: add_users_to_organizations_repos_204
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_400
+    - name: add_users_to_organizations_repos_400
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_401
+    - name: add_users_to_organizations_repos_401
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_403
+    - name: add_users_to_organizations_repos_403
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_404
+    - name: add_users_to_organizations_repos_404
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_405
+    - name: add_users_to_organizations_repos_405
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_408
+    - name: add_users_to_organizations_repos_408
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_500
+    - name: add_users_to_organizations_repos_500
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_502
+    - name: add_users_to_organizations_repos_502
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_503
+    - name: add_users_to_organizations_repos_503
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  add_users_to_organizations_repos_504
+    - name: add_users_to_organizations_repos_504
       targets: add_users_to_organizations_repos
       metric_of_interest: status_codes.504
       direction: -1
@@ -1750,85 +1750,85 @@ tests :
       threshold: 10
       context: 10
       correlation: list_team_permissions_status_codes.200
-    - name:  list_team_permissions_0
+    - name: list_team_permissions_0
       targets: list_team_permissions
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_200
+    - name: list_team_permissions_200
       targets: list_team_permissions
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_201
+    - name: list_team_permissions_201
       targets: list_team_permissions
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_204
+    - name: list_team_permissions_204
       targets: list_team_permissions
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_400
+    - name: list_team_permissions_400
       targets: list_team_permissions
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_401
+    - name: list_team_permissions_401
       targets: list_team_permissions
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_403
+    - name: list_team_permissions_403
       targets: list_team_permissions
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_404
+    - name: list_team_permissions_404
       targets: list_team_permissions
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_405
+    - name: list_team_permissions_405
       targets: list_team_permissions
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_408
+    - name: list_team_permissions_408
       targets: list_team_permissions
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_500
+    - name: list_team_permissions_500
       targets: list_team_permissions
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_502
+    - name: list_team_permissions_502
       targets: list_team_permissions
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_503
+    - name: list_team_permissions_503
       targets: list_team_permissions
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_team_permissions_504
+    - name: list_team_permissions_504
       targets: list_team_permissions
       metric_of_interest: status_codes.504
       direction: -1
@@ -1841,85 +1841,85 @@ tests :
       threshold: 10
       context: 10
       correlation: get_teams_of_organizations_repos_status_codes.200
-    - name:  get_teams_of_organizations_repos_0
+    - name: get_teams_of_organizations_repos_0
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_200
+    - name: get_teams_of_organizations_repos_200
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_201
+    - name: get_teams_of_organizations_repos_201
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_204
+    - name: get_teams_of_organizations_repos_204
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_400
+    - name: get_teams_of_organizations_repos_400
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_401
+    - name: get_teams_of_organizations_repos_401
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_403
+    - name: get_teams_of_organizations_repos_403
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_404
+    - name: get_teams_of_organizations_repos_404
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_405
+    - name: get_teams_of_organizations_repos_405
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_408
+    - name: get_teams_of_organizations_repos_408
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_500
+    - name: get_teams_of_organizations_repos_500
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_502
+    - name: get_teams_of_organizations_repos_502
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_503
+    - name: get_teams_of_organizations_repos_503
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_teams_of_organizations_repos_504
+    - name: get_teams_of_organizations_repos_504
       targets: get_teams_of_organizations_repos
       metric_of_interest: status_codes.504
       direction: -1
@@ -1932,85 +1932,85 @@ tests :
       threshold: 10
       context: 10
       correlation: list_teams_of_organizations_repos_status_codes.200
-    - name:  list_teams_of_organizations_repos_0
+    - name: list_teams_of_organizations_repos_0
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_200
+    - name: list_teams_of_organizations_repos_200
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_201
+    - name: list_teams_of_organizations_repos_201
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_204
+    - name: list_teams_of_organizations_repos_204
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_400
+    - name: list_teams_of_organizations_repos_400
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_401
+    - name: list_teams_of_organizations_repos_401
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_403
+    - name: list_teams_of_organizations_repos_403
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_404
+    - name: list_teams_of_organizations_repos_404
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_405
+    - name: list_teams_of_organizations_repos_405
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_408
+    - name: list_teams_of_organizations_repos_408
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_500
+    - name: list_teams_of_organizations_repos_500
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_502
+    - name: list_teams_of_organizations_repos_502
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_503
+    - name: list_teams_of_organizations_repos_503
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_teams_of_organizations_repos_504
+    - name: list_teams_of_organizations_repos_504
       targets: list_teams_of_organizations_repos
       metric_of_interest: status_codes.504
       direction: -1
@@ -2023,85 +2023,85 @@ tests :
       threshold: 10
       context: 10
       correlation: get_users_of_organizations_repos_status_codes.200
-    - name:  get_users_of_organizations_repos_0
+    - name: get_users_of_organizations_repos_0
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_200
+    - name: get_users_of_organizations_repos_200
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_201
+    - name: get_users_of_organizations_repos_201
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_204
+    - name: get_users_of_organizations_repos_204
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_400
+    - name: get_users_of_organizations_repos_400
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_401
+    - name: get_users_of_organizations_repos_401
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_403
+    - name: get_users_of_organizations_repos_403
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_404
+    - name: get_users_of_organizations_repos_404
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_405
+    - name: get_users_of_organizations_repos_405
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_408
+    - name: get_users_of_organizations_repos_408
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_500
+    - name: get_users_of_organizations_repos_500
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_502
+    - name: get_users_of_organizations_repos_502
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_503
+    - name: get_users_of_organizations_repos_503
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  get_users_of_organizations_repos_504
+    - name: get_users_of_organizations_repos_504
       targets: get_users_of_organizations_repos
       metric_of_interest: status_codes.504
       direction: -1
@@ -2114,85 +2114,85 @@ tests :
       threshold: 10
       context: 10
       correlation: list_users_of_organizations_repos_status_codes.200
-    - name:  list_users_of_organizations_repos_0
+    - name: list_users_of_organizations_repos_0
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_200
+    - name: list_users_of_organizations_repos_200
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_201
+    - name: list_users_of_organizations_repos_201
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_204
+    - name: list_users_of_organizations_repos_204
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_400
+    - name: list_users_of_organizations_repos_400
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_401
+    - name: list_users_of_organizations_repos_401
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_403
+    - name: list_users_of_organizations_repos_403
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_404
+    - name: list_users_of_organizations_repos_404
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_405
+    - name: list_users_of_organizations_repos_405
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_408
+    - name: list_users_of_organizations_repos_408
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_500
+    - name: list_users_of_organizations_repos_500
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_502
+    - name: list_users_of_organizations_repos_502
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_503
+    - name: list_users_of_organizations_repos_503
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  list_users_of_organizations_repos_504
+    - name: list_users_of_organizations_repos_504
       targets: list_users_of_organizations_repos
       metric_of_interest: status_codes.504
       direction: -1
@@ -2205,85 +2205,85 @@ tests :
       threshold: 10
       context: 10
       correlation: delete_teams_of_organizations_repos_status_codes.200
-    - name:  delete_teams_of_organizations_repos_0
+    - name: delete_teams_of_organizations_repos_0
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_200
+    - name: delete_teams_of_organizations_repos_200
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_201
+    - name: delete_teams_of_organizations_repos_201
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_204
+    - name: delete_teams_of_organizations_repos_204
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_400
+    - name: delete_teams_of_organizations_repos_400
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_401
+    - name: delete_teams_of_organizations_repos_401
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_403
+    - name: delete_teams_of_organizations_repos_403
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_404
+    - name: delete_teams_of_organizations_repos_404
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_405
+    - name: delete_teams_of_organizations_repos_405
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_408
+    - name: delete_teams_of_organizations_repos_408
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_500
+    - name: delete_teams_of_organizations_repos_500
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_502
+    - name: delete_teams_of_organizations_repos_502
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_503
+    - name: delete_teams_of_organizations_repos_503
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_teams_of_organizations_repos_504
+    - name: delete_teams_of_organizations_repos_504
       targets: delete_teams_of_organizations_repos
       metric_of_interest: status_codes.504
       direction: -1
@@ -2296,92 +2296,92 @@ tests :
       threshold: 10
       context: 10
       correlation: delete_users_of_organizations_repos_status_codes.200
-    - name:  delete_users_of_organizations_repos_0
+    - name: delete_users_of_organizations_repos_0
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.0
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_200
+    - name: delete_users_of_organizations_repos_200
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.200
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_201
+    - name: delete_users_of_organizations_repos_201
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.201
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_204
+    - name: delete_users_of_organizations_repos_204
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.204
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_400
+    - name: delete_users_of_organizations_repos_400
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.400
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_401
+    - name: delete_users_of_organizations_repos_401
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.401
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_403
+    - name: delete_users_of_organizations_repos_403
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.403
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_404
+    - name: delete_users_of_organizations_repos_404
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.404
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_405
+    - name: delete_users_of_organizations_repos_405
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.405
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_408
+    - name: delete_users_of_organizations_repos_408
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.408
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_500
+    - name: delete_users_of_organizations_repos_500
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.500
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_502
+    - name: delete_users_of_organizations_repos_502
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.502
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_503
+    - name: delete_users_of_organizations_repos_503
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.503
       direction: -1
       threshold: 10
       context: 10
-    - name:  delete_users_of_organizations_repos_504
+    - name: delete_users_of_organizations_repos_504
       targets: delete_users_of_organizations_repos
       metric_of_interest: status_codes.504
       direction: -1
       threshold: 10
       context: 10
 
-  - name : quay-load-test-stable-image-push-pulls
+  - name: quay-load-test-stable-image-push-pulls
     benchmark_index: {{ quay_image_push_pull_index }}
     metadata:
       platform: AWS
@@ -2395,7 +2395,7 @@ tests :
       quayVersion: "{{ quay_version }}"
       networkType: OVNKubernetes
 
-    metrics : 
+    metrics: 
     - name: image_pulls_success_count
       targets: image_pulls
       metric_of_interest: success_count
