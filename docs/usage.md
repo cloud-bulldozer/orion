@@ -258,6 +258,34 @@ Today is 27 Aug:
 - `--lookback 5d --since 2024-08-25`: Gets runs from 20 Aug to 25 Aug (5-day bounded window)
 - `--lookback 5d --since 2024-08-25 --lookback-size 3`: Gets up to 3 runs from 20 Aug to 25 Aug
 
+## Changepoint detection options
+
+When using Hunter Analysis, you can tune how changepoints are validated at the edges of your data:
+
+### max-early
+Maximum number of initial data points that may be treated as an "early" changepoint. If a changepoint is detected within this many points from the start of the series, Orion expands the lookback to fetch more history so the changepoint can be validated. Default is `5`.
+
+```bash
+# Disable lookback expansion for early changepoints (strict window)
+orion --max-early 0 --config performance-config.yaml --hunter-analyze
+
+# Allow up to 10 initial points to trigger expansion
+orion --max-early 10 --config performance-config.yaml --hunter-analyze
+```
+
+### min-future
+Minimum number of data points required *after* a changepoint before it is reported. Changepoints too close to the end of the series (with insufficient future data) are ignored. Default is `5`.
+
+```bash
+# Require no future points (report changepoints at the end of the window)
+orion --min-future 0 --config performance-config.yaml --hunter-analyze
+
+# Require at least 10 points after a changepoint
+orion --min-future 10 --config performance-config.yaml --hunter-analyze
+```
+
+Use `--max-early 0` and `--min-future 0` when you want to restrict analysis strictly to the requested time window without expansion and without requiring future data (e.g. in CI or for fixed windows).
+
 ## Node Count Filtering
 
 ### Relaxed Matching
