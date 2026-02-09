@@ -539,3 +539,154 @@ setup() {
   set -e
 }
 
+@test "orion --anomaly-detection with regression should contain inline changepoint" {
+  set +e
+  orion --lookback 15d --since 2026-01-20 --anomaly-detection --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-anomaly.txt
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  # Check if the percentage #1 string exists in the output file
+  if ! grep -q "+155.6%" ./outputs/results-anomaly.txt; then
+    echo "Expected string '+155.6%' not found in results.txt"
+    exit 1
+  fi
+
+  # Check if the percentage #2 string exists in the output file
+  if ! grep -q "+56.7%" ./outputs/results-anomaly.txt; then
+    echo "Expected string '+56.7%' not found in results.txt"
+    exit 1
+  fi
+
+  # Check if the percentage #3 string exists in the output file
+  if ! grep -q "+38.9%" ./outputs/results-anomaly.txt; then
+    echo "Expected string '+38.9%' not found in results.txt"
+    exit 1
+  fi
+
+  # Check if the Bad Version string exists in the output file
+  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-15-195655" ./outputs/results-anomaly.txt; then
+    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
+    exit 1
+  fi
+
+  # Check if the Bad Version string exists in the output file
+  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-17-195655" ./outputs/results-anomaly.txt; then
+    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-17-195655' not found in results.txt"
+    exit 1
+  fi
+
+  set -e
+}
+
+@test "orion --anomaly-detection with regression should contain inline changepoint json" {
+  set +e
+  orion --lookback 15d --since 2026-01-20 --anomaly-detection --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json > ./outputs/results-anomaly.json
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  # Check if changepoints string exists in the output file
+  
+  $CHANGEPOINTS=$(cat ./outputs/results-anomaly.json | grep '"is_changepoint": true' | wc -l)
+  if [ ! $CHANGEPOINTS --eq 3 ]; then
+    echo "Expected number of changepoints not found in ./outputs/results-anomaly.json"
+    exit 1
+  fi
+
+  set -e
+}
+
+@test "orion --anomaly-detection with regression should contain inline changepoint junit" {
+  set +e
+  orion --lookback 15d --since 2026-01-20 --anomaly-detection --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit > ./outputs/results-anomaly.xml
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  # Check if the percentage #1 string exists in the output file
+  if ! grep -q "155.648" ./outputs/results-anomaly.xml; then
+    echo "Expected string '155.648' not found in ./outputs/results-anomaly.xml"
+    exit 1
+  fi
+
+  # Check if the percentage #2 string exists in the output file
+  if ! grep -q "56.7208" ./outputs/results-anomaly.xml; then
+    echo "Expected string '56.7208' not found in ./outputs/results-anomaly.xml"
+    exit 1
+  fi
+
+  # Check if the percentage #3 string exists in the output file
+  if ! grep -q "38.8858" ./outputs/results-anomaly.xml; then
+    echo "Expected string '38.8858' not found in ./outputs/results-anomaly.xml"
+    exit 1
+  fi
+  
+  set -e
+}
+
+@test "orion --cmr with regression should contain inline changepoint" {
+  set +e
+  orion --lookback 15d --since 2026-01-20 --cmr --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-cmr.txt
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 0 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  # Check if the percentage #1 string exists in the output file
+  if ! grep -q "+160.9%" ./outputs/results-cmr.txt; then
+    echo "Expected string '+160.9%' not found in results-cmr.txt"
+    exit 1
+  fi
+
+  set -e
+}
+
+@test "orion --cmr with regression should contain inline changepoint json" {
+  set +e
+  orion --lookback 15d --since 2026-01-20 --cmr --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json > ./outputs/results-cmr.json
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 0 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  bad_version=$(jq -r '.[] | select(.is_changepoint == true) | .ocpVersion' ./outputs/results-cmr.json)
+  if [ "$bad_version" != "4.20.0-0.nightly-2026-01-18-195655" ]; then
+    echo "Version did not match. Expected '4.20.0-0.nightly-2026-01-18-195655', got '$bad_version'"
+    exit 1
+  fi
+
+  set -e
+}
+
+@test "orion --cmr with regression should contain inline changepoint junit" {
+  set +e
+  orion --lookback 15d --since 2026-01-20 --cmr --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit > ./outputs/results-cmr.xml
+  EXIT_CODE=$?
+
+  if [ ! $EXIT_CODE -eq 0 ]; then
+    echo "no regression found"
+    exit 1
+  fi
+
+  # Check if the percentage string exists in the output file
+  if ! grep -q "True             |             160.879" ./outputs/results-cmr.xml; then
+    echo "Expected string 'True             |             160.879' not found in results-cmr.xml"
+    exit 1
+  fi
+
+  set -e
+}
