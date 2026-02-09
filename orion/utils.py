@@ -306,7 +306,7 @@ class Utils:
             test_threshold=test["threshold"]
         timestamp_field = "timestamp"
         if "timestamp" in test:
-            timestamp_field = test["timestamp"]
+            timestamp_field=test["timestamp"]
         # getting metadata
         metadata = (
             self.extract_metadata_from_test(test)
