@@ -2,6 +2,7 @@
 run test
 """
 import os
+import re
 import sys
 import json
 import copy
@@ -132,6 +133,50 @@ def get_start_timestamp(kwargs: Dict[str, Any], test: Dict[str, Any], is_pull: b
         get_subtracted_timestamp(kwargs["lookback"]) if kwargs.get("lookback") else ""
     )
 
+def has_early_changepoint(result_data_json: list, max_early_index: int = 5) -> bool:
+    """Check if any changepoint is detected in the first N data points.
+
+    Args:
+        result_data_json: List of result dictionaries from algorithm output
+        max_early_index: Maximum index (0-based) to consider as "early"
+            (default: 5, meaning first 5 points)
+
+    Returns:
+        bool: True if any changepoint is in the first max_early_index points
+    """
+    for index, result in enumerate(result_data_json):
+        if index < max_early_index and result.get("is_changepoint", False):
+            return True
+    return False
+
+
+def increase_lookback(lookback_str: str, days_to_add: int = 10) -> str:
+    """Increase lookback duration by adding days.
+
+    Args:
+        lookback_str: Lookback string in format like "15d" or "20d"
+        days_to_add: Number of days to add (default: 10)
+
+    Returns:
+        str: New lookback string with increased days
+    """
+    if not lookback_str:
+        return f"{days_to_add}d"
+
+    reg_ex = re.match(r"^(?:(\d+)d)?(?:(\d+)h)?$", lookback_str)
+    if not reg_ex:
+        return f"{days_to_add}d"
+
+    days = int(reg_ex.group(1)) if reg_ex.group(1) else 0
+    hours = int(reg_ex.group(2)) if reg_ex.group(2) else 0
+
+    new_days = days + days_to_add
+
+    if hours > 0:
+        return f"{new_days}d{hours}h"
+    return f"{new_days}d"
+
+
 def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, Any]:
     """
     Utils class to process the test
@@ -222,23 +267,113 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
     regression_data = []
     if test_flag:
         testname, result_data, test_flag = algorithm.output(cnsts.JSON)
-        prev_ver = None
-        bad_ver = None
-        for result in json.loads(result_data):
-            if result["is_changepoint"]:
-                bad_ver = result[test["version_field"]]
+        result_data_json = json.loads(result_data)
+        current_points = len(fingerprint_matched_df)
+
+        changepoint_buffer = kwargs.get("changepoint_buffer", 5)
+        if changepoint_buffer > 0 and has_early_changepoint(
+                result_data_json, max_early_index=changepoint_buffer
+        ):
+            logger.info(
+                "Changepoint in buffer (first %d points): attempting "
+                "window expansion for test=%s",
+                changepoint_buffer,
+                test["name"],
+            )
+            expanded_kwargs = copy.deepcopy(kwargs)
+            original_lookback = kwargs.get("lookback", "")
+            expand_days = kwargs.get("expand_days", 10)
+            expand_points = kwargs.get("expand_points", 5)
+            expanded_lookback = increase_lookback(
+                original_lookback, days_to_add=expand_days
+            )
+            expanded_kwargs["lookback"] = expanded_lookback
+
+            required_lookback_size = current_points + expand_points
+            expanded_kwargs["lookback_size"] = required_lookback_size
+            logger.info(
+                "Window expansion: lookback %s -> %s, lookback_size -> %d",
+                original_lookback or "(none)",
+                expanded_lookback,
+                required_lookback_size,
+            )
+
+            expanded_start_timestamp = get_start_timestamp(
+                expanded_kwargs, test, is_pull
+            )
+            expanded_fingerprint_matched_df, _ = utils.process_test(
+                test,
+                matcher,
+                expanded_kwargs,
+                expanded_start_timestamp
+            )
+
+            expanded_points = (
+                len(expanded_fingerprint_matched_df)
+                if expanded_fingerprint_matched_df is not None
+                else 0
+            )
+
+            if (expanded_fingerprint_matched_df is not None and
+                    expanded_points > len(fingerprint_matched_df)):
+                if algorithm_name == cnsts.ISOLATION_FOREST:
+                    expanded_fingerprint_matched_df = (
+                        expanded_fingerprint_matched_df
+                        .dropna()
+                        .reset_index()
+                    )
+
+                expanded_algorithm = algorithmFactory.instantiate_algorithm(
+                    algorithm_name,
+                    expanded_fingerprint_matched_df,
+                    test,
+                    expanded_kwargs,
+                    metrics_config,
+                )
+
+                (expanded_testname, expanded_result_data,
+                 expanded_test_flag) = expanded_algorithm.output(cnsts.JSON)
+                expanded_result_data_json = json.loads(expanded_result_data)
+
+                if expanded_test_flag:
+                    logger.info(
+                        "Window expansion: expanded run still has changepoint; "
+                        "using expanded results (test=%s)",
+                        test["name"],
+                    )
+                    result_data_json = expanded_result_data_json
+                    test_flag = expanded_test_flag
+                    (expanded_testname, expanded_result_data_formatted, _) = (
+                        expanded_algorithm.output(kwargs["output_format"])
+                    )
+                    result_output[expanded_testname] = expanded_result_data_formatted
+                else:
+                    test_flag = False
+                    result_data_json = expanded_result_data_json
+                    (_, expanded_result_data_formatted, _) = (
+                        expanded_algorithm.output(kwargs["output_format"])
+                    )
+                    result_output[expanded_testname] = expanded_result_data_formatted
             else:
-                prev_ver = result[test["version_field"]]
-            if prev_ver is not None and bad_ver is not None:
-                if sippy_pr_search:
-                    prs = Utils().sippy_pr_diff(prev_ver, bad_ver)
-                    doc = {"prev_ver": prev_ver,
-                            "bad_ver": bad_ver}
-                    # We have seen where sippy_pr_diff returns an empty list of PRs
-                    # since there is a change the payload tests have not completed.
-                    if prs:
-                        doc["prs"] = prs
-                    regression_data.append(doc)
+                logger.info(
+                    "Window expansion: no additional data (original=%d, "
+                    "expanded=%d); skipping early changepoint (test=%s)",
+                    current_points,
+                    expanded_points,
+                    test["name"],
+                )
+                test_flag = False
+
+        if test_flag:
+            logger.info(
+                "Regression reported: changepoint validated (test=%s)",
+                test["name"],
+            )
+            prev_ver = None
+            bad_ver = None
+            for result in result_data_json:
+                if result["is_changepoint"]:
+                    bad_ver = result[test["version_field"]]
                 else:
                     regression_data.append({
                         "prev_ver": prev_ver,
