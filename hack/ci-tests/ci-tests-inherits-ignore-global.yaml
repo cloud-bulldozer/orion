@@ -1,0 +1,26 @@
+parentConfig: parent.yaml
+metricsFile: metrics.yaml
+tests :
+  - name : olm-integration-test
+    IgnoreGlobal: true
+    IgnoreGlobalMetrics: true
+    metadata:
+      jobType: {{ jobtype | default('periodic') }}
+      pullNumber: {{ pull_number | default(0) }}
+      organization: {{ organization | default('') }}
+      repository: {{ repository | default('') }}
+      not:
+        stream: okd
+
+    metrics :
+    - name:  OCP-84094_catalogdCPU_GCP
+      metricName : catalogd_cpu_usage_cores
+      metric_of_interest: value
+      not: 
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: OLM]"
+      threshold: 1

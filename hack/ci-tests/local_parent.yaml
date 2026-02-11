@@ -1,0 +1,10 @@
+metadata:
+  platform: GCP
+  clusterType: self-managed
+  masterNodesType: e2-custom-6-16384
+  masterNodesCount: 6
+  workerNodesType: e2-custom-6-16384
+  workerNodesCount: 6
+  benchmark.keyword: olm 
+  ocpVersion: "{{ version }}"
+  networkType: OVNKubernetes
