@@ -15,7 +15,7 @@ tests:
 
 ## Configuration Inheritance
 
-Orion supports configuration inheritance to reduce duplication and improve maintainability. You can inherit metadata from a parent configuration file and load metrics from an external file.
+Orion supports configuration inheritance to reduce duplication and improve maintainability. You can inherit metadata from a parent configuration file and load metrics from an separate file.
 
 ### Parent Configuration (`parentConfig`)
 
@@ -55,13 +55,13 @@ tests:
       # metric definitions
 ```
 
-### External Metrics File (`metricsFile`)
+### Separate Metrics File (`metricsFile`)
 
-The `metricsFile` field allows you to load metrics from an external file. This is useful for sharing common metrics across multiple test configurations.
+The `metricsFile` field allows you to load metrics from an separate file. This is useful for sharing common metrics across multiple test configurations.
 
 **How it works:**
 - The metrics file should contain a list of metric definitions
-- Metrics from the external file are merged with metrics defined in the test
+- Metrics from the separate file are merged with metrics defined in the test
 - **Test-level metrics take precedence** - if a metric with the same `name` and `metricName` exists in both, the test-level metric is used
 - Paths can be relative (to the config file directory) or absolute
 - Metrics are merged: inherited metrics that don't conflict are included, then test-level metrics are added
