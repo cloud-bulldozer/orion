@@ -123,6 +123,93 @@ tests:
       # Can add test-specific metrics here
 ```
 
+### Local Overrides (`local_config` and `local_metrics`)
+
+For individual tests, you can override the global parent and metrics by loading metadata or metrics from a **local** file instead of the config-level `parentConfig` or `metricsFile`.
+
+**`local_config`** (test-level):
+
+- Path to a YAML file that contains a `metadata` section.
+- That file’s metadata is merged into the test’s metadata; **test-level metadata takes precedence** over the local file.
+- Using `local_config` for a test **automatically skips** the global `parentConfig` for that test (the test does not inherit from `parentConfig`).
+- Paths can be relative (to the config file directory) or absolute.
+
+**`local_metrics`** (test-level):
+
+- Path to a YAML file containing a **list** of metric definitions (same format as `metricsFile`).
+- Those metrics are merged with the test’s own `metrics`; **test-level metrics take precedence** when names match (same `name` and `metricName`).
+- Using `local_metrics` for a test **automatically skips** the global `metricsFile` for that test (the test does not inherit from `metricsFile`).
+- Paths can be relative (to the config file directory) or absolute.
+
+**Example with local overrides:**
+
+`local_parent.yaml`:
+```yaml
+metadata:
+  platform: GCP
+  clusterType: managed
+```
+
+`local_metrics.yaml`:
+```yaml
+- name: customMetric
+  metricName: myMeasurement
+  metric_of_interest: value
+  threshold: 5
+```
+
+```yaml
+parentConfig: parent.yaml
+metricsFile: metrics.yaml
+tests:
+  - name: my-test
+    local_config: local_parent.yaml
+    local_metrics: local_metrics.yaml
+    metadata:
+      ocpVersion: "4.17"   # Overrides or adds to local_parent metadata
+    metrics:
+      - name: testSpecificMetric
+        # ... only this test gets this metric; global metrics are not used
+```
+
+### Ignoring Global Inheritance (`IgnoreGlobal` and `IgnoreGlobalMetrics`)
+
+You can disable inheritance from the config-level `parentConfig` or `metricsFile` for specific tests without using local files.
+
+**`IgnoreGlobal`** (test-level, boolean):
+
+- When `true`, this test **does not** inherit metadata from `parentConfig`.
+- The test uses only its own `metadata` (and, if set, metadata from `local_config`).
+- Use when a test needs completely different metadata and you do not want to use a local config file.
+
+**`IgnoreGlobalMetrics`** (test-level, boolean):
+
+- When `true`, this test **does not** inherit metrics from `metricsFile`.
+- The test uses only its own `metrics` (and, if set, metrics from `local_metrics`).
+- Use when a test needs a different set of metrics and you do not want to use a local metrics file.
+
+**Example:**
+
+```yaml
+parentConfig: parent.yaml
+metricsFile: metrics.yaml
+tests:
+  - name: olm-integration-test
+    IgnoreGlobal: true
+    IgnoreGlobalMetrics: true
+    metadata:
+      jobType: periodic
+      not:
+        stream: okd
+    metrics:
+      - name: catalogdCPU
+        metricName: catalogd_cpu_usage_cores
+        metric_of_interest: value
+        threshold: 1
+```
+
+In this example, the test uses only the metadata and metrics defined in the test block; nothing is merged from `parent.yaml` or `metrics.yaml`.
+
 ## Complete Example
 
 ```yaml
