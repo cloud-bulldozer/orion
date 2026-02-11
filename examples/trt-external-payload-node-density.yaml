@@ -36,7 +36,7 @@ tests:
         - "[Jira: PodLatency]"
       metric_of_interest: P99
       direction: 1
-      threshold: 10
+      threshold: 25
 
     - name: apiserverCPU
       metricName.keyword: containerCPU

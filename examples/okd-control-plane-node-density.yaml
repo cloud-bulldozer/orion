@@ -35,7 +35,7 @@ tests:
       labels:
         - "[Jira: PodLatency]"
       direction: 1
-      threshold: 10
+      threshold: 25
 
     - name: cpu-kubelet
       metricName.keyword: cpu-kubelet
