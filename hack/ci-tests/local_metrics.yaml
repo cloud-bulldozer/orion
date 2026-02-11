@@ -1,11 +1,11 @@
-- name:  OCP-84094_catalogdCPU_GCP_sum
+- name:  OCP-84094_catalogdCPU_GCP_max
   metricName : catalogd_cpu_usage_cores
   metric_of_interest: value
   not: 
     jobConfig.name: "garbage-collection"
   agg:
     value: cpu
-    agg_type: sum
+    agg_type: max
   labels:
     - "[Jira: OLM]"
   threshold: 1

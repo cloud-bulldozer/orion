@@ -32,7 +32,7 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
 
     parent_config = {}
     if "parentConfig" in rendered_config:
-        parent_config = load_parent_config(
+        parent_config = load_config_file(
             rendered_config["parentConfig"],
             config_dir,
             env_vars,
@@ -41,7 +41,7 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
 
     metrics = {}
     if "metricsFile" in rendered_config:
-        metrics = load_metrics_file(
+        metrics = load_config_file(
             rendered_config["metricsFile"],
             config_dir,
             env_vars,
@@ -49,13 +49,29 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
         )
 
     for test in rendered_config["tests"]:
+        skip_global_config = False
+        skip_global_metrics = False
+        local_config = {}
+        local_metrics = {}
+        if "IgnoreGlobal" in test:
+            skip_global_config = test["IgnoreGlobal"]
+        if "IgnoreGlobalMetrics" in test:
+            skip_global_metrics = test["IgnoreGlobalMetrics"]
         if "uuid_field" not in test:
             test["uuid_field"] = "uuid"
         if "version_field" not in test:
             test["version_field"] = "ocpVersion"
-        if parent_config:
+        if "local_config" in test:
+            local_config = load_config_file(test["local_config"], config_dir, env_vars, logger)
+            test["metadata"] = merge_configs(test["metadata"], local_config["metadata"])
+            skip_global_config = True
+        if "local_metrics" in test:
+            local_metrics = load_config_file(test["local_metrics"], config_dir, env_vars, logger)
+            test["metrics"] = merge_lists(test["metrics"], local_metrics)
+            skip_global_metrics = True
+        if parent_config and not skip_global_config:
             test["metadata"] = merge_configs(test["metadata"], parent_config["metadata"])
-        if metrics:
+        if metrics and not skip_global_metrics:
             test["metrics"] = merge_lists(test["metrics"], metrics)
 
     return rendered_config
@@ -87,51 +103,28 @@ def load_ack(ack: str) -> Dict[str,Any]:
     return rendered_config
 
 
-def load_parent_config(parent_config: str,
+def load_config_file(config_file: str,
                     config_dir: str,
                     env_vars: Dict[str, Any],
                     logger: SingletonLogger) -> Dict[str, Any]:
     """Loads parent config file content.
 
     Args:
-        parent_config (str): path to the parent config file
+        config_file (str): path to the config file
         config_dir (str): directory of the config file
         env_vars (Dict[str, Any]): dictionary of input variables
         logger (SingletonLogger): logger instance
     """
     # Determine if path is absolute or relative
-    if os.path.isabs(parent_config):
-        parent_config_path = parent_config
+    if os.path.isabs(config_file):
+        config_path = config_file
     else:
         # Resolve relative path relative to config file directory
-        parent_config_path = os.path.join(config_dir, parent_config)
-    parent_config_content = load_read_file(parent_config_path, logger)
-    # Load YAML content from parentConfig file
-    return render_template(parent_config_content, env_vars, logger)
-
-
-def load_metrics_file(metrics_file: str,
-                    config_dir: str,
-                    env_vars: Dict[str, Any],
-                    logger: SingletonLogger) -> Dict[str, Any]:
-    """Loads metrics file content.
-
-    Args:
-        metrics_file (str): path to the metrics file
-        config_dir (str): directory of the config file
-        env_vars (Dict[str, Any]): dictionary of input variables
-        logger (SingletonLogger): logger instance
-    """
-    # Determine if path is absolute or relative
-    if os.path.isabs(metrics_file):
-        metrics_file_path = metrics_file
-    else:
-        # Resolve relative path relative to config file directory
-        metrics_file_path = os.path.join(config_dir, metrics_file)
-    metrics_file_content = load_read_file(metrics_file_path, logger)
-    # Load YAML content from metricsFile
+        config_path = os.path.join(config_dir, config_file)
+    config_content = load_read_file(config_path, logger)
+    # Load YAML content from config file
     # Render with Jinja2 if it contains templates
-    return render_template(metrics_file_content, env_vars, logger)
+    return render_template(config_content, env_vars, logger)
 
 
 def load_read_file(file_path: str, logger: SingletonLogger) -> str:
