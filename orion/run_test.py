@@ -370,18 +370,22 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 test["name"],
             )
             prev_ver = None
-            bad_ver = None
             for result in result_data_json:
                 if result["is_changepoint"]:
-                    bad_ver = result[test["version_field"]]
-                else:
+                    bad_ver = result.get(test["version_field"])
+                    logger.info(
+                        "Regression versions: prev_ver=%s, bad_ver=%s (test=%s)",
+                        prev_ver,
+                        bad_ver,
+                        test["name"],
+                    )
                     regression_data.append({
                         "prev_ver": prev_ver,
                         "bad_ver": bad_ver,
                         "prs": []
                     })
-                prev_ver = None
-                bad_ver = None
+                else:
+                    prev_ver = result.get(test["version_field"])
 
     regression_flag = regression_flag or test_flag
     return result_output, regression_flag, regression_data, average_values
