@@ -11,7 +11,7 @@ jobs:
     steps:
 
     - name: Install bats
-      uses: bats-core/bats-action@1.5.4
+      uses: bats-core/bats-action@4.0.0
       with:
         bats-version: 1.10.0
         support-install: false
@@ -20,16 +20,11 @@ jobs:
         file-install: false
 
     - name: Check out code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         fetch-depth: 1
         ref: ${{ github.event.pull_request.head.sha }}
         persist-credentials: false
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |

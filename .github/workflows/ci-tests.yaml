@@ -1,4 +1,4 @@
-name: CI tests
+name: CI tests\
 on:
   workflow_dispatch:
   push:
@@ -11,16 +11,24 @@ on:
       - main
 
 jobs:
-  lint:
+  setup-python:
+    uses: ./.github/workflows/python-setup.yaml  # Path to reusable workflow
+    with:
+      python-version: 3.14
+
+  linter:
+    needs: setup-python
     uses: ./.github/workflows/pylint.yaml
 
-  build:
+  builder:
+    needs: setup-python
     uses: ./.github/workflows/builders.yaml
 
-  tests:
-    needs: build
+  unit_tester:
+    needs: setup-python
+    uses: ./.github/workflows/unit_tests.yaml
+
+  tester:
+    needs: [setup-python, builder]
     uses: ./.github/workflows/tests.yaml
     secrets: inherit
-
-  unit-tests:
-    uses: ./.github/workflows/unit_tests.yaml
