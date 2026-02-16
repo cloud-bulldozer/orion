@@ -64,11 +64,9 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
         if "local_config" in test:
             local_config = load_config_file(test["local_config"], config_dir, env_vars, logger)
             test["metadata"] = merge_configs(test["metadata"], local_config["metadata"])
-            skip_global_config = True
         if "local_metrics" in test:
             local_metrics = load_config_file(test["local_metrics"], config_dir, env_vars, logger)
             test["metrics"] = merge_lists(test["metrics"], local_metrics)
-            skip_global_metrics = True
         if parent_config and not skip_global_config:
             test["metadata"] = merge_configs(test["metadata"], parent_config["metadata"])
         if metrics and not skip_global_metrics:
