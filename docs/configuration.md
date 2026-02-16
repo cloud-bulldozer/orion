@@ -131,19 +131,17 @@ For individual tests, you can override the global parent and metrics by loading 
 
 - Path to a YAML file that contains a `metadata` section.
 - That file’s metadata is merged into the test’s metadata; **test-level metadata takes precedence** over the local file.
-- Using `local_config` for a test **automatically skips** the global `parentConfig` for that test (the test does not inherit from `parentConfig`).
 - Paths can be relative (to the config file directory) or absolute.
 
 **`local_metrics`** (test-level):
 
 - Path to a YAML file containing a **list** of metric definitions (same format as `metricsFile`).
 - Those metrics are merged with the test’s own `metrics`; **test-level metrics take precedence** when names match (same `name` and `metricName`).
-- Using `local_metrics` for a test **automatically skips** the global `metricsFile` for that test (the test does not inherit from `metricsFile`).
 - Paths can be relative (to the config file directory) or absolute.
 
 **Example with local overrides:**
 
-`local_parent.yaml`:
+`local_config.yaml`:
 ```yaml
 metadata:
   platform: GCP
@@ -163,10 +161,10 @@ parentConfig: parent.yaml
 metricsFile: metrics.yaml
 tests:
   - name: my-test
-    local_config: local_parent.yaml
+    local_config: local_config.yaml
     local_metrics: local_metrics.yaml
     metadata:
-      ocpVersion: "4.17"   # Overrides or adds to local_parent metadata
+      ocpVersion: "4.17"   # Overrides or adds to local_config metadata
     metrics:
       - name: testSpecificMetric
         # ... only this test gets this metric; global metrics are not used
