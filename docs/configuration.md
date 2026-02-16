@@ -13,6 +13,201 @@ tests:
       # metric definitions
 ```
 
+## Configuration Inheritance
+
+Orion supports configuration inheritance to reduce duplication and improve maintainability. You can inherit metadata from a parent configuration file and load metrics from an separate file.
+
+### Parent Configuration (`parentConfig`)
+
+The `parentConfig` field allows you to inherit metadata from a parent configuration file. This is useful when multiple test configurations share common metadata settings.
+
+**How it works:**
+- The parent configuration file should contain a `metadata` section
+- Metadata from the parent is merged into each test's metadata
+- **Child configuration takes precedence** - if a key exists in both parent and child, the child value is used
+- Paths can be relative (to the config file directory) or absolute
+
+**Example:**
+
+`parent.yaml`:
+```yaml
+metadata:
+  platform: AWS
+  clusterType: self-managed
+  masterNodesType: m6a.xlarge
+  masterNodesCount: 3
+  workerNodesType: m6a.xlarge
+  workerNodesCount: 6
+  benchmark.keyword: node-density
+```
+
+`child.yaml`:
+```yaml
+parentConfig: parent.yaml
+tests:
+  - name: payload-node-density
+    metadata:
+      ocpVersion: "4.17"
+      networkType: OVNKubernetes
+      # Inherits all metadata from parent.yaml
+      # Can override parent values if needed
+    metrics:
+      # metric definitions
+```
+
+### Separate Metrics File (`metricsFile`)
+
+The `metricsFile` field allows you to load metrics from an separate file. This is useful for sharing common metrics across multiple test configurations.
+
+**How it works:**
+- The metrics file should contain a list of metric definitions
+- Metrics from the separate file are merged with metrics defined in the test
+- **Test-level metrics take precedence** - if a metric with the same `name` and `metricName` exists in both, the test-level metric is used
+- Paths can be relative (to the config file directory) or absolute
+- Metrics are merged: inherited metrics that don't conflict are included, then test-level metrics are added
+
+**Example:**
+
+`metrics.yaml`:
+```yaml
+- name: podReadyLatency
+  metricName: podLatencyQuantilesMeasurement
+  quantileName: Ready
+  metric_of_interest: P99
+  labels:
+    - "[Jira: PerfScale]"
+  direction: 1
+  threshold: 10
+
+- name: apiserverCPU
+  metricName: containerCPU
+  labels.namespace.keyword: openshift-kube-apiserver
+  metric_of_interest: value
+  agg:
+    value: cpu
+    agg_type: avg
+  labels:
+    - "[Jira: kube-apiserver]"
+  direction: 1
+  threshold: 10
+```
+
+`config.yaml`:
+```yaml
+metricsFile: metrics.yaml
+tests:
+  - name: my-test
+    metadata:
+      # metadata filters
+    metrics:
+      # Additional metrics specific to this test
+      # Metrics from metrics.yaml are automatically included
+      - name: customMetric
+        # ... metric definition
+```
+
+### Combined Usage
+
+You can use both `parentConfig` and `metricsFile` together:
+
+```yaml
+parentConfig: parent.yaml
+metricsFile: metrics.yaml
+tests:
+  - name: payload-node-density
+    metadata:
+      ocpVersion: "4.17"
+      # Inherits metadata from parent.yaml
+    metrics:
+      # Inherits metrics from metrics.yaml
+      # Can add test-specific metrics here
+```
+
+### Local Overrides (`local_config` and `local_metrics`)
+
+For individual tests, you can override the global parent and metrics by loading metadata or metrics from a **local** file instead of the config-level `parentConfig` or `metricsFile`.
+
+**`local_config`** (test-level):
+
+- Path to a YAML file that contains a `metadata` section.
+- That file’s metadata is merged into the test’s metadata; **test-level metadata takes precedence** over the local file.
+- Paths can be relative (to the config file directory) or absolute.
+
+**`local_metrics`** (test-level):
+
+- Path to a YAML file containing a **list** of metric definitions (same format as `metricsFile`).
+- Those metrics are merged with the test’s own `metrics`; **test-level metrics take precedence** when names match (same `name` and `metricName`).
+- Paths can be relative (to the config file directory) or absolute.
+
+**Example with local overrides:**
+
+`local_config.yaml`:
+```yaml
+metadata:
+  platform: GCP
+  clusterType: managed
+```
+
+`local_metrics.yaml`:
+```yaml
+- name: customMetric
+  metricName: myMeasurement
+  metric_of_interest: value
+  threshold: 5
+```
+
+```yaml
+parentConfig: parent.yaml
+metricsFile: metrics.yaml
+tests:
+  - name: my-test
+    local_config: local_config.yaml
+    local_metrics: local_metrics.yaml
+    metadata:
+      ocpVersion: "4.17"   # Overrides or adds to local_config metadata
+    metrics:
+      - name: testSpecificMetric
+        # ... only this test gets this metric; global metrics are not used
+```
+
+### Ignoring Global Inheritance (`IgnoreGlobal` and `IgnoreGlobalMetrics`)
+
+You can disable inheritance from the config-level `parentConfig` or `metricsFile` for specific tests without using local files.
+
+**`IgnoreGlobal`** (test-level, boolean):
+
+- When `true`, this test **does not** inherit metadata from `parentConfig`.
+- The test uses only its own `metadata` (and, if set, metadata from `local_config`).
+- Use when a test needs completely different metadata and you do not want to use a local config file.
+
+**`IgnoreGlobalMetrics`** (test-level, boolean):
+
+- When `true`, this test **does not** inherit metrics from `metricsFile`.
+- The test uses only its own `metrics` (and, if set, metrics from `local_metrics`).
+- Use when a test needs a different set of metrics and you do not want to use a local metrics file.
+
+**Example:**
+
+```yaml
+parentConfig: parent.yaml
+metricsFile: metrics.yaml
+tests:
+  - name: olm-integration-test
+    IgnoreGlobal: true
+    IgnoreGlobalMetrics: true
+    metadata:
+      jobType: periodic
+      not:
+        stream: okd
+    metrics:
+      - name: catalogdCPU
+        metricName: catalogd_cpu_usage_cores
+        metric_of_interest: value
+        threshold: 1
+```
+
+In this example, the test uses only the metadata and metrics defined in the test block; nothing is merged from `parent.yaml` or `metrics.yaml`.
+
 ## Complete Example
 
 ```yaml
