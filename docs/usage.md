@@ -518,7 +518,7 @@ orion --config performance-config.yaml --hunter-analyze --ack known-issues.yaml
 ```
 
 ## Running from a pull request
-When executing Orion through a CI workflow that is triggered by a pull request the output for it will contain three sections
+When executing Orion with the flag `--pr-analysis` a pull request analysis will executed and the output for it will contain three sections
 
 1. An analysis section of all payload results (No PR data)
 2. A section with the AVG of all payload results
@@ -527,6 +527,8 @@ When executing Orion through a CI workflow that is triggered by a pull request t
 Having the AVG section will provide an easy way to compare the PR results to the payload results, allow to locate any issues.
 
 | The only section that can trigger a failure in the job is the one in section one, the payload data, and it is not related to the changes in the PR.
+
+### Necessary fields
 
 To achieve this the following input_vars should be provided
 
