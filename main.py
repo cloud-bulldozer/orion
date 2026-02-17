@@ -148,6 +148,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--metadata-index", type=str, envvar="es_metadata_index",  help="Index where metadata is stored, can be set via env var es_metadata_index", default="")
 @click.option("--input-vars", type=Dictionary(), default="{}", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
 @click.option("--display", type=List(), default=["buildUrl"], help="Add metadata field as a column in the output (e.g. ocpVirt, upstreamJob)")
+@click.option("--pr-analysis", is_flag=True, help="Analyze PRs for regressions", default=False)
 def main(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
@@ -163,6 +164,20 @@ def main(**kwargs):
     if not kwargs["metadata_index"] or not kwargs["es_server"]:
         logger.error("metadata-index and es-server flags must be provided")
         sys.exit(1)
+    if kwargs["pr_analysis"]:
+        input_vars = kwargs["input_vars"]
+        missing_vars = []
+        if "jobtype" not in input_vars:
+            missing_vars.append("jobtype")
+        if "pull_number" not in input_vars:
+            missing_vars.append("pull_number")
+        if "organization" not in input_vars:
+            missing_vars.append("organization")
+        if "repository" not in input_vars:
+            missing_vars.append("repository")
+        if missing_vars:
+            logger.error("Missing required input variables: %s", ", ".join(missing_vars))
+            sys.exit(1)
     results, results_pull = run(**kwargs)
     is_pull = False
     if results_pull[0]:
