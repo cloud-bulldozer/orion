@@ -117,7 +117,7 @@ class Utils:
                 aggregated_metric_data, columns=[self.uuid_field, timestamp_field, aggregation_name],
                 timestamp_field=timestamp_field
             )
-            aggregated_df[timestamp_field] = aggregated_df[timestamp_field].apply(self.standardize_timestamp)
+            aggregated_df.loc[:, timestamp_field] = aggregated_df[timestamp_field].apply(self.standardize_timestamp)
 
         aggregated_df = aggregated_df.drop_duplicates(subset=[self.uuid_field], keep="first")
         aggregated_metric_name = f"{metric['name']}_{aggregation_type}"
@@ -381,20 +381,20 @@ class Utils:
         merged_df = merged_df.sort_values(by="timestamp")
 
         if len(versions) > 0 :
-            merged_df[self.version_field] = merged_df[self.uuid_field].apply(
+            merged_df.loc[:, self.version_field] = merged_df[self.uuid_field].apply(
                 lambda uuid: versions[uuid]
             )
-            merged_df["prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
+            merged_df.loc[:, "prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
 
         # Add display field data if requested
         display_data = {run[self.uuid_field]: {field: run.get(field) for field in options["display"]} for run in runs}
         for field in options.get("display", []):
-            merged_df[field] = merged_df[self.uuid_field].apply(
+            merged_df.loc[:, field] = merged_df[self.uuid_field].apply(
                 lambda uuid, f=field: display_data.get(uuid, "N/A").get(f, "N/A")
             )
         if options["convert_tinyurl"]:
             shortener = pyshorteners.Shortener(timeout=10)
-            merged_df["buildUrl"] = merged_df[self.uuid_field].apply(
+            merged_df.loc[:, "buildUrl"] = merged_df[self.uuid_field].apply(
                 lambda uuid: (
                     self.shorten_url(shortener, buildUrls[uuid])
                     if options["convert_tinyurl"]
