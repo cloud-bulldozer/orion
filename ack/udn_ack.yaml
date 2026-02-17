@@ -1,0 +1,166 @@
+---
+ack:
+  # 4.19 UDN-L3 acks
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnkCPU-overall_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnCPU-ovncontroller_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnCPU-northd_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnCPU-nbdb_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnCPU-ovnk-controller_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnkMem-overall_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnMem-ovncontroller_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnMem-northd_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnMem-nbdb_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnMem-sbdb_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: ae5bf2c9-6958-4730-8213-1321e3fb1fec
+    metric: ovnMem-ovnk-controller_avg
+    reason: "https://issues.redhat.com/browse/OCPBUGS-54508, OVNK CPU increase after downstream merge of PR 2501"
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: podReadyLatency_P99
+    reason: kube-burner change on how we calculate metrics
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: ovnkMem-overall_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: ovnMem-ovncontroller_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: ovnMem-northd_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: ovnMem-nbdb_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: ovnMem-sbdb_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: e27c61f2-6cdb-490d-bb6a-59a34048cfc1
+    metric: ovnMem-ovnk-controller_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: cb90d90d-a33b-4639-a640-ace2996a708b
+    metric: ovnkMem-overall_avg
+    reason: job was w/o pause
+  - uuid: 00f7a823-5c56-430b-8e73-d5812d8bfe9f
+    metric: ovsCPU_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 00f7a823-5c56-430b-8e73-d5812d8bfe9f
+    metric: ovsMemory_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 00f7a823-5c56-430b-8e73-d5812d8bfe9f
+    metric: ovnkMem-overall_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 00f7a823-5c56-430b-8e73-d5812d8bfe9f
+    metric: ovnMem-northd_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 00f7a823-5c56-430b-8e73-d5812d8bfe9f
+    metric: ovnMem-nbdb_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 15c236e7-abff-4595-8e72-06bfd6115e21
+    metric: ovnMem-nbdb_avg
+    reason: https://issues.redhat.com/browse/OCPBUGS-60650
+
+  # 4.20 UDN-L3 acks
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: podReadyLatency_P99
+    reason: kube-burner change on how we calculate metrics
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: ovnkMem-overall_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: ovnMem-ovncontroller_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: ovnMem-northd_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: ovnMem-nbdb_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: ovnMem-sbdb_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: fe9521f8-71b8-4ad4-b190-4e03269ebd24
+    metric: ovnMem-ovnk-controller_avg
+    reason: kube-burner change on how we calculate metrics
+  - uuid: 7d80399d-f455-4134-b631-d1712c42413e
+    metric: ovnMem-nbdb_avg
+    reason: https://issues.redhat.com/browse/OCPBUGS-60650
+  - uuid: 5af8de0e-83ab-48d2-b930-1547e1eee6e3
+    metric: ovnCPU-nbdb_avg
+    reason: job was w/o pause
+  - uuid: 5af8de0e-83ab-48d2-b930-1547e1eee6e3
+    metric: ovnCPU-sbdb_avg
+    reason: job was w/o pause
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovsCPU_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovsMemory_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovnkMem-overall_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovnMem-northd_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovnMem-nbdb_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovnMem-sbdb_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: c3f2ff7e-3f26-4b56-a29d-189570d7c14c
+    metric: ovnMem-ovncontroller_avg
+    reason: shift from w/o pause to with pause in config
+
+  # 4.21 UDN-L3 acks
+  - uuid: 80e3e90d-d974-49fa-8e39-3e44afcbb408
+    metric: ovsCPU_avg
+    reason: same nightly
+  - uuid: 80e3e90d-d974-49fa-8e39-3e44afcbb408
+    metric: ovsMemory_avg
+    reason: same nightly
+  - uuid: 80e3e90d-d974-49fa-8e39-3e44afcbb408
+    metric: ovnMem-ovncontroller_avg
+    reason: same nightly
+  - uuid: 80e3e90d-d974-49fa-8e39-3e44afcbb408
+    metric: ovnMem-northd_avg
+    reason: same nightly
+  - uuid: 60d9fb49-648e-4e26-ab4d-e8704f749e80
+    metric: ovsCPU_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 60d9fb49-648e-4e26-ab4d-e8704f749e80
+    metric: ovsMemory_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 60d9fb49-648e-4e26-ab4d-e8704f749e80
+    metric: ovnMem-ovncontroller_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 60d9fb49-648e-4e26-ab4d-e8704f749e80
+    metric: ovnMem-northd_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 60d9fb49-648e-4e26-ab4d-e8704f749e80
+    metric: ovnMem-nbdb_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 60d9fb49-648e-4e26-ab4d-e8704f749e80
+    metric: ovnMem-sbdb_avg
+    reason: shift from w/o pause to with pause in config
+  - uuid: 60d9fb49-648e-4e26-ab4d-e8704f749e80
+    metric: ovnkMem-overall_avg
+    reason: shift from w/o pause to with pause in config
