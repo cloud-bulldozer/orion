@@ -376,11 +376,6 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                     expanded_points,
                     test["name"],
                 )
-                # Distinctive log to verify this code path is used (local changepoint-skip fix)
-                logger.info(
-                    "[ORION-SKIP-EARLY] Cleared changepoint in output (no regression); "
-                    "table/JSON will show is_changepoint=false for buffer points"
-                )
                 test_flag = False
                 clear_early_changepoints(result_data_json, changepoint_buffer)
                 # Use a copy of cleared data for output so table/JSON/JUnit show no changepoint

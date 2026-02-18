@@ -534,45 +534,25 @@ setup() {
 }
 
 @test "orion with regression same dataset skips early changepoint when no extra data" {
-  # Same integration dataset (8 points, changepoint at index 3/4) but without
-  # Changepoint buffer on (default): expansion would trigger but no extra data in ES
-  # in ES, so we skip the changepoint (no regression).
+  # Integration dataset has 8 points; changepoint is at the 8th point (index 7).
+  # With --changepoint-buffer 8, that point is in the buffer. Window expansion
+  # finds no extra data in ES, so we skip the changepoint (no regression).
   set +e
-  orion --lookback 15d --since 2026-01-20 --anomaly-detection --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-anomaly.txt
+  orion --lookback 15d --since 2026-01-20 --anomaly-detection --changepoint-buffer 8 --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-anomaly.txt
   EXIT_CODE=$?
 
-  if [ ! $EXIT_CODE -eq 2 ]; then
-    echo "no regression found"
+  if [ ! $EXIT_CODE -eq 0 ]; then
+    echo "Expected exit 0 (changepoint skipped, no regression); got $EXIT_CODE"
     exit 1
   fi
 
-  # Check if the percentage #1 string exists in the output file
-  if ! grep -q "+155.6%" ./outputs/results-anomaly.txt; then
-    echo "Expected string '+155.6%' not found in results.txt"
+  # Verify changepoint was skipped: no regression section in output
+  if grep -q "Regression(s) found" ./outputs/results-anomaly.txt; then
+    echo "Unexpected regression reported; changepoint should have been skipped"
     exit 1
   fi
-
-  # Check if the percentage #2 string exists in the output file
-  if ! grep -q "+56.7%" ./outputs/results-anomaly.txt; then
-    echo "Expected string '+56.7%' not found in results.txt"
-    exit 1
-  fi
-
-  # Check if the percentage #3 string exists in the output file
-  if ! grep -q "+38.9%" ./outputs/results-anomaly.txt; then
-    echo "Expected string '+38.9%' not found in results.txt"
-    exit 1
-  fi
-
-  # Check if the Bad Version string exists in the output file
-  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-15-195655" ./outputs/results-anomaly.txt; then
-    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
-    exit 1
-  fi
-
-  # Check if the Bad Version string exists in the output file
-  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-17-195655" ./outputs/results-anomaly.txt; then
-    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-17-195655' not found in results.txt"
+  if grep -q "Bad Version:" ./outputs/results-anomaly.txt; then
+    echo "Unexpected Bad Version in output; changepoint should have been skipped"
     exit 1
   fi
 
