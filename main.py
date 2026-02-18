@@ -5,18 +5,12 @@ This is the cli file for orion, tool to detect regressions using hunter
 # pylint: disable = import-error, line-too-long, no-member
 import json
 import logging
-import os
 import sys
 import warnings
 from typing import Any, Dict, Tuple
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 import click
-
-# Ensure project root is on path so 'orion' package is importable (e.g. under editable install)
-_main_dir = os.path.dirname(os.path.abspath(__file__))
-if _main_dir not in sys.path:
-    sys.path.insert(0, _main_dir)
 
 # Imports that require _main_dir on sys.path (C0413 disabled: path must be set first)
 # pylint: disable=wrong-import-position
