@@ -11,16 +11,12 @@ from typing import Any, Dict, Tuple
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 import click
-
-# Imports that require _main_dir on sys.path (C0413 disabled: path must be set first)
-# pylint: disable=wrong-import-position
 from orion.logger import SingletonLogger
 from orion.run_test import run
 from orion.utils import get_output_extension
 from orion import constants as cnsts
 from orion.config import load_config, load_ack
 from version import __version__
-# pylint: enable=wrong-import-position
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 warnings.filterwarnings(
