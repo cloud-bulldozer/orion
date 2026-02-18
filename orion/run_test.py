@@ -150,6 +150,20 @@ def has_early_changepoint(result_data_json: list, max_early_index: int = 5) -> b
     return False
 
 
+def clear_early_changepoints(result_data_json: list, max_early_index: int) -> None:
+    """Clear changepoint flags in the first N points so table output shows no regression.
+
+    Modifies result_data_json in place: sets is_changepoint=False and
+    percentage_change=0 for each record in the buffer that was marked as changepoint.
+    """
+    for index, result in enumerate(result_data_json):
+        if index < max_early_index and result.get("is_changepoint", False):
+            result["is_changepoint"] = False
+            if "metrics" in result:
+                for metric_data in result["metrics"].values():
+                    metric_data["percentage_change"] = 0
+
+
 def increase_lookback(lookback_str: str, days_to_add: int = 10) -> str:
     """Increase lookback duration by adding days.
 
@@ -362,7 +376,31 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                     expanded_points,
                     test["name"],
                 )
+                # Distinctive log to verify this code path is used (local changepoint-skip fix)
+                logger.info(
+                    "[ORION-SKIP-EARLY] Cleared changepoint in output (no regression); "
+                    "table/JSON will show is_changepoint=false for buffer points"
+                )
                 test_flag = False
+                clear_early_changepoints(result_data_json, changepoint_buffer)
+                # Use a copy of cleared data for output so table/JSON/JUnit show no changepoint
+                cleared_json = copy.deepcopy(result_data_json)
+                if kwargs["output_format"] == cnsts.TEXT:
+                    result_output[testname] = algorithm.format_table_from_json(
+                        cleared_json
+                    )
+                elif kwargs["output_format"] == cnsts.JSON:
+                    result_output[testname] = json.dumps(
+                        cleared_json, indent=2
+                    )
+                elif kwargs["output_format"] == cnsts.JUNIT:
+                    result_output[testname] = json_to_junit(
+                        test_name=testname,
+                        data_json=cleared_json,
+                        metrics_config=metrics_config,
+                        uuid_field=test["uuid_field"],
+                        display_fields=kwargs.get("display"),
+                    )
 
         if test_flag:
             logger.info(
@@ -370,22 +408,27 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 test["name"],
             )
             prev_ver = None
+            bad_ver = None
             for result in result_data_json:
                 if result["is_changepoint"]:
                     bad_ver = result.get(test["version_field"])
-                    logger.info(
-                        "Regression versions: prev_ver=%s, bad_ver=%s (test=%s)",
-                        prev_ver,
-                        bad_ver,
-                        test["name"],
-                    )
-                    regression_data.append({
-                        "prev_ver": prev_ver,
-                        "bad_ver": bad_ver,
-                        "prs": []
-                    })
                 else:
                     prev_ver = result.get(test["version_field"])
+                if prev_ver is not None and bad_ver is not None:
+                    if sippy_pr_search:
+                        prs = Utils().sippy_pr_diff(prev_ver, bad_ver)
+                        doc = {"prev_ver": prev_ver, "bad_ver": bad_ver}
+                        if prs:
+                            doc["prs"] = prs
+                        regression_data.append(doc)
+                    else:
+                        regression_data.append({
+                            "prev_ver": prev_ver,
+                            "bad_ver": bad_ver,
+                            "prs": []
+                        })
+                    prev_ver = None
+                    bad_ver = None
 
     regression_flag = regression_flag or test_flag
     return result_output, regression_flag, regression_data, average_values

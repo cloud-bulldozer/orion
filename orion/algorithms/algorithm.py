@@ -217,6 +217,15 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
 
         return table
 
+    def format_table_from_json(self, data_json: List[Dict]) -> str:
+        """Produce table string from result JSON without changepoint markers.
+
+        Used when an early changepoint was skipped so the table should not
+        show the dotted line or percentage change.
+        """
+        display_fields = self.options.get("display") or []
+        return self._generate_combined_table_with_display(data_json, display_fields)
+
     def output_junit(self) -> Tuple[str, str, bool]:
         """Output junit format
 
