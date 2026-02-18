@@ -56,6 +56,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
             - regression data (list): Regression data
     """
     config = kwargs["config"]
+    pr_analysis = kwargs["pr_analysis"]
 
     logger = SingletonLogger.get_logger("Orion")
     result_output, regression_flag, regression_data = {}, False, []
@@ -65,7 +66,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
     for test in config["tests"]:
         # Create fingerprint Matcher
         if "metadata" in test:
-            if "pullNumber" in test["metadata"] and test["metadata"]["pullNumber"] > 0:
+            if pr_analysis:
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                     logger.info("Executing tasks in parallel...")
                     logger.info("Ensuring jobType is set to pull")
