@@ -90,7 +90,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.version_option(version=__version__, message="%(prog)s %(version)s")
 @click.command(context_settings={"show_default": True, "max_content_width": 180})
 @click.option(
-    "--cmr", 
+    "--cmr",
     is_flag=True,
     help="Generate percent difference in comparison",
     cls=MutuallyExclusiveOption,
@@ -99,7 +99,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--filter", is_flag=True, help="Generate percent difference in comparison")
 @click.option("--config", help="Path to the configuration file", required=True)
 @click.option("--ack", default="", help="Optional ack YAML to ack known regressions (can specify multiple files separated by comma)")
-@click.option("--no-ack", is_flag=True, default=False, help="Disable automatic ACK file detection and loading")
+@click.option("--no-ack", is_flag=True, default=False, help="Disable automatic ACK file detection and loading (manual --ack files are still loaded)")
 @click.option(
     "--save-data-path", default="data.csv", help="Path to save the output file"
 )
@@ -160,22 +160,18 @@ def main(**kwargs):
         level = logging.ERROR
     logger = SingletonLogger(debug=level, name="Orion")
     logger.info("🏹 Starting Orion in command-line mode")
-    
+
     # Load config first (needed for auto-detection)
     kwargs["config"] = load_config(kwargs["config"], kwargs["input_vars"])
-    
+
     # Handle ACK file loading
-    # Logic: Use BOTH manual --ack AND auto-loading (combine them), unless --no-ack is specified.
-    
+    # Logic: Auto-load ack/all_ack.yaml unless --no-ack. Manual --ack files are always loaded and merged.
+    ack_maps = []
+
+    # Step 1: Auto-detect and load consolidated ACK file (skipped when --no-ack)
     if kwargs["no_ack"]:
-        # --no-ack flag: No ACK loading at all
-        kwargs["ackMap"] = None
-        logger.info("ACK loading disabled (--no-ack flag)")
+        logger.info("Automatic ACK loading disabled (--no-ack flag)")
     else:
-        # Combine auto-loading and manual ACK files
-        ack_maps = []
-        
-        # Step 1: Auto-detect and load consolidated ACK file
         auto_ack_file = auto_detect_ack_file_with_vars(
             kwargs["config"],
             kwargs["input_vars"],
@@ -185,11 +181,11 @@ def main(**kwargs):
             # Extract version and test type from config for filtering
             version = None
             test_type = None
-            
+
             if "tests" in kwargs["config"] and len(kwargs["config"]["tests"]) > 0:
                 test = kwargs["config"]["tests"][0]
                 metadata = test.get("metadata", {})
-                
+
                 # Resolve version
                 version_field = test.get("version_field", "ocpVersion")
                 version_value = metadata.get(version_field, "")
@@ -200,7 +196,7 @@ def main(**kwargs):
                     if match:
                         var_name = match.group(1)
                         version = kwargs["input_vars"].get(var_name) or kwargs["input_vars"].get(var_name.lower())
-                
+
                 # Resolve test type
                 test_type_value = metadata.get("benchmark.keyword", "")
                 if test_type_value and "{{" not in str(test_type_value):
@@ -210,7 +206,7 @@ def main(**kwargs):
                     if match:
                         var_name = match.group(1)
                         test_type = kwargs["input_vars"].get(var_name) or kwargs["input_vars"].get(var_name.lower())
-            
+
             # Load auto-detected ACK file with filtering
             auto_ack_map = load_ack(auto_ack_file, version=version, test_type=test_type)
             if auto_ack_map and auto_ack_map.get("ack") and len(auto_ack_map.get("ack", [])) > 0:
@@ -221,27 +217,28 @@ def main(**kwargs):
             elif auto_ack_file:
                 logger.info("✓ Loaded ACK file: %s (version=%s, test_type=%s, no matching entries found)",
                            auto_ack_file, version or "all", test_type or "all")
-        
-        # Step 2: Load manually specified ACK files (if any)
-        if kwargs["ack"]:
-            # Support multiple ACK files separated by comma
-            ack_files = [f.strip() for f in kwargs["ack"].split(",") if f.strip()]
-            for ack_file in ack_files:
-                if len(ack_file) > 0:
-                    manual_ack_map = load_ack(ack_file)
-                    if manual_ack_map and manual_ack_map.get("ack"):
-                        ack_maps.append(manual_ack_map)
-                        logger.info("✓ Loaded manual ACK file: %s (entries=%d)",
-                                   ack_file, len(manual_ack_map.get("ack", [])))
-        
-        # Step 3: Merge all ACK maps (auto-loaded + manual)
-        if ack_maps:
-            kwargs["ackMap"] = merge_ack_files(ack_maps)
-            total_entries = len(kwargs["ackMap"].get("ack", []))
-            logger.info("✓ Total ACK entries loaded: %d", total_entries)
-        else:
-            kwargs["ackMap"] = None
-            logger.debug("No ACK entries loaded")
+
+    # Load manually specified ACK files (if any) — always runs even with --no-ack
+    if kwargs["ack"]:
+        # Support multiple ACK files separated by comma
+        ack_files = [f.strip() for f in kwargs["ack"].split(",") if f.strip()]
+        for ack_file in ack_files:
+            if len(ack_file) > 0:
+                manual_ack_map = load_ack(ack_file)
+                if manual_ack_map and manual_ack_map.get("ack"):
+                    ack_maps.append(manual_ack_map)
+                    logger.info("✓ Loaded manual ACK file: %s (entries=%d)",
+                               ack_file, len(manual_ack_map.get("ack", [])))
+
+    # Merge all ACK maps (auto-loaded + manual)
+    if ack_maps:
+        kwargs["ackMap"] = merge_ack_files(ack_maps)
+        total_entries = len(kwargs["ackMap"].get("ack", []))
+        logger.info("✓ Total ACK entries loaded: %d", total_entries)
+    else:
+        kwargs["ackMap"] = None
+        logger.debug("No ACK entries loaded")
+
     if not kwargs["metadata_index"] or not kwargs["es_server"]:
         logger.error("metadata-index and es-server flags must be provided")
         sys.exit(1)

@@ -5,7 +5,6 @@ Module file for config reading and loading
 
 import sys
 import os
-import re
 from typing import Any, Dict, List
 import jinja2
 import yaml
@@ -101,7 +100,7 @@ def load_ack(ack: str, version: str = None, test_type: str = None) -> Dict[str,A
     if "ack" not in rendered_config:
         logger.error("Ack file not setup properly")
         sys.exit(1)
-    
+
     # Filter by version and test type if provided
     if version or test_type:
         filtered_acks = []
@@ -112,18 +111,18 @@ def load_ack(ack: str, version: str = None, test_type: str = None) -> Dict[str,A
             # 3. Matches provided test_type (if test_type provided)
             entry_version = entry.get("version")
             entry_test = entry.get("test")
-            
+
             version_match = not version or entry_version == version or entry_version is None
             test_match = not test_type or entry_test == test_type or entry_test is None
-            
+
             if version_match and test_match:
                 filtered_acks.append(entry)
-        
+
         rendered_config["ack"] = filtered_acks
         if version or test_type:
             logger.debug("Filtered ACK entries: version=%s, test_type=%s, found %d entries",
                         version, test_type, len(filtered_acks))
-    
+
     return rendered_config
 
 
@@ -139,7 +138,7 @@ def merge_ack_files(ack_maps: List[Dict[str, Any]]) -> Dict[str, Any]:
     logger = SingletonLogger.get_logger("Orion")
     merged_acks = []
     seen_entries = set()
-    
+
     for ack_map in ack_maps:
         if ack_map and "ack" in ack_map:
             for entry in ack_map["ack"]:
@@ -151,11 +150,11 @@ def merge_ack_files(ack_maps: List[Dict[str, Any]]) -> Dict[str, Any]:
                 else:
                     logger.debug("Skipping duplicate ACK entry: uuid=%s, metric=%s",
                                 entry.get("uuid"), entry.get("metric"))
-    
+
     return {"ack": merged_acks}
 
 
-def auto_detect_ack_file_with_vars(config: Dict[str, Any], input_vars: Dict[str, Any],
+def auto_detect_ack_file_with_vars(_config: Dict[str, Any], _input_vars: Dict[str, Any],
                                    ack_dir: str = "ack") -> str:
     """Auto-detect consolidated ACK file.
 
@@ -163,21 +162,21 @@ def auto_detect_ack_file_with_vars(config: Dict[str, Any], input_vars: Dict[str,
     are no longer supported after consolidation.
 
     Args:
-        config: Loaded config dictionary (not used, kept for compatibility)
-        input_vars: Input variables dictionary (not used, kept for compatibility)
+        _config: Loaded config dictionary (not used, kept for compatibility)
+        _input_vars: Input variables dictionary (not used, kept for compatibility)
         ack_dir: Directory containing ACK files (default: "ack")
 
     Returns:
         str: Path to consolidated ACK file if found, None otherwise
     """
     logger = SingletonLogger.get_logger("Orion")
-    
+
     # Only look for consolidated ACK file
     consolidated_path = os.path.join(ack_dir, "all_ack.yaml")
     if os.path.exists(consolidated_path):
         logger.debug("Found consolidated ACK file: %s", consolidated_path)
         return consolidated_path
-    
+
     return None
 
 
