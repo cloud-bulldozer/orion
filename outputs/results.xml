@@ -1,0 +1,36 @@
+2026-02-18 11:16:48,253 - Orion      - INFO - file: main.py - line: 159 - 🏹 Starting Orion in command-line mode
+2026-02-18 11:16:48,255 - Orion      - INFO - file: utils.py - line: 659 - Duration to subtract: 15 days, 0:00:00
+2026-02-18 11:16:48,255 - Orion      - INFO - file: utils.py - line: 662 - Start timestamp: 2026-01-20 00:00:00
+2026-02-18 11:16:48,255 - Orion      - INFO - file: utils.py - line: 301 - The test olm-integration-test has started
+2026-02-18 11:16:48,255 - Orion      - INFO - file: utils.py - line: 208 - organization is empty removed from metadata for it to not affect the matching process
+2026-02-18 11:16:48,255 - Orion      - INFO - file: utils.py - line: 211 - repository is empty removed from metadata for it to not affect the matching process
+2026-02-18 11:16:48,256 - Orion      - INFO - file: matcher.py - line: 74 - Executing query against index: orion-integration-test-data*
+2026-02-18 11:16:48,410 - Orion      - INFO - file: matcher.py - line: 74 - Executing query against index: orion-integration-test-data*
+2026-02-18 11:16:49,807 - Orion      - INFO - file: utils.py - line: 69 - Collecting OCP-84094_catalogdCPU_GCP
+2026-02-18 11:16:49,808 - Orion      - INFO - file: matcher.py - line: 74 - Executing query against index: orion-integration-test-metrics*
+2026-02-18 11:16:49,865 - Orion      - INFO - file: run_test.py - line: 176 - Comparison algorithm: EDivisive
+2026-02-18 11:16:49,870 - Orion      - INFO - file: main.py - line: 287 - Printing junit output
+<?xml version="1.0" ?>
+<testsuites>
+	<testsuite name="olm-integration-test nightly compare" failures="1" tests="1">
+		<testcase name="[Jira: OLM] OCP-84094_catalogdCPU_GCP_avg regression detection" timestamp="1771431409">
+			<failure>
++----+--------------------------------------+----------------------+---------------------------------+------------------+---------------------+----------------------------------------------------------------------------------------------+
+|    | uuid                                 | timestamp            |   OCP-84094_catalogdCPU_GCP_avg | is_changepoint   |   percentage_change | upstreamJob                                                                                  |
+|----+--------------------------------------+----------------------+---------------------------------+------------------+---------------------+----------------------------------------------------------------------------------------------|
+|  0 | d0e1f2a3-b4c5-4678-d901-e2f3a4b5c678 | 2026-01-10T10:33:15Z |                         1.5699  | False            |               0     | periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.20-nightly-x86-olmv1-benchmark-test |
+|  1 | c9d0e1f2-a3b4-4567-c890-d1e2f3a4b567 | 2026-01-11T10:33:15Z |                         1.5699  | False            |               0     | periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.20-nightly-x86-olmv1-benchmark-test |
+|  2 | b8c9d0e1-f2a3-4456-b789-c0d1e2f3a456 | 2026-01-12T10:33:15Z |                         1.5699  | False            |               0     | periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.20-nightly-x86-olmv1-benchmark-test |
+|  3 | a7b8c9d0-e1f2-4345-a678-b9c0d1e2f345 | 2026-01-13T10:33:15Z |                         1.5699  | False            |               0     | periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.20-nightly-x86-olmv1-benchmark-test |
+|  4 | f6a7b8c9-d0e1-4234-f567-a8b9c0d1e234 | 2026-01-14T10:33:15Z |                         1.5699  | False            |               0     | periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.20-nightly-x86-olmv1-benchmark-test |
+|  5 | e5f6a7b8-c9d0-4123-e456-f7a8b9c0d123 | 2026-01-15T10:33:15Z |                         1.5699  | False            |               0     | periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.20-nightly-x86-olmv1-benchmark-test |
+|  6 | d4e5f6a7-b8c9-4012-d345-e6f7a8b9c012 | 2026-01-16T10:33:15Z |                         6.5699  | True             |             404.549 | periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.20-nightly-x86-olmv1-benchmark-test | -- changepoint
+|  7 | c3d4e5f6-a7b8-4901-c234-d5e6f7a8b901 | 2026-01-17T10:33:15Z |                         7.85699 | False            |               0     | periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.20-nightly-x86-olmv1-benchmark-test |
+|  8 | b2c3d4e5-f6a7-4890-b123-c4d5e6f7a890 | 2026-01-18T10:33:15Z |                         8.0199  | False            |               0     | periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.20-nightly-x86-olmv1-benchmark-test |
+|  9 | a1b2c3d4-e5f6-4789-a012-b3c4d5e6f789 | 2026-01-19T10:33:15Z |                         9.2369  | False            |               0     | periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-gcp-4.20-nightly-x86-olmv1-benchmark-test |
++----+--------------------------------------+----------------------+---------------------------------+------------------+---------------------+----------------------------------------------------------------------------------------------+
+</failure>
+		</testcase>
+	</testsuite>
+</testsuites>
+

@@ -5,6 +5,7 @@ Module file for config reading and loading
 
 import sys
 import os
+import re
 from typing import Any, Dict, List
 import jinja2
 import yaml
@@ -75,14 +76,16 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
     return rendered_config
 
 
-def load_ack(ack: str) -> Dict[str,Any]:
-    """Loads acknowledgment file content.
+def load_ack(ack: str, version: str = None, test_type: str = None) -> Dict[str,Any]:
+    """Loads acknowledgment file content, optionally filtering by version and test type.
 
     Args:
         ack (str): path to the acknowledgment file
+        version (str, optional): OCP version to filter by (e.g., "4.22")
+        test_type (str, optional): Test type to filter by (e.g., "node-density")
 
     Returns:
-        dict: dictionary of the acknowledgment file
+        dict: dictionary of the acknowledgment file, filtered if version/test_type provided
     """
     logger = SingletonLogger.get_logger("Orion")
     template_content = load_read_file(ack, logger)
@@ -98,7 +101,84 @@ def load_ack(ack: str) -> Dict[str,Any]:
     if "ack" not in rendered_config:
         logger.error("Ack file not setup properly")
         sys.exit(1)
+    
+    # Filter by version and test type if provided
+    if version or test_type:
+        filtered_acks = []
+        for entry in rendered_config["ack"]:
+            # Include entry if:
+            # 1. No version/test metadata (backward compatible with old format)
+            # 2. Matches provided version (if version provided)
+            # 3. Matches provided test_type (if test_type provided)
+            entry_version = entry.get("version")
+            entry_test = entry.get("test")
+            
+            version_match = not version or entry_version == version or entry_version is None
+            test_match = not test_type or entry_test == test_type or entry_test is None
+            
+            if version_match and test_match:
+                filtered_acks.append(entry)
+        
+        rendered_config["ack"] = filtered_acks
+        if version or test_type:
+            logger.debug("Filtered ACK entries: version=%s, test_type=%s, found %d entries",
+                        version, test_type, len(filtered_acks))
+    
     return rendered_config
+
+
+def merge_ack_files(ack_maps: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Merges multiple ACK file dictionaries into a single ACK map.
+
+    Args:
+        ack_maps: List of ACK dictionaries to merge
+
+    Returns:
+        dict: Merged ACK dictionary with all entries combined
+    """
+    logger = SingletonLogger.get_logger("Orion")
+    merged_acks = []
+    seen_entries = set()
+    
+    for ack_map in ack_maps:
+        if ack_map and "ack" in ack_map:
+            for entry in ack_map["ack"]:
+                # Create a unique key for deduplication (uuid + metric)
+                entry_key = (entry.get("uuid"), entry.get("metric"))
+                if entry_key not in seen_entries:
+                    seen_entries.add(entry_key)
+                    merged_acks.append(entry)
+                else:
+                    logger.debug("Skipping duplicate ACK entry: uuid=%s, metric=%s",
+                                entry.get("uuid"), entry.get("metric"))
+    
+    return {"ack": merged_acks}
+
+
+def auto_detect_ack_file_with_vars(config: Dict[str, Any], input_vars: Dict[str, Any],
+                                   ack_dir: str = "ack") -> str:
+    """Auto-detect consolidated ACK file.
+
+    Only looks for the consolidated ACK file (all_ack.yaml). Individual files
+    are no longer supported after consolidation.
+
+    Args:
+        config: Loaded config dictionary (not used, kept for compatibility)
+        input_vars: Input variables dictionary (not used, kept for compatibility)
+        ack_dir: Directory containing ACK files (default: "ack")
+
+    Returns:
+        str: Path to consolidated ACK file if found, None otherwise
+    """
+    logger = SingletonLogger.get_logger("Orion")
+    
+    # Only look for consolidated ACK file
+    consolidated_path = os.path.join(ack_dir, "all_ack.yaml")
+    if os.path.exists(consolidated_path):
+        logger.debug("Found consolidated ACK file: %s", consolidated_path)
+        return consolidated_path
+    
+    return None
 
 
 def load_config_file(config_file: str,

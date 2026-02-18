@@ -266,6 +266,31 @@ setup() {
   VERSION=$before_version
 }
 
+@test "orion with --no-ack disables ACK loading" {
+  set +e
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --no-ack 2>&1 | tee ./outputs/results-no-ack.txt
+  EXIT_CODE=$?
+  set -e
+  if ! grep -q "ACK loading disabled" ./outputs/results-no-ack.txt; then
+    echo "Expected 'ACK loading disabled' in output when using --no-ack"
+    exit 1
+  fi
+}
+
+@test "orion auto-loads ack/all_ack.yaml when present" {
+  set +e
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' 2>&1 | tee ./outputs/results-ack-auto.txt
+  EXIT_CODE=$?
+  set -e
+  if [ ! -f ack/all_ack.yaml ]; then
+    skip "ack/all_ack.yaml not present, skipping auto-load test"
+  fi
+  if ! grep -q "all_ack.yaml" ./outputs/results-ack-auto.txt; then
+    echo "Expected orion to mention all_ack.yaml when auto-loading ACK"
+    exit 1
+  fi
+}
+
 @test "orion with quay config " {
   export quay_image_push_pull_index="quay-push-pull*"
   export quay_load_test_index="quay-vegeta-results*"
