@@ -13,27 +13,27 @@ ack:
     metric: multusCPU_avg
     reason: Missing data in ES, indexing failures
     version: '4.22'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: 5c3c9245-b9e1-4849-86c8-34c31d81898a
     metric: ovnCPU_avg
     reason: Missing data in ES, indexing failures
     version: '4.22'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: fe336609-b83f-4dc4-a878-d68f5e25018a
     metric: ovnCPU_avg
     reason: Missing data in ES, indexing failures
     version: '4.22'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: e023e975-ad9f-404a-907f-b0756d3f7473
     metric: multusCPU_avg
     reason: cdv2 updated metrics profile https://github.com/kube-burner/kube-burner-ocp/pull/380
     version: '4.22'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: e023e975-ad9f-404a-907f-b0756d3f7473
     metric: ovnCPU_avg
     reason: cdv2 updated metrics profile https://github.com/kube-burner/kube-burner-ocp/pull/380
     version: '4.22'
-    test: cluster-density
+    test: cluster-density-v2
   # crd-scale
   - uuid: 326e738e-bbd5-4398-84c9-2d74b44c3758
     metric: apiserverCPU_avg
@@ -95,12 +95,12 @@ ack:
     metric: multusCPU_avg
     reason: Missing data in ES, indexing failures
     version: '4.21'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: 12414e33-883e-4ef1-91b3-cac7b0cce3c5
     metric: ovnCPU_avg
     reason: Missing data in ES, indexing failures
     version: '4.21'
-    test: cluster-density
+    test: cluster-density-v2
   # node-density
   - uuid: 540fb223-bc18-4565-874d-79a5443d7003
     metric: apiserverCPU_avg
@@ -249,27 +249,27 @@ ack:
     reason: 2025-04-14 change of 19.9848% is because whereabouts-reconciler pods were
       removed. No CPU change in remaining pods. See PERFSCALE-3872
     version: '4.20'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: f1c30ca0-1e88-4a65-9c98-2a47f162c771
     metric: monitoringCPU_avg
     reason: https://issues.redhat.com/browse/PERFSCALE-4043
     version: '4.20'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: fb9dd3a10-3c94-4667-8ae4-943a5ba4de13
     metric: multusCPU_avg
     reason: Missing data in ES, indexing failures
     version: '4.20'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: b9dd3a10-3c94-4667-8ae4-943a5ba4de13
     metric: multusCPU_avg
     reason: Missing data in ES, indexing failures
     version: '4.20'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: b9dd3a10-3c94-4667-8ae4-943a5ba4de13
     metric: ovnCPU_avg
     reason: Missing data in ES, indexing failures
     version: '4.20'
-    test: cluster-density
+    test: cluster-density-v2
   # crd-scale
   - uuid: 275567ff-cd8d-4736-b527-afc364c2216f
     metric: etcdCPU_avg
@@ -432,43 +432,43 @@ ack:
     metric: kubelet_avg
     reason: kube-burner change which increased cpu for kubelet, it was reverted.
     version: '4.19'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: a7006f55-489b-4b79-96ed-5d3fd3f050b0
     metric: ovnCPU_avg
     reason: 'Opened Bug: https://issues.redhat.com/browse/OCPBUGS-49613'
     version: '4.19'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: 858c1aa1-eb87-4551-b6b8-f432807fff8d
     metric: podReadyLatency_P99
     reason: 'Opened Bug: https://issues.redhat.com/browse/OCPBUGS-50522'
     version: '4.19'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: e20ae931-6b18-46a7-b41d-e9a4ae2099d5
     metric: ovnCPU_avg
     reason: 'See: OCPBUGS-50522. Fixed in: 1889163830622162944'
     version: '4.19'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: 84322af4-d853-4c95-aa38-f6417159712d
     metric: etcdCPU_avg
     reason: 'hichup: https://redhat-internal.slack.com/archives/C020CKMP6CT/p1741244229397479'
     version: '4.19'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: a1fcb44b-c5fc-4070-bc71-8940184b310f
     metric: multusCPU_avg
     reason: 2025-04-04 change of 3.2% is less than 10% toleration threshold
     version: '4.19'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: 411a73f2-3213-40df-ac66-c28b2fdc639d
     metric: ovnCPU_avg
     reason: 2025-04-08 change of 4.62436% is less than 10% toleration threshold
     version: '4.19'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: fc90b400-ee81-4fd1-afbf-dd1408eab767
     metric: multusCPU_avg
     reason: 2025-04-14 change of 19.9848% is because whereabouts-reconciler pods were
       removed. No CPU change in remaining pods. See PERFSCALE-3872
     version: '4.19'
-    test: cluster-density
+    test: cluster-density-v2
   # crd-scale
   - uuid: dc6d26a9-ddbb-4c0d-8946-7641578a2eda
     metric: apiserverCPU_avg
@@ -663,52 +663,52 @@ ack:
     metric: etcdCPU_avg
     reason: Below 10%
     version: '4.18'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: 4eeee274-53ac-4e75-855f-139dc743606b
     metric: kubelet_avg
     reason: Started thread with node team
     version: '4.18'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: 22e90f4e-1c79-4d9d-b2f6-b95a7072738c
     metric: kubelet_avg
     reason: Tooling issue - kubeburner
     version: '4.18'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: 22e90f4e-1c79-4d9d-b2f6-b95a7072738c
     metric: ovnCPU_avg
     reason: Tooling issue - kubeburner
     version: '4.18'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: 35bbc7f2-195c-43c2-8d43-62142d8bb33a
     metric: ovnCPU_avg
     reason: 'Opened Bug: https://issues.redhat.com/browse/OCPBUGS-49613'
     version: '4.18'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: 90e38f9e-9b90-4f8a-af97-8ccbdb3ef800
     metric: ovnCPU_avg
     reason: See OCPBUGS-49613
     version: '4.18'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: 90e38f9e-9b90-4f8a-af97-8ccbdb3ef800
     metric: podReadyLatency_P99
     reason: Latency increase overlaps with ovnCPU_avg. See OCPBUGS-49613
     version: '4.18'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: 373effda-bcfd-42fe-8ba5-fd539bf2c755
     metric: kubelet_avg
     reason: False positive. Values look fine.
     version: '4.18'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: df4b0361-02f9-458d-9d02-57b1d6724983
     metric: podReadyLatency_P99
     reason: 12s podReady is not unusual in 4.18
     version: '4.18'
-    test: cluster-density
+    test: cluster-density-v2
   - uuid: e3e07bda-179a-4962-bc14-0e40e247d9fa
     metric: etcdCPU_avg
     reason: 2025-04-11 8.10777% change less than 10% threshold
     version: '4.18'
-    test: cluster-density
+    test: cluster-density-v2
   # node-density
   - uuid: 7f7337aa-cee3-4a36-b154-a7c48ed1fb75
     metric: etcdCPU_avg
