@@ -1,0 +1,262 @@
+tests:
+  - name: payload-udn-density-l3-pods
+    metadata:
+      platform: AWS
+      clusterType: self-managed
+      masterNodesType: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType: m6a.xlarge
+      workerNodesCount: 6
+      benchmark.keyword: udn-density-pods
+      ocpVersion: "{{ version }}"
+      networkType: OVNKubernetes
+      jobType: {{ jobtype | default('periodic') }}
+      pullNumber: {{ pull_number | default(0) }}
+      organization: {{ organization | default('') }}
+      repository: {{ repository | default('') }}
+      not:
+        stream: okd
+
+    metrics:
+    - name: podReadyLatency
+      metricName.keyword: podLatencyQuantilesMeasurement
+      quantileName: Ready
+      jobName.keyword: udn-density-l3-pods
+      metric_of_interest: P99
+      not:
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: PerfScale]"
+      direction: 1
+      threshold: 10
+
+    - name: ovsCPU-Workers
+      metricName.keyword: cgroupCPUSeconds-Workers
+      jobName.keyword: udn-density-l3-pods
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovsCPU-irate-all
+      metricName.keyword: cgroupCPU
+      jobName.keyword: udn-density-l3-pods
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovnkCPU-overall
+      metricName.keyword: containerCPU
+      jobName.keyword: udn-density-l3-pods
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovnCPU-ovncontroller
+      metricName.keyword: containerCPU
+      jobName.keyword: udn-density-l3-pods
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: ovn-controller
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovnCPU-northd
+      metricName.keyword: containerCPU
+      jobName.keyword: udn-density-l3-pods
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: northd
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovnCPU-nbdb
+      metricName.keyword: containerCPU
+      jobName.keyword: udn-density-l3-pods
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: nbdb
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovnCPU-sbdb
+      metricName.keyword: containerCPU
+      jobName.keyword: udn-density-l3-pods
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: sbdb
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovnCPU-ovnk-controller
+      metricName.keyword: containerCPU
+      jobName.keyword: udn-density-l3-pods
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: ovnkube-controller
+      metric_of_interest: value
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovsMemory-Workers
+      metricName.keyword: cgroupMemoryRSS-Workers
+      jobName.keyword: udn-density-l3-pods
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: max
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovsMemory-Masters
+      metricName.keyword: cgroupMemoryRSS-Masters
+      jobName.keyword: udn-density-l3-pods
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: max
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovsMemory-all
+      metricName.keyword: cgroupMemoryRSS
+      jobName.keyword: udn-density-l3-pods
+      labels.id.keyword: /system.slice/ovs-vswitchd.service
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovnkMem-overall
+      metricName.keyword: containerMemory
+      jobName.keyword: udn-density-l3-pods
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovnMem-ovncontroller
+      metricName.keyword: containerMemory
+      jobName.keyword: udn-density-l3-pods
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: ovn-controller
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovnMem-northd
+      metricName.keyword: containerMemory
+      jobName.keyword: udn-density-l3-pods
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: northd
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovnMem-nbdb
+      metricName.keyword: containerMemory
+      jobName.keyword: udn-density-l3-pods
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: nbdb
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovnMem-sbdb
+      metricName.keyword: containerMemory
+      jobName.keyword: udn-density-l3-pods
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: sbdb
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
+
+    - name: ovnMem-ovnk-controller
+      metricName.keyword: containerMemory
+      jobName.keyword: udn-density-l3-pods
+      labels.namespace.keyword: openshift-ovn-kubernetes
+      labels.container.keyword: ovnkube-controller
+      metric_of_interest: value
+      agg:
+        value: mem
+        agg_type: avg
+      labels:
+        - "[Jira: Networking / ovn-kubernetes]"
+      direction: 1
+      threshold: 10
