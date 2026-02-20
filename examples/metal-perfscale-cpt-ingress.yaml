@@ -1,0 +1,88 @@
+tests:
+  - name: metal-perfscale-cpt-ingress-perf
+    metadata:
+      ocpVersion: "{{ version }}"
+      platform: BareMetal
+      clusterType: self-managed
+      benchmark.keyword: ingress-perf
+      masterNodesCount: 3
+      workerNodesCount: 4
+      infraNodesCount: 2
+      masterNodesType.keyword: ""
+      workerNodesType.keyword: ""
+      infraNodesType.keyword: ""
+      networkType: OVNKubernetes
+      encrypted: false
+      fips: false
+      ipsec: false
+      jobType: {{ jobtype | default('periodic') }}
+      pullNumber: {{ pull_number | default(0) }}
+      organization: {{ organization | default('') }}
+      repository: {{ repository | default('') }}
+      not:
+        stream: okd
+        serviceMeshMode:
+          - ambient
+          - sidecar
+
+    metrics:
+
+    - name: passthrough_avg_rps
+      config.termination: passthrough
+      metric_of_interest: total_avg_rps
+      agg:
+        value: total_avg_rps
+        agg_type: avg
+
+    - name: passthrough_avg_lat
+      config.termination: passthrough
+      metric_of_interest: avg_lat_us
+      agg:
+        value: avg_lat_us
+        agg_type: avg
+
+    - name: http_avg_rps
+      config.termination: http
+      metric_of_interest: total_avg_rps
+      direction: -1
+      config.tool: wrk
+      agg:
+        value: total_avg_rps
+        agg_type: avg
+
+    - name: http_avg_lat
+      config.termination: http
+      metric_of_interest: avg_lat_us
+      agg:
+        value: avg_lat_us
+        agg_type: avg
+
+    - name: reencrypt_avg_rps
+      config.termination: reencrypt
+      metric_of_interest: total_avg_rps
+      agg:
+        value: total_avg_rps
+        agg_type: avg
+
+    - name: reencrypt_avg_lat
+      config.termination: reencrypt
+      metric_of_interest: avg_lat_us
+      agg:
+        value: avg_lat_us
+        agg_type: avg
+
+    - name: edge_avg_rps
+      config.termination: edge
+      metric_of_interest: total_avg_rps
+      direction: -1
+      config.tool: wrk
+      agg:
+        value: total_avg_rps
+        agg_type: avg
+
+    - name: edge_avg_lat
+      config.termination: edge
+      metric_of_interest: avg_lat_us
+      agg:
+        value: avg_lat_us
+        agg_type: avg
