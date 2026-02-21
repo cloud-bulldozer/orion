@@ -1,8 +1,0 @@
----
-ack:
-  - uuid: 679b905a-318c-4b8c-a630-4b2dcc394d25
-    metric: ovnCPU_avg
-    reason: "CPU bumps due to unintentional change in deletion strategy"
-  - uuid: 679b905a-318c-4b8c-a630-4b2dcc394d25
-    metric: kubelet_avg
-    reason: "CPU bumps due to unintentional change in deletion strategy"

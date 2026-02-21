@@ -1,5 +1,0 @@
----
-ack:
-  - uuid: 61262f14-270e-4122-b2f6-d11175e68525
-    metric: ovsMemory_avg
-    reason: "It has come back down in later runs"

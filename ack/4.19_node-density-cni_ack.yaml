@@ -1,6 +1,0 @@
----
-ack:
-  - uuid: fd0ab680-95f1-4556-8706-4823e5b7ee21
-    metric: podReadyLatency_P99 
-    reason: "Performance has returned"
-

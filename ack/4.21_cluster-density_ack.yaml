@@ -1,9 +1,0 @@
----
-ack:
-  - uuid: 12414e33-883e-4ef1-91b3-cac7b0cce3c5
-    metric: multusCPU_avg
-    reason: "Missing data in ES, indexing failures"
-  - uuid: 12414e33-883e-4ef1-91b3-cac7b0cce3c5
-    metric: ovnCPU_avg
-    reason: "Missing data in ES, indexing failures"
-    

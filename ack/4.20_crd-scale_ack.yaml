@@ -1,8 +1,0 @@
----
-ack:
-  - uuid: 275567ff-cd8d-4736-b527-afc364c2216f 
-    metric: etcdCPU_avg
-    reason: "Possibly related to kube rebase - https://issues.redhat.com/browse/OCPBUGS-59641"
-  - uuid: 3924177b-afd2-4b38-af47-719fc9352e27 
-    metric: apiserverCPU_avg  
-    reason: "Possibly related to kube rebase - https://issues.redhat.com/browse/OCPBUGS-59641"

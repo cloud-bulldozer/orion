@@ -1,5 +1,0 @@
----
-ack:
-  - uuid: 326e738e-bbd5-4398-84c9-2d74b44c3758
-    metric: apiserverCPU_avg
-    reason: "Random dip and spike for CPU"

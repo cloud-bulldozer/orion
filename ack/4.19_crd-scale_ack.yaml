@@ -1,5 +1,0 @@
----
-ack:
-  - uuid: dc6d26a9-ddbb-4c0d-8946-7641578a2eda
-    metric: apiserverCPU_avg
-    reason: "Change less than 5% on a rather volatile metric"

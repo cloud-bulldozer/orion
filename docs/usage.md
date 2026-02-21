@@ -294,6 +294,12 @@ Apply acknowledgments:
 orion --ack ack.yaml --hunter-analyze
 ```
 
+Orion automatically loads `ack/all_ack.yaml` when present (filtered by version and test type from your config). Use `--ack` to add extra acknowledgment files; they are merged with the auto-loaded file. To disable only automatic ACK loading (manual `--ack` files are still loaded):
+
+```bash
+orion --no-ack --hunter-analyze
+```
+
 **Benefits:**
 - Prevents repeated notifications for known issues
 - Tracks why issues are being ignored

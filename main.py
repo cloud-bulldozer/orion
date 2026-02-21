@@ -5,6 +5,7 @@ This is the cli file for orion, tool to detect regressions using hunter
 # pylint: disable = import-error, line-too-long, no-member
 import json
 import logging
+import re
 import sys
 import warnings
 from typing import Any, Dict, Tuple
@@ -15,7 +16,7 @@ from orion.logger import SingletonLogger
 from orion.run_test import run
 from orion.utils import get_output_extension
 from orion import constants as cnsts
-from orion.config import load_config, load_ack
+from orion.config import load_config, load_ack, merge_ack_files, auto_detect_ack_file_with_vars
 from version import __version__
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
@@ -89,7 +90,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.version_option(version=__version__, message="%(prog)s %(version)s")
 @click.command(context_settings={"show_default": True, "max_content_width": 180})
 @click.option(
-    "--cmr", 
+    "--cmr",
     is_flag=True,
     help="Generate percent difference in comparison",
     cls=MutuallyExclusiveOption,
@@ -97,7 +98,8 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 )
 @click.option("--filter", is_flag=True, help="Generate percent difference in comparison")
 @click.option("--config", help="Path to the configuration file", required=True)
-@click.option("--ack", default="", help="Optional ack YAML to ack known regressions")
+@click.option("--ack", default="", help="Optional ack YAML to ack known regressions (can specify multiple files separated by comma)")
+@click.option("--no-ack", is_flag=True, default=False, help="Disable automatic ACK file detection and loading (manual --ack files are still loaded)")
 @click.option(
     "--save-data-path", default="data.csv", help="Path to save the output file"
 )
@@ -158,9 +160,85 @@ def main(**kwargs):
         level = logging.ERROR
     logger = SingletonLogger(debug=level, name="Orion")
     logger.info("🏹 Starting Orion in command-line mode")
-    if len(kwargs["ack"]) > 1 :
-        kwargs["ackMap"] = load_ack(kwargs["ack"])
+
+    # Load config first (needed for auto-detection)
     kwargs["config"] = load_config(kwargs["config"], kwargs["input_vars"])
+
+    # Handle ACK file loading
+    # Logic: Auto-load ack/all_ack.yaml unless --no-ack. Manual --ack files are always loaded and merged.
+    ack_maps = []
+
+    # Step 1: Auto-detect and load consolidated ACK file (skipped when --no-ack)
+    if kwargs["no_ack"]:
+        logger.info("Automatic ACK loading disabled (--no-ack flag)")
+    else:
+        auto_ack_file = auto_detect_ack_file_with_vars(
+            kwargs["config"],
+            kwargs["input_vars"],
+            ack_dir="ack"
+        )
+        if auto_ack_file:
+            # Extract version and test type from config for filtering
+            version = None
+            test_type = None
+
+            if "tests" in kwargs["config"] and len(kwargs["config"]["tests"]) > 0:
+                test = kwargs["config"]["tests"][0]
+                metadata = test.get("metadata", {})
+
+                # Resolve version
+                version_field = test.get("version_field", "ocpVersion")
+                version_value = metadata.get(version_field, "")
+                if version_value and "{{" not in str(version_value):
+                    version = str(version_value).strip('"')
+                elif version_value and "{{" in str(version_value):
+                    match = re.search(r'\{\{\s*(\w+)\s*\}\}', str(version_value))
+                    if match:
+                        var_name = match.group(1)
+                        version = kwargs["input_vars"].get(var_name) or kwargs["input_vars"].get(var_name.lower())
+
+                # Resolve test type
+                test_type_value = metadata.get("benchmark.keyword", "")
+                if test_type_value and "{{" not in str(test_type_value):
+                    test_type = str(test_type_value).strip()
+                elif test_type_value and "{{" in str(test_type_value):
+                    match = re.search(r'\{\{\s*(\w+)\s*\}\}', str(test_type_value))
+                    if match:
+                        var_name = match.group(1)
+                        test_type = kwargs["input_vars"].get(var_name) or kwargs["input_vars"].get(var_name.lower())
+
+            # Load auto-detected ACK file with filtering
+            auto_ack_map = load_ack(auto_ack_file, version=version, test_type=test_type)
+            if auto_ack_map and auto_ack_map.get("ack") and len(auto_ack_map.get("ack", [])) > 0:
+                ack_maps.append(auto_ack_map)
+                logger.info("✓ Auto-loaded ACK file: %s (version=%s, test_type=%s, matching entries=%d)",
+                           auto_ack_file, version or "all", test_type or "all",
+                           len(auto_ack_map.get("ack", [])))
+            elif auto_ack_file:
+                logger.info("✓ Loaded ACK file: %s (version=%s, test_type=%s, no matching entries found)",
+                           auto_ack_file, version or "all", test_type or "all")
+
+    # Load manually specified ACK files (if any) — always runs even with --no-ack
+    if kwargs["ack"]:
+        # Support multiple ACK files separated by comma
+        ack_files = [f.strip() for f in kwargs["ack"].split(",") if f.strip()]
+        for ack_file in ack_files:
+            if len(ack_file) > 0:
+                manual_ack_map = load_ack(ack_file)
+                if manual_ack_map and manual_ack_map.get("ack"):
+                    ack_maps.append(manual_ack_map)
+                    logger.info("✓ Loaded manual ACK file: %s (entries=%d)",
+                               ack_file, len(manual_ack_map.get("ack", [])))
+
+    # Merge all ACK maps (auto-loaded + manual)
+    if ack_maps:
+        kwargs["ackMap"] = merge_ack_files(ack_maps)
+        total_entries = len(kwargs["ackMap"].get("ack", []))
+        logger.info("✓ Total ACK entries loaded: %d", total_entries)
+    else:
+        kwargs["ackMap"] = None
+        logger.debug("No ACK entries loaded")
+
     if not kwargs["metadata_index"] or not kwargs["es_server"]:
         logger.error("metadata-index and es-server flags must be provided")
         sys.exit(1)
