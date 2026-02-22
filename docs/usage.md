@@ -258,6 +258,39 @@ Today is 27 Aug:
 - `--lookback 5d --since 2024-08-25`: Gets runs from 20 Aug to 25 Aug (5-day bounded window)
 - `--lookback 5d --since 2024-08-25 --lookback-size 3`: Gets up to 3 runs from 20 Aug to 25 Aug
 
+## Changepoint Buffer and Window Expansion
+
+When a changepoint (regression) is detected in the **first few** data points of the lookback window, it may be a false positive due to limited history. Orion can re-validate by expanding the time window and re-running the algorithm. These options control that behavior:
+
+- `--changepoint-buffer`: Number of initial points considered the "buffer". If a regression is found within this range, Orion may expand the window to re-validate (default: 5). Set to `0` to disable window expansion.
+- `--expand-days`: Days to add to the lookback when expanding the window (default: 10).
+- `--expand-points`: Extra data points to request when expanding the window (default: 5).
+
+### Basic usage
+
+Use defaults (buffer of 5, expand by 10 days and 5 extra points when re-validating):
+
+```bash
+orion --lookback 5d --config config.yaml --hunter-analyze
+```
+
+Disable early-changepoint re-validation (report changepoints in the first points as-is):
+
+```bash
+orion --changepoint-buffer 0 --lookback 5d --config config.yaml --hunter-analyze
+```
+
+### Custom buffer and expansion
+
+Tune how sensitive re-validation is and how much to expand:
+
+```bash
+# Buffer of 8 points; on expansion add 14 days and 10 extra points
+orion --changepoint-buffer 8 --expand-days 14 --expand-points 10 --lookback 5d --config config.yaml --hunter-analyze
+```
+
+**Note:** Window expansion only runs when `--changepoint-buffer` is greater than 0 and a changepoint is detected within the first `changepoint-buffer` points. If the expanded run still shows a changepoint, that result is kept; otherwise the early changepoint is cleared from the output.
+
 ## Node Count Filtering
 
 ### Relaxed Matching

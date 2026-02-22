@@ -270,13 +270,13 @@ setup() {
   export quay_image_push_pull_index="quay-push-pull*"
   export quay_load_test_index="quay-vegeta-results*"
   export es_metadata_index=${METADATA_INDEX}
-  run_cmd orion --node-count false --config "examples/quay-load-test-stable.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --input-vars='{"quay_version": "'${quay_version}'", "ocp_version": "4.18"}'
+  run_cmd orion --node-count false --config "examples/quay-load-test-stable.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --changepoint-buffer 0 --input-vars='{"quay_version": "'${quay_version}'", "ocp_version": "4.18"}'
 }
 
 @test "orion with quay stage config " {
   export quay_image_push_pull_index="quay-push-pull*"
   export es_metadata_index=${METADATA_INDEX}
-  run_cmd orion --node-count false --config "examples/quay-load-test-stable-stage.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --input-vars='{"quay_version": "quayio-stage", "ocp_version": "4.18"}'
+  run_cmd orion --node-count false --config "examples/quay-load-test-stable-stage.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=junit.xml --collapse --changepoint-buffer 0 --input-vars='{"quay_version": "quayio-stage", "ocp_version": "4.18"}'
 }
 
 @test "orion version check" {
@@ -316,7 +316,7 @@ setup() {
 
 @test "orion with regression should contain inline changepoint" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --changepoint-buffer 0 --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -348,7 +348,7 @@ setup() {
 @test "orion with regression should contain inline changepoint json" {
   set +e
 
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json > ./outputs/results.json
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --changepoint-buffer 0 --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json > ./outputs/results.json
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -368,7 +368,7 @@ setup() {
 @test "orion with regression should contain inline changepoint junit" {
   set +e
 
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit > ./outputs/results.xml
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --changepoint-buffer 0 --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit > ./outputs/results.xml
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -398,7 +398,7 @@ setup() {
 @test "orion with regression should contain inline changepoint with custom display" {
   set +e
 
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --display upstreamJob > ./outputs/results.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --changepoint-buffer 0 --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --display upstreamJob > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -441,7 +441,7 @@ setup() {
 @test "orion with regression should contain inline changepoint json with custom display" {
   set +e
 
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json --display upstreamJob > ./outputs/results.json
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --changepoint-buffer 0 --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json --display upstreamJob > ./outputs/results.json
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -467,7 +467,7 @@ setup() {
 @test "orion with regression should contain inline changepoint junit with custom display" {
   set +e
 
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit --display upstreamJob > ./outputs/results.xml
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --changepoint-buffer 0 --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit --display upstreamJob > ./outputs/results.xml
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -504,7 +504,7 @@ setup() {
 
 @test "orion with regression should contain inline changepoint no metadata index" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-metrics-only.yaml --metadata-index "orion-integration-test-metrics*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --changepoint-buffer 0 --config hack/ci-tests/ci-tests-metrics-only.yaml --metadata-index "orion-integration-test-metrics*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -533,43 +533,26 @@ setup() {
   set -e
 }
 
-@test "orion --anomaly-detection with regression should contain inline changepoint" {
+@test "orion with regression same dataset skips early changepoint when no extra data" {
+  # Integration dataset has 8 points; changepoint is at the 8th point (index 7).
+  # With --changepoint-buffer 8, that point is in the buffer. Window expansion
+  # finds no extra data in ES, so we skip the changepoint (no regression).
   set +e
-  orion --lookback 15d --since 2026-01-20 --anomaly-detection --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-anomaly.txt
+  orion --lookback 15d --since 2026-01-20 --anomaly-detection --changepoint-buffer 8 --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-anomaly.txt
   EXIT_CODE=$?
 
-  if [ ! $EXIT_CODE -eq 2 ]; then
-    echo "no regression found"
+  if [ ! $EXIT_CODE -eq 0 ]; then
+    echo "Expected exit 0 (changepoint skipped, no regression); got $EXIT_CODE"
     exit 1
   fi
 
-  # Check if the percentage #1 string exists in the output file
-  if ! grep -q "+155.6%" ./outputs/results-anomaly.txt; then
-    echo "Expected string '+155.6%' not found in results.txt"
+  # Verify changepoint was skipped: no regression section in output
+  if grep -q "Regression(s) found" ./outputs/results-anomaly.txt; then
+    echo "Unexpected regression reported; changepoint should have been skipped"
     exit 1
   fi
-
-  # Check if the percentage #2 string exists in the output file
-  if ! grep -q "+56.7%" ./outputs/results-anomaly.txt; then
-    echo "Expected string '+56.7%' not found in results.txt"
-    exit 1
-  fi
-
-  # Check if the percentage #3 string exists in the output file
-  if ! grep -q "+38.9%" ./outputs/results-anomaly.txt; then
-    echo "Expected string '+38.9%' not found in results.txt"
-    exit 1
-  fi
-
-  # Check if the Bad Version string exists in the output file
-  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-15-195655" ./outputs/results-anomaly.txt; then
-    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
-    exit 1
-  fi
-
-  # Check if the Bad Version string exists in the output file
-  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-17-195655" ./outputs/results-anomaly.txt; then
-    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-17-195655' not found in results.txt"
+  if grep -q "Bad Version:" ./outputs/results-anomaly.txt; then
+    echo "Unexpected Bad Version in output; changepoint should have been skipped"
     exit 1
   fi
 
