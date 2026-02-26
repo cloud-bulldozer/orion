@@ -1,0 +1,325 @@
+# config file for NEUTRON RHOSO service
+#
+# PERFORMANCE METRIC: Using 'percentiles' with target_percentile=95 (P95 latency)
+#   - Provides 95th percentile latency performance across all iterations
+
+tests:
+  - name: neutron-performance-test
+
+    # Use browbeat_uuid as the UUID field for Rally/Browbeat data
+    uuid_field: browbeat_uuid
+
+    # Global threshold for all metrics (percentage change to trigger regression alert)
+    threshold: 10
+
+    # Global direction for all metrics (0=both, 1=increases only, -1=decreases only)
+    direction: 1
+
+    metadata:
+      # Filter by job name to get specific neutron test runs
+      jobName.keyword: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-metal-rhoso-x86-weekly-rhoso-neutron
+
+      # Filter by job type
+      jobType: periodic
+      jobStatus: pass
+
+    metrics:
+      # NEUTRON - neutron._add_subports_to_trunk
+      - name: AddSubportsToTrunk
+        action: neutron._add_subports_to_trunk
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.create_network
+      - name: createNetwork
+        action: neutron.create_network
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.create_port
+      - name: createPort
+        action: neutron.create_port
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.create_router
+      - name: createRouter
+        action: neutron.create_router
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.create_security_group
+      - name: createSecurityGroup
+        action: neutron.create_security_group
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.create_subnet
+      - name: createSubnet
+        action: neutron.create_subnet
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.create_trunk
+      - name: createTrunk
+        action: neutron.create_trunk
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.delete_network
+      - name: deleteNetwork
+        action: neutron.delete_network
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.delete_port
+      - name: deletePort
+        action: neutron.delete_port
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.delete_router
+      - name: deleteRouter
+        action: neutron.delete_router
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.delete_subnet
+      - name: deleteSubnet
+        action: neutron.delete_subnet
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.list_networks
+      - name: listNetworks
+        action: neutron.list_networks
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.list_ports
+      - name: listPorts
+        action: neutron.list_ports
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.list_routers
+      - name: listRouters
+        action: neutron.list_routers
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.list_security_groups
+      - name: listSecurityGroups
+        action: neutron.list_security_groups
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.list_subnets
+      - name: listSubnets
+        action: neutron.list_subnets
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.list_subports_by_trunk
+      - name: listSubportsByTrunk
+        action: neutron.list_subports_by_trunk
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.list_trunks
+      - name: listTrunks
+        action: neutron.list_trunks
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.remove_interface_router
+      - name: removeInterfaceRouter
+        action: neutron.remove_interface_router
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.update_network
+      - name: updateNetwork
+        action: neutron.update_network
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.update_port
+      - name: updatePort
+        action: neutron.update_port
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.update_router
+      - name: updateRouter
+        action: neutron.update_router
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
+      # NEUTRON - neutron.update_subnet
+      - name: updateSubnet
+        action: neutron.update_subnet
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: NEUTRON]"
+
