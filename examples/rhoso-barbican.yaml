@@ -1,0 +1,117 @@
+# config file for BARBICAN RHOSO service
+#
+# PERFORMANCE METRIC: Using 'percentiles' with target_percentile=95 (P95 latency)
+#   - Provides 95th percentile latency performance across all iterations
+
+tests:
+  - name: barbican-performance-test
+
+    # Use browbeat_uuid as the UUID field for Rally/Browbeat data
+    uuid_field: browbeat_uuid
+
+    # Global threshold for all metrics (percentage change to trigger regression alert)
+    threshold: 10
+
+    # Global direction for all metrics (0=both, 1=increases only, -1=decreases only)
+    direction: 1
+
+    metadata:
+      # Filter by job name to get specific barbican test runs
+      jobName.keyword: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-metal-rhoso-x86-weekly-rhoso-barbican
+
+      # Filter by job type
+      jobType: periodic
+      jobStatus: pass
+
+    metrics:
+      # BARBICAN - barbican.container_delete
+      - name: containerDelete
+        action: barbican.container_delete
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: BARBICAN]"
+
+      # BARBICAN - barbican.create_asymmetric
+      - name: createAsymmetric
+        action: barbican.create_asymmetric
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: BARBICAN]"
+
+      # BARBICAN - barbican.create_certificate_container
+      - name: createCertificateContainer
+        action: barbican.create_certificate_container
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: BARBICAN]"
+
+      # BARBICAN - barbican.create_secret
+      - name: createSecret
+        action: barbican.create_secret
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: BARBICAN]"
+
+      # BARBICAN - barbican.delete_secret
+      - name: deleteSecret
+        action: barbican.delete_secret
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: BARBICAN]"
+
+      # BARBICAN - barbican.list_secrets
+      - name: listSecrets
+        action: barbican.list_secrets
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: BARBICAN]"
+
+      # BARBICAN - barbican.orders_delete
+      - name: ordersDelete
+        action: barbican.orders_delete
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+        labels:
+          - "[Jira: BARBICAN]"
+
