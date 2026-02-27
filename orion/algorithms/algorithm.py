@@ -33,6 +33,14 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         self.regression_flag = False
         self._acked_logged = False
         self._github_client: Optional[GitHubClient] = None
+        self._cached_analysis = None
+
+    def get_analysis_results(self):
+        """Return (series, change_points_by_metric) from _analyze(),
+        caching the result so _analyze() only runs once."""
+        if self._cached_analysis is None:
+            self._cached_analysis = self._analyze()
+        return self._cached_analysis
 
     def output_json(self) -> Tuple[str, str, bool]:
         """Method to output json output
@@ -40,7 +48,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         Returns:
             Tuple[str, str, bool]: returns test_name, json output and regression flag
         """
-        _, change_points_by_metric = self._analyze()
+        _, change_points_by_metric = self.get_analysis_results()
         dataframe_json = self.dataframe.to_json(orient="records")
         dataframe_json = json.loads(dataframe_json)
         collapsed_json = []
@@ -125,7 +133,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
                     display_data[display_field].append(str(record.get(display_field, "N/A")))
 
         # Use default apache_otava report
-        series, change_points_by_metric = self._analyze()
+        series, change_points_by_metric = self.get_analysis_results()
 
         # Append display_data to series.data in the same format
         if display_data and display_fields:

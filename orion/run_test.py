@@ -6,7 +6,7 @@ import sys
 import json
 import copy
 import concurrent.futures
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, NamedTuple, Optional, Tuple
 from tabulate import tabulate
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
@@ -14,6 +14,26 @@ from orion.algorithms import AlgorithmFactory
 import orion.constants as cnsts
 from orion.utils import Utils, get_subtracted_timestamp, json_to_junit
 from orion.github_client import GitHubClient
+
+
+class AnalyzeResult(NamedTuple):
+    """Return type for analyze()."""
+    output: Optional[Dict[str, Any]]
+    regression_flag: Optional[bool]
+    regression_data: Optional[list]
+    average_values: Any
+    viz_data: Any
+
+
+class TestResults(NamedTuple):
+    """Return type for run() results tuples."""
+    output: Optional[Dict[str, Any]]
+    regression_flag: bool
+    regression_data: list
+    average_values: Any
+    pr: int
+    viz_data: list
+
 
 def get_algorithm_type(kwargs):
     """Switch Case of getting algorithm name
@@ -35,8 +55,7 @@ def get_algorithm_type(kwargs):
     return algorithm_name
 
 # pylint: disable=too-many-locals
-def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any, int],
-                                          Tuple[Dict[str, Any], bool, Any, Any, int]]:
+def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
     """run method to start the tests
 
     Args:
@@ -62,6 +81,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
     result_output, regression_flag, regression_data = {}, False, []
     result_output_pull, regression_flag_pull, regression_data_pull = {}, False, []
     average_values_df_pull, average_values_df = "", ""
+    all_viz_data = []
     pr = 0
     for test in config["tests"]:
         # Create fingerprint Matcher
@@ -82,32 +102,41 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
                     test_periodic["metadata"]["repository"] = ""
                     futures_periodic = executor.submit(analyze, test_periodic, kwargs, False)
                     concurrent.futures.wait([futures_pull, futures_periodic])
-                    result_output_pull = futures_pull.result()[0]
-                    regression_flag_pull = futures_pull.result()[1]
-                    regression_data_pull = futures_pull.result()[2]
-                    average_values_df_pull = futures_pull.result()[3]
-                    result_output = futures_periodic.result()[0]
-                    regression_flag = futures_periodic.result()[1]
-                    regression_data = futures_periodic.result()[2]
-                    average_values_df = futures_periodic.result()[3]
+                    pull_result = futures_pull.result()
+                    periodic_result = futures_periodic.result()
+                    result_output_pull = pull_result.output
+                    regression_flag_pull = pull_result.regression_flag
+                    regression_data_pull = pull_result.regression_data
+                    average_values_df_pull = pull_result.average_values
+                    result_output = periodic_result.output
+                    regression_flag = periodic_result.regression_flag
+                    regression_data = periodic_result.regression_data
+                    average_values_df = periodic_result.average_values
+                    if pull_result.viz_data is not None:
+                        all_viz_data.append(pull_result.viz_data)
+                    if periodic_result.viz_data is not None:
+                        all_viz_data.append(periodic_result.viz_data)
             else:
-                result_output, regression_flag, regression_data, average_values_df = analyze(
-                    test,
-                    kwargs
-                )
-    results_pull = (
-        result_output_pull,
-        regression_flag_pull,
-        regression_data_pull,
-        average_values_df_pull,
-        pr
+                (result_output, regression_flag,
+                 regression_data, average_values_df,
+                 viz_data) = analyze(test, kwargs)
+                if viz_data is not None:
+                    all_viz_data.append(viz_data)
+    results_pull = TestResults(
+        output=result_output_pull,
+        regression_flag=regression_flag_pull,
+        regression_data=regression_data_pull,
+        average_values=average_values_df_pull,
+        pr=pr,
+        viz_data=[],
     )
-    results = (
-        result_output,
-        regression_flag,
-        regression_data,
-        average_values_df,
-        0
+    results = TestResults(
+        output=result_output,
+        regression_flag=regression_flag,
+        regression_data=regression_data,
+        average_values=average_values_df,
+        pr=0,
+        viz_data=all_viz_data,
     )
     return results, results_pull
 
@@ -167,7 +196,7 @@ def clear_early_changepoints(result_data_json: list, max_early_index: int) -> No
                     metric_data["percentage_change"] = 0
 
 
-def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, Any]:
+def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
     """
     Utils class to process the test
 
@@ -197,7 +226,7 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
 
     if fingerprint_matched_df is None:
         if is_pull:
-            return None, None, None, None
+            return AnalyzeResult(None, None, None, None, None)
         sys.exit(3) # No data present
 
     metrics = []
@@ -207,7 +236,7 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
     algorithm_name = get_algorithm_type(kwargs)
     if algorithm_name is None:
         logger.error("No algorithm configured")
-        return None, None, None, None
+        return None, None, None, None, None
     logger.info("Comparison algorithm: %s", algorithm_name)
 
     # Isolation forest requires no null values in the dataframe
@@ -399,7 +428,21 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                     bad_ver = None
 
     regression_flag = regression_flag or test_flag
-    return result_output, regression_flag, regression_data, average_values
+
+    viz_data = None
+    if kwargs.get("viz"):
+        from orion.visualization import VizData  # pylint: disable=import-outside-toplevel
+        _, change_points_by_metric = algorithm.get_analysis_results()
+        viz_data = VizData(
+            test_name=test["name"],
+            dataframe=algorithm.dataframe.copy(),
+            metrics_config=metrics_config,
+            change_points_by_metric=change_points_by_metric,
+            uuid_field=test["uuid_field"],
+            version_field=test["version_field"],
+        )
+
+    return AnalyzeResult(result_output, regression_flag, regression_data, average_values, viz_data)
 
 
 def tabulate_average_values(

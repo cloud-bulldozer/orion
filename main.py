@@ -8,12 +8,12 @@ import logging
 import re
 import sys
 import warnings
-from typing import Any, Dict, Tuple
+from typing import Any
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 import click
 from orion.logger import SingletonLogger
-from orion.run_test import run
+from orion.run_test import run, TestResults
 from orion.utils import get_output_extension
 from orion import constants as cnsts
 from orion.config import load_config, load_ack, merge_ack_files, auto_detect_ack_file_with_vars
@@ -151,6 +151,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--input-vars", type=Dictionary(), default="{}", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
 @click.option("--display", type=List(), default=["buildUrl"], help="Add metadata field as a column in the output (e.g. ocpVirt, upstreamJob)")
 @click.option("--pr-analysis", is_flag=True, help="Analyze PRs for regressions", default=False)
+@click.option("--viz", is_flag=True, default=False, help="Generate interactive HTML visualizations alongside output")
 def main(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
@@ -258,7 +259,7 @@ def main(**kwargs):
             sys.exit(1)
     results, results_pull = run(**kwargs)
     is_pull = False
-    if results_pull[0]:
+    if results_pull.output:
         is_pull = True
     if kwargs['output_format'] == cnsts.JSON:
         has_regression = print_json(logger, kwargs, results, results_pull, is_pull)
@@ -268,13 +269,23 @@ def main(**kwargs):
         has_regression = print_output(logger, kwargs, results, is_pull)
         if is_pull:
             print_output(logger, kwargs, results_pull, is_pull)
+    if kwargs.get("viz"):
+        try:
+            from orion.visualization import generate_test_html  # pylint: disable=import-outside-toplevel
+            output_base_path = kwargs['save_output_path'].split('.')[0]
+            all_viz_data = results.viz_data
+            for viz_data in all_viz_data:
+                generate_test_html(viz_data, output_base_path)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.warning("Visualization generation failed: %s", e)
+
     if has_regression:
         sys.exit(2) ## regression detected
 
 def print_output(
         logger,
         kwargs,
-        results: Tuple[Dict[str, Any], bool, Any, str, int],
+        results: TestResults,
         is_pull: bool = False) -> bool:
     """
     Print the output of the tests
@@ -285,13 +296,11 @@ def print_output(
         results: results of the tests
         is_pull: whether the tests are pull requests
     """
-    output = results[0]
-    regression_flag = results[1]
-    regression_data = results[2]
-    average_values = results[3]
-    pr = 0
-    if is_pull and len(results) > 4:
-        pr = results[4]
+    output = results.output
+    regression_flag = results.regression_flag
+    regression_data = results.regression_data
+    average_values = results.average_values
+    pr = results.pr if is_pull else 0
     if not output:
         logger.error("Terminating test")
         sys.exit(0)
@@ -338,20 +347,20 @@ def print_output(
     return False
 
 
-def print_json(logger, kwargs, results, results_pull, is_pull):
+def print_json(logger, kwargs, results: TestResults, results_pull: TestResults, is_pull):
     """
     Print the output of the tests in json format
     """
     logger.info("Printing json output")
-    output = results[0]
-    regression_flag = results[1]
-    average_values = results[3]
+    output = results.output
+    regression_flag = results.regression_flag
+    average_values = results.average_values
     output_pull = []
     if not output:
         logger.error("Terminating test")
         sys.exit(0)
-    if is_pull and len(results_pull) > 4:
-        output_pull = results_pull[0]
+    if is_pull and results_pull.pr:
+        output_pull = results_pull.output
     for test_name, result_table in output.items():
         if not is_pull:
             print(result_table)
@@ -373,20 +382,20 @@ def print_json(logger, kwargs, results, results_pull, is_pull):
             return True
     return False
 
-def print_junit(logger, kwargs, results, results_pull, is_pull):
+def print_junit(logger, kwargs, results: TestResults, results_pull: TestResults, is_pull):
     """
     Print the output of the tests in junit format
     """
     logger.info("Printing junit output")
-    output = results[0]
-    regression_flag = results[1]
-    average_values = results[3]
+    output = results.output
+    regression_flag = results.regression_flag
+    average_values = results.average_values
     output_pull = []
     if not output:
         logger.error("Terminating test")
         sys.exit(0)
-    if is_pull and len(results_pull) > 4:
-        output_pull = results_pull[0]
+    if is_pull and results_pull.pr:
+        output_pull = results_pull.output
     testsuites = ET.Element("testsuites")
     for test_name, result_table in output.items():
         if not is_pull:
