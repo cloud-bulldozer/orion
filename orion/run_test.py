@@ -36,7 +36,8 @@ def get_algorithm_type(kwargs):
 
 # pylint: disable=too-many-locals
 def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any, int],
-                                          Tuple[Dict[str, Any], bool, Any, Any, int]]:
+                                          Tuple[Dict[str, Any], bool, Any, Any, int],
+                                          Dict[str, str]]:
     """run method to start the tests
 
     Args:
@@ -62,6 +63,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
     result_output, regression_flag, regression_data = {}, False, []
     result_output_pull, regression_flag_pull, regression_data_pull = {}, False, []
     average_values_df_pull, average_values_df = "", ""
+    report_json = {}
     pr = 0
     for test in config["tests"]:
         # Create fingerprint Matcher
@@ -90,11 +92,13 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
                     regression_flag = futures_periodic.result()[1]
                     regression_data = futures_periodic.result()[2]
                     average_values_df = futures_periodic.result()[3]
+                    if len(futures_periodic.result()) > 4:
+                        report_json.update(futures_periodic.result()[4])
             else:
-                result_output, regression_flag, regression_data, average_values_df = analyze(
-                    test,
-                    kwargs
-                )
+                result = analyze(test, kwargs)
+                result_output, regression_flag, regression_data, average_values_df = result[:4]
+                if len(result) > 4:
+                    report_json.update(result[4])
     results_pull = (
         result_output_pull,
         regression_flag_pull,
@@ -109,7 +113,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
         average_values_df,
         0
     )
-    return results, results_pull
+    return results, results_pull, report_json
 
 
 def get_start_timestamp(kwargs: Dict[str, Any], test: Dict[str, Any], is_pull: bool) -> str:
@@ -163,7 +167,7 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
 
     if fingerprint_matched_df is None:
         if is_pull:
-            return None, None, None, None
+            return None, None, None, None, {}
         sys.exit(3) # No data present
 
     metrics = []
@@ -173,7 +177,7 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
     algorithm_name = get_algorithm_type(kwargs)
     if algorithm_name is None:
         logger.error("No algorithm configured")
-        return None, None, None, None
+        return None, None, None, None, {}
     logger.info("Comparison algorithm: %s", algorithm_name)
 
     # Isolation forest requires no null values in the dataframe
@@ -219,6 +223,13 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
 
     testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
     result_output[testname] = result_data
+
+    # When --report is set, also produce JSON output for the report
+    report_json = {}
+    if kwargs.get("report"):
+        testname_json, result_data_json, _ = algorithm.output(cnsts.JSON)
+        report_json[testname_json] = result_data_json
+
     # Query with JSON
     regression_data = []
     if test_flag:
@@ -250,7 +261,7 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 bad_ver = None
 
     regression_flag = regression_flag or test_flag
-    return result_output, regression_flag, regression_data, average_values
+    return result_output, regression_flag, regression_data, average_values, report_json
 
 
 def tabulate_average_values(
