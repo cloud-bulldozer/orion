@@ -27,6 +27,10 @@ tests:
       scenarios.scenario: "{{ scenario_file }}"
       scenarios.exit_status: 0
       scenarios.parameters.node_scenarios.label_selector: "{{ label_selector }}"
+      etcd_encryption_enabled: "{{ etcd_enabled }}"
+      fips_enabled: "{{ fips_enabled }}"
+      ipsec_enabled: "{{ ipsec_enabled }}"
+      tag.keyword: "{{ tag }}"
     metrics:
       # Recovery & Health metrics
       - name: affected_nodes_recovery

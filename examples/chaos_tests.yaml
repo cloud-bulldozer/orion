@@ -27,6 +27,10 @@ tests:
       node_summary_infos.instance_type: "{{ node_instance_type }}"
       network_plugins: "{{ network_plugins }}"
       scenarios.scenario: "{{ scenario_file }}"
+      etcd_encryption_enabled: "{{ etcd_enabled }}"
+      fips_enabled: "{{ fips_enabled }}"
+      ipsec_enabled: "{{ ipsec_enabled }}"
+      tag.keyword: "{{ tag }}"
     metrics:
       # Recovery & Health metrics
       - name: health_check_recovery
