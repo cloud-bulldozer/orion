@@ -288,7 +288,8 @@ def _run_rhoso_flow(args, base_url: str, auth: tuple) -> None:
     for idx, doc in enumerate(metrics_list):
         uuid_val = doc.get('browbeat_uuid', doc.get('uuid', ''))
         ts = doc.get('timestamp', '')
-        ts_norm = ts.replace(':', '').replace('.', '').replace('-', '').replace('T', '').replace('Z', '')
+        ts_norm = ts.replace(':', '').replace('.', '')\
+            .replace('-', '').replace('T', '').replace('Z', '')[:-3]
         doc_id = f"{uuid_val}-{ts_norm}-{doc.get('iteration', 0)}"
 
         success, http_code, response_text = post_document(
@@ -355,7 +356,8 @@ Examples:
     parser.add_argument(
         '--rhoso',
         action='store_true',
-        help='Load rhoso.json: metadata to orion-integration-test-data, metrics to orion-integration-test-metrics'
+        help='Load rhoso.json: metadata to orion-integration-test-data,\
+metrics to orion-integration-test-metrics (default: ./rhoso.json)'
     )
     parser.add_argument(
         '--rhoso-file',
@@ -375,7 +377,8 @@ Examples:
     parser.add_argument(
         '--index',
         default='orion-integration-test-metrics',
-        help='Index name for metrics (default: orion-integration-test-metrics; used for template mode and for --rhoso metrics)'
+        help='Index name for metrics (default: orion-integration-test-metrics;\
+used for template mode and for --rhoso metrics)'
     )
     parser.add_argument(
         '--metadata-file',

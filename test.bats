@@ -845,3 +845,42 @@ setup() {
 
   set -e
 }
+
+@test "orion browbeat config should contain keystone metrics text" {
+  set +e
+  orion --lookback 15d --hunter-analyze --config hack/ci-tests/configurations/ci-tests-browbeat.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --since 2026-02-23 --display='' --input-vars='{"version": "4.18"}' --es-server=${QE_ES_SERVER} > ./outputs/results-browbeat.txt
+  set -e
+
+  for metric in keystone_v3_list_users_avg keystone_v3_list_users_count keystone_v3_list_users_P99 keystone_v3_list_users_P95 keystone_v3_list_users_P90 keystone_v3_list_users_max keystone_v3_list_users_min keystone_v3_list_users_sum; do
+    if ! grep -q "$metric" ./outputs/results-browbeat.txt; then
+      echo "Expected metric '$metric' not found in results-browbeat.txt"
+      exit 1
+    fi
+  done
+}
+
+@test "orion browbeat config should contain keystone metrics json" {
+  set +e
+  orion --lookback 15d --hunter-analyze --config hack/ci-tests/configurations/ci-tests-browbeat.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --since 2026-02-23 --display='' --input-vars='{"version": "4.18"}' --es-server=${QE_ES_SERVER} --output-format json > ./outputs/results-browbeat.json
+  set -e
+
+  for metric in keystone_v3_list_users_avg keystone_v3_list_users_count keystone_v3_list_users_P99 keystone_v3_list_users_P95 keystone_v3_list_users_P90 keystone_v3_list_users_max keystone_v3_list_users_min keystone_v3_list_users_sum; do
+    if ! grep -q "$metric" ./outputs/results-browbeat.json; then
+      echo "Expected metric '$metric' not found in results-browbeat.json"
+      exit 1
+    fi
+  done
+}
+
+@test "orion browbeat config should contain keystone metrics junit" {
+  set +e
+  orion --lookback 15d --hunter-analyze --config hack/ci-tests/configurations/ci-tests-browbeat.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --since 2026-02-23 --display='' --input-vars='{"version": "4.18"}' --es-server=${QE_ES_SERVER} --output-format junit > ./outputs/results-browbeat.xml
+  set -e
+
+  for metric in keystone_v3_list_users_avg keystone_v3_list_users_count keystone_v3_list_users_P99 keystone_v3_list_users_P95 keystone_v3_list_users_P90 keystone_v3_list_users_max keystone_v3_list_users_min keystone_v3_list_users_sum; do
+    if ! grep -q "$metric" ./outputs/results-browbeat.xml; then
+      echo "Expected metric '$metric' not found in results-browbeat.xml"
+      exit 1
+    fi
+  done
+}
