@@ -333,6 +333,57 @@ For metrics that require aggregation:
     agg_type: avg  # avg, sum, max, min
 ```
 
+## Raw Metrics
+
+Raw metrics are used when the benchmark index stores **documents that contain a field with multiple values** (e.g. an array of samples per run). Orion fetches those documents, then applies an aggregation in memory to produce one value per UUID. This fits benchmarks such as **Browbeat/Rally**, where each result document has a `raw` array of measurements.
+
+**How it works:**
+
+- Orion queries the benchmark index with the given `filters` and retrieves the field specified by `metric_of_interest` (e.g. `raw`) for each matching document.
+- If that field is an array, aggregation is applied per document (e.g. `avg` over the array).
+- The resulting metric name is `{name}_{agg_type}` (e.g. `keystone_v3_list_users_avg`).
+
+**Required fields:**
+
+| Field | Description |
+|-------|-------------|
+| `type` | Set to `raw` to enable raw-metrics processing. |
+| `metric_of_interest` | The document field that holds the value(s) to aggregate (e.g. `raw` for Browbeat/Rally). |
+| `agg` | Aggregation to apply. Must include `agg_type`. |
+
+**Optional:**
+
+| Field | Description |
+|-------|-------------|
+| `filters` | Key-value pairs used to filter which documents are fetched from the benchmark index (e.g. `action.keyword: "keystone_v3.list_users"`). If omitted, no extra filters are applied. |
+
+**Supported `agg_type` values:** `avg`, `sum`, `min`, `max`, `count`, `P99`, `P95`, `P90`.
+
+**Example (Browbeat/Rally-style data with a `raw` array per document):**
+
+```yaml
+metrics:
+  - name: keystone_v3_list_users
+    type: raw
+    metric_of_interest: raw
+    filters:
+      action.keyword: "keystone_v3.list_users"
+    threshold: 15
+    direction: 1
+    agg:
+      agg_type: avg
+
+  - name: keystone_v3_list_users
+    type: raw
+    metric_of_interest: raw
+    filters:
+      action.keyword: "keystone_v3.list_users"
+    agg:
+      agg_type: P99
+```
+
+This produces metrics such as `keystone_v3_list_users_avg` and `keystone_v3_list_users_P99`. Standard metric options (`threshold`, `direction`, `labels`, etc.) apply to raw metrics as well.
+
 ## Labels and Filtering
 
 ### Labels
