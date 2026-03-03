@@ -1,6 +1,5 @@
 tests:
   - name: browbeat
-    version_field: "ocpVersion"
     uuid_field: "browbeat_uuid"
     metadata:
       ocpVersion: "{{ version }}"
