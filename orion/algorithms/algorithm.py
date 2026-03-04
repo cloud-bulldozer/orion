@@ -31,6 +31,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         self.options = options
         self.metrics_config = metrics_config
         self.regression_flag = False
+        self._acked_logged = False
         self._github_client: Optional[GitHubClient] = None
 
     def output_json(self) -> Tuple[str, str, bool]:

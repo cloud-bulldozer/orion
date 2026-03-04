@@ -1,10 +1,13 @@
 """EDivisive Algorithm from apache_otava"""
 
 # pylint: disable = line-too-long
+import logging
 from typing import Dict, List
 import pandas as pd
 from otava.analysis import ChangePoint
 from orion.algorithms.algorithm import Algorithm
+
+logger = logging.getLogger("Orion")
 
 
 class EDivisive(Algorithm):
@@ -24,11 +27,16 @@ class EDivisive(Algorithm):
 
         # Process if we have ack'ed regression
         ackSet = set()
-        if len(self.options["ack"]) > 1 and self.options["ackMap"] is not None:
+        acked_uuids = []
+        if self.options["ackMap"] is not None:
             for ack in self.options["ackMap"]["ack"]:
                 pos = series.find_by_attribute("uuid",ack["uuid"])
                 if len(pos) > 0 :
                     ackSet.add(str(pos[0]) + "_" + ack["metric"])
+                    acked_uuids.append(f"{ack['uuid']} ({ack['metric']})")
+        if acked_uuids and not self._acked_logged:
+            logger.info("ACKed UUIDs: %s", ", ".join(acked_uuids))
+            self._acked_logged = True
 
         # filter by direction and ack'ed issues
         for metric, changepoint_list in change_points_by_metric.items():

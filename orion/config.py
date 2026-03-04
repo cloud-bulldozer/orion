@@ -5,11 +5,19 @@ Module file for config reading and loading
 
 import sys
 import os
+import time
+import tempfile
 from typing import Any, Dict, List
 from collections import Counter
+from urllib.request import urlopen
+from urllib.error import URLError
 import jinja2
 import yaml
 from orion.logger import SingletonLogger
+
+REMOTE_ACK_URL = (
+    "https://raw.githubusercontent.com/cloud-bulldozer/orion/main/ack/all_ack.yaml"
+)
 
 
 def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
@@ -169,12 +177,46 @@ def merge_ack_files(ack_maps: List[Dict[str, Any]]) -> Dict[str, Any]:
     return {"ack": merged_acks}
 
 
+def fetch_remote_ack_file() -> str:
+    """Fetch the latest consolidated ACK file from the GitHub main branch.
+
+    Downloads ack/all_ack.yaml from the orion repository and writes it to a
+    temporary file.
+
+    Returns:
+        str: Path to the downloaded temp file, or None if the fetch failed.
+    """
+    logger = SingletonLogger.get_logger("Orion")
+    max_attempts = 3
+    for attempt in range(1, max_attempts + 1):
+        try:
+            logger.info("Fetching latest ACK file from GitHub main branch (attempt %d/%d)...",
+                        attempt, max_attempts)
+            with urlopen(REMOTE_ACK_URL, timeout=10) as response:  # noqa: S310
+                data = response.read()
+            tmp = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
+                suffix=".yaml", prefix="orion_ack_", delete=False
+            )
+            tmp.write(data)
+            tmp.close()
+            logger.info("Successfully fetched remote ACK file (%d bytes)", len(data))
+            return tmp.name
+        except (URLError, OSError) as exc:
+            logger.warning("Attempt %d/%d failed to fetch remote ACK file: %s",
+                           attempt, max_attempts, exc)
+            if attempt < max_attempts:
+                time.sleep(2)
+    logger.warning("All %d attempts to fetch remote ACK file failed", max_attempts)
+    return None
+
+
 def auto_detect_ack_file_with_vars(_config: Dict[str, Any], _input_vars: Dict[str, Any],
                                    ack_dir: str = "ack") -> str:
     """Auto-detect consolidated ACK file.
 
-    Only looks for the consolidated ACK file (all_ack.yaml). Individual files
-    are no longer supported after consolidation.
+    Tries to fetch the latest ACK file from the GitHub main branch first.
+    Falls back to the local consolidated ACK file (all_ack.yaml) if the
+    remote fetch fails.
 
     Args:
         _config: Loaded config dictionary (not used, kept for compatibility)
@@ -186,10 +228,16 @@ def auto_detect_ack_file_with_vars(_config: Dict[str, Any], _input_vars: Dict[st
     """
     logger = SingletonLogger.get_logger("Orion")
 
-    # Only look for consolidated ACK file
+    # Try fetching the latest ACK file from GitHub
+    remote_path = fetch_remote_ack_file()
+    if remote_path:
+        logger.info("Using remote ACK file (all_ack.yaml) from GitHub main branch")
+        return remote_path
+
+    # Fall back to local consolidated ACK file
     consolidated_path = os.path.join(ack_dir, "all_ack.yaml")
     if os.path.exists(consolidated_path):
-        logger.debug("Found consolidated ACK file: %s", consolidated_path)
+        logger.info("Using local ACK file: %s", consolidated_path)
         return consolidated_path
 
     return None
