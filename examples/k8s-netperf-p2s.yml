@@ -1,0 +1,129 @@
+tests :
+  - name : k8s-netperf
+    metadata:
+      upstreamJob.keyword: {{ upstreamJob }}
+      ocpVersion: "{{ version }}"
+    metrics : 
+     # Pod-2-service TCP Stream Tests
+    - name: p2s-tcp-stream-64-1p
+      profile: TCP_STREAM
+      messageSize: 64
+      parallelism: 1
+      driver.keyword: netperf
+      service: true
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      direction: -1
+      threshold: 20
+
+    - name: p2s-tcp-stream-1024-1p
+      profile: TCP_STREAM
+      messageSize: 1024
+      parallelism: 1
+      driver.keyword: netperf
+      service: true
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      direction: -1
+      threshold: 20
+
+    - name: p2s-tcp-stream-4096-1p
+      profile: TCP_STREAM
+      messageSize: 4096
+      parallelism: 1
+      driver.keyword: netperf
+      service: true
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      direction: -1
+      threshold: 20
+
+    - name: p2s-tcp-stream-8192-1p
+      profile: TCP_STREAM
+      messageSize: 8192
+      parallelism: 1
+      driver.keyword: netperf
+      service: true
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      direction: -1
+      threshold: 20
+
+    # Pod-2-service UDP Stream Tests
+    - name: p2s-udp-stream-64-1p
+      profile: UDP_STREAM
+      messageSize: 64
+      parallelism: 1
+      driver.keyword: netperf
+      service: true
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      direction: -1
+      threshold: 20
+
+    - name: p2s-udp-stream-1024-1p
+      profile: UDP_STREAM
+      messageSize: 1024
+      parallelism: 1
+      driver.keyword: netperf
+      service: true
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      direction: -1
+      threshold: 20
+
+    - name: p2s-udp-stream-4096-1p
+      profile: UDP_STREAM
+      messageSize: 4096
+      parallelism: 1
+      driver.keyword: netperf
+      service: true
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      direction: -1
+      threshold: 20
+
+    - name: p2s-udp-stream-8192-1p
+      profile: UDP_STREAM
+      messageSize: 8192
+      parallelism: 1
+      driver.keyword: netperf
+      service: true
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: throughput
+      direction: -1
+      threshold: 20
+
+    # Pod-2-service TCP Request/Response Tests
+    - name: p2s-tcp-rr-1024-1p
+      profile: TCP_RR
+      messageSize: 1024
+      parallelism: 1
+      driver.keyword: netperf
+      service: true
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: latency
+      direction: 1
+      threshold: 20
+
+    # Pod-2-service TCP Connection Request/Response Tests
+    - name: p2s-tcp-crr-1024-1p
+      profile: TCP_CRR
+      messageSize: 1024
+      parallelism: 1
+      driver.keyword: netperf
+      service: true
+      hostNetwork: false
+      acrossAZ: false
+      metric_of_interest: latency
+      direction: 1
+      threshold: 20
