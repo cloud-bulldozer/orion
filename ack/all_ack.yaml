@@ -87,6 +87,16 @@ ack:
     reason: EXTRA_FLAGS issue wrt node-density-cni test
     version: '4.22'
     test: node-density-cni
+  - uuid: eac7b475-235c-4de7-a005-da23a2a56d7b
+    metric: podReadyLatency_P99
+    reason: Random podReady Latency Spike
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 4d0019c4-040a-47c4-bf83-c0142522ff68
+    metric: ovnCPU-ovncontroller_avg
+    reason: Random CPU Spike
+    version: '4.22'
+    test: node-density-cni
   # udn-density-pods
   - uuid: 5b665198-fd65-4832-8e92-1e03c405eb17 # l2-payload
     metric: ovnMem-nbdb_avg
