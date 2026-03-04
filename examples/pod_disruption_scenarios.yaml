@@ -25,6 +25,10 @@ tests:
       network_plugins: "{{ network_plugins }}"
       scenarios.parameters.config.namespace_pattern.keyword: "{{ pod_namespace }}"
       scenarios.parameters.config.label_selector.keyword: "{{ label_selector }}"
+      etcd_encryption_enabled: "{{ etcd_enabled }}"
+      fips_enabled: "{{ fips_enabled }}"
+      ipsec_enabled: "{{ ipsec_enabled }}"
+      tag.keyword: "{{ tag }}"
     metrics:
       # Recovery & Health metrics
       - name: affected_pods_recovery
