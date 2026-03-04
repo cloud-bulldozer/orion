@@ -24,7 +24,7 @@ class EDivisive(Algorithm):
 
         # Process if we have ack'ed regression
         ackSet = set()
-        if len(self.options["ack"]) > 1 and self.options["ackMap"] is not None:
+        if self.options["ackMap"] is not None:
             for ack in self.options["ackMap"]["ack"]:
                 pos = series.find_by_attribute("uuid",ack["uuid"])
                 if len(pos) > 0 :
