@@ -558,6 +558,29 @@ setup() {
   set -e
 }
 
+@test "orion early-changepoint metric - changepoint in first 5 is skipped when expansion finds no extra data" {
+  # Early-cp metric has changepoint at 5th point. Orion expands the window to re-validate;
+  # with only 10 runs there is no additional data, so it skips the early changepoint and does not report regression.
+  set +e
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-early-cp.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-early-cp.txt
+  EXIT_CODE=$?
+
+  if [ $EXIT_CODE -eq 2 ]; then
+    echo "Regression was reported but should be skipped (no extra data after expansion)"
+    cat ./outputs/results-early-cp.txt
+    exit 1
+  fi
+
+  # Output should not show Bad/Previous version (early changepoint was cleared)
+  if grep -q "Bad Version:         4.20.0-0.nightly-2026-01-14-195655" ./outputs/results-early-cp.txt; then
+    echo "Expected early changepoint to be skipped (no Bad Version in output)"
+    cat ./outputs/results-early-cp.txt
+    exit 1
+  fi
+
+  set -e
+}
+
 @test "orion --anomaly-detection with regression should contain inline changepoint" {
   set +e
   orion --lookback 15d --since 2026-01-20 --anomaly-detection --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-anomaly.txt
@@ -600,6 +623,7 @@ setup() {
 
   set -e
 }
+
 
 @test "orion --anomaly-detection with regression should contain inline changepoint json" {
   set +e

@@ -571,7 +571,7 @@ def json_to_junit(
     test_count = 0
     for metric, value in metrics_config.items():
         test_count += 1
-        labels = value["labels"]
+        labels = value.get("labels") if isinstance(value, dict) else None
         label_string = " ".join(labels) if labels else ""
         if not average:
             testcase = ET.SubElement(

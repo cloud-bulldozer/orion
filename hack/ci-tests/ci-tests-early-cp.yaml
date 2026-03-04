@@ -1,0 +1,33 @@
+# Same as ci-tests.yaml but uses the early-changepoint metric so that
+# regression is detected in the first 5 data points (Bad=01-14, Previous=01-13).
+tests:
+  - name: olm-integration-test-early-cp
+    metadata:
+      platform: GCP
+      clusterType: self-managed
+      masterNodesType: e2-custom-6-16384
+      masterNodesCount: 3
+      workerNodesType: e2-custom-6-16384
+      workerNodesCount: 3
+      benchmark.keyword: olm
+      ocpVersion: "{{ version }}"
+      networkType: OVNKubernetes
+      jobType: {{ jobtype | default('periodic') }}
+      pullNumber: {{ pull_number | default(0) }}
+      organization: {{ organization | default('') }}
+      repository: {{ repository | default('') }}
+      not:
+        stream: okd
+
+    metrics:
+    - name: OCP-84094_catalogdCPU_GCP_early_cp
+      metricName.keyword: catalogd_cpu_usage_cores_early_cp
+      metric_of_interest: value
+      not:
+        jobConfig.name: "garbage-collection"
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: OLM]"
+      threshold: 1

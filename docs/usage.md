@@ -258,6 +258,10 @@ Today is 27 Aug:
 - `--lookback 5d --since 2024-08-25`: Gets runs from 20 Aug to 25 Aug (5-day bounded window)
 - `--lookback 5d --since 2024-08-25 --lookback-size 3`: Gets up to 3 runs from 20 Aug to 25 Aug
 
+## Early changepoints
+
+If a changepoint is detected in the first 5 data points, Orion expands the lookback window, re-runs the analysis, and reports based on that expanded result.
+
 ## Node Count Filtering
 
 ### Relaxed Matching
