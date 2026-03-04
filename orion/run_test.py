@@ -236,7 +236,7 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
     algorithm_name = get_algorithm_type(kwargs)
     if algorithm_name is None:
         logger.error("No algorithm configured")
-        return None, None, None, None, None
+        return AnalyzeResult(None, None, None, None, None)
     logger.info("Comparison algorithm: %s", algorithm_name)
 
     # Isolation forest requires no null values in the dataframe
@@ -272,6 +272,7 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
             kwargs,
             metrics_config,
         )
+    expanded_algorithm = None
     # This is env is only present in prow ci
     prow_job_id = os.getenv("PROW_JOB_ID")
     if kwargs["output_format"] != cnsts.JSON and prow_job_id and prow_job_id.strip():
@@ -432,10 +433,13 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
     viz_data = None
     if kwargs.get("viz"):
         from orion.visualization import VizData  # pylint: disable=import-outside-toplevel
-        _, change_points_by_metric = algorithm.get_analysis_results()
+        # Use the algorithm that produced the final results: expanded_algorithm
+        # when window expansion succeeded, otherwise the original algorithm.
+        viz_algorithm = expanded_algorithm if expanded_algorithm is not None else algorithm
+        _, change_points_by_metric = viz_algorithm.get_analysis_results()
         viz_data = VizData(
             test_name=test["name"],
-            dataframe=algorithm.dataframe.copy(),
+            dataframe=viz_algorithm.dataframe.copy(),
             metrics_config=metrics_config,
             change_points_by_metric=change_points_by_metric,
             uuid_field=test["uuid_field"],
