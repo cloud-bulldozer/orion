@@ -231,7 +231,7 @@ def auto_detect_ack_file_with_vars(_config: Dict[str, Any], _input_vars: Dict[st
     # Try fetching the latest ACK file from GitHub
     remote_path = fetch_remote_ack_file()
     if remote_path:
-        logger.info("Using remote ACK file from GitHub main branch")
+        logger.info("Using remote ACK file (all_ack.yaml) from GitHub main branch")
         return remote_path
 
     # Fall back to local consolidated ACK file
