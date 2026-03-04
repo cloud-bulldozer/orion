@@ -279,6 +279,23 @@ class Utils:
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in test}
         return buildUrls
 
+    def map_prs_version(self, uuids: List[str], match: Matcher, ftimestamp: str="timestamp") -> Tuple[dict, Dict[str, List[str]]]:
+        """
+        Get list of PRs for OCP version and map it to UUID
+
+        Args:
+            uuids (List): List uuids
+            match (Matcher): the matcher object
+            ftimestamp (str): timestamp field
+
+        Returns:
+            A tuple of:
+            dictionary of uuid as key and OCP version as value.
+            dictionary of uuid as key and list of PRs for corresponding OCP build as values.
+
+        """
+        versions = self.get_version(uuids, match, ftimestamp)
+        return (versions, {uuid : self.sippy_pr_search(version) for uuid, version in versions.items()})
 
     def process_test(
         self,
@@ -332,14 +349,13 @@ class Utils:
         )
         uuids = list(set(run[self.uuid_field] for run in runs))
         buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
-        versions = self.get_version(uuids, match, timestamp_field)
-        prs = {uuid : self.sippy_pr_search(version) for uuid, version in versions.items()}
+        versions, prs = self.map_prs_version(uuids, match, timestamp_field)
         # get uuids if there is a baseline
         if options["baseline"] not in ("", None):
             uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
             uuids.append(options["uuid"])
             buildUrls = self.get_build_urls(uuids, match, timestamp_field)
-            versions = self.get_version( uuids, match, timestamp_field)
+            versions, prs = self.map_prs_version(uuids, match, timestamp_field)
         elif not uuids:
             self.logger.info("No UUID present for given metadata")
             return None, None
@@ -390,7 +406,7 @@ class Utils:
         display_data = {run[self.uuid_field]: {field: run.get(field) for field in options["display"]} for run in runs}
         for field in options.get("display", []):
             merged_df.loc[:, field] = merged_df[self.uuid_field].apply(
-                lambda uuid, f=field: display_data.get(uuid, "N/A").get(f, "N/A")
+                lambda uuid, f=field: display_data.get(uuid, {}).get(f, "N/A")
             )
         if options["convert_tinyurl"]:
             shortener = pyshorteners.Shortener(timeout=10)
