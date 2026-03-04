@@ -12,19 +12,16 @@ JUNIT="junit"
 CMR="cmr"
 
 # Window expansion: when a changepoint is in the first 5 points, we re-validate by
-# expanding the lookback window. These values are fixed (no CLI options) for consistency.
+# fetching up to 5 more data points from the past. These values are fixed for consistency.
 #
 # CHANGEPOINT_BUFFER (5): Number of initial points considered the "buffer". In the Hunter
 # algorithm, a minimum of 5 points prior and 5 after a point are needed to better include
 # a point as a changepoint; we chose 5 for this buffer for that reason.
 #
-# EXPAND_DAYS (10): Days added to the lookback when expanding the window. 10 days
-# gives a reasonable chance to pull in more runs for re-validation in order to
-# ensure we have minimum 5 datapoints for re-validation.
-#
-# EXPAND_POINTS (5): Extra data points to request when expanding. 5 aligns with the
-# buffer size and balances getting more context vs. avoiding over-fetching.
+# EXPAND_POINTS (5): When expanding, we use unbounded lookback (no time window) and
+# set lookback_size = current_points + 5 so we get up to 5 additional points from the
+# past. Run frequency varies by team; unbounded + cap guarantees we take only what
+# we need and don't depend on a fixed number of days.
 #
 CHANGEPOINT_BUFFER = 5
-EXPAND_DAYS = 10
 EXPAND_POINTS = 5

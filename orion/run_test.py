@@ -2,7 +2,6 @@
 run test
 """
 import os
-import re
 import sys
 import json
 import copy
@@ -116,6 +115,9 @@ def run(**kwargs: dict[str, Any]) -> Tuple[Tuple[Dict[str, Any], bool, Any, Any,
 def get_start_timestamp(kwargs: Dict[str, Any], test: Dict[str, Any], is_pull: bool) -> str:
     """Get the start timestamp if lookback is provided."""
     logger = SingletonLogger.get_logger("Orion")
+    # Window expansion: unbounded lookback only for non-PR. For PR we keep PR creation.
+    if kwargs.get("_unbounded_lookback"):
+        return ""
     if is_pull:
         logger.info("Getting start timestamp from pull request creation date")
         client = GitHubClient(repositories=[])
@@ -163,33 +165,6 @@ def clear_early_changepoints(result_data_json: list, max_early_index: int) -> No
             if "metrics" in result:
                 for metric_data in result["metrics"].values():
                     metric_data["percentage_change"] = 0
-
-
-def increase_lookback(lookback_str: str, days_to_add: int = 10) -> str:
-    """Increase lookback duration by adding days.
-
-    Args:
-        lookback_str: Lookback string in format like "15d" or "20d"
-        days_to_add: Number of days to add (default: 10)
-
-    Returns:
-        str: New lookback string with increased days
-    """
-    if not lookback_str:
-        return f"{days_to_add}d"
-
-    reg_ex = re.match(r"^(?:(\d+)d)?(?:(\d+)h)?$", lookback_str)
-    if not reg_ex:
-        return f"{days_to_add}d"
-
-    days = int(reg_ex.group(1)) if reg_ex.group(1) else 0
-    hours = int(reg_ex.group(2)) if reg_ex.group(2) else 0
-
-    new_days = days + days_to_add
-
-    if hours > 0:
-        return f"{new_days}d{hours}h"
-    return f"{new_days}d"
 
 
 def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, Any]:
@@ -296,18 +271,15 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 test["name"],
             )
             expanded_kwargs = copy.deepcopy(kwargs)
-            original_lookback = kwargs.get("lookback", "")
-            expanded_lookback = increase_lookback(
-                original_lookback, days_to_add=cnsts.EXPAND_DAYS
-            )
-            expanded_kwargs["lookback"] = expanded_lookback
-
+            # Unbounded lookback (non-PR) or keep PR creation (PR): get up to 5 more
+            # points; cap at current + EXPAND_POINTS.
+            expanded_kwargs["lookback"] = ""
+            if not is_pull:
+                expanded_kwargs["_unbounded_lookback"] = True
             required_lookback_size = current_points + cnsts.EXPAND_POINTS
             expanded_kwargs["lookback_size"] = required_lookback_size
             logger.info(
-                "Window expansion: lookback %s -> %s, lookback_size -> %d",
-                original_lookback or "(none)",
-                expanded_lookback,
+                "Window expansion: unbounded lookback, lookback_size -> %d",
                 required_lookback_size,
             )
 
