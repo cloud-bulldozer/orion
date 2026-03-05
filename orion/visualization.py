@@ -25,6 +25,7 @@ class VizData:  # pylint: disable=too-few-public-methods
         change_points_by_metric: dict,
         uuid_field: str,
         version_field: str,
+        acked_entries: list = None,
     ):
         self.test_name = test_name
         self.dataframe = dataframe
@@ -32,6 +33,7 @@ class VizData:  # pylint: disable=too-few-public-methods
         self.change_points_by_metric = change_points_by_metric
         self.uuid_field = uuid_field
         self.version_field = version_field
+        self.acked_entries = acked_entries or []
 
 
 def _prepare_timestamps(df: pd.DataFrame):
@@ -228,6 +230,40 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                 text=f"<b>{pct_change:+.1f}%</b>",
                 showarrow=False,
                 font={"color": color, "size": 11},
+                row=row_idx,
+                col=1,
+            )
+
+        # ACK markers — green diamonds on acknowledged data points
+        for ack in viz_data.acked_entries:
+            if ack["metric"] != metric_name:
+                continue
+            matches = df.index[uuids == ack["uuid"]].tolist()
+            if not matches:
+                continue
+            ack_idx = matches[0]
+            ack_build_url = (
+                build_urls.iloc[ack_idx] if ack_idx < len(build_urls) else ""
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=[ack_idx],
+                    y=[values.iloc[ack_idx]],
+                    mode="markers",
+                    marker={
+                        "size": 14, "color": "#39ff14",
+                        "symbol": "diamond",
+                        "line": {"width": 2, "color": "white"},
+                    },
+                    showlegend=False,
+                    hovertext=(
+                        f"<b>ACKed</b><br>"
+                        f"Reason: {ack['reason']}<br>"
+                        f"UUID: {ack['uuid'][:8]}"
+                    ),
+                    hoverinfo="text",
+                    customdata=[[ack_build_url]],
+                ),
                 row=row_idx,
                 col=1,
             )
