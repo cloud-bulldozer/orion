@@ -7,9 +7,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple, Union
 import pandas as pd
 from tabulate import tabulate
-from otava.report import Report, ReportType
 from otava.series import Series, Metric, ChangePoint, ChangePointGroup
 import orion.constants as cnsts
+from orion.reporting import Report, ReportType
 
 
 from orion.utils import json_to_junit
@@ -160,7 +160,8 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             series, change_points_by_metric
         )
 
-        report = Report(series, change_points_by_time)
+        column_group_size = self.options.get("column_group_size", 5)
+        report = Report(series, change_points_by_time, column_group_size=column_group_size)
         output_table = report.produce_report(
             test_name=self.test["name"], report_type=ReportType.LOG
         )
@@ -214,7 +215,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         headers.extend(display_fields)
 
         # Create the table
-        table = tabulate(table_data, headers=headers, tablefmt="simple")
+        table = tabulate(table_data, headers=headers, tablefmt="html")
 
         return table
 
@@ -260,6 +261,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         Returns:
             List[ChangePointGroup]: _description_
         """
+        print("change_points", change_points)
         changes: List[ChangePoint] = []
         for metric in change_points.keys():
             changes += change_points[metric]
