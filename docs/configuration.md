@@ -373,6 +373,17 @@ tests:
     # ... other settings
 ```
 
+## Report output options
+
+These command-line options control how the text report is formatted.
+
+### `--column-group-size`
+
+Number of metrics per column group in the plain-text report. When many metrics are present, the report splits them into multiple tables; each table shows the same time and attribute columns plus a subset of metrics.
+
+- **Default:** `5`
+- **Example:** `--column-group-size 6` to show 6 metrics per table
+
 ## Validation
 
 Orion validates configuration files and will report errors for:
