@@ -137,6 +137,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
     help="Choose output format (json, text or junit)",
 )
 @click.option("--save-output-path", default="output.txt", help="path to save output file with regressions")
+@click.option("--column-group-size", type=int, default=5, help="Number of metrics per column group in text report")
 @click.option("--uuid", default="", help="UUID to use as base for comparisons")
 @click.option(
     "--baseline", default="", help="Baseline UUID(s) to to compare against uuid"
