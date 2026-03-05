@@ -141,7 +141,7 @@ class Report:
                 OrderedDict.fromkeys(["time", *self.__series.attributes, *column_group])
             )
             separators = []
-            index = 0
+            indexes = []
             for cp in self.__change_points:
                 index = cp.index
                 separator = ""
@@ -157,12 +157,13 @@ class Report:
                     else:
                         separator += " " * (col_width + 2)
                         info += " " * (col_width + 2)
-            if info.strip() != "":
-                separators.append(f"{separator}\n{info}\n{separator}")
+                if info.strip() != "":
+                    indexes.append(index)
+                    separators.append(f"{separator}\n{info}\n{separator}")
+            if len(indexes) > 0:
                 lines = lines[:2+time_index] + \
-                    insert_multiple(lines[2+time_index:], separators, [index])
+                    insert_multiple(lines[2+time_index:], separators, indexes)
                 self.__increment_time_indexes_after(time_indexes, group_index)
-
         return "\n".join(lines)
 
 

@@ -215,7 +215,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         headers.extend(display_fields)
 
         # Create the table
-        table = tabulate(table_data, headers=headers, tablefmt="html")
+        table = tabulate(table_data, headers=headers, tablefmt="simple")
 
         return table
 
@@ -261,7 +261,6 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         Returns:
             List[ChangePointGroup]: _description_
         """
-        print("change_points", change_points)
         changes: List[ChangePoint] = []
         for metric in change_points.keys():
             changes += change_points[metric]
