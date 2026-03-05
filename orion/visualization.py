@@ -51,10 +51,34 @@ def _short_version(v):
     return v[:20]
 
 
+def _classify_changepoint(cp_stats, direction):
+    """Return (pct_change, is_regression) for a single changepoint."""
+    if cp_stats.mean_1 == 0:
+        pct_change = 0.0
+    else:
+        pct_change = (
+            (cp_stats.mean_2 - cp_stats.mean_1) / cp_stats.mean_1
+        ) * 100
+    is_regression = (pct_change * direction > 0) or direction == 0
+    return pct_change, is_regression
+
+
 def _build_test_figure(viz_data: VizData) -> go.Figure:
     """Build a plotly Figure for a single test with one subplot per metric."""
     df = viz_data.dataframe
     metrics = list(viz_data.metrics_config.keys())
+
+    def _sort_key(m):
+        cps = viz_data.change_points_by_metric.get(m, [])
+        if not cps:
+            return (2, m)  # stable → bottom
+        direction = viz_data.metrics_config[m].get("direction", 0)
+        has_regression = any(
+            _classify_changepoint(cp.stats, direction)[1] for cp in cps
+        )
+        return (0, m) if has_regression else (1, m)
+
+    metrics = sorted(metrics, key=_sort_key)
     n_metrics = len(metrics)
 
     if n_metrics == 0:
@@ -80,7 +104,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
         cols=1,
         shared_xaxes=False,
         subplot_titles=metrics,
-        vertical_spacing=max(0.04, 0.15 / n_metrics),
+        vertical_spacing=60 / (400 * n_metrics + 100),  # ~60px gap
     )
 
     # Color palette for metric lines
@@ -118,6 +142,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                 name=metric_name,
                 hovertext=hover_texts,
                 hoverinfo="text",
+                customdata=[[build_urls.iloc[i]] for i in range(len(df))],
                 marker={"size": 6, "color": line_color},
                 line={"width": 2, "color": line_color},
                 connectgaps=False,
@@ -149,16 +174,14 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                 continue
             cp_value = values.iloc[idx]
 
-            if cp.stats.mean_1 == 0:
-                pct_change = 0
-            else:
-                pct_change = (
-                    (cp.stats.mean_2 - cp.stats.mean_1) / cp.stats.mean_1
-                ) * 100
-
             direction = metric_config.get("direction", 0)
-            is_regression = (pct_change * direction > 0) or direction == 0
+            pct_change, is_regression = _classify_changepoint(
+                cp.stats, direction
+            )
             color = "#ff4444" if is_regression else "#39ff14"
+            cp_build_url = (
+                build_urls.iloc[idx] if idx < len(build_urls) else ""
+            )
 
             # Changepoint marker
             fig.add_trace(
@@ -178,9 +201,10 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                         f"{pct_change:+.1f}% change<br>"
                         f"Mean before: {cp.stats.mean_1:,.2f}<br>"
                         f"Mean after: {cp.stats.mean_2:,.2f}<br>"
-                        f"Build: {build_urls.iloc[idx][-60:]}"
+                        f"Build: {cp_build_url[-60:]}"
                     ),
                     hoverinfo="text",
+                    customdata=[[cp_build_url]],
                 ),
                 row=row_idx,
                 col=1,
@@ -208,11 +232,14 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                 col=1,
             )
 
-        # Add consistent y-axis padding so all subplots look similar
+        # Add consistent y-axis padding so all subplots look similar.
+        # For nearly-flat metrics, ensure at least 5% of the mean as padding
+        # so the data fills the subplot instead of being a thin line.
         y_min = values.min()
         y_max = values.max()
-        y_span = y_max - y_min if y_max != y_min else abs(y_max) * 0.1 or 1
-        y_pad = y_span * 0.15
+        y_span = y_max - y_min
+        min_pad = abs(mean_val) * 0.05 or 1
+        y_pad = max(y_span * 0.15, min_pad)
         fig.update_yaxes(
             title_text=metric_name,
             title_font={"size": 11},
@@ -246,17 +273,12 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
     cp_parts = []
     for metric_name, cps in viz_data.change_points_by_metric.items():
         for cp in cps:
-            if cp.stats.mean_1 == 0:
-                pct = 0
-            else:
-                pct = (
-                    (cp.stats.mean_2 - cp.stats.mean_1)
-                    / cp.stats.mean_1
-                ) * 100
             direction = viz_data.metrics_config.get(
                 metric_name, {}
             ).get("direction", 0)
-            is_regression = (pct * direction > 0) or direction == 0
+            pct, is_regression = _classify_changepoint(
+                cp.stats, direction
+            )
             color = "#ff4444" if is_regression else "#39ff14"
             cp_parts.append(
                 f"<span style='color:{color}'>"
@@ -283,7 +305,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
     fig.update_layout(
         title_text=title,
         title_x=0.5,
-        height=350 * n_metrics + 100,
+        height=400 * n_metrics + 100,
         showlegend=False,
         template="plotly_dark",
         paper_bgcolor="#1a1a2e",
@@ -294,7 +316,8 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
             "font_size": 12,
             "font_color": "#ffffff",
         },
-        margin={"t": 160, "b": 40},
+        margin={"t": 160, "b": 40, "l": 80, "r": 40},
+        autosize=True,
     )
 
     for row_idx in range(1, n_metrics + 1):
@@ -325,7 +348,43 @@ def generate_test_html(viz_data: VizData, output_base_path: str) -> str:
 
     fig = _build_test_figure(viz_data)
     output_file = f"{output_base_path}_{viz_data.test_name}_viz.html"
-    fig.write_html(output_file, include_plotlyjs="cdn", full_html=True)
+    fig.write_html(
+        output_file, include_plotlyjs="cdn", full_html=True,
+        default_width="100%",
+    )
+
+    # Inject full-width style and click handler for build URLs
+    injected = """
+<style>
+  body { margin: 0; padding: 0; }
+  .plotly-graph-div { width: 100% !important; }
+</style>
+<script>
+(function attachClickHandlers() {
+  var divs = document.querySelectorAll('.plotly-graph-div');
+  var allReady = divs.length > 0 && Array.prototype.every.call(divs, function(gd) {
+    return typeof gd.on === 'function';
+  });
+  if (!allReady) {
+    setTimeout(attachClickHandlers, 200);
+    return;
+  }
+  divs.forEach(function(gd) {
+    gd.on('plotly_click', function(data) {
+      var pt = data.points[0];
+      if (pt.customdata && pt.customdata[0]) {
+        window.open(pt.customdata[0], '_blank');
+      }
+    });
+  });
+})();
+</script>
+"""
+    with open(output_file, "r", encoding="utf-8") as f:
+        html = f.read()
+    html = html.replace("</body>", injected + "</body>")
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(html)
 
     logger.info(
         "Generated visualization for test %s: %s",
