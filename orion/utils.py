@@ -68,7 +68,11 @@ class Utils:
             context = metric.pop("context", 5)
             self.logger.info("Collecting %s", metric_name)
             try:
-                if "agg" in metric:
+                if "type" in metric and metric["type"] == "raw":
+                    metric_df, metric_dataframe_name = self.process_raw_metric(
+                        uuids, metric, match, metric_value_field, timestamp_field
+                    )
+                elif "agg" in metric:
                     metric_df, metric_dataframe_name = self.process_aggregation_metric(
                         uuids, metric, match, timestamp_field
                     )
@@ -189,6 +193,91 @@ class Utils:
 
         standard_metric_df = standard_metric_df.drop_duplicates()
         return standard_metric_df, standard_metric_name
+
+
+    def process_raw_metric(
+        self,
+        uuids: List[str],
+        metric: Dict[str, Any],
+        match: Matcher,
+        metric_value_field: str,
+        timestamp_field: str="timestamp"
+    ) -> pd.DataFrame:
+        """Method to get dataframe of raw metric
+
+        Args:
+            uuids (List[str]): list of uuids to get data for
+            metric (Dict[str, Any]): metric configuration
+            match (Matcher): matcher instance
+            metric_value_field (str): field to use for the metric
+            timestamp_field (str): field to use for the timestamp
+
+        Returns:
+            pd.DataFrame: dataframe of the metric
+        """
+        if "agg" not in metric:
+            raise ValueError(f'aggregation not found for raw metric: {metric["name"]}')
+        if "filters" in metric:
+            filters = metric["filters"]
+        else:
+            filters = {}
+        standard_metric_data = match.get_results("", uuids, metrics=filters, timestamp_field=timestamp_field)
+
+        if len(standard_metric_data) == 0:
+            standard_metric_df = pd.DataFrame(columns=[self.uuid_field, timestamp_field, metric_value_field])
+        else:
+            standard_metric_df = match.convert_to_df(
+                standard_metric_data, columns=[self.uuid_field, timestamp_field, metric_value_field],
+                timestamp_field=timestamp_field
+            )
+            standard_metric_df[timestamp_field] = standard_metric_df[timestamp_field].apply(self.standardize_timestamp)
+
+        aggregation_type = metric["agg"]["agg_type"]
+        standard_metric_name = f"{metric['name']}_{aggregation_type}"
+
+        aggregated_values = self.apply_aggregation(standard_metric_df[metric_value_field].values, aggregation_type)
+
+        standard_metric_df[standard_metric_name] = aggregated_values
+        standard_metric_df = standard_metric_df.drop(columns=[metric_value_field])
+
+        if timestamp_field != "timestamp":
+            standard_metric_df = standard_metric_df.rename(
+                columns={timestamp_field: "timestamp"}
+            )
+
+        standard_metric_df = standard_metric_df.drop_duplicates()
+        return standard_metric_df, standard_metric_name
+
+
+    def apply_aggregation(self, items: list, aggregation_type: str) -> list:
+        """Apply aggregation to the dataframe
+        Args:
+            items (list): list of values to apply aggregation to
+            aggregation_type (str): aggregation type
+        Returns:
+            list: list of aggregated values
+        """
+        aggregated_values = []
+        for value in items:
+            if aggregation_type == "avg":
+                aggregated_values.append(pd.Series(value).mean())
+            elif aggregation_type == "sum":
+                aggregated_values.append(pd.Series(value).sum())
+            elif aggregation_type == "min":
+                aggregated_values.append(pd.Series(value).min())
+            elif aggregation_type == "max":
+                aggregated_values.append(pd.Series(value).max())
+            elif aggregation_type == "count":
+                aggregated_values.append(pd.Series(value).count())
+            elif aggregation_type == "P99":
+                aggregated_values.append(pd.Series(value).quantile(0.99))
+            elif aggregation_type == "P95":
+                aggregated_values.append(pd.Series(value).quantile(0.95))
+            elif aggregation_type == "P90":
+                aggregated_values.append(pd.Series(value).quantile(0.90))
+            else:
+                raise ValueError(f'invalid aggregation type: {aggregation_type}')
+        return aggregated_values
 
 
     def extract_metadata_from_test(self, test: Dict[str, Any]) -> Dict[Any, Any]:
