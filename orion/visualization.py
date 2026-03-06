@@ -285,15 +285,31 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
             col=1,
         )
 
-    # Version change markers across all subplots
-    for i in range(1, len(versions)):
-        if versions.iloc[i] != versions.iloc[i - 1]:
-            fig.add_vline(
-                x=i,
-                line_dash="dot",
-                line_color="rgba(255,170,0,0.4)",
-                line_width=1,
-            )
+    # Version change markers across all subplots (batched to avoid O(n²))
+    version_change_indices = [
+        i for i in range(1, len(versions))
+        if versions.iloc[i] != versions.iloc[i - 1]
+    ]
+    if version_change_indices:
+        version_shapes = []
+        for i in version_change_indices:
+            for row_idx in range(1, n_metrics + 1):
+                xref = "x" if row_idx == 1 else f"x{row_idx}"
+                yref = "y" if row_idx == 1 else f"y{row_idx}"
+                version_shapes.append(
+                    {
+                        "type": "line",
+                        "x0": i, "x1": i, "y0": 0, "y1": 1,
+                        "xref": xref, "yref": f"{yref} domain",
+                        "line": {
+                            "dash": "dot",
+                            "color": "rgba(255,170,0,0.4)",
+                            "width": 1,
+                        },
+                    }
+                )
+        existing = list(fig.layout.shapes or [])
+        fig.update_layout(shapes=existing + version_shapes)
 
     # Summary info for the title
     date_range = (

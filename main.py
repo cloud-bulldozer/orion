@@ -5,6 +5,7 @@ This is the cli file for orion, tool to detect regressions using hunter
 # pylint: disable = import-error, line-too-long, no-member
 import json
 import logging
+from pathlib import Path
 import re
 import sys
 import warnings
@@ -17,6 +18,7 @@ from orion.run_test import run, TestResults
 from orion.utils import get_output_extension
 from orion import constants as cnsts
 from orion.config import load_config, load_ack, merge_ack_files, auto_detect_ack_file_with_vars
+from orion.visualization import generate_test_html
 from version import __version__
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
@@ -271,8 +273,7 @@ def main(**kwargs):
             print_output(logger, kwargs, results_pull, is_pull)
     if kwargs.get("viz"):
         try:
-            from orion.visualization import generate_test_html  # pylint: disable=import-outside-toplevel
-            output_base_path = kwargs['save_output_path'].split('.')[0]
+            output_base_path = str(Path(kwargs['save_output_path']).with_suffix(''))
             all_viz_data = results.viz_data
             for viz_data in all_viz_data:
                 generate_test_html(viz_data, output_base_path)

@@ -14,6 +14,7 @@ from orion.algorithms import AlgorithmFactory
 import orion.constants as cnsts
 from orion.utils import Utils, get_subtracted_timestamp, json_to_junit
 from orion.github_client import GitHubClient
+from orion.visualization import VizData
 
 
 class AnalyzeResult(NamedTuple):
@@ -432,7 +433,6 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
 
     viz_data = None
     if kwargs.get("viz"):
-        from orion.visualization import VizData  # pylint: disable=import-outside-toplevel
         # Use the algorithm that produced the final results: expanded_algorithm
         # when window expansion succeeded, otherwise the original algorithm.
         viz_algorithm = expanded_algorithm if expanded_algorithm is not None else algorithm
