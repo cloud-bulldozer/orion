@@ -375,13 +375,14 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 "Regression reported: changepoint validated (test=%s)",
                 test["name"],
             )
-            for index, result in enumerate(json.loads(result_data_json)):
+            for index, result in enumerate(result_data_json):
                 prev_ver = None
                 bad_ver = None
                 if result["is_changepoint"]:
                     bad_ver = result[test["version_field"]]
                     if index > 0:
-                        prev_ver = json.loads(result_data_json)[index - 1][test["version_field"]]
+                        prior = result_data_json[index - 1]
+                        prev_ver = prior[test["version_field"]]
                 else:
                     continue
 
