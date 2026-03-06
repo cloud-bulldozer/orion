@@ -3,14 +3,10 @@ tests :
     metadata:
       platform: BareMetal
       clusterType: self-managed
-      masterNodesType.keyword: ""
       masterNodesCount: 3
-      workerNodesType.keyword: ""
-      workerNodesCount: 4
-      benchmark.keyword: rds-core
+      workerNodesCount: 6
       ocpVersion: "{{ version }}"
-      networkType: OVNKubernetes
-      jobType: {{ jobtype | default('periodic') }}
+      sdnType: OVNKubernetes
       pullNumber: {{ pull_number | default(0) }}
       organization: {{ organization | default('') }}
       repository: {{ repository | default('') }}
