@@ -247,15 +247,6 @@ tests :
       labels:
         - "[Jira: avg-mutating-apicalls-latency]"
       direction: 1
-    - name:  99thEtcdRoundTripTime
-      metricName.keyword: 99thEtcdRoundTripTime
-      metric_of_interest: value
-      agg:
-        value: latency
-        agg_type: avg
-      labels:
-        - "[Jira: 99thEtcdRoundTripTime]"
-      direction: 1
     - name:  etcdCPU
       metricName.keyword : containerCPU
       labels.namespace.keyword: openshift-etcd
