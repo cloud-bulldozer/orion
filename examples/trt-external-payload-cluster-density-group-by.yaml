@@ -1,0 +1,58 @@
+tests:
+  - name: payload-cluster-density-v2
+    metadata:
+      platform: AWS
+      clusterType: self-managed
+      masterNodesType: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType: m6a.xlarge
+      workerNodesCount: 6
+      benchmark.keyword: cluster-density-v2
+      wildcard:
+        ocpVersion: "{{ version }}*"
+      networkType: OVNKubernetes
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
+      fips: "{{ fips | default('false') }}"
+      not:
+        stream: okd
+
+    metrics:
+      - name: containerCPU-${labels.container.keyword}
+        metricName.keyword: containerCPU
+        metric_of_interest: value
+        group_by:
+          - labels.container.keyword
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
+      - name: containerMemory-${labels.container.keyword}
+        metricName.keyword: containerMemory
+        metric_of_interest: value
+        group_by:
+          - labels.container.keyword
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
+      - name: containerMemory-${labels.namespace.keyword}
+        metricName.keyword: containerMemory
+        metric_of_interest: value
+        group_by:
+          - labels.namespace.keyword
+        agg:
+          agg_type: sum
+        direction: 1
+        threshold: 10
+      - name: nodeCPU-Workers-${labels.mode.keyword}
+        metricName.keyword: nodeCPU-Workers
+        metric_of_interest: value
+        group_by:
+          - labels.mode.keyword
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10

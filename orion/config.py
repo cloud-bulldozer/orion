@@ -5,6 +5,8 @@ Module file for config reading and loading
 
 import sys
 import os
+import re
+import copy
 from typing import Any, Dict, List
 from collections import Counter
 import jinja2
@@ -78,6 +80,9 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
                 test["name"], keyword_wildcards
             )
             sys.exit(1)
+
+        # Expand fan_out metric templates into individual metrics
+        test["metrics"] = expand_fan_out(test["metrics"], logger)
 
         for metric in test["metrics"]:
             metric_name = test["name"] + ":" + metric["name"]
@@ -363,3 +368,149 @@ def collect_pull_numbers(kwargs: dict, input_vars: dict) -> list:
             if parsed > 0:
                 numbers.add(parsed)
     return sorted(numbers)
+
+def expand_fan_out(metrics: List[Dict[str, Any]], logger: SingletonLogger) -> List[Dict[str, Any]]:
+    """Expands metrics with fan_out into multiple individual metrics.
+
+    For each metric containing a 'fan_out' key, creates one copy per
+    fan_out entry with ${var} placeholders substituted and field overrides applied.
+    Metrics without fan_out are passed through unchanged.
+
+    Args:
+        metrics (List[Dict[str, Any]]): list of metric definitions
+        logger (SingletonLogger): logger instance
+
+    Returns:
+        List[Dict[str, Any]]: expanded list of metric definitions
+    """
+    expanded = []
+    for metric in metrics:
+        if "fan_out" not in metric:
+            expanded.append(metric)
+            continue
+
+        fan_out_entries = metric.pop("fan_out")
+        template = metric
+
+        for entry in fan_out_entries:
+            new_metric = copy.deepcopy(template)
+
+            # Apply ${var} substitutions in all string values
+            _substitute_vars(new_metric, entry)
+
+            # Apply direct field overrides (entry keys matching metric fields)
+            for key, value in entry.items():
+                if key in new_metric:
+                    new_metric[key] = value
+
+            expanded.append(new_metric)
+
+        logger.info("Expanded fan_out metric template into %d metrics", len(fan_out_entries))
+
+    return expanded
+
+
+def _substitute_vars(obj, variables: Dict[str, str]):
+    """Recursively substitutes ${var} placeholders in all string values.
+
+    Args:
+        obj: dict or list to process in-place
+        variables (Dict[str, str]): variable name to value mapping
+    """
+    if isinstance(obj, dict):
+        for key in obj:
+            if isinstance(obj[key], str):
+                obj[key] = _replace_placeholders(obj[key], variables)
+            elif isinstance(obj[key], (dict, list)):
+                _substitute_vars(obj[key], variables)
+    elif isinstance(obj, list):
+        for i, item in enumerate(obj):
+            if isinstance(item, str):
+                obj[i] = _replace_placeholders(item, variables)
+            elif isinstance(item, (dict, list)):
+                _substitute_vars(item, variables)
+
+
+def _replace_placeholders(s: str, variables: Dict[str, str]) -> str:
+    """Replaces ${var} patterns in a string with values from variables dict.
+
+    Unmatched placeholders are left as-is.
+
+    Args:
+        s (str): string containing ${var} placeholders
+        variables (Dict[str, str]): variable name to value mapping
+
+    Returns:
+        str: string with placeholders replaced
+    """
+    def replacer(match):
+        var_name = match.group(1)
+        if var_name in variables:
+            return str(variables[var_name])
+        return match.group(0)
+    return re.sub(r'\$\{([\w.]+)\}', replacer, s)
+
+
+def expand_group_by(
+    metrics: List[Dict[str, Any]],
+    matcher,
+    uuids: List[str],
+    logger: SingletonLogger,
+) -> List[Dict[str, Any]]:
+    """Expand metrics containing 'group_by' by discovering distinct values from OpenSearch.
+
+    For each metric with a 'group_by' key, queries OpenSearch for distinct values
+    of the specified field, scoped by the metric's other filter fields and the
+    given UUIDs. Creates one metric copy per discovered value.
+
+    Args:
+        metrics: list of metric definitions
+        matcher: Matcher instance with active OpenSearch connection
+        uuids: list of UUIDs to scope the discovery query
+        logger: logger instance
+        timestamp_field: timestamp field name
+
+    Returns:
+        Expanded list of metric definitions with group_by resolved.
+    """
+    expanded = []
+    for metric in metrics:
+        if "group_by" not in metric:
+            expanded.append(metric)
+            continue
+
+        group_by_fields = metric.pop("group_by")
+        if not isinstance(group_by_fields, list):
+            group_by_fields = [group_by_fields]
+
+        if len(group_by_fields) != 1:
+            logger.error(
+                "group_by currently supports exactly one field, got %d: %s",
+                len(group_by_fields), group_by_fields
+            )
+            sys.exit(1)
+
+        field = group_by_fields[0]
+        values = matcher.discover_field_values(metric, field, uuids)
+
+        if not values:
+            logger.warning(
+                "group_by on field '%s' returned no values for metric template '%s'; "
+                "metric will be skipped",
+                field, metric.get("name", "<unnamed>")
+            )
+            continue
+
+        template = metric
+        for value in values:
+            new_metric = copy.deepcopy(template)
+            new_metric[field] = value
+            _substitute_vars(new_metric, {field: value})
+            expanded.append(new_metric)
+
+        logger.info(
+            "Expanded group_by metric template '%s' into %d metrics (field=%s)",
+            template.get("name", "<unnamed>"), len(values), field
+        )
+
+    return expanded

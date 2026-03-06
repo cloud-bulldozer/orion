@@ -540,6 +540,104 @@ not:
     - "sidecar"
 ```
 
+## Metric Expansion
+
+Orion provides two ways to create multiple metrics from a single template, reducing duplication in configuration files.
+
+### `fan_out` — Static Expansion
+
+Use `fan_out` when you know the exact values you want to expand. Each entry in the `fan_out` list produces one metric, with `${var}` placeholders substituted and matching fields overridden.
+
+```yaml
+metrics:
+  - name: "${label}CPU"
+    metricName.keyword: containerCPU
+    labels.namespace.keyword: "${namespace}"
+    metric_of_interest: value
+    agg:
+      agg_type: avg
+    labels:
+      - "[Jira: ${jira}]"
+    direction: 1
+    threshold: 10
+    fan_out:
+      - label: apiserver
+        namespace: openshift-kube-apiserver
+        jira: kube-apiserver
+      - label: multus
+        namespace: openshift-multus
+        jira: multus
+      - label: ovn
+        namespace: openshift-ovn-kubernetes
+        jira: ovn-kubernetes
+```
+
+This expands into three metrics: `apiserverCPU`, `multusCPU`, and `ovnCPU`, each with the correct namespace filter and JIRA label. Without `fan_out`, you would need to write each metric definition separately.
+
+**How it works:**
+
+1. Each `fan_out` entry is a dict of variable names to values
+2. All `${var}` placeholders in string values are replaced recursively (including nested dicts and lists)
+3. If a `fan_out` entry key matches an existing metric field, the entry value overrides it directly
+4. Each expanded metric is a deep copy — mutations to one do not affect others
+5. The `fan_out` key is removed after expansion
+
+**Field override example:**
+
+```yaml
+- name: "ovnCPU-${container}"
+  metricName.keyword: containerCPU
+  labels.container.keyword: "${container}"
+  fan_out:
+    - container: northd
+    - container: ovncontroller
+      labels.container.keyword: ovn-controller  # overrides the substituted value
+```
+
+The second entry uses the override value `ovn-controller` instead of the substituted value `ovncontroller`.
+
+### `group_by` — Dynamic Expansion
+
+Use `group_by` when you don't know the values ahead of time and want Orion to discover them from OpenSearch. Orion queries for all distinct values of the specified field, scoped by the metric's other filters and the test's UUIDs, then creates one metric per discovered value.
+
+```yaml
+metrics:
+  - name: "${labels.namespace.keyword}CPU"
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    agg:
+      agg_type: avg
+    direction: 1
+    threshold: 10
+    group_by:
+      - labels.namespace.keyword
+```
+
+If the OpenSearch data contains `containerCPU` documents with namespaces `openshift-etcd`, `openshift-kube-apiserver`, and `openshift-multus`, this expands into three metrics — one per namespace — with `labels.namespace.keyword` set as both a filter and a `${labels.namespace.keyword}` substitution variable.
+
+**How it works:**
+
+1. `group_by` accepts a list with exactly one field name (multi-field support is planned)
+2. Orion runs a terms aggregation on that field, filtered by the metric's other fields (e.g., `metricName.keyword`) and the test's UUIDs
+3. For each discovered value, a deep copy of the template is created with:
+   - The `group_by` field set as a filter (e.g., `labels.namespace.keyword: openshift-etcd`)
+   - All `${field.name}` placeholders substituted with the discovered value
+4. If no values are found, the metric is skipped with a warning
+5. The `group_by` key is removed after expansion
+
+**When to use `group_by` vs `fan_out`:**
+
+| | `fan_out` | `group_by` |
+|---|---|---|
+| Values known ahead of time | Yes | No — discovered at runtime |
+| Supports multiple variables per entry | Yes | No — one field per `group_by` |
+| Requires OpenSearch connection | No — expands at config load | Yes — queries during test processing |
+| Use case | Fixed set of components | Discover all namespaces/containers/labels |
+
+**Combining with other features:**
+
+`group_by` works with all other metric features — aggregations, correlation, labels, `not` filters, and metadata metrics. The expanded metrics are identical to hand-written metrics after expansion.
+
 ## Test-Level Settings
 
 Settings that can be applied at the test level and inherited by all metrics:
