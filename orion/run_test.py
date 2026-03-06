@@ -375,28 +375,46 @@ def analyze(test, kwargs, is_pull = False) -> Tuple[Dict[str, Any], bool, Any, A
                 "Regression reported: changepoint validated (test=%s)",
                 test["name"],
             )
-            prev_ver = None
-            bad_ver = None
-            for result in result_data_json:
+            for index, result in enumerate(json.loads(result_data_json)):
+                prev_ver = None
+                bad_ver = None
                 if result["is_changepoint"]:
-                    bad_ver = result.get(test["version_field"])
+                    bad_ver = result[test["version_field"]]
+                    if index > 0:
+                        prev_ver = json.loads(result_data_json)[index - 1][test["version_field"]]
                 else:
-                    prev_ver = result.get(test["version_field"])
-                if prev_ver is not None and bad_ver is not None:
-                    if sippy_pr_search:
-                        prs = Utils().sippy_pr_diff(prev_ver, bad_ver)
-                        doc = {"prev_ver": prev_ver, "bad_ver": bad_ver}
-                        if prs:
-                            doc["prs"] = prs
-                        regression_data.append(doc)
-                    else:
-                        regression_data.append({
-                            "prev_ver": prev_ver,
-                            "bad_ver": bad_ver,
-                            "prs": []
+                    continue
+
+                metrics_with_change = []
+                for metric_name, metric_data in result["metrics"].items():
+                    if metric_data.get("percentage_change", 0) != 0:
+                        metrics_with_change.append({
+                            "name": metric_name,
+                            "value": metric_data.get("value"),
+                            "percentage_change": metric_data.get("percentage_change", 0),
+                            "labels": metric_data.get("labels", [])
                         })
-                    prev_ver = None
-                    bad_ver = None
+
+                github_context = result.get("github_context")
+                prs = result.get("prs")
+
+                doc = {
+                    "test_name": test["name"],
+                    "prev_ver": prev_ver,
+                    "bad_ver": bad_ver,
+                    "metrics_with_change": metrics_with_change,
+                    "prs": [],
+                    "github_context": None
+                    }
+                if github_context is not None:
+                    doc["github_context"] = github_context
+                if prs is not None:
+                    doc["prs"] = prs
+                if sippy_pr_search:
+                    prs = Utils().sippy_pr_diff(prev_ver, bad_ver)
+                    if prs:
+                        doc["prs"] = prs
+                regression_data.append(doc)
 
     regression_flag = regression_flag or test_flag
     return result_output, regression_flag, regression_data, average_values

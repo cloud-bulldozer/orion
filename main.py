@@ -12,6 +12,7 @@ from typing import Any, Dict, Tuple
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 import click
+from tabulate import tabulate
 from orion.logger import SingletonLogger
 from orion.run_test import run
 from orion.utils import get_output_extension
@@ -272,6 +273,70 @@ def main(**kwargs):
     if has_regression:
         sys.exit(2) ## regression detected
 
+def print_regression_summary(regression_data) -> None:
+    """Print regression summary: affected metrics, PRs, and GitHub context tables."""
+    print("Regression(s) found :")
+    for regression in regression_data:
+        print("-" * 50)
+        print(f"Test: {regression.get('test_name')}:")
+        print(f"{'Changepoint at:':<20} {regression['bad_ver']}")
+        print(f"{'Previous version:':<20} {regression['prev_ver']}")
+        print("\nAffected Metrics")
+        if regression['metrics_with_change']:
+            table = [
+                [m['name'], m['value'], f"{m['percentage_change']:.2f}%", m.get('labels', '')]
+                for m in regression['metrics_with_change']
+            ]
+            print(tabulate(table, headers=["Metric", "Value", "Percentage change", "Labels"], tablefmt="outline"))
+
+        if "prs" in regression:
+            formatted_prs = "\n".join([f"- {pr}" for pr in regression["prs"]])
+        else:
+            formatted_prs = "N/A"
+        print("\nRelated PRs:")
+        print(formatted_prs)
+        if "github_context" in regression and regression["github_context"] is not None:
+            print("\nGitHub context:")
+            ctx = regression["github_context"]
+            repos = ctx.get("repositories") or None
+            if repos is None or len(repos) == 0:
+                print("No GitHub context found")
+                return
+            for repo_name, repo_data in repos.items():
+                commits = repo_data.get("commits") or {}
+                releases = repo_data.get("releases") or {}
+                if (commits.get("count") or 0) > 0 or (releases.get("count") or 0) > 0:
+                    print(f"\nRepository: {repo_name}")
+                    rows = []
+                    for item in (commits.get("items") or []):
+                        date = item.get("commit_timestamp", "")
+                        msg = item.get("message", "")
+                        email = (item.get("commit_author") or {}).get("email", "")
+                        url = item.get("html_url", "")
+                        rows.append([date, msg.split("\n")[0], email, url])
+                    if len(rows) > 0:
+                        print("Commits:")
+                        print(tabulate(rows,
+                            headers=["Date", "Message", "Author email", "URL"],
+                            tablefmt="outline"))
+                    rows = []
+                    for item in (releases.get("items") or []):
+                        date = item.get("published_at") or item.get("timestamp") or item.get("date") or ""
+                        msg = item.get("body") or item.get("message") or item.get("name") or ""
+                        email = (item.get("author") or item.get("commit_author") or {})
+                        if isinstance(email, dict):
+                            email = email.get("email", "")
+                        else:
+                            email = str(email)
+                        url = item.get("html_url", "")
+                        rows.append([date, msg.split("\n")[0], email, url])
+                    if len(rows) > 0:
+                        print("Releases:")
+                        print(tabulate(rows,
+                            headers=["Date", "Message", "Author email", "URL"],
+                            tablefmt="outline"))
+
+
 def print_output(
         logger,
         kwargs,
@@ -316,26 +381,15 @@ def print_output(
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_table))
     if regression_flag:
-        if kwargs['output_format'] != cnsts.JSON :
-            print("Regression(s) found :")
-            for regression in regression_data:
-                if "prs" in regression:
-                    formatted_prs = "\n".join([f"- {pr}" for pr in regression["prs"]])
-                else:
-                    formatted_prs = "N/A - Payload tests have not completed yet"
-                print("-" * 50)
-                print(f"{'Previous Version:':<20} {regression['prev_ver']}")
-                print(f"{'Bad Version:':<20} {regression['bad_ver']}")
-                if kwargs["sippy_pr_search"]:
-                    print("PR diff:")
-                    print(formatted_prs)
-
-                print("-" * 50)
+        if kwargs['output_format'] != cnsts.JSON:
+            print_regression_summary(regression_data)
             if not is_pull:
                 return True
         else :
             if not is_pull:
                 return True
+    else:
+        print("No regressions found")
     return False
 
 
