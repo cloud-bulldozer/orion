@@ -364,14 +364,14 @@ setup() {
   fi
 
   # Check if the Previous Version string exists in the output file
-  if ! grep -q "Previous Version:    4.20.0-0.nightly-2026-01-14-195655" ./outputs/results.txt; then
-    echo "Expected string 'Previous Version:    4.20.0-0.nightly-2026-01-14-195655' not found in results.txt"
+  if ! grep -q "Previous version:    4.20.0-0.nightly-2026-01-14-195655" ./outputs/results.txt; then
+    echo "Expected string 'Previous version:    4.20.0-0.nightly-2026-01-14-195655' not found in results.txt"
     exit 1
   fi
 
-  # Check if the Bad Version string exists in the output file
-  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-15-195655" ./outputs/results.txt; then
-    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
+  # Check if the Changepoint at string exists in the output file
+  if ! grep -q "Changepoint at:      4.20.0-0.nightly-2026-01-15-195655" ./outputs/results.txt; then
+    echo "Expected string 'Changepoint at:      4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
     exit 1
   fi
 
@@ -447,15 +447,15 @@ setup() {
   fi
 
   # Check if the Previous Version string exists in the output file
-  if ! grep -q "Previous Version:    4.20.0-0.nightly-2026-01-14-195655" ./outputs/results.txt; then
-    echo "Expected string 'Previous Version:    4.20.0-0.nightly-2026-01-14-195655' not found in results.txt"
+  if ! grep -q "Previous version:    4.20.0-0.nightly-2026-01-14-195655" ./outputs/results.txt; then
+    echo "Expected string 'Previous version:    4.20.0-0.nightly-2026-01-14-195655' not found in results.txt"
     cat ./outputs/results.txt
     exit 1
   fi
 
-  # Check if the Bad Version string exists in the output file
-  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-15-195655" ./outputs/results.txt; then
-    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
+  # Check if the Changepoint at string exists in the output file
+  if ! grep -q "Changepoint at:      4.20.0-0.nightly-2026-01-15-195655" ./outputs/results.txt; then
+    echo "Expected string 'Changepoint at:      4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
     cat ./outputs/results.txt
     exit 1
   fi
@@ -552,14 +552,14 @@ setup() {
   fi
 
   # Check if the Previous Version string exists in the output file
-  if ! grep -q "Previous Version:    4.20" ./outputs/results.txt; then
-    echo "Expected string 'Previous Version:    4.20' not found in results.txt"
+  if ! grep -q "Previous version:    4.20" ./outputs/results.txt; then
+    echo "Expected string 'Previous version:    4.20' not found in results.txt"
     exit 1
   fi
 
-  # Check if the Bad Version string exists in the output file
-  if ! grep -q "Bad Version:         4.20" ./outputs/results.txt; then
-    echo "Expected string 'Bad Version:         4.20' not found in results.txt"
+  # Check if the Changepoint at string exists in the output file
+  if ! grep -q "Changepoint at:      4.20" ./outputs/results.txt; then
+    echo "Expected string 'Changepoint at:      4.20' not found in results.txt"
     exit 1
   fi
 
@@ -617,15 +617,15 @@ setup() {
     exit 1
   fi
 
-  # Check if the Bad Version string exists in the output file
-  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-15-195655" ./outputs/results-anomaly.txt; then
-    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
+  # Check if the Changepoint at string exists in the output file
+  if ! grep -q "Changepoint at:      4.20.0-0.nightly-2026-01-15-195655" ./outputs/results-anomaly.txt; then
+    echo "Expected string 'Changepoint at:      4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
     exit 1
   fi
 
-  # Check if the Bad Version string exists in the output file
-  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-17-195655" ./outputs/results-anomaly.txt; then
-    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-17-195655' not found in results.txt"
+  # Check if the Changepoint at string exists in the output file
+  if ! grep -q "Changepoint at:      4.20.0-0.nightly-2026-01-17-195655" ./outputs/results-anomaly.txt; then
+    echo "Expected string 'Changepoint at:      4.20.0-0.nightly-2026-01-17-195655' not found in results.txt"
     exit 1
   fi
 
@@ -765,15 +765,15 @@ setup() {
     exit 1
   fi
 
-  # Check if the Previous Version string exists in the output file
-  if ! grep -q "Previous Version:    4.20.0-0.nightly-2026-01-14-195655" ./outputs/results.txt; then
-    echo "Expected string 'Previous Version:    4.20.0-0.nightly-2026-01-14-195655' not found in results.txt"
+  # Check if the Previous version string exists in the output file
+  if ! grep -q "Previous version:    4.20.0-0.nightly-2026-01-14-195655" ./outputs/results.txt; then
+    echo "Expected string 'Previous version:    4.20.0-0.nightly-2026-01-14-195655' not found in results.txt"
     exit 1
   fi
 
-  # Check if the Bad Version string exists in the output file
-  if ! grep -q "Bad Version:         4.20.0-0.nightly-2026-01-15-195655" ./outputs/results.txt; then
-    echo "Expected string 'Bad Version:         4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
+  # Check if the Changepoint at string exists in the output file
+  if ! grep -q "Changepoint at:      4.20.0-0.nightly-2026-01-15-195655" ./outputs/results.txt; then
+    echo "Expected string 'Changepoint at:      4.20.0-0.nightly-2026-01-15-195655' not found in results.txt"
     exit 1
   fi
 
