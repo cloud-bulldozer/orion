@@ -5,6 +5,7 @@ First off, thank you for considering contributing to our project! It's people li
 ## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
+- [LLM (AI) Development Policy](#llm-ai-development-policy)
 - [How Can I Contribute?](#how-can-i-contribute)
   - [Reporting Bugs](#reporting-bugs)
   - [Suggesting Enhancements](#suggesting-enhancements)
@@ -19,6 +20,10 @@ First off, thank you for considering contributing to our project! It's people li
 ## Code of Conduct
 
 By participating in this project, you agree to abide by the [Code of Conduct](CODE_OF_CONDUCT.md). Please read it to understand the expected behavior.
+
+## LLM (AI) Development Policy
+
+If you use LLMs (AI tools) while contributing, follow the project's [LLM Policy](LLM_POLICY.md). It defines expectations for communication, code ownership, review behavior, and enforcement.
 
 ## How Can I Contribute?
 
