@@ -28,7 +28,7 @@ tests:
       etcd_encryption_enabled: "{{ etcd_enabled }}"
       fips_enabled: "{{ fips_enabled }}"
       ipsec_enabled: "{{ ipsec_enabled }}"
-      tag.keyword: "{{ tag }}"
+      tag.keyword: "{{ run_tag }}"
     metrics:
       # Recovery & Health metrics
       - name: affected_pods_recovery
