@@ -51,6 +51,21 @@ ack:
     reason: CPU bumps due to unintentional change in deletion strategy
     version: '4.22'
     test: node-density
+  - uuid: 70b8deb3-1ed4-4ca0-9bcf-c0839645920f
+    metric: apiserverCPU_avg
+    reason: node-density too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density
+  - uuid: 70b8deb3-1ed4-4ca0-9bcf-c0839645920f
+    metric: ovnCPU_avg
+    reason: node-density too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density
+  - uuid: 70b8deb3-1ed4-4ca0-9bcf-c0839645920f
+    metric: kubelet_avg
+    reason: node-density too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density
   # node-density-cni
   - uuid: ade4d0f9-84d8-4edf-926a-4aa88ca14f61
     metric: ovnCPU-ovncontroller_avg
