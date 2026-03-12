@@ -91,7 +91,6 @@ class Matcher:
 
             all_hits.extend(hits)
             search_after = response.hits[-1].meta.sort
-
         return all_hits
 
     # pylint: disable=too-many-locals
@@ -351,20 +350,14 @@ class Matcher:
         search = (
             Search(using=self.es, index=self.index)
             .query(query)
-            .extra(size=self.search_size)
+            .extra(size=0)
             .sort({timestamp_field: {"order": "desc"}})
         )
         agg_value = metrics["agg"]["value"]
         agg_type = metrics["agg"]["agg_type"]
-        search.aggs.bucket(
-            "time", "terms", field=self.uuid_field+".keyword", size=self.search_size
-        ).metric("time", "avg", field=timestamp_field)
-
-        uuid_bucket = search.aggs.bucket(
-            "uuid", "terms", field=self.uuid_field+".keyword", size=self.search_size
-        )
-
-        # Handle percentile aggregations differently from single-value aggregations
+        uuid_bucket = search.aggs.bucket("uuid", "terms", field=self.uuid_field+".keyword")
+        uuid_bucket.metric("time", "avg", field=timestamp_field)
+         # Handle percentile aggregations differently from single-value aggregations
         if agg_type == "percentiles":
             # Get the percentile values from config (default to [50, 95, 99])
             percents = metrics["agg"].get("percents", [50, 95, 99])
@@ -379,8 +372,9 @@ class Matcher:
         else:
             # Standard aggregations (sum, avg, max, min)
             uuid_bucket.metric(agg_value, agg_type, field=metrics["metric_of_interest"])
-
-        result = self.query_index(search)
+        result = search.execute()
+        self.logger.info("Executing aggregated query for metric %s against index %s", metrics["name"], self.index)
+        self.logger.debug("Executing query \r\n%s", search.to_dict())
         data = self.parse_agg_results(result, agg_value, agg_type, timestamp_field, metrics)
         return data
 
@@ -405,34 +399,22 @@ class Matcher:
         if "aggregations" not in data:
             return res
 
-        stamps = data.aggregations.time.buckets
-        agg_buckets = data.aggregations.uuid.buckets
-
-        for stamp in stamps:
-            dat = {}
-            dat[self.uuid_field] = stamp.key
-            dat[timestamp_field] = stamp.time.value_as_string
-            agg_values = next(
-                (item for item in agg_buckets if item.key == stamp.key), None
-            )
-            if agg_values:
-                if agg_type == "percentiles":
-                    # For percentiles, extract the target percentile value
-                    # Default to 95th percentile if not specified
-                    target_percentile = 95.0
-                    if metrics and "agg" in metrics:
-                        target_percentile = float(metrics["agg"].get("target_percentile", 95.0))
-
-                    percentile_values = agg_values[agg_value].values
-                    # OpenSearch returns percentile keys as strings (e.g., "95.0")
-                    percentile_key = str(target_percentile)
-                    dat[agg_value + "_" + agg_type] = percentile_values.get(percentile_key)
-                else:
-                    # Standard single-value aggregations
-                    dat[agg_value + "_" + agg_type] = agg_values[agg_value].value
+        uuids = data.aggregations.uuid.buckets
+        for uuid in uuids:
+            data = {"uuid": uuid.key, timestamp_field: uuid.time.value_as_string}
+            if agg_type == "percentiles":
+                # For percentiles, extract the target percentile value
+                # Default to 95th percentile if not specified
+                target_percentile = float(metrics["agg"].get("target_percentile", 95.0))
+                percentile_values = agg_values[agg_value].values
+                # OpenSearch returns percentile keys as strings (e.g., "95.0")
+                percentile_key = str(target_percentile)
+                data = {}
+                dat[agg_value + "_" + agg_type] = percentile_values.get(percentile_key)
             else:
-                dat[agg_value + "_" + agg_type] = None
-            res.append(dat)
+                # Standard single-value aggregations
+                data[agg_value + "_" + agg_type] = uuid.get(agg_value).value
+            res.append(data)
         return res
 
     def convert_to_df(
