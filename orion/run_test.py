@@ -385,9 +385,11 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
                 # Use a copy of cleared data for output so table/JSON/JUnit show no changepoint
                 cleared_json = copy.deepcopy(result_data_json)
                 if kwargs["output_format"] == cnsts.TEXT:
-                    result_output[testname] = algorithm.format_table_from_json(
-                        cleared_json
-                    )
+                    # result_output[testname] = algorithm.format_table_from_json(
+                    #     cleared_json
+                    # )
+                    testname, result_data, _ = algorithm.output(cnsts.TEXT)
+                    result_output[testname] = result_data
                 elif kwargs["output_format"] == cnsts.JSON:
                     result_output[testname] = json.dumps(
                         cleared_json, indent=2
