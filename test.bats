@@ -198,6 +198,14 @@ setup() {
   run_cmd orion --config examples/metal-perfscale-cpt-virt-density.yaml --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
+@test "orion k8s-netperf virt-datapath" {
+  run_cmd orion --config examples/metal-perfscale-cpt-virt-datapath.yaml --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
+}
+
+@test "orion virt-density-nomount" {
+  run_cmd orion --config examples/metal-perfscale-cpt-virt-density-nomount.yaml --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
+}
+
 @test "orion small scale cluster density with anomaly detection" {
   run_cmd orion --config "examples/small-scale-cluster-density.yaml" --lookback 45d --anomaly-detection --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
@@ -240,21 +248,21 @@ setup() {
 
 @test "orion chaos tests " {
   before_version=$version
-  tag="cr" fips_enabled="false" etcd_enabled="false" ipsec_enabled="false" scenario_type="pvc_scenarios" cloud_infrastructure="aws" cloud_type="self-managed" total_node_count="9" node_instance_type="m6a.xlarge" network_plugins="OVNKubernetes" scenario_file="*pvc_scenario.yaml" run_cmd orion --config "examples/chaos_tests.yaml" --lookback 45d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX} --input-vars='{"version": "'${chaos_version}'"}' --output-format text
+  run_tag="cr" fips_enabled="false" etcd_enabled="false" ipsec_enabled="false" scenario_type="pvc_scenarios" cloud_infrastructure="aws" cloud_type="self-managed" total_node_count="9" node_instance_type="m6a.xlarge" network_plugins="OVNKubernetes" scenario_file="*pvc_scenario.yaml" run_cmd orion --config "examples/chaos_tests.yaml" --lookback 45d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX} --input-vars='{"version": "'${chaos_version}'"}' --output-format text
   VERSION=$before_version
 }
 
 @test "orion node scenarios " {
   before_version=$version
   VERSION=$chaos_version
-  tag="" fips_enabled="false" etcd_enabled="false" ipsec_enabled="false" label_selector="node-role.kubernetes.io/control-plane=" scenario_type="node_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*node_scenario.yaml" run_cmd orion --config "examples/node_scenarios.yaml" --lookback 45d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX}
+  run_tag="" fips_enabled="false" etcd_enabled="false" ipsec_enabled="false" label_selector="node-role.kubernetes.io/control-plane=" scenario_type="node_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*node_scenario.yaml" run_cmd orion --config "examples/node_scenarios.yaml" --lookback 45d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX}
   VERSION=$before_version
 }
 
 @test "orion pod disruption scenarios " {
   before_version=$version
   VERSION=$chaos_version
-  tag="cr" fips_enabled="false" etcd_enabled="false" ipsec_enabled="false" pod_namespace="openshift-etcd" label_selector="k8s-app=etcd" scenario_type="pod_disruption_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*pod_scenario.yaml" run_cmd orion --config "examples/pod_disruption_scenarios.yaml" --lookback 45d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX} --hunter-analyze
+  run_tag="cr" fips_enabled="false" etcd_enabled="false" ipsec_enabled="false" pod_namespace="openshift-etcd" label_selector="k8s-app=etcd" scenario_type="pod_disruption_scenarios" cloud_infrastructure="AWS" cloud_type="self-managed" total_node_count="9" node_instance_type="*xlarge*" network_plugins="OVNKubernetes" scenario_file="*pod_scenario.yaml" run_cmd orion --config "examples/pod_disruption_scenarios.yaml" --lookback 45d --es-server=${ES_SERVER} --metadata-index=${KRKEN_METADATA_INDEX} --benchmark-index=${KRKN_BENCHMARK_INDEX} --hunter-analyze
   VERSION=$before_version
 }
 
@@ -869,6 +877,7 @@ setup() {
 
   set -e
 }
+
 @test "orion browbeat config should contain keystone metrics text" {
   set +e
   orion --lookback 15d --hunter-analyze --config hack/ci-tests/configurations/ci-tests-browbeat.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --since 2026-02-23 --display='' --input-vars='{"version": "4.18"}' --es-server=${QE_ES_SERVER} > ./outputs/results-browbeat.txt

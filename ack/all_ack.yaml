@@ -51,6 +51,21 @@ ack:
     reason: CPU bumps due to unintentional change in deletion strategy
     version: '4.22'
     test: node-density
+  - uuid: 70b8deb3-1ed4-4ca0-9bcf-c0839645920f
+    metric: apiserverCPU_avg
+    reason: node-density too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density
+  - uuid: 70b8deb3-1ed4-4ca0-9bcf-c0839645920f
+    metric: ovnCPU_avg
+    reason: node-density too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density
+  - uuid: 70b8deb3-1ed4-4ca0-9bcf-c0839645920f
+    metric: kubelet_avg
+    reason: node-density too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density
   # node-density-cni
   - uuid: ade4d0f9-84d8-4edf-926a-4aa88ca14f61
     metric: ovnCPU-ovncontroller_avg
@@ -95,6 +110,71 @@ ack:
   - uuid: 4d0019c4-040a-47c4-bf83-c0142522ff68
     metric: ovnCPU-ovncontroller_avg
     reason: Random CPU Spike
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: apiserverCPU_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: etcdCPU_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: multusCPU_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: ovsCPU-Workers_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: ovnkCPU-overall_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: ovnCPU-ovncontroller_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: ovnCPU-northd_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: ovnCPU-nbdb_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: ovnCPU-sbdb_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: ovnCPU-ovnk-controller_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: kubelet_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: monitoringCPU_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 9a5e24b6-b79c-445f-bf65-ed4fb828bf13
+    metric: ovsCPU-irate-all_avg
+    reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
     version: '4.22'
     test: node-density-cni
   # udn-density-pods
