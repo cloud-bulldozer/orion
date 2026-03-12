@@ -355,7 +355,7 @@ class Matcher:
         )
         agg_value = metrics["agg"]["value"]
         agg_type = metrics["agg"]["agg_type"]
-        uuid_bucket = search.aggs.bucket("uuid", "terms", field=self.uuid_field+".keyword")
+        uuid_bucket = search.aggs.bucket("uuid", "terms", field=self.uuid_field+".keyword", size=len(uuids))
         uuid_bucket.metric("time", "avg", field=timestamp_field)
         uuid_bucket.metric(agg_value, agg_type, field=metrics["metric_of_interest"])
         result = search.execute()
