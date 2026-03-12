@@ -268,7 +268,7 @@ setup() {
 
 @test "orion with --no-default-ack disables default ACK loading" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --no-default-ack 2>&1 | tee ./outputs/results-no-default-ack.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --no-default-ack 2>&1 | tee ./outputs/results-no-default-ack.txt
   EXIT_CODE=$?
   set -e
   if ! grep -q "default ACK loading disabled" ./outputs/results-no-default-ack.txt; then
@@ -279,7 +279,7 @@ setup() {
 
 @test "orion auto-loads ack/all_ack.yaml when present" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' 2>&1 | tee ./outputs/results-ack-auto.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' 2>&1 | tee ./outputs/results-ack-auto.txt
   EXIT_CODE=$?
   set -e
   if [ ! -f ack/all_ack.yaml ]; then
@@ -341,7 +341,7 @@ setup() {
 
 @test "orion with regression should contain inline changepoint" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -373,7 +373,7 @@ setup() {
 @test "orion with regression should contain inline changepoint json" {
   set +e
 
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json > ./outputs/results.json
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json > ./outputs/results.json
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -393,7 +393,7 @@ setup() {
 @test "orion with regression should contain inline changepoint junit" {
   set +e
 
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit > ./outputs/results.xml
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit > ./outputs/results.xml
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -423,7 +423,7 @@ setup() {
 @test "orion with regression should contain inline changepoint with custom display" {
   set +e
 
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --display upstreamJob > ./outputs/results.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --display upstreamJob > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -466,7 +466,7 @@ setup() {
 @test "orion with regression should contain inline changepoint json with custom display" {
   set +e
 
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json --display upstreamJob > ./outputs/results.json
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json --display upstreamJob > ./outputs/results.json
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -492,7 +492,7 @@ setup() {
 @test "orion with regression should contain inline changepoint junit with custom display" {
   set +e
 
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit --display upstreamJob > ./outputs/results.xml
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit --display upstreamJob > ./outputs/results.xml
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -529,7 +529,7 @@ setup() {
 
 @test "orion with regression should contain inline changepoint no metadata index" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-metrics-only.yaml --metadata-index "orion-integration-test-metrics*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests-metrics-only.yaml --metadata-index "orion-integration-test-metrics*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -562,7 +562,7 @@ setup() {
   # Early-cp metric has changepoint at 5th point. Orion expands the window to re-validate;
   # with only 10 runs there is no additional data, so it skips the early changepoint and does not report regression.
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-early-cp.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-early-cp.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests-early-cp.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-early-cp.txt
   EXIT_CODE=$?
 
   if [ $EXIT_CODE -eq 2 ]; then
@@ -583,7 +583,7 @@ setup() {
 
 @test "orion --anomaly-detection with regression should contain inline changepoint" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --anomaly-detection --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-anomaly.txt
+  orion --lookback 15d --since 2026-01-20 --anomaly-detection --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-anomaly.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -627,7 +627,7 @@ setup() {
 
 @test "orion --anomaly-detection with regression should contain inline changepoint json" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --anomaly-detection --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json > ./outputs/results-anomaly.json
+  orion --lookback 15d --since 2026-01-20 --anomaly-detection --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json > ./outputs/results-anomaly.json
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -648,7 +648,7 @@ setup() {
 
 @test "orion --anomaly-detection with regression should contain inline changepoint junit" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --anomaly-detection --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit > ./outputs/results-anomaly.xml
+  orion --lookback 15d --since 2026-01-20 --anomaly-detection --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit > ./outputs/results-anomaly.xml
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -679,7 +679,7 @@ setup() {
 
 @test "orion --cmr with regression should contain inline changepoint" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --cmr --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-cmr.txt
+  orion --lookback 15d --since 2026-01-20 --cmr --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-cmr.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 0 ]; then
@@ -698,7 +698,7 @@ setup() {
 
 @test "orion --cmr with regression should contain inline changepoint json" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --cmr --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json > ./outputs/results-cmr.json
+  orion --lookback 15d --since 2026-01-20 --cmr --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json > ./outputs/results-cmr.json
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 0 ]; then
@@ -717,7 +717,7 @@ setup() {
 
 @test "orion --cmr with regression should contain inline changepoint junit" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --cmr --config hack/ci-tests/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit > ./outputs/results-cmr.xml
+  orion --lookback 15d --since 2026-01-20 --cmr --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit > ./outputs/results-cmr.xml
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 0 ]; then
@@ -737,7 +737,7 @@ setup() {
 
 @test "orion inheriting config" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-inherits.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests-inherits.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -774,7 +774,7 @@ setup() {
 
 @test "orion inheriting config ignore global" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-inherits-ignore-global.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests-inherits-ignore-global.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -799,7 +799,7 @@ setup() {
 
 @test "orion inheriting config local metadata" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-inherits-local-metadata.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests-inherits-local-metadata.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 3 ]; then
@@ -810,7 +810,7 @@ setup() {
 
 @test "orion inheriting config local metrics with global ignore" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-inherits-local-metrics-with-ignore.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests-inherits-local-metrics-with-ignore.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -841,7 +841,7 @@ setup() {
 
 @test "orion inheriting config local metrics" {
   set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/ci-tests-inherits-local-metrics.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests-inherits-local-metrics.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
   EXIT_CODE=$?
 
   if [ ! $EXIT_CODE -eq 2 ]; then
@@ -868,4 +868,42 @@ setup() {
   fi
 
   set -e
+}
+@test "orion browbeat config should contain keystone metrics text" {
+  set +e
+  orion --lookback 15d --hunter-analyze --config hack/ci-tests/configurations/ci-tests-browbeat.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --since 2026-02-23 --display='' --input-vars='{"version": "4.18"}' --es-server=${QE_ES_SERVER} > ./outputs/results-browbeat.txt
+  set -e
+
+  for metric in keystone_v3_list_users_avg_avg keystone_v3_list_users_count_count keystone_v3_list_users_P99_percentiles keystone_v3_list_users_P95_percentiles keystone_v3_list_users_P90_percentiles keystone_v3_list_users_max_max keystone_v3_list_users_min_min keystone_v3_list_users_sum_sum; do
+    if ! grep -q "$metric" ./outputs/results-browbeat.txt; then
+      echo "Expected metric '$metric' not found in results-browbeat.txt"
+      exit 1
+    fi
+  done
+}
+
+@test "orion browbeat config should contain keystone metrics json" {
+  set +e
+  orion --lookback 15d --hunter-analyze --config hack/ci-tests/configurations/ci-tests-browbeat.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --since 2026-02-23 --display='' --input-vars='{"version": "4.18"}' --es-server=${QE_ES_SERVER} --output-format json > ./outputs/results-browbeat.json
+  set -e
+
+  for metric in keystone_v3_list_users_avg_avg keystone_v3_list_users_count_count keystone_v3_list_users_P99_percentiles keystone_v3_list_users_P95_percentiles keystone_v3_list_users_P90_percentiles keystone_v3_list_users_max_max keystone_v3_list_users_min_min keystone_v3_list_users_sum_sum; do
+    if ! grep -q "$metric" ./outputs/results-browbeat.json; then
+      echo "Expected metric '$metric' not found in results-browbeat.json"
+      exit 1
+    fi
+  done
+}
+
+@test "orion browbeat config should contain keystone metrics junit" {
+  set +e
+  orion --lookback 15d --hunter-analyze --config hack/ci-tests/configurations/ci-tests-browbeat.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --since 2026-02-23 --display='' --input-vars='{"version": "4.18"}' --es-server=${QE_ES_SERVER} --output-format junit > ./outputs/results-browbeat.xml
+  set -e
+
+  for metric in keystone_v3_list_users_avg_avg keystone_v3_list_users_count_count keystone_v3_list_users_P99_percentiles keystone_v3_list_users_P95_percentiles keystone_v3_list_users_P90_percentiles keystone_v3_list_users_max_max keystone_v3_list_users_min_min keystone_v3_list_users_sum_sum; do
+    if ! grep -q "$metric" ./outputs/results-browbeat.xml; then
+      echo "Expected metric '$metric' not found in results-browbeat.xml"
+      exit 1
+    fi
+  done
 }
