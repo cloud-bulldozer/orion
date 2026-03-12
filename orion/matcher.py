@@ -373,7 +373,8 @@ class Matcher:
             # Standard aggregations (sum, avg, max, min)
             uuid_bucket.metric(agg_value, agg_type, field=metrics["metric_of_interest"])
         result = search.execute()
-        self.logger.info("Executing aggregated query for metric %s against index %s", metrics["name"], self.index)
+        self.logger.info("Executing aggregated query for metric %s against index %s",
+            metrics["name"], self.index)
         self.logger.debug("Executing query \r\n%s", search.to_dict())
         data = self.parse_agg_results(result, agg_value, agg_type, timestamp_field, metrics)
         return data
@@ -401,18 +402,18 @@ class Matcher:
 
         uuids = data.aggregations.uuid.buckets
         for uuid in uuids:
-            data = {"uuid": uuid.key, timestamp_field: uuid.time.value_as_string}
+            data = {
+                self.uuid_field: uuid.key,
+                timestamp_field: uuid.time.value_as_string,
+            }
             if agg_type == "percentiles":
                 # For percentiles, extract the target percentile value
                 # Default to 95th percentile if not specified
-                target_percentile = float(metrics["agg"].get("target_percentile", 95.0))
-                percentile_values = agg_values[agg_value].values
+                target_percentile = metrics["agg"].get("target_percentile", "95.0")
+                percentile_values = uuid.get(agg_value).values
                 # OpenSearch returns percentile keys as strings (e.g., "95.0")
-                percentile_key = str(target_percentile)
-                data = {}
-                dat[agg_value + "_" + agg_type] = percentile_values.get(percentile_key)
+                data[agg_value + "_" + agg_type] = percentile_values.get(percentile_key)
             else:
-                # Standard single-value aggregations
                 data[agg_value + "_" + agg_type] = uuid.get(agg_value).value
             res.append(data)
         return res

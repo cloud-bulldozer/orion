@@ -440,6 +440,112 @@ def test_get_results_with_exists_fields_and_timestamp_field(request,
 
 
 @pytest.mark.parametrize(
+    "fixture_name,test_uuids,test_metrics,data_dict,expected",
+    [
+        # matcher_instance with values (single uuid agg, each bucket has time + value metric)
+        (
+            "matcher_instance",
+            ["uuid1", "uuid2"],
+            {
+                "name": "apiserverCPU",
+                "metricName": "containerCPU",
+                "labels.namespace": "openshift-kube-apiserver",
+                "metric_of_interest": "value",
+                "agg": {"value": "cpu", "agg_type": "avg"},
+            },
+            {
+                "aggregations": {
+                    "uuid": {
+                        "buckets": [
+                            {
+                                "key": "uuid1",
+                                "time": {"value_as_string": "2024-02-09T12:00:00"},
+                                "cpu": {"value": 42}
+                            },
+                            {
+                                "key": "uuid2",
+                                "time": {"value_as_string": "2024-02-09T13:00:00"},
+                                "cpu": {"value": 56}
+                            },
+                        ]
+                    },
+                }
+            },
+            [
+                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "cpu_avg": 42},
+                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "cpu_avg": 56},
+            ],
+        ),
+        # uuid_matcher_instance with values
+        (
+            "uuid_matcher_instance",
+            ["uuid1", "uuid2"],
+            {
+                "name": "apiserverCPU",
+                "metricName": "containerCPU",
+                "labels.namespace": "openshift-kube-apiserver",
+                "metric_of_interest": "value",
+                "agg": {"value": "cpu", "agg_type": "avg"},
+            },
+            {
+                "aggregations": {
+                    "uuid": {
+                        "buckets": [
+                            {
+                                "key": "uuid1",
+                                "time": {"value_as_string": "2024-02-09T12:00:00"},
+                                "cpu": {"value": 42}
+                            },
+                            {
+                                "key": "uuid2",
+                                "time": {"value_as_string": "2024-02-09T13:00:00"},
+                                "cpu": {"value": 56}
+                            },
+                        ]
+                    },
+                }
+            },
+            [
+                {"run_uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "cpu_avg": 42},
+                {"run_uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "cpu_avg": 56},
+            ],
+        ),
+        # matcher_instance with no agg values (empty uuid buckets)
+        (
+            "matcher_instance",
+            ["uuid1", "uuid2"],
+            {
+                "name": "apiserverCPU",
+                "metricName": "containerCPU",
+                "labels.namespace": "openshift-kube-apiserver",
+                "metric_of_interest": "value",
+                "agg": {"value": "cpu", "agg_type": "avg"},
+            },
+            {
+                "aggregations": {
+                    "uuid": {"buckets": []},
+                }
+            },
+            [],
+        ),
+    ],
+)
+def test_get_agg_metric_query_variants(request,
+                                       fixture_name,
+                                       test_uuids,
+                                       test_metrics,
+                                       data_dict,
+                                       expected):
+    matcher = request.getfixturevalue(fixture_name)
+    # get_agg_metric_query uses search.execute() directly, so mock that
+    def mock_execute(self):
+        return Response(response=data_dict, search=self)
+    with patch.object(Search, "execute", mock_execute):
+        result = matcher.get_agg_metric_query(test_uuids, test_metrics)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
     "test_type",
     ["convert_to_df", "save_results"]
 )
