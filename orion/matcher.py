@@ -368,7 +368,11 @@ class Matcher:
         if agg_type == "percentiles":
             # Get the percentile values from config (default to [50, 95, 99])
             percents = metrics["agg"].get("percents", [50, 95, 99])
-            uuid_bucket.metric(agg_value, "percentiles", field=metrics["metric_of_interest"], percents=percents)
+            uuid_bucket.metric(
+                agg_value, "percentiles",
+                field=metrics["metric_of_interest"],
+                percents=percents
+            )
         elif agg_type == "count":
             # Count aggregation uses value_count in OpenSearch
             uuid_bucket.metric(agg_value, "value_count", field=metrics["metric_of_interest"])

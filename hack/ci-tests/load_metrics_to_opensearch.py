@@ -333,7 +333,9 @@ def _run_rhoso_flow(args, base_url: str, auth: tuple) -> None:
     print("Summary:")
     print(f"  Metadata - Success: {metadata_success}, Failed: {metadata_fail}")
     print(f"  Metrics  - Success: {metrics_success}, Failed: {metrics_fail}")
-    print(f"  Total    - Success: {metadata_success + metrics_success}, Failed: {metadata_fail + metrics_fail}")
+    total_success = metadata_success + metrics_success
+    total_fail = metadata_fail + metrics_fail
+    print(f"  Total    - Success: {total_success}, Failed: {total_fail}")
     print("=" * 50)
 
     if metadata_fail > 0 or metrics_fail > 0:
