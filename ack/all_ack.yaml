@@ -188,6 +188,16 @@ ack:
     reason: https://issues.redhat.com/browse/OCPBUGS-77720
     version: '4.22'
     test: udn-density-pods
+  - uuid: 1c95b3ee-bf24-4ca5-bd63-0f893d13ad63
+    metric: ovsCPU-Workers_avg
+    reason: https://issues.redhat.com/browse/PERFSCALE-4515
+    version: '4.22'
+    test: udn-density-pods
+  - uuid: d32d0b5b-f2f6-47fa-8f9d-314ab31c7a02
+    metric: ovnMem-ovncontroller_avg
+    reason: https://issues.redhat.com/browse/PERFSCALE-4515
+    version: '4.22'
+    test: udn-density-pods
 
   # === Version 4.21 ===
 
@@ -339,6 +349,16 @@ ack:
   - uuid: 60d9fb49-648e-4e26-ab4d-e8704f749e80
     metric: ovnkMem-overall_avg
     reason: shift from w/o pause to with pause in config
+    version: '4.21'
+    test: udn-density-pods
+  - uuid: 96e6fa58-4ea2-46e2-ab65-567ca91911f2
+    metric: ovsCPU-Workers_avg
+    reason: https://issues.redhat.com/browse/PERFSCALE-4515
+    version: '4.21'
+    test: udn-density-pods
+  - uuid: f682a732-4f62-4f9b-bc8a-d8d5064fba69
+    metric: ovnMem-ovncontroller_avg
+    reason: https://issues.redhat.com/browse/PERFSCALE-4515
     version: '4.21'
     test: udn-density-pods
 
