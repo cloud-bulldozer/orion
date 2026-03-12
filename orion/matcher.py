@@ -359,7 +359,8 @@ class Matcher:
         uuid_bucket.metric("time", "avg", field=timestamp_field)
         uuid_bucket.metric(agg_value, agg_type, field=metrics["metric_of_interest"])
         result = search.execute()
-        self.logger.info("Executing aggregated query for metric %s against index %s", metrics["name"], self.index)
+        self.logger.info("Executing aggregated query for metric %s against index %s",
+            metrics["name"], self.index)
         self.logger.debug("Executing query \r\n%s", search.to_dict())
         data = self.parse_agg_results(result, agg_value, agg_type, timestamp_field)
         return data
@@ -384,7 +385,11 @@ class Matcher:
 
         uuids = data.aggregations.uuid.buckets
         for uuid in uuids:
-            data = {"uuid": uuid.key, timestamp_field: uuid.time.value_as_string, agg_value + "_" + agg_type: uuid.get(agg_value).value}
+            data = {
+                self.uuid_field: uuid.key,
+                timestamp_field: uuid.time.value_as_string,
+                agg_value + "_" + agg_type: uuid.get(agg_value).value
+            }
             res.append(data)
         return res
 

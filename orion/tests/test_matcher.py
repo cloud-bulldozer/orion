@@ -442,7 +442,7 @@ def test_get_results_with_exists_fields_and_timestamp_field(request,
 @pytest.mark.parametrize(
     "fixture_name,test_uuids,test_metrics,data_dict,expected",
     [
-        # matcher_instance with values
+        # matcher_instance with values (single uuid agg, each bucket has time + value metric)
         (
             "matcher_instance",
             ["uuid1", "uuid2"],
@@ -455,16 +455,18 @@ def test_get_results_with_exists_fields_and_timestamp_field(request,
             },
             {
                 "aggregations": {
-                    "time": {
-                        "buckets": [
-                            {"key": "uuid1", "time": {"value_as_string": "2024-02-09T12:00:00"}},
-                            {"key": "uuid2", "time": {"value_as_string": "2024-02-09T13:00:00"}},
-                        ]
-                    },
                     "uuid": {
                         "buckets": [
-                            {"key": "uuid1", "cpu": {"value": 42}},
-                            {"key": "uuid2", "cpu": {"value": 56}},
+                            {
+                                "key": "uuid1",
+                                "time": {"value_as_string": "2024-02-09T12:00:00"},
+                                "cpu": {"value": 42}
+                            },
+                            {
+                                "key": "uuid2",
+                                "time": {"value_as_string": "2024-02-09T13:00:00"},
+                                "cpu": {"value": 56}
+                            },
                         ]
                     },
                 }
@@ -487,16 +489,18 @@ def test_get_results_with_exists_fields_and_timestamp_field(request,
             },
             {
                 "aggregations": {
-                    "time": {
-                        "buckets": [
-                            {"key": "uuid1", "time": {"value_as_string": "2024-02-09T12:00:00"}},
-                            {"key": "uuid2", "time": {"value_as_string": "2024-02-09T13:00:00"}},
-                        ]
-                    },
                     "uuid": {
                         "buckets": [
-                            {"key": "uuid1", "cpu": {"value": 42}},
-                            {"key": "uuid2", "cpu": {"value": 56}},
+                            {
+                                "key": "uuid1",
+                                "time": {"value_as_string": "2024-02-09T12:00:00"},
+                                "cpu": {"value": 42}
+                            },
+                            {
+                                "key": "uuid2",
+                                "time": {"value_as_string": "2024-02-09T13:00:00"},
+                                "cpu": {"value": 56}
+                            },
                         ]
                     },
                 }
@@ -506,7 +510,7 @@ def test_get_results_with_exists_fields_and_timestamp_field(request,
                 {"run_uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "cpu_avg": 56},
             ],
         ),
-        # matcher_instance with no agg values
+        # matcher_instance with no agg values (empty uuid buckets)
         (
             "matcher_instance",
             ["uuid1", "uuid2"],
@@ -519,19 +523,10 @@ def test_get_results_with_exists_fields_and_timestamp_field(request,
             },
             {
                 "aggregations": {
-                    "time": {
-                        "buckets": [
-                            {"key": "uuid1", "time": {"value_as_string": "2024-02-09T12:00:00"}},
-                            {"key": "uuid2", "time": {"value_as_string": "2024-02-09T13:00:00"}},
-                        ]
-                    },
                     "uuid": {"buckets": []},
                 }
             },
-            [
-                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "cpu_avg": None},
-                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "cpu_avg": None},
-            ],
+            [],
         ),
     ],
 )
@@ -542,9 +537,11 @@ def test_get_agg_metric_query_variants(request,
                                        data_dict,
                                        expected):
     matcher = request.getfixturevalue(fixture_name)
-    matcher.query_index = lambda *args, **kwargs: Response(response=data_dict, search=data_dict)
-
-    result = matcher.get_agg_metric_query(test_uuids, test_metrics)
+    # get_agg_metric_query uses search.execute() directly, so mock that
+    def mock_execute(self):
+        return Response(response=data_dict, search=self)
+    with patch.object(Search, "execute", mock_execute):
+        result = matcher.get_agg_metric_query(test_uuids, test_metrics)
     assert result == expected
 
 
