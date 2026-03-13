@@ -6,7 +6,8 @@ tests :
       masterNodesCount: 3
       workerNodesCount: 6
       ocpVersion: "{{ version }}"
-      sdnType: OVNKubernetes
+      benchmark.keyword: "rds-core"
+      networkType: OVNKubernetes
       pullNumber: {{ pull_number | default(0) }}
       organization: {{ organization | default('') }}
       repository: {{ repository | default('') }}
