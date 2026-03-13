@@ -424,9 +424,11 @@ def print_json(logger, kwargs, results: TestResults, results_pull: TestResults, 
                 "periodic_avg": json.loads(average_values),
                 "pull": json.loads(output_pull.get(test_name)),
             }
+            print(json.dumps(results_json, indent=2))
             with open(output_file_name, 'w', encoding="utf-8") as file:
                 file.write(json.dumps(results_json, indent=2))
         else:
+            print(result_table)
             with open(output_file_name, 'w', encoding="utf-8") as file:
                 file.write(str(result_table))
         logger.info("Output saved to %s", output_file_name)
@@ -461,6 +463,7 @@ def print_junit(logger, kwargs, results: TestResults, results_pull: TestResults,
         xml_str = ET.tostring(testsuites, encoding="utf8", method="xml").decode()
         dom = xml.dom.minidom.parseString(xml_str)
         pretty_xml_as_string = dom.toprettyxml()
+        print(pretty_xml_as_string)
         output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}.{get_output_extension(kwargs['output_format'])}"
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(pretty_xml_as_string))
