@@ -122,8 +122,11 @@ orion cmd o json --hunter-analyze
 # JUnit XML format
 orion cmd o junit --hunter-analyze
 
-# Collapse output (show only changepoints and surrounding data)
+# Collapse text output (print only regression summary, full table saved to file)
 orion --collapse --hunter-analyze
+
+# Collapse JSON output (include only changepoint context rows)
+orion --collapse -o json --hunter-analyze
 ```
 
 ### Display Metadata Fields
@@ -469,11 +472,11 @@ orion --config metrics-only.yaml \
 
 ### Output Formatting
 ```bash
-# Generate JSON output with only changepoints
-orion --config performance-config.yaml --hunter-analyze -o json --collapse
+# Generate JSON output with only changepoints (saved to file, no stdout)
+orion --config performance-config.yaml --hunter-analyze -o json --collapse --save-output-path=./outputs/results.json
 
-# Generate JUnit XML for CI integration
-orion --config performance-config.yaml --hunter-analyze -o junit --output results.xml
+# Generate JUnit XML for CI integration (saved to file, no stdout)
+orion --config performance-config.yaml --hunter-analyze -o junit --save-output-path=./outputs/results.xml
 ```
 
 ### Performance Analysis with Custom Thresholds
@@ -578,7 +581,7 @@ time                       uuid                                  ocpVersion     
 
 1. **Use `--debug`** when troubleshooting configuration issues
 2. **Start with small lookback periods** when testing new configurations
-3. **Use `--collapse`** to focus on changepoints in large datasets
+3. **Use `--collapse`** to print only the regression summary to stdout (full table is always saved to file)
 4. **Combine `--uuid` and `--baseline`** for targeted comparisons
 5. **Acknowledge known issues** to reduce noise in results
 6. **Use appropriate algorithms** for your use case:

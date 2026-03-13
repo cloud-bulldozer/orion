@@ -278,7 +278,7 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
     prow_job_id = os.getenv("PROW_JOB_ID")
     if kwargs["output_format"] != cnsts.JSON and prow_job_id and prow_job_id.strip():
         testname, result_data, _ = algorithm.output(cnsts.JSON)
-        output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{testname}.json"
+        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}_{testname}.json"
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(result_data))
 

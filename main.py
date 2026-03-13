@@ -5,6 +5,7 @@ This is the cli file for orion, tool to detect regressions using hunter
 # pylint: disable = import-error, line-too-long, no-member
 import json
 import logging
+import os
 from pathlib import Path
 import re
 import sys
@@ -146,7 +147,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--lookback", help="Get data from last X days and Y hours. Format in XdYh")
 @click.option("--since", help="End date to bound the time range. When used with --lookback, creates a time window ending at this date. Format: YYYY-MM-DD")
 @click.option("--convert-tinyurl", is_flag=True, help="Convert buildUrls to tiny url format for better formatting")
-@click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
+@click.option("--collapse", is_flag=True, help="For text output: only print regression summary to stdout (full table always saved to file). For JSON output: only include changepoint context rows.")
 @click.option("--node-count", default=False, help="Match any node iterations count")
 @click.option("--lookback-size", type=int, default=10000, help="Maximum number of entries to be looked back")
 @click.option("--es-server", type=str, envvar="ES_SERVER", help="Elasticsearch endpoint where test data is stored, can be set via env var ES_SERVER", default="")
@@ -349,6 +350,13 @@ def print_regression_summary(regression_data) -> None:
                             tablefmt="outline"))
 
 
+def save_text_table(test_name, result_table, save_output_path):
+    """Save the text table to a file."""
+    output_file_name = f"{os.path.splitext(save_output_path)[0]}_table_{test_name}.txt"
+    with open(output_file_name, 'w', encoding="utf-8") as file:
+        file.write(str(result_table))
+
+
 def print_output(
         logger,
         kwargs,
@@ -372,32 +380,23 @@ def print_output(
         logger.error("Terminating test")
         sys.exit(0)
     for test_name, result_table in output.items():
-        if kwargs['output_format'] != cnsts.JSON :
+        save_text_table(test_name, result_table, kwargs['save_output_path'])
+        if not kwargs['collapse']:
             text = test_name
             if pr > 0:
                 text = test_name + " | Pull Request #" + str(pr)
             print(text)
             print("=" * len(text))
-        print(result_table)
-        if is_pull and pr < 1:
-            if kwargs['output_format'] != cnsts.JSON :
+            print(result_table)
+            if is_pull and pr < 1:
                 text = test_name + " | Average of above Periodic runs"
                 print("\n" + text)
                 print("=" * len(text))
-            print(average_values)
-            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
-        else:
-            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}_pull.{get_output_extension(kwargs['output_format'])}"
-        with open(output_file_name, 'w', encoding="utf-8") as file:
-            file.write(str(result_table))
+                print(average_values)
     if regression_flag:
-        if kwargs['output_format'] != cnsts.JSON:
-            print_regression_summary(regression_data)
-            if not is_pull:
-                return True
-        else :
-            if not is_pull:
-                return True
+        print_regression_summary(regression_data)
+        if not is_pull:
+            return True
     else:
         print("No regressions found")
     return False
@@ -418,22 +417,19 @@ def print_json(logger, kwargs, results: TestResults, results_pull: TestResults, 
     if is_pull and results_pull.pr:
         output_pull = results_pull.output
     for test_name, result_table in output.items():
-        if not is_pull:
-            print(result_table)
-            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
-        else:
+        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
+        if is_pull:
             results_json = {
                 "periodic": json.loads(result_table),
                 "periodic_avg": json.loads(average_values),
                 "pull": json.loads(output_pull.get(test_name)),
             }
-            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
-            output_file_name_pull = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}_pull.{get_output_extension(kwargs['output_format'])}"
-            print(json.dumps(results_json))
-            with open(output_file_name_pull, 'w', encoding="utf-8") as file:
-                file.write(str(output_pull.get(test_name)))
-        with open(output_file_name, 'w', encoding="utf-8") as file:
-            file.write(str(result_table))
+            with open(output_file_name, 'w', encoding="utf-8") as file:
+                file.write(json.dumps(results_json, indent=2))
+        else:
+            with open(output_file_name, 'w', encoding="utf-8") as file:
+                file.write(str(result_table))
+        logger.info("Output saved to %s", output_file_name)
         if regression_flag:
             return True
     return False
@@ -465,10 +461,10 @@ def print_junit(logger, kwargs, results: TestResults, results_pull: TestResults,
         xml_str = ET.tostring(testsuites, encoding="utf8", method="xml").decode()
         dom = xml.dom.minidom.parseString(xml_str)
         pretty_xml_as_string = dom.toprettyxml()
-        print(pretty_xml_as_string)
-        output_file_name = f"{kwargs['save_output_path'].split('.')[0]}.{get_output_extension(kwargs['output_format'])}"
+        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}.{get_output_extension(kwargs['output_format'])}"
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(pretty_xml_as_string))
+        logger.info("Output saved to %s", output_file_name)
         if regression_flag:
             return True
     return False
