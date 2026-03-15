@@ -5,6 +5,7 @@ This is the cli file for orion, tool to detect regressions using hunter
 # pylint: disable = import-error, line-too-long, no-member
 import json
 import logging
+import os
 from pathlib import Path
 import re
 import sys
@@ -13,6 +14,7 @@ from typing import Any
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 import click
+from tabulate import tabulate
 from orion.logger import SingletonLogger
 from orion.run_test import run, TestResults
 from orion.utils import get_output_extension
@@ -137,6 +139,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
     help="Choose output format (json, text or junit)",
 )
 @click.option("--save-output-path", default="output.txt", help="path to save output file with regressions")
+@click.option("--column-group-size", type=int, default=5, help="Number of metrics per column group in text report")
 @click.option("--uuid", default="", help="UUID to use as base for comparisons")
 @click.option(
     "--baseline", default="", help="Baseline UUID(s) to to compare against uuid"
@@ -144,7 +147,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--lookback", help="Get data from last X days and Y hours. Format in XdYh")
 @click.option("--since", help="End date to bound the time range. When used with --lookback, creates a time window ending at this date. Format: YYYY-MM-DD")
 @click.option("--convert-tinyurl", is_flag=True, help="Convert buildUrls to tiny url format for better formatting")
-@click.option("--collapse", is_flag=True, help="Only outputs changepoints, previous and later runs in the xml format")
+@click.option("--collapse", is_flag=True, help="For text output: only print regression summary to stdout (full table always saved to file). For JSON output: only include changepoint context rows.")
 @click.option("--node-count", default=False, help="Match any node iterations count")
 @click.option("--lookback-size", type=int, default=10000, help="Maximum number of entries to be looked back")
 @click.option("--es-server", type=str, envvar="ES_SERVER", help="Elasticsearch endpoint where test data is stored, can be set via env var ES_SERVER", default="")
@@ -283,6 +286,77 @@ def main(**kwargs):
     if has_regression:
         sys.exit(2) ## regression detected
 
+def print_regression_summary(regression_data) -> None:
+    """Print regression summary: affected metrics, PRs, and GitHub context tables."""
+    print("Regression(s) found :")
+    for regression in regression_data:
+        print("-" * 50)
+        print(f"Test: {regression.get('test_name')}:")
+        print(f"{'Changepoint at:':<20} {regression['bad_ver']}")
+        print(f"{'Previous version:':<20} {regression['prev_ver']}")
+        print("\nAffected Metrics")
+        if regression['metrics_with_change']:
+            table = [
+                [m['name'], m['value'], f"{m['percentage_change']:.2f}%", m.get('labels', '')]
+                for m in regression['metrics_with_change']
+            ]
+            print(tabulate(table, headers=["Metric", "Value", "Percentage change", "Labels"], tablefmt="outline"))
+
+        if "prs" in regression:
+            formatted_prs = "\n".join([f"- {pr}" for pr in regression["prs"]])
+        else:
+            formatted_prs = "N/A"
+        print("\nRelated PRs:")
+        print(formatted_prs)
+        if "github_context" in regression and regression["github_context"] is not None:
+            print("\nGitHub context:")
+            ctx = regression["github_context"]
+            repos = ctx.get("repositories") or None
+            if repos is None or len(repos) == 0:
+                print("No GitHub context found")
+                return
+            for repo_name, repo_data in repos.items():
+                commits = repo_data.get("commits") or {}
+                releases = repo_data.get("releases") or {}
+                if (commits.get("count") or 0) > 0 or (releases.get("count") or 0) > 0:
+                    print(f"\nRepository: {repo_name}")
+                    rows = []
+                    for item in (commits.get("items") or []):
+                        date = item.get("commit_timestamp", "")
+                        msg = item.get("message", "")
+                        email = (item.get("commit_author") or {}).get("email", "")
+                        url = item.get("html_url", "")
+                        rows.append([date, msg.split("\n")[0], email, url])
+                    if len(rows) > 0:
+                        print("Commits:")
+                        print(tabulate(rows,
+                            headers=["Date", "Message", "Author email", "URL"],
+                            tablefmt="outline"))
+                    rows = []
+                    for item in (releases.get("items") or []):
+                        date = item.get("published_at") or item.get("timestamp") or item.get("date") or ""
+                        msg = item.get("body") or item.get("message") or item.get("name") or ""
+                        email = (item.get("author") or item.get("commit_author") or {})
+                        if isinstance(email, dict):
+                            email = email.get("email", "")
+                        else:
+                            email = str(email)
+                        url = item.get("html_url", "")
+                        rows.append([date, msg.split("\n")[0], email, url])
+                    if len(rows) > 0:
+                        print("Releases:")
+                        print(tabulate(rows,
+                            headers=["Date", "Message", "Author email", "URL"],
+                            tablefmt="outline"))
+
+
+def save_text_table(test_name, result_table, save_output_path):
+    """Save the text table to a file."""
+    output_file_name = f"{os.path.splitext(save_output_path)[0]}_table_{test_name}.txt"
+    with open(output_file_name, 'w', encoding="utf-8") as file:
+        file.write(str(result_table))
+
+
 def print_output(
         logger,
         kwargs,
@@ -306,45 +380,25 @@ def print_output(
         logger.error("Terminating test")
         sys.exit(0)
     for test_name, result_table in output.items():
-        if kwargs['output_format'] != cnsts.JSON :
+        save_text_table(test_name, result_table, kwargs['save_output_path'])
+        if not kwargs['collapse']:
             text = test_name
             if pr > 0:
                 text = test_name + " | Pull Request #" + str(pr)
             print(text)
             print("=" * len(text))
-        print(result_table)
-        if is_pull and pr < 1:
-            if kwargs['output_format'] != cnsts.JSON :
+            print(result_table)
+            if is_pull and pr < 1:
                 text = test_name + " | Average of above Periodic runs"
                 print("\n" + text)
                 print("=" * len(text))
-            print(average_values)
-            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
-        else:
-            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}_pull.{get_output_extension(kwargs['output_format'])}"
-        with open(output_file_name, 'w', encoding="utf-8") as file:
-            file.write(str(result_table))
+                print(average_values)
     if regression_flag:
-        if kwargs['output_format'] != cnsts.JSON :
-            print("Regression(s) found :")
-            for regression in regression_data:
-                if "prs" in regression:
-                    formatted_prs = "\n".join([f"- {pr}" for pr in regression["prs"]])
-                else:
-                    formatted_prs = "N/A - Payload tests have not completed yet"
-                print("-" * 50)
-                print(f"{'Previous Version:':<20} {regression['prev_ver']}")
-                print(f"{'Bad Version:':<20} {regression['bad_ver']}")
-                if kwargs["sippy_pr_search"]:
-                    print("PR diff:")
-                    print(formatted_prs)
-
-                print("-" * 50)
-            if not is_pull:
-                return True
-        else :
-            if not is_pull:
-                return True
+        print_regression_summary(regression_data)
+        if not is_pull:
+            return True
+    else:
+        print("No regressions found")
     return False
 
 
@@ -363,22 +417,21 @@ def print_json(logger, kwargs, results: TestResults, results_pull: TestResults, 
     if is_pull and results_pull.pr:
         output_pull = results_pull.output
     for test_name, result_table in output.items():
-        if not is_pull:
-            print(result_table)
-            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
-        else:
+        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
+        if is_pull:
             results_json = {
                 "periodic": json.loads(result_table),
                 "periodic_avg": json.loads(average_values),
                 "pull": json.loads(output_pull.get(test_name)),
             }
-            output_file_name = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
-            output_file_name_pull = f"{kwargs['save_output_path'].split('.')[0]}_{test_name}_pull.{get_output_extension(kwargs['output_format'])}"
-            print(json.dumps(results_json))
-            with open(output_file_name_pull, 'w', encoding="utf-8") as file:
-                file.write(str(output_pull.get(test_name)))
-        with open(output_file_name, 'w', encoding="utf-8") as file:
-            file.write(str(result_table))
+            print(json.dumps(results_json, indent=2))
+            with open(output_file_name, 'w', encoding="utf-8") as file:
+                file.write(json.dumps(results_json, indent=2))
+        else:
+            print(result_table)
+            with open(output_file_name, 'w', encoding="utf-8") as file:
+                file.write(str(result_table))
+        logger.info("Output saved to %s", output_file_name)
         if regression_flag:
             return True
     return False
@@ -411,9 +464,10 @@ def print_junit(logger, kwargs, results: TestResults, results_pull: TestResults,
         dom = xml.dom.minidom.parseString(xml_str)
         pretty_xml_as_string = dom.toprettyxml()
         print(pretty_xml_as_string)
-        output_file_name = f"{kwargs['save_output_path'].split('.')[0]}.{get_output_extension(kwargs['output_format'])}"
+        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}.{get_output_extension(kwargs['output_format'])}"
         with open(output_file_name, 'w', encoding="utf-8") as file:
             file.write(str(pretty_xml_as_string))
+        logger.info("Output saved to %s", output_file_name)
         if regression_flag:
             return True
     return False
