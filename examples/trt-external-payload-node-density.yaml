@@ -29,6 +29,16 @@ tests:
       direction: 1
       threshold: 10
 
+    - name: elapsedTime
+      metricName: jobSummary
+      metric_of_interest: elapsedTime
+      not:
+        jobConfig.name: garbage-collection
+      labels:
+        - "[Jira: PerfScale]"
+      direction: 1
+      threshold: 10
+
     - name: containersStartedLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: ContainersStarted
