@@ -11,7 +11,7 @@ import os
 import sys
 import argparse
 from datetime import datetime, timedelta
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from urllib.parse import urlparse
 
 try:
@@ -104,23 +104,28 @@ def post_document(
     index: str,
     document: Dict[str, Any],
     auth: tuple = None,
-    verify_ssl: bool = False
+    verify_ssl: bool = False,
+    doc_id: Optional[str] = None
 ) -> tuple:
     """
     Post a single document to OpenSearch.
+
+    Args:
+        doc_id: Optional document ID. When provided, used for the _doc URL.
+                When not provided, ID is derived from uuid+timestamp if present.
 
     Returns:
         (success, http_code, response_text)
     """
     url = f"{base_url}/{index}/_doc"
 
-    # Use UUID + timestamp as document ID to ensure uniqueness
-    if 'uuid' in document and 'timestamp' in document:
-        # Create unique ID from UUID and timestamp
+    if doc_id is not None:
+        url = f"{base_url}/{index}/_doc/{doc_id}"
+    elif 'uuid' in document and 'timestamp' in document:
+        # Use UUID + timestamp as document ID to ensure uniqueness
         timestamp_id = document['timestamp'].replace(':', '').replace(
             '.', '').replace('-', '').replace('T', '').replace('Z', '')
-        doc_id = f"{document['uuid']}-{timestamp_id}"
-        url = f"{base_url}/{index}/_doc/{doc_id}"
+        url = f"{base_url}/{index}/_doc/{document['uuid']}-{timestamp_id}"
 
     headers = {'Content-Type': 'application/json'}
 
@@ -184,6 +189,161 @@ def ensure_index_exists(
         return False
 
 
+def load_metadata_to_index(
+    base_url: str,
+    index: str,
+    metadata_list: List[Dict[str, Any]],
+    auth: tuple = None,
+    verify_ssl: bool = False
+) -> tuple:
+    """
+    Ensure the metadata index exists and post each metadata document to it.
+    Uses document's 'uuid' as the OpenSearch document ID.
+
+    Returns:
+        (success_count, fail_count)
+    """
+    if not ensure_index_exists(base_url, index, auth, verify_ssl):
+        print(f"Warning: Index '{index}' creation may have failed, continuing...")
+
+    success_count = 0
+    fail_count = 0
+
+    for idx, doc in enumerate(metadata_list):
+        uuid = doc.get('uuid')
+        if not uuid:
+            print(f"  [{idx + 1}/{len(metadata_list)}] Warning: no UUID, skipping")
+            fail_count += 1
+            continue
+
+        success, http_code, response_text = post_document(
+            base_url,
+            index,
+            doc,
+            auth=auth,
+            verify_ssl=verify_ssl,
+            doc_id=uuid
+        )
+
+        if success:
+            success_count += 1
+            print(f"  [{idx + 1}/{len(metadata_list)}] ✓ Loaded UUID: {uuid}")
+        else:
+            fail_count += 1
+            print(f"  [{idx + 1}/{len(metadata_list)}] ✗ Failed (HTTP {http_code})")
+            if http_code != 0:
+                print(f"    Response: {response_text[:200]}")
+
+    return success_count, fail_count
+
+
+def _run_rhoso_flow(args, base_url: str, auth: tuple) -> None:
+    """Load rhoso.json: metadata to metadata index, metrics to metrics index."""
+    print(f"OpenSearch server: {base_url}")
+    print(f"Rhoso file: {args.rhoso_file}")
+    print(f"Metadata index: {args.metadata_index}")
+    print(f"Metrics index: {args.index}")
+    print("\n")
+
+    print("Loading rhoso file...")
+    data = load_json_file(args.rhoso_file)
+    if not isinstance(data, dict) or 'metadata' not in data or 'metrics' not in data:
+        print("Error: rhoso file must be a JSON object with 'metadata' and 'metrics' keys")
+        sys.exit(1)
+    metadata_list = data['metadata']
+    metrics_list = data['metrics']
+    if not isinstance(metadata_list, list) or not isinstance(metrics_list, list):
+        print("Error: 'metadata' and 'metrics' must be JSON arrays")
+        sys.exit(1)
+    print(f"Found {len(metadata_list)} metadata documents and {len(metrics_list)} metric documents")
+    print("\n")
+
+    print(f"Testing connection to OpenSearch at {base_url}...")
+    try:
+        response = requests.get(base_url, auth=auth, verify=args.verify_ssl, timeout=10)
+        if response.status_code == 200:
+            print("✓ Connection successful")
+        else:
+            print(f"Warning: Unexpected response: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Warning: Could not connect to OpenSearch: {e}")
+        print("Continuing anyway...")
+    print("\n")
+
+    # Load metadata to metadata index
+    print("=" * 50)
+    print(f"Loading {len(metadata_list)} metadata documents to '{args.metadata_index}'...")
+    print("=" * 50)
+    metadata_success, metadata_fail = load_metadata_to_index(
+        base_url,
+        args.metadata_index,
+        metadata_list,
+        auth=auth,
+        verify_ssl=args.verify_ssl
+    )
+    print("\n")
+
+    # Load metrics to metrics index
+    print("=" * 50)
+    print(f"Loading {len(metrics_list)} metric documents to '{args.index}'...")
+    print("=" * 50)
+
+    if not ensure_index_exists(base_url, args.index, auth, args.verify_ssl):
+        print(f"Warning: Index '{args.index}' creation may have failed, continuing...")
+
+    metrics_success = 0
+    metrics_fail = 0
+
+    for idx, doc in enumerate(metrics_list):
+        browbeat_uuid = doc.get('browbeat_uuid')
+        timestamp = doc.get('timestamp', '')
+        iteration = doc.get('iteration', idx)
+
+        # Create document ID from browbeat_uuid + normalized timestamp + iteration
+        if browbeat_uuid and timestamp:
+            timestamp_id = timestamp.replace(':', '').replace(
+                '.', '').replace('-', '').replace('T', '').replace('Z', '')
+            doc_id = f"{browbeat_uuid}-{timestamp_id}-{iteration}"
+        else:
+            doc_id = None
+
+        success, http_code, response_text = post_document(
+            base_url,
+            args.index,
+            doc,
+            auth=auth,
+            verify_ssl=args.verify_ssl,
+            doc_id=doc_id
+        )
+
+        if success:
+            metrics_success += 1
+            if (idx + 1) % 10 == 0 or idx == len(metrics_list) - 1:
+                print(f"  [{idx + 1}/{len(metrics_list)}] ✓ Loaded")
+        else:
+            metrics_fail += 1
+            print(f"  [{idx + 1}/{len(metrics_list)}] ✗ Failed (HTTP {http_code})")
+            if http_code != 0:
+                print(f"    Response: {response_text[:200]}")
+
+    print("\n")
+
+    # Summary
+    print("=" * 50)
+    print("Summary:")
+    print(f"  Metadata - Success: {metadata_success}, Failed: {metadata_fail}")
+    print(f"  Metrics  - Success: {metrics_success}, Failed: {metrics_fail}")
+    total_success = metadata_success + metrics_success
+    total_fail = metadata_fail + metrics_fail
+    print(f"  Total    - Success: {total_success}, Failed: {total_fail}")
+    print("=" * 50)
+
+    if metadata_fail > 0 or metrics_fail > 0:
+        sys.exit(1)
+
+    print("\n✓ All documents loaded successfully!")
+
+
 def main():
     """Main function to load metric data to OpenSearch."""
     parser = argparse.ArgumentParser(
@@ -243,11 +403,32 @@ Examples:
         default=False,
         help='Verify SSL certificates (default: False)'
     )
+    parser.add_argument(
+        '--rhoso',
+        action='store_true',
+        default=False,
+        help='Load rhoso.json: metadata and metrics to default integration-test indices'
+    )
+    parser.add_argument(
+        '--rhoso-file',
+        default=os.path.join(os.path.dirname(__file__), 'rhoso.json'),
+        help='Path to rhoso JSON file (used with --rhoso) (default: ./rhoso.json)'
+    )
+    parser.add_argument(
+        '--metadata-index',
+        default='orion-integration-test-data',
+        help='Index name for metadata when using --rhoso (default: orion-integration-test-data)'
+    )
 
     args = parser.parse_args()
 
     # Parse ES server URL
     base_url, auth = parse_es_server(args.es_server)
+
+    # Handle rhoso mode
+    if args.rhoso:
+        _run_rhoso_flow(args, base_url, auth)
+        return
 
     print(f"OpenSearch server: {base_url}")
     print(f"Index: {args.index}")
