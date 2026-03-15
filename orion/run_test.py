@@ -24,6 +24,7 @@ class AnalyzeResult(NamedTuple):
     regression_data: Optional[list]
     average_values: Any
     viz_data: Any
+    report_json: Dict[str, str]
 
 
 class TestResults(NamedTuple):
@@ -56,7 +57,7 @@ def get_algorithm_type(kwargs):
     return algorithm_name
 
 # pylint: disable=too-many-locals
-def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
+def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults, Dict[str, str]]:
     """run method to start the tests
 
     Args:
@@ -83,6 +84,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
     result_output_pull, regression_flag_pull, regression_data_pull = {}, False, []
     average_values_df_pull, average_values_df = "", ""
     all_viz_data = []
+    report_json = {}
     pr = 0
     for test in config["tests"]:
         # Create fingerprint Matcher
@@ -117,12 +119,18 @@ def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
                         all_viz_data.append(pull_result.viz_data)
                     if periodic_result.viz_data is not None:
                         all_viz_data.append(periodic_result.viz_data)
+                    if periodic_result.report_json:
+                        report_json.update(periodic_result.report_json)
             else:
-                (result_output, regression_flag,
-                 regression_data, average_values_df,
-                 viz_data) = analyze(test, kwargs)
-                if viz_data is not None:
-                    all_viz_data.append(viz_data)
+                result = analyze(test, kwargs)
+                result_output = result.output
+                regression_flag = result.regression_flag
+                regression_data = result.regression_data
+                average_values_df = result.average_values
+                if result.viz_data is not None:
+                    all_viz_data.append(result.viz_data)
+                if result.report_json:
+                    report_json.update(result.report_json)
     results_pull = TestResults(
         output=result_output_pull,
         regression_flag=regression_flag_pull,
@@ -139,7 +147,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
         pr=0,
         viz_data=all_viz_data,
     )
-    return results, results_pull
+    return results, results_pull, report_json
 
 
 def get_start_timestamp(kwargs: Dict[str, Any], test: Dict[str, Any], is_pull: bool) -> str:
@@ -227,7 +235,7 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
 
     if fingerprint_matched_df is None:
         if is_pull:
-            return AnalyzeResult(None, None, None, None, None)
+            return AnalyzeResult(None, None, None, None, None, {})
         sys.exit(3) # No data present
 
     metrics = []
@@ -237,7 +245,7 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
     algorithm_name = get_algorithm_type(kwargs)
     if algorithm_name is None:
         logger.error("No algorithm configured")
-        return AnalyzeResult(None, None, None, None, None)
+        return AnalyzeResult(None, None, None, None, None, {})
     logger.info("Comparison algorithm: %s", algorithm_name)
 
     # Isolation forest requires no null values in the dataframe
@@ -284,6 +292,13 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
 
     testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
     result_output[testname] = result_data
+
+    # When --report is set, also produce JSON output for the report
+    report_json = {}
+    if kwargs.get("report"):
+        testname_json, result_data_json, _ = algorithm.output(cnsts.JSON)
+        report_json[testname_json] = result_data_json
+
     # Query with JSON
     regression_data = []
     if test_flag:
@@ -451,7 +466,7 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
             acked_entries=acked_entries,
         )
 
-    return AnalyzeResult(result_output, regression_flag, regression_data, average_values, viz_data)
+    return AnalyzeResult(result_output, regression_flag, regression_data, average_values, viz_data, report_json)
 
 
 def tabulate_average_values(
