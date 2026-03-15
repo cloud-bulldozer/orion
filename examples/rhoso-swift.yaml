@@ -1,0 +1,92 @@
+# config file for SWIFT RHOSO service
+#
+# PERFORMANCE METRIC: Using 'avg' (average latency across iterations)
+#   - Provides average performance across all iterations
+
+tests:
+  - name: swift-performance-test
+
+    # Use browbeat_uuid as the UUID field for Rally/Browbeat data
+    uuid_field: browbeat_uuid
+
+    # Global threshold for all metrics (percentage change to trigger regression alert)
+    threshold: 10
+
+    # Global direction for all metrics (0=both, 1=increases only, -1=decreases only)
+    direction: 1
+
+    metadata:
+      # Filter by job name to get specific swift test runs
+      jobName.keyword: periodic-ci-openshift-eng-ocp-qe-perfscale-ci-main-metal-rhoso-x86-weekly-rhoso-swift
+
+      # Filter by job type
+      jobType: periodic
+      jobStatus: pass
+
+    metrics:
+      # SWIFT - swift.create_container
+      - name: createContainer
+        action: swift.create_container
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: avg  # Average latency across iterations
+        labels:
+          - "[Jira: SWIFT]"
+
+      # SWIFT - swift.delete_container
+      - name: deleteContainer
+        action: swift.delete_container
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: avg  # Average latency across iterations
+        labels:
+          - "[Jira: SWIFT]"
+
+      # SWIFT - swift.delete_object
+      - name: deleteObject
+        action: swift.delete_object
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: avg  # Average latency across iterations
+        labels:
+          - "[Jira: SWIFT]"
+
+      # SWIFT - swift.list_containers
+      - name: listContainers
+        action: swift.list_containers
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: avg  # Average latency across iterations
+        labels:
+          - "[Jira: SWIFT]"
+
+      # SWIFT - swift.list_objects
+      - name: listObjects
+        action: swift.list_objects
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: avg  # Average latency across iterations
+        labels:
+          - "[Jira: SWIFT]"
+
+      # SWIFT - swift.upload_object
+      - name: uploadObject
+        action: swift.upload_object
+        doc_type: result
+        metric_of_interest: raw
+        agg:
+          value: duration
+          agg_type: avg  # Average latency across iterations
+        labels:
+          - "[Jira: SWIFT]"
+
