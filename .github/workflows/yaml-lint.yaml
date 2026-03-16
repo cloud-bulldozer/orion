@@ -1,0 +1,57 @@
+name: YAML Lint
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'examples/**/*.yaml'
+      - 'examples/**/*.yml'
+jobs:
+  yaml-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      - name: Install yamllint
+        run: pip install yamllint
+      
+      - name: Create yamllint config
+        run: |
+          cat > .yamllint.yaml << EOF
+          extends: default
+          rules:
+            line-length:
+              max: 120
+            indentation:
+              spaces: 2
+              indent-sequences: true
+              check-multi-line-strings: false
+            trailing-spaces: enable
+            empty-lines:
+              max: 3
+              max-start: 0
+              max-end: 1
+            brackets: disable
+            braces: disable
+            colons:
+              max-spaces-before: 1
+              max-spaces-after: 2
+            commas: disable
+            comments-indentation: disable
+            document-start: disable
+            truthy:
+              allowed-values: ['true', 'false', 'yes', 'no']
+          EOF
+      
+      - name: Lint YAML files in examples directory
+        run: yamllint examples/
