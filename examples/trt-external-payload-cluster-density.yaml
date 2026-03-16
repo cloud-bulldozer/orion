@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: payload-cluster-density-v2
     metadata:
       platform: AWS
@@ -17,12 +17,12 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
     - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
-      not: 
+      not:
         jobConfig.name: "garbage-collection"
       labels:
         - "[Jira: PerfScale]"
@@ -89,13 +89,13 @@ tests:
       direction: 1
       threshold: 10
 
-    - name: kubelet 
-      metricName.keyword: kubeletCPU 
-      metric_of_interest: value 
-      labels: 
-        - "[Jira: Node]" 
-      agg: 
-        value: cpu 
+    - name: kubelet
+      metricName.keyword: kubeletCPU
+      metric_of_interest: value
+      labels:
+        - "[Jira: Node]"
+      agg:
+        value: cpu
         agg_type: avg
       direction: 1
       threshold: 10

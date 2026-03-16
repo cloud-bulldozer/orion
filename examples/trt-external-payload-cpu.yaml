@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: payload-{{benchmark}}-scale
     metadata:
       platform: AWS
@@ -7,7 +7,7 @@ tests:
       masterNodesCount: 3
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
-      benchmark.keyword: {{ benchmark }} 
+      benchmark.keyword: {{ benchmark }}
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
       jobType: {{ jobtype | default('periodic') }}
@@ -17,7 +17,7 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
     - name: openshift-monitoring-ns-CPU
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-monitoring

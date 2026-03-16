@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: okd-crd-scale-6nodes
     metadata:
       ocpVersion: {{ version }}

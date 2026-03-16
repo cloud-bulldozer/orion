@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: servicemesh-{{ service_mesh_mode }}-ingress-perf
     metadata:
       ocpVersion: "{{ version }}"
@@ -19,7 +19,7 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
 
     - name: http_avg_rps
       config.termination: http
@@ -46,7 +46,7 @@ tests:
       agg:
         value: avg_lat_us
         agg_type: avg
-       
+
     - name: edge_avg_rps
       config.termination: edge
       metric_of_interest: total_avg_rps

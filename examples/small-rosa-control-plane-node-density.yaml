@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: node-density-heavy-24nodes
     metadata:
       ocpVersion: "{{ version }}"
@@ -20,7 +20,7 @@ tests:
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics: 
+    metrics:
     - name: cpu-kubelet
       metricName.keyword: cpu-kubelet
       metric_of_interest: value
@@ -67,7 +67,7 @@ tests:
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics: 
+    metrics:
     - name: P99
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName.keyword: Ready
@@ -97,7 +97,7 @@ tests:
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics: 
+    metrics:
     - name: P99
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName.keyword: Ready
@@ -127,7 +127,7 @@ tests:
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics: 
+    metrics:
     - name: P99
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName.keyword: Ready
@@ -157,7 +157,7 @@ tests:
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics: 
+    metrics:
     - name: P99
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName.keyword: Ready

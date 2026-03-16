@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: cluster-density-v2-24nodes
     metadata:
       ocpVersion: "{{ version }}"
@@ -22,7 +22,7 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
     - name: CPU_Usage_masters
       metricName.keyword: cpu-masters
       metric_of_interest: value
@@ -57,7 +57,7 @@ tests:
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics: 
+    metrics:
     - name: CPU_Usage_masters
       metricName.keyword: cpu-masters
       metric_of_interest: value
@@ -92,7 +92,7 @@ tests:
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics: 
+    metrics:
     - name: CPU_usage_masters
       metricName.keyword: cpu-masters
       metric_of_interest: value
@@ -127,7 +127,7 @@ tests:
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics: 
+    metrics:
     - name: CPU_Usage_kube-apiserver
       metricName.keyword: cpu-kube-apiserver
       metric_of_interest: value
@@ -174,7 +174,7 @@ tests:
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics: 
+    metrics:
     - name: CPU_Usage
       metricName.keyword: cpu-kube-controller-manager
       metric_of_interest: value
@@ -216,7 +216,7 @@ tests:
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics: 
+    metrics:
     - name: Read_Only_API_request_P99_latency_namespace
       metricName.keyword: avg-ro-apicalls-latency
       labels.scope.keyword: namespace
@@ -259,7 +259,7 @@ tests:
       computeArch: amd64
       controlPlaneArch: amd64
 
-    metrics: 
+    metrics:
     - name: 99th_WAL_fsync
       metricName.keyword: 99thEtcdDiskWalFsync
       metric_of_interest: value
@@ -278,5 +278,3 @@ tests:
       agg:
         value: avg
         agg_type: avg
-
-

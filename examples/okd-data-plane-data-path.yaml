@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: okd-datapath-12nodes
     metadata:
       ocpVersion: {{ version }}
@@ -148,8 +148,6 @@ tests:
         agg_type: avg
       direction: 1
       threshold: 10
-
-
 # p2p
     - name: p2p-tput-64-1p
       parallelism: 1

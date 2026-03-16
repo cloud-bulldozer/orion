@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: quay-load-test-stable-apis
     benchmark_index: {{ quay_load_test_index }}
     metadata:
@@ -13,7 +13,7 @@ tests:
       quayVersion: "{{ quay_version }}"
       networkType: OVNKubernetes
 
-    metrics: 
+    metrics:
     - name: create_users_latency
       targets: create_users
       metric_of_interest: p99_latency
@@ -2395,7 +2395,7 @@ tests:
       quayVersion: "{{ quay_version }}"
       networkType: OVNKubernetes
 
-    metrics: 
+    metrics:
     - name: image_pulls_success_count
       targets: image_pulls
       metric_of_interest: success_count

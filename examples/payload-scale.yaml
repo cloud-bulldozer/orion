@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: aws-small-scale-cluster-density-v2
     metadata:
       platform: AWS
@@ -13,14 +13,14 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
     - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
-      not: 
+      not:
         jobConfig.name: "garbage-collection"
-      
+
     - name: apiserverCPU
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
@@ -44,7 +44,7 @@ tests:
       agg:
         value: cpu
         agg_type: avg
-    
+
     - name: etcdDisk
       metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
@@ -63,14 +63,14 @@ tests:
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
 
-    metrics: 
+    metrics:
     - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
-      not: 
+      not:
         jobConfig.name: "garbage-collection"
-      
+
     - name: apiserverCPU
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
@@ -94,7 +94,7 @@ tests:
       agg:
         value: cpu
         agg_type: avg
-    
+
     - name: etcdDisk
       metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
