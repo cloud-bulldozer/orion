@@ -99,18 +99,6 @@ tests:
       direction: 1
       threshold: 10
 
-    - name: ovsCPU-Workers
-      metricName.keyword: cgroupCPUSeconds-Workers
-      labels.id.keyword: /system.slice/ovs-vswitchd.service
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: Networking / ovn-kubernetes]"
-      direction: 1
-      threshold: 10
-
     - name: ovsCPU-irate-all
       metricName.keyword: cgroupCPU
       labels.id.keyword: /system.slice/ovs-vswitchd.service

@@ -498,16 +498,6 @@ tests :
       labels:
         - "[Jira: cpu-workers]"
       direction: 1
-    - name:  ovsCPU
-      metricName : cgroupCPUSeconds-Workers
-      labels.id.keyword : /system.slice/ovs-vswitchd.service
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: Networking / ovs]"
-      direction: 1
     - name:  cpu_ovn_control_plane
       metricName.keyword: cpu-ovn-control-plane
       metric_of_interest: value
