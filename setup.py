@@ -28,6 +28,7 @@ setup(
         'scikit-learn==1.5.0',
         "pandas==2.3.1; python_version=='3.14'",
         'tabulate==0.9.0',
+        'plotly>=5.18.0',
     ],
     entry_points={
         'console_scripts': [
