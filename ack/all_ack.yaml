@@ -177,6 +177,16 @@ ack:
     reason: node-density-cni job is too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
     version: '4.22'
     test: node-density-cni
+  - uuid: 02004321-f211-438b-ac3d-5b49106666bd
+    metric: podReadyLatency_P99
+    reason: churn was enabled in node-density-cni
+    version: '4.22'
+    test: node-density-cni
+  - uuid: 88188cb9-22ae-4ffd-87ee-87bafc3752a3
+    metric: ovsCPU-Workers_avg
+    reason: ovsCPU is a counter, need to revisit this metric
+    version: '4.22'
+    test: node-density-cni
   # udn-density-pods
   - uuid: 5b665198-fd65-4832-8e92-1e03c405eb17 # l2-payload
     metric: ovnMem-nbdb_avg
@@ -239,6 +249,21 @@ ack:
     reason: CPU bumps due to unintentional change in deletion strategy
     version: '4.21'
     test: node-density
+  - uuid: 1340c323-4bfe-42c0-ad1f-33c603eb05b4
+    metric: etcdCPU_avg
+    reason: it comes back down after a few runs
+    version: '4.21'
+    test: node-density
+  - uuid: 27b0744c-f068-4da1-8e4a-441c83020d7b
+    metric: kubelet_avg
+    reason: node-density churn was enabled
+    version: '4.21'
+    test: node-density
+  - uuid: 9ad8b601-68bd-4713-9dd9-db22114b7004
+    metric: podReadyLatency_P99
+    reason: node-density churn was enabled
+    version: '4.21'
+    test: node-density
   # node-density-cni
   - uuid: 5bdef865-13ce-40fb-94be-4117ecdf8f4d
     metric: ovnCPU-ovnk-controller_avg
@@ -293,6 +318,26 @@ ack:
   - uuid: 539402f9-9dd1-435e-9128-ae7e6417a047
     metric: podReadyLatency_P99
     reason: https://issues.redhat.com/browse/OCPBUGS-74474
+    version: '4.21'
+    test: node-density-cni
+  - uuid: 2d000ed6-badd-48e2-b9ee-1031faeeebaa
+    metric: kubelet_avg
+    reason: churn was enabled
+    version: '4.21'
+    test: node-density-cni
+  - uuid: 2d000ed6-badd-48e2-b9ee-1031faeeebaa
+    metric: ovnCPU-ovncontroller_avg
+    reason: it comes back down after a few runs
+    version: '4.21'
+    test: node-density-cni
+  - uuid: 558dcca2-f5cd-4661-8517-ebf7eb5f9fe7
+    metric: podReadyLatency_P99
+    reason: enabled churn for node-density-cni
+    version: '4.21'
+    test: node-density-cni
+  - uuid: 558dcca2-f5cd-4661-8517-ebf7eb5f9fe7
+    metric: ovsCPU-Workers_avg
+    reason: ovsCPU is a counter, need to revisit this metric
     version: '4.21'
     test: node-density-cni
   # udn-density-pods
