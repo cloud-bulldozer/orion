@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: servicemesh-{{ service_mesh_mode }}-k8s-netperf-tcp
     metadata:
       ocpVersion: "{{ version }}"
@@ -19,7 +19,7 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
 
     # throughput tests
     - name: throughput_64_1p
@@ -47,7 +47,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
-    
+
     - name: throughput_8192_1p
       parallelism: 1
       profile: TCP_STREAM
@@ -86,7 +86,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
-    
+
     - name: throughput_8192_2p
       parallelism: 2
       profile: TCP_STREAM
@@ -125,7 +125,7 @@ tests:
       agg:
         value: throughput
         agg_type: avg
-    
+
     - name: throughput_8192_4p
       parallelism: 4
       profile: TCP_STREAM

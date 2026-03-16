@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: payload-node-density-cni
     metadata:
       platform: AWS
@@ -17,12 +17,12 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
     - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
-      not: 
+      not:
         jobConfig.name: "garbage-collection"
       labels:
         - "[Jira: PerfScale]"
@@ -88,17 +88,16 @@ tests:
       direction: 1
       threshold: 10
 
-    - name: kubelet 
-      metricName.keyword: kubeletCPU 
-      metric_of_interest: value 
-      labels: 
-        - "[Jira: Node]" 
-      agg: 
-        value: cpu 
+    - name: kubelet
+      metricName.keyword: kubeletCPU
+      metric_of_interest: value
+      labels:
+        - "[Jira: Node]"
+      agg:
+        value: cpu
         agg_type: avg
       direction: 1
       threshold: 10
-
     - name: ovsCPU-irate-all
       metricName.keyword: cgroupCPU
       labels.id.keyword: /system.slice/ovs-vswitchd.service
@@ -126,7 +125,7 @@ tests:
     - name: ovnCPU-ovncontroller
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: ovn-controller 
+      labels.container.keyword: ovn-controller
       metric_of_interest: value
       agg:
         value: cpu
@@ -152,7 +151,7 @@ tests:
     - name: ovnCPU-nbdb
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: nbdb 
+      labels.container.keyword: nbdb
       metric_of_interest: value
       agg:
         value: cpu
@@ -165,7 +164,7 @@ tests:
     - name: ovnCPU-sbdb
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: sbdb 
+      labels.container.keyword: sbdb
       metric_of_interest: value
       agg:
         value: cpu
@@ -178,7 +177,7 @@ tests:
     - name: ovnCPU-ovnk-controller
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: ovnkube-controller 
+      labels.container.keyword: ovnkube-controller
       metric_of_interest: value
       agg:
         value: cpu
@@ -229,7 +228,7 @@ tests:
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
-        value: mem 
+        value: mem
         agg_type: avg
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
@@ -239,7 +238,7 @@ tests:
     - name: ovnMem-ovncontroller
       metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: ovn-controller 
+      labels.container.keyword: ovn-controller
       metric_of_interest: value
       agg:
         value: mem
@@ -265,7 +264,7 @@ tests:
     - name: ovnMem-nbdb
       metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: nbdb 
+      labels.container.keyword: nbdb
       metric_of_interest: value
       agg:
         value: mem
@@ -278,7 +277,7 @@ tests:
     - name: ovnMem-sbdb
       metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: sbdb 
+      labels.container.keyword: sbdb
       metric_of_interest: value
       agg:
         value: mem
@@ -291,7 +290,7 @@ tests:
     - name: ovnMem-ovnk-controller
       metricName.keyword: containerMemory
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: ovnkube-controller 
+      labels.container.keyword: ovnkube-controller
       metric_of_interest: value
       agg:
         value: mem

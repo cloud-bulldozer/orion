@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: metal-perfscale-cpt-virtdensity-nomount
     metadata:
       platform: BareMetal
@@ -17,7 +17,7 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
     - name: vmiReadyLatency
       metricName.keyword: vmiLatencyQuantilesMeasurement
       quantileName: VMReady

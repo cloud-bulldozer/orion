@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: small-scale-cluster-density-v2-report
     metadata:
       ocpVersion: "{{ version }}"
@@ -21,12 +21,12 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
     - name: Pod_Ready_Latency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
-      not: 
+      not:
         jobConfig.name: "garbage-collection"
     - name: CPU_usage_masters
       metricName.keyword: cpu-masters

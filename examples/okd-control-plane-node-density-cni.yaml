@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: okd-node-density-cni-6nodes
     metadata:
       ocpVersion: {{ version }}
@@ -27,7 +27,6 @@ tests:
         - "[Jira: PerfScale]"
       direction: 1
       threshold: 10
-
     - name: ovnkCPU-overall
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes

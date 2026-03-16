@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: ingress-perf
     metadata:
       ocpVersion: "{{ version }}"
@@ -19,7 +19,7 @@ tests:
           - ambient
           - sidecar
 
-    metrics: 
+    metrics:
     - name: passthrough_avg_rps
       config.termination: passthrough
       metric_of_interest: total_avg_rps
@@ -47,7 +47,7 @@ tests:
       agg:
         value: avg_lat_us
         agg_type: avg
-    
+
     - name: reencrypt_avg_rps
       config.termination: reencrypt
       metric_of_interest: total_avg_rps
@@ -61,7 +61,7 @@ tests:
       agg:
         value: avg_lat_us
         agg_type: avg
-    
+
     - name: edge_avg_rps
       config.termination: edge
       metric_of_interest: total_avg_rps

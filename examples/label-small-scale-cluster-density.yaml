@@ -20,7 +20,7 @@ tests:
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
-      not: 
+      not:
         jobConfig.name: "garbage-collection"
       labels:
         - "[Jira: PodLatency]"
@@ -53,7 +53,7 @@ tests:
         agg_type: avg
       labels:
         - "[Jira: etcd]"
-    
+
     - name: etcdDisk
       metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value

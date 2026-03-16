@@ -1,5 +1,5 @@
 # This is a template file
-tests: 
+tests:
   - name: aws-small-scale-udn-density-l3-pods
     metadata:
       platform: AWS
@@ -7,7 +7,7 @@ tests:
       masterNodesCount: 3
       workerNodesType: m5.xlarge
       workerNodesCount: 24
-      benchmark.keyword: udn-density-pods 
+      benchmark.keyword: udn-density-pods
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
       jobType: {{ jobtype | default('periodic') }}
@@ -20,19 +20,18 @@ tests:
     # fips: false
     # ipsec: false
 
-    metrics: 
+    metrics:
     - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       jobName.keyword: udn-density-l3-pods
       metric_of_interest: P99
-      not: 
+      not:
         jobConfig.name: "garbage-collection"
       labels:
         - "[Jira: PerfScale]"
       direction: 1
       threshold: 10
-
     - name: ovsCPU-irate-all
       metricName.keyword: cgroupCPU
       labels.id.keyword: /system.slice/ovs-vswitchd.service
@@ -62,7 +61,7 @@ tests:
       metricName.keyword: containerCPU
       jobName.keyword: udn-density-l3-pods
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: ovn-controller 
+      labels.container.keyword: ovn-controller
       metric_of_interest: value
       agg:
         value: cpu
@@ -172,7 +171,7 @@ tests:
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
-        value: mem 
+        value: mem
         agg_type: avg
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
@@ -183,7 +182,7 @@ tests:
       metricName.keyword: containerMemory
       jobName.keyword: udn-density-l3-pods
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: ovn-controller 
+      labels.container.keyword: ovn-controller
       metric_of_interest: value
       agg:
         value: mem
@@ -211,7 +210,7 @@ tests:
       metricName.keyword: containerMemory
       jobName.keyword: udn-density-l3-pods
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: nbdb 
+      labels.container.keyword: nbdb
       metric_of_interest: value
       agg:
         value: mem
@@ -225,7 +224,7 @@ tests:
       metricName.keyword: containerMemory
       jobName.keyword: udn-density-l3-pods
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: sbdb 
+      labels.container.keyword: sbdb
       metric_of_interest: value
       agg:
         value: mem
@@ -239,7 +238,7 @@ tests:
       metricName.keyword: containerMemory
       jobName.keyword: udn-density-l3-pods
       labels.namespace.keyword: openshift-ovn-kubernetes
-      labels.container.keyword: ovnkube-controller 
+      labels.container.keyword: ovnkube-controller
       metric_of_interest: value
       agg:
         value: mem

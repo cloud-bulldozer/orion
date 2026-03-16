@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: okd-node-density-6nodes
     metadata:
       ocpVersion: {{ version }}

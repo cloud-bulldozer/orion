@@ -1,12 +1,12 @@
-tests: 
-  - name: {{ benchmark }} 
+tests:
+  - name: {{ benchmark }}
     metadata:
       platform: AWS
       clusterType: self-managed
       masterNodesType: m6a.xlarge
       masterNodesCount: 3
       workerNodesType: m5.2xlarge
-      workerNodesCount: 24 
+      workerNodesCount: 24
       jobConfig.name: {{ benchmark }}
       metricName.keyword: jobSummary
       ocpVersion: "{{ version }}"
@@ -15,7 +15,7 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
     - name: ovnCPU
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-ovn-kubernetes
@@ -37,7 +37,7 @@ tests:
         - "[Jira: Networking / ovn-kubernetes]"
 
     - name: ovsMemory
-      metricName.keyword: ovsVswitchdMemory 
+      metricName.keyword: ovsVswitchdMemory
       metric_of_interest: value
       agg:
         value: mem
@@ -50,22 +50,22 @@ tests:
       metric_of_interest: value
       agg:
         value: cpu
-        agg_type: max 
+        agg_type: max
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
 
     - name: ovsMemory
-      metricName.keyword: ovsVswitchdMemory 
+      metricName.keyword: ovsVswitchdMemory
       metric_of_interest: value
       agg:
         value: mem
-        agg_type: max 
+        agg_type: max
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
 
-    - name: netobserv-flow-cpu 
+    - name: netobserv-flow-cpu
       metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-netobserv 
+      labels.namespace.keyword: openshift-netobserv
       metric_of_interest: value
       agg:
         value: cpu
@@ -76,7 +76,7 @@ tests:
 
     - name: netobserv-agent-cpu
       metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-netobserv-privileged 
+      labels.namespace.keyword: openshift-netobserv-privileged
       metric_of_interest: value
       agg:
         value: cpu
@@ -85,9 +85,9 @@ tests:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
 
-    - name: netobserv-flow-cpu 
+    - name: netobserv-flow-cpu
       metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-netobserv 
+      labels.namespace.keyword: openshift-netobserv
       metric_of_interest: value
       agg:
         value: cpu
@@ -98,18 +98,18 @@ tests:
 
     - name: netobserv-agent-cpu
       metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-netobserv-privileged 
+      labels.namespace.keyword: openshift-netobserv-privileged
       metric_of_interest: value
       agg:
         value: cpu
-        agg_type: max 
+        agg_type: max
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
 
-    - name: netobserv-flow-mem 
+    - name: netobserv-flow-mem
       metricName.keyword: containerMemory
-      labels.namespace.keyword: openshift-netobserv 
+      labels.namespace.keyword: openshift-netobserv
       metric_of_interest: value
       agg:
         value: cpu
@@ -120,7 +120,7 @@ tests:
 
     - name: netobserv-agent-mem
       metricName.keyword: containerMemory
-      labels.namespace.keyword: openshift-netobserv-privileged 
+      labels.namespace.keyword: openshift-netobserv-privileged
       metric_of_interest: value
       agg:
         value: cpu
@@ -129,24 +129,24 @@ tests:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
 
-    - name: netobserv-flow-mem 
+    - name: netobserv-flow-mem
       metricName.keyword: containerMemory
-      labels.namespace.keyword: openshift-netobserv 
+      labels.namespace.keyword: openshift-netobserv
       metric_of_interest: value
       agg:
         value: cpu
-        agg_type: max 
+        agg_type: max
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1
 
     - name: netobserv-agent-mem
       metricName.keyword: containerMemory
-      labels.namespace.keyword: openshift-netobserv-privileged 
+      labels.namespace.keyword: openshift-netobserv-privileged
       metric_of_interest: value
       agg:
         value: cpu
-        agg_type: max 
+        agg_type: max
       labels:
         - "[Jira: Networking / ovn-kubernetes]"
       direction: 1

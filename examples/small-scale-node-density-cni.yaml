@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: aws-small-scale-node-density-cni
     metadata:
       platform.keyword: AWS
@@ -17,14 +17,14 @@ tests:
     # fips: false
     # ipsec: false
 
-    metrics: 
+    metrics:
     - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
-      not: 
+      not:
         jobConfig.name: "garbage-collection"
-      
+
     - name: apiserverCPU
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
@@ -48,7 +48,7 @@ tests:
       agg:
         value: cpu
         agg_type: avg
-    
+
     - name: etcdDisk
       metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value

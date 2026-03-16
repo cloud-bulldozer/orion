@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: payload-node-density
     metadata:
       platform: AWS
@@ -7,7 +7,7 @@ tests:
       masterNodesCount: 3
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
-      benchmark.keyword: node-density 
+      benchmark.keyword: node-density
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
       jobType: {{ jobtype | default('periodic') }}
@@ -17,12 +17,12 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
     - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
-      not: 
+      not:
         jobConfig.name: "garbage-collection"
       labels:
         - "[Jira: PerfScale]"
@@ -74,13 +74,13 @@ tests:
       direction: 1
       threshold: 10
 
-    - name: kubelet 
-      metricName.keyword: kubeletCPU 
-      metric_of_interest: value 
-      labels: 
-        - "[Jira: Node]" 
-      agg: 
-        value: cpu 
+    - name: kubelet
+      metricName.keyword: kubeletCPU
+      metric_of_interest: value
+      labels:
+        - "[Jira: Node]"
+      agg:
+        value: cpu
         agg_type: avg
       direction: 1
       threshold: 10

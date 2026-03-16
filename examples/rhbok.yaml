@@ -5,7 +5,7 @@ tests:
       upstreamJob.keyword: periodic-ci-openshift-kueue-operator-main-perfscale-kueue-operator-9nodes
       benchmark.keyword: {{ benchmark }}
 
-    metrics: 
+    metrics:
     - name: jobReadyLatency-Completion
       metricName.keyword: jobLatencyQuantilesMeasurement
       quantileName: Complete

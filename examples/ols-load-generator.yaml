@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: ols-load-generator-{{ ols_test_workers }}w-5m
     metadata:
       olsTestWorkers: {{ ols_test_workers }}
@@ -15,7 +15,7 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
     - name: postQuery_5m
       metricName.keyword: post_query
       metric_of_interest: p99Latency
@@ -395,7 +395,7 @@ tests:
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
 
-    metrics: 
+    metrics:
     - name: postQuery_10m
       metricName.keyword: post_query
       metric_of_interest: p99Latency
@@ -775,7 +775,7 @@ tests:
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
 
-    metrics: 
+    metrics:
     - name: postQuery_20m
       metricName.keyword: post_query
       metric_of_interest: p99Latency

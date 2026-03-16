@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: k8s-netperf-tcp
     metadata:
       ocpVersion: "{{ version }}"
@@ -22,7 +22,7 @@ tests:
           - ambient
           - sidecar
 
-    metrics: 
+    metrics:
     - name: n2n-tput-64-1p
       parallelism: 1
       profile: TCP_STREAM
@@ -58,8 +58,6 @@ tests:
       agg:
         value: throughput
         agg_type: avg
-
-
     - name: n2n-tput-1024-2p
       parallelism: 2
       profile: TCP_STREAM
@@ -143,8 +141,6 @@ tests:
       agg:
         value: latency
         agg_type: avg
-
-
 # p2p
     - name: p2p-tput-64-1p
       parallelism: 1
@@ -181,8 +177,6 @@ tests:
       agg:
         value: throughput
         agg_type: avg
-
-
     - name: p2p-tput-1024-2p
       parallelism: 2
       profile: TCP_STREAM
@@ -266,8 +260,6 @@ tests:
       agg:
         value: latency
         agg_type: avg
-
-
 #p2s
     - name: p2s-tput-64-1p
       parallelism: 1

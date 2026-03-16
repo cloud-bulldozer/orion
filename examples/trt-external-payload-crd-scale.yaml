@@ -1,4 +1,4 @@
-tests: 
+tests:
   - name: payload-crd-scale
     metadata:
       platform: AWS
@@ -7,7 +7,7 @@ tests:
       masterNodesCount: 3
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
-      benchmark.keyword: crd-scale 
+      benchmark.keyword: crd-scale
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
       jobType: {{ jobtype | default('periodic') }}
@@ -17,7 +17,7 @@ tests:
       not:
         stream: okd
 
-    metrics: 
+    metrics:
     - name: apiserverCPU
       metricName.keyword: containerCPU
       labels.namespace.keyword: openshift-kube-apiserver
