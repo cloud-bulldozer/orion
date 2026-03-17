@@ -96,18 +96,19 @@ class Utils:
     def process_aggregation_metric(
         self, uuids: List[str],  metric: Dict[str, Any], match: Matcher, timestamp_field: str="timestamp"
     ) -> pd.DataFrame:
-        """Method to get aggregated dataframe
+        """Returns a dataframe of the aggregation metric
 
         Args:
-            uuids (List[str]): _description_
-            metric (Dict[str, Any]): _description_
-            match (Matcher): _description_
+            uuids (List[str]): list of uuids
+            metric (Dict[str, Any]): metric configuration
+            match (Matcher): matcher instance
+            timestamp_field (str): timestamp field
 
         Returns:
-            pd.DataFrame: _description_
+            pd.DataFrame: dataframe of the aggregation metric
         """
         aggregated_metric_data = match.get_agg_metric_query(uuids, metric, timestamp_field)
-        aggregation_value = metric["agg"]["value"]
+        aggregation_value = metric["metric_of_interest"]
         aggregation_type = metric["agg"]["agg_type"]
         aggregation_name = f"{aggregation_value}_{aggregation_type}"
         if len(aggregated_metric_data) == 0:
