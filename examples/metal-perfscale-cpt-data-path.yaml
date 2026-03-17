@@ -31,7 +31,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -45,7 +44,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -59,7 +57,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -73,7 +70,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -87,7 +83,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -101,7 +96,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -115,7 +109,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -129,7 +122,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -142,7 +134,6 @@ tests:
       acrossAZ: true
       metric_of_interest: latency
       agg:
-        value: latency
         agg_type: avg
       direction: 1
       threshold: 10
@@ -156,7 +147,6 @@ tests:
       acrossAZ: true
       metric_of_interest: latency
       agg:
-        value: latency
         agg_type: avg
       direction: 1
       threshold: 10
@@ -171,7 +161,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -185,7 +174,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -199,7 +187,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -213,7 +200,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -227,7 +213,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -241,7 +226,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -255,7 +239,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -269,7 +252,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -282,7 +264,6 @@ tests:
       acrossAZ: true
       metric_of_interest: latency
       agg:
-        value: latency
         agg_type: avg
       direction: 1
       threshold: 10
@@ -296,7 +277,6 @@ tests:
       acrossAZ: true
       metric_of_interest: latency
       agg:
-        value: latency
         agg_type: avg
       direction: 1
       threshold: 10
@@ -313,7 +293,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -328,7 +307,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -343,7 +321,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -358,7 +335,6 @@ tests:
       metric_of_interest: throughput
       direction: -1
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -372,7 +348,6 @@ tests:
       acrossAZ: true
       metric_of_interest: latency
       agg:
-        value: latency
         agg_type: avg
       direction: 1
       threshold: 10

@@ -26,7 +26,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -39,7 +38,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -52,7 +50,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -65,7 +62,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -78,7 +74,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -91,7 +86,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -104,7 +98,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -117,7 +110,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -130,7 +122,6 @@ tests:
       acrossAZ: false
       metric_of_interest: latency
       agg:
-        value: latency
         agg_type: avg
       direction: 1
       threshold: 10
@@ -144,7 +135,6 @@ tests:
       acrossAZ: false
       metric_of_interest: latency
       agg:
-        value: latency
         agg_type: avg
       direction: 1
       threshold: 10
@@ -158,7 +148,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -171,7 +160,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -184,7 +172,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -197,7 +184,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -210,7 +196,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -223,7 +208,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -236,7 +220,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -249,7 +232,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -262,7 +244,6 @@ tests:
       acrossAZ: false
       metric_of_interest: latency
       agg:
-        value: latency
         agg_type: avg
       direction: 1
       threshold: 10
@@ -276,7 +257,6 @@ tests:
       acrossAZ: false
       metric_of_interest: latency
       agg:
-        value: latency
         agg_type: avg
       direction: 1
       threshold: 10
@@ -292,7 +272,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -306,7 +285,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -320,7 +298,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -334,7 +311,6 @@ tests:
       acrossAZ: false
       metric_of_interest: throughput
       agg:
-        value: throughput
         agg_type: avg
       threshold: 10
 
@@ -348,7 +324,6 @@ tests:
       acrossAZ: false
       metric_of_interest: latency
       agg:
-        value: latency
         agg_type: avg
       direction: 1
       threshold: 10

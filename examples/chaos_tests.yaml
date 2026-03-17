@@ -41,5 +41,4 @@ tests:
         not:
           status_code: 200
         agg:
-          value: duration
           agg_type: sum
