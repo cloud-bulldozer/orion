@@ -5,7 +5,9 @@ Unit Test file for matcher aggregation functionality
 # pylint: disable = redefined-outer-name
 # pylint: disable = missing-function-docstring
 # pylint: disable = import-error, duplicate-code
+from unittest.mock import patch
 import pytest
+from opensearch_dsl import Search
 from opensearch_dsl.response import Response
 
 # Import shared fixtures and helpers from test_matcher
@@ -29,7 +31,7 @@ def uuid_matcher_instance():
 @pytest.mark.parametrize(
     "fixture_name,test_uuids,test_metrics,data_dict,expected",
     [
-        # matcher_instance with values
+        # matcher_instance with values (single uuid agg, each bucket has time + value metric)
         (
             "matcher_instance",
             ["uuid1", "uuid2"],
@@ -42,16 +44,18 @@ def uuid_matcher_instance():
             },
             {
                 "aggregations": {
-                    "time": {
-                        "buckets": [
-                            {"key": "uuid1", "time": {"value_as_string": "2024-02-09T12:00:00"}},
-                            {"key": "uuid2", "time": {"value_as_string": "2024-02-09T13:00:00"}},
-                        ]
-                    },
                     "uuid": {
                         "buckets": [
-                            {"key": "uuid1", "cpu": {"value": 42}},
-                            {"key": "uuid2", "cpu": {"value": 56}},
+                            {
+                                "key": "uuid1",
+                                "time": {"value_as_string": "2024-02-09T12:00:00"},
+                                "cpu": {"value": 42},
+                            },
+                            {
+                                "key": "uuid2",
+                                "time": {"value_as_string": "2024-02-09T13:00:00"},
+                                "cpu": {"value": 56},
+                            },
                         ]
                     },
                 }
@@ -74,16 +78,18 @@ def uuid_matcher_instance():
             },
             {
                 "aggregations": {
-                    "time": {
-                        "buckets": [
-                            {"key": "uuid1", "time": {"value_as_string": "2024-02-09T12:00:00"}},
-                            {"key": "uuid2", "time": {"value_as_string": "2024-02-09T13:00:00"}},
-                        ]
-                    },
                     "uuid": {
                         "buckets": [
-                            {"key": "uuid1", "cpu": {"value": 42}},
-                            {"key": "uuid2", "cpu": {"value": 56}},
+                            {
+                                "key": "uuid1",
+                                "time": {"value_as_string": "2024-02-09T12:00:00"},
+                                "cpu": {"value": 42},
+                            },
+                            {
+                                "key": "uuid2",
+                                "time": {"value_as_string": "2024-02-09T13:00:00"},
+                                "cpu": {"value": 56},
+                            },
                         ]
                     },
                 }
@@ -93,7 +99,7 @@ def uuid_matcher_instance():
                 {"run_uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "cpu_avg": 56},
             ],
         ),
-        # matcher_instance with no agg values
+        # matcher_instance with no agg values (empty uuid buckets)
         (
             "matcher_instance",
             ["uuid1", "uuid2"],
@@ -105,20 +111,9 @@ def uuid_matcher_instance():
                 "agg": {"value": "cpu", "agg_type": "avg"},
             },
             {
-                "aggregations": {
-                    "time": {
-                        "buckets": [
-                            {"key": "uuid1", "time": {"value_as_string": "2024-02-09T12:00:00"}},
-                            {"key": "uuid2", "time": {"value_as_string": "2024-02-09T13:00:00"}},
-                        ]
-                    },
-                    "uuid": {"buckets": []},
-                }
+                "aggregations": {"uuid": {"buckets": []}},
             },
-            [
-                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "cpu_avg": None},
-                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "cpu_avg": None},
-            ],
+            [],
         ),
         # matcher_instance with count aggregation
         (
@@ -132,16 +127,18 @@ def uuid_matcher_instance():
             },
             {
                 "aggregations": {
-                    "time": {
-                        "buckets": [
-                            {"key": "uuid1", "time": {"value_as_string": "2024-02-09T12:00:00"}},
-                            {"key": "uuid2", "time": {"value_as_string": "2024-02-09T13:00:00"}},
-                        ]
-                    },
                     "uuid": {
                         "buckets": [
-                            {"key": "uuid1", "request_id": {"value": 1250}},
-                            {"key": "uuid2", "request_id": {"value": 1520}},
+                            {
+                                "key": "uuid1",
+                                "time": {"value_as_string": "2024-02-09T12:00:00"},
+                                "request_id": {"value": 1250},
+                            },
+                            {
+                                "key": "uuid2",
+                                "time": {"value_as_string": "2024-02-09T13:00:00"},
+                                "request_id": {"value": 1520},
+                            },
                         ]
                     },
                 }
@@ -160,9 +157,10 @@ def test_get_agg_metric_query_variants(request,
                                        data_dict,
                                        expected):
     matcher = request.getfixturevalue(fixture_name)
-    matcher.query_index = lambda *args, **kwargs: Response(response=data_dict, search=data_dict)
-
-    result = matcher.get_agg_metric_query(test_uuids, test_metrics)
+    def mock_execute(self):
+        return Response(response=data_dict, search=self)
+    with patch.object(Search, "execute", mock_execute):
+        result = matcher.get_agg_metric_query(test_uuids, test_metrics)
     assert result == expected
 
 
@@ -185,41 +183,25 @@ def test_get_agg_metric_query_variants(request,
             },
             {
                 "aggregations": {
-                    "time": {
-                        "buckets": [
-                            {"key": "uuid1", "time": {"value_as_string": "2024-02-09T12:00:00"}},
-                            {"key": "uuid2", "time": {"value_as_string": "2024-02-09T13:00:00"}},
-                        ]
-                    },
                     "uuid": {
                         "buckets": [
                             {
                                 "key": "uuid1",
-                                "response_time_ms": {
-                                    "values": {"50.0": 100.5, "95.0": 250.3, "99.0": 350.7}
-                                }
+                                "time": {"value_as_string": "2024-02-09T12:00:00"},
+                                "response_time_ms": {"values": {"50.0": 100.5, "95.0": 250.3, "99.0": 350.7}},
                             },
                             {
                                 "key": "uuid2",
-                                "response_time_ms": {
-                                    "values": {"50.0": 105.2, "95.0": 260.8, "99.0": 360.1}
-                                }
+                                "time": {"value_as_string": "2024-02-09T13:00:00"},
+                                "response_time_ms": {"values": {"50.0": 105.2, "95.0": 260.8, "99.0": 360.1}},
                             },
                         ]
                     },
                 }
             },
             [
-                {
-                    "uuid": "uuid1",
-                    "timestamp": "2024-02-09T12:00:00",
-                    "response_time_ms_percentiles": 250.3
-                },
-                {
-                    "uuid": "uuid2",
-                    "timestamp": "2024-02-09T13:00:00",
-                    "response_time_ms_percentiles": 260.8
-                },
+                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "response_time_ms_percentiles": 250.3},
+                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "response_time_ms_percentiles": 260.8},
             ],
         ),
         # Test percentile aggregation with custom target (99th percentile)
@@ -239,41 +221,25 @@ def test_get_agg_metric_query_variants(request,
             },
             {
                 "aggregations": {
-                    "time": {
-                        "buckets": [
-                            {"key": "uuid1", "time": {"value_as_string": "2024-02-09T12:00:00"}},
-                            {"key": "uuid2", "time": {"value_as_string": "2024-02-09T13:00:00"}},
-                        ]
-                    },
                     "uuid": {
                         "buckets": [
                             {
                                 "key": "uuid1",
-                                "response_time_ms": {
-                                    "values": {"50.0": 100.5, "95.0": 250.3, "99.0": 350.7}
-                                }
+                                "time": {"value_as_string": "2024-02-09T12:00:00"},
+                                "response_time_ms": {"values": {"50.0": 100.5, "95.0": 250.3, "99.0": 350.7}},
                             },
                             {
                                 "key": "uuid2",
-                                "response_time_ms": {
-                                    "values": {"50.0": 105.2, "95.0": 260.8, "99.0": 360.1}
-                                }
+                                "time": {"value_as_string": "2024-02-09T13:00:00"},
+                                "response_time_ms": {"values": {"50.0": 105.2, "95.0": 260.8, "99.0": 360.1}},
                             },
                         ]
                     },
                 }
             },
             [
-                {
-                    "uuid": "uuid1",
-                    "timestamp": "2024-02-09T12:00:00",
-                    "response_time_ms_percentiles": 350.7
-                },
-                {
-                    "uuid": "uuid2",
-                    "timestamp": "2024-02-09T13:00:00",
-                    "response_time_ms_percentiles": 360.1
-                },
+                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "response_time_ms_percentiles": 350.7},
+                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "response_time_ms_percentiles": 360.1},
             ],
         ),
         # Test percentile aggregation with uuid_matcher_instance
@@ -293,50 +259,39 @@ def test_get_agg_metric_query_variants(request,
             },
             {
                 "aggregations": {
-                    "time": {
-                        "buckets": [
-                            {"key": "uuid1", "time": {"value_as_string": "2024-02-09T12:00:00"}},
-                            {"key": "uuid2", "time": {"value_as_string": "2024-02-09T13:00:00"}},
-                        ]
-                    },
                     "uuid": {
                         "buckets": [
                             {
                                 "key": "uuid1",
-                                "value_ms": {"values": {"95.0": 150.2, "99.0": 200.5}}
+                                "time": {"value_as_string": "2024-02-09T12:00:00"},
+                                "value_ms": {"values": {"95.0": 150.2, "99.0": 200.5}},
                             },
                             {
                                 "key": "uuid2",
-                                "value_ms": {"values": {"95.0": 155.8, "99.0": 205.3}}
+                                "time": {"value_as_string": "2024-02-09T13:00:00"},
+                                "value_ms": {"values": {"95.0": 155.8, "99.0": 205.3}},
                             },
                         ]
                     },
                 }
             },
             [
-                {
-                    "run_uuid": "uuid1",
-                    "timestamp": "2024-02-09T12:00:00",
-                    "value_ms_percentiles": 150.2
-                },
-                {
-                    "run_uuid": "uuid2",
-                    "timestamp": "2024-02-09T13:00:00",
-                    "value_ms_percentiles": 155.8
-                },
+                {"run_uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "value_ms_percentiles": 150.2},
+                {"run_uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "value_ms_percentiles": 155.8},
             ],
         ),
     ],
 )
 def test_percentile_agg_metric_query(request,
-                                      fixture_name,
-                                      test_uuids,
-                                      test_metrics,
-                                      data_dict,
-                                      expected):
+                                    fixture_name,
+                                    test_uuids,
+                                    test_metrics,
+                                    data_dict,
+                                    expected):
     """Test percentile aggregation queries."""
     matcher = request.getfixturevalue(fixture_name)
-    matcher.query_index = lambda *args, **kwargs: Response(response=data_dict, search=data_dict)
-
-    result = matcher.get_agg_metric_query(test_uuids, test_metrics)
+    def mock_execute(self):
+        return Response(response=data_dict, search=self)
+    with patch.object(Search, "execute", mock_execute):
+        result = matcher.get_agg_metric_query(test_uuids, test_metrics)
     assert result == expected
