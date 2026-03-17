@@ -1,0 +1,86 @@
+tests:
+  - name: browbeat
+    uuid_field: "browbeat_uuid"
+    metadata:
+      ocpVersion: "{{ version }}"
+      jobType: {{ jobtype | default('periodic') }}
+      networkType: "OVNKubernetes"
+    metrics:
+
+      - name: keystone_v3_list_users_avg
+        metric_of_interest: raw
+        action.keyword: "keystone_v3.list_users"
+        threshold: 15
+        direction: 1
+        agg:
+          value: raw
+          agg_type: avg
+
+      - name: keystone_v3_list_users_count
+        metric_of_interest: raw
+        action.keyword: "keystone_v3.list_users"
+        threshold: 15
+        direction: 1
+        agg:
+          value: raw
+          agg_type: count
+
+      - name: keystone_v3_list_users_P99
+        metric_of_interest: raw
+        action.keyword: "keystone_v3.list_users"
+        threshold: 15
+        direction: 1
+        agg:
+          value: raw
+          agg_type: percentiles
+          percents: [99]
+          target_percentile: 99
+
+      - name: keystone_v3_list_users_P95
+        metric_of_interest: raw
+        action.keyword: "keystone_v3.list_users"
+        threshold: 15
+        direction: 1
+        agg:
+          value: raw
+          agg_type: percentiles
+          percents: [95]
+          target_percentile: 95
+
+      - name: keystone_v3_list_users_P90
+        metric_of_interest: raw
+        action.keyword: "keystone_v3.list_users"
+        threshold: 15
+        direction: 1
+        agg:
+          value: raw
+          agg_type: percentiles
+          percents: [90]
+          target_percentile: 90
+
+      - name: keystone_v3_list_users_max
+        metric_of_interest: raw
+        action.keyword: "keystone_v3.list_users"
+        threshold: 15
+        direction: 1
+        agg:
+          value: raw
+          agg_type: max
+
+      - name: keystone_v3_list_users_min
+        metric_of_interest: raw
+        action.keyword: "keystone_v3.list_users"
+        threshold: 15
+        direction: 1
+        agg:
+          value: raw
+          agg_type: min
+
+      - name: keystone_v3_list_users_sum
+        metric_of_interest: raw
+        action.keyword: "keystone_v3.list_users"
+        threshold: 15
+        direction: 1
+        agg:
+          value: raw
+          agg_type: sum

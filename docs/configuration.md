@@ -321,7 +321,20 @@ context: 5  # Analyze 5 runs before and after (default)
 
 ## Aggregation Metrics
 
-For metrics that require aggregation:
+Orion supports aggregating metric values across multiple data points per test run. This is useful for computing statistics like average CPU usage, total memory consumed, or latency percentiles.
+
+### Supported Aggregation Types
+
+- `avg` - Average (arithmetic mean)
+- `sum` - Sum of all values
+- `max` - Maximum value
+- `min` - Minimum value
+- `count` - Count of values (number of data points)
+- `percentiles` - Calculate percentile distributions (e.g., P50, P95, P99)
+
+### Standard Aggregation Examples
+
+**Average (avg):**
 
 ```yaml
 - name: apiserverCPU
@@ -330,8 +343,104 @@ For metrics that require aggregation:
   metric_of_interest: value
   agg:
     value: cpu
-    agg_type: avg  # avg, sum, max, min
+    agg_type: avg  # Calculate average CPU usage
+  threshold: 10
+  direction: 1
 ```
+
+**Count:**
+
+```yaml
+- name: api_request_count
+  metricName: api_requests
+  metric_of_interest: request_id
+  agg:
+    value: request_id
+    agg_type: count  # Count number of requests
+  threshold: 10
+  direction: 1
+```
+
+The `count` aggregation counts the number of values in the specified field, useful for tracking volume metrics like number of requests, events, or samples.
+
+**Other standard aggregations** (`sum`, `max`, `min`) follow the same pattern - just change `agg_type` to the desired aggregation.
+
+### Percentile Aggregations
+
+Percentile aggregations are particularly useful for analyzing latency distributions, response times, and other performance metrics where you need to understand the distribution of values rather than just the average.
+
+**Basic percentile example (uses defaults):**
+
+```yaml
+- name: api_latency_p95
+  metricName: api_response_time
+  metric_of_interest: latency_ms
+  agg:
+    value: latency_ms
+    agg_type: percentiles
+  # Calculates P50, P95, P99 by default
+  # Reports P95 by default
+  threshold: 15
+  direction: 1
+```
+
+**Advanced percentile example with custom configuration:**
+
+```yaml
+- name: api_latency_p99
+  metricName: api_response_time
+  metric_of_interest: latency_ms
+  agg:
+    value: latency_ms
+    agg_type: percentiles
+    percents: [50, 90, 95, 99, 99.9]  # Which percentiles to calculate
+    target_percentile: 99              # Which percentile to report for regression detection
+  threshold: 20
+  direction: 1
+```
+
+**Percentile Configuration Options:**
+
+- `percents` (optional): List of percentile values to calculate. Default: `[50, 95, 99]`
+  - Can specify any percentile between 0 and 100
+  - Examples: `[50, 95, 99]`, `[90, 95, 99, 99.9]`, `[25, 50, 75]`
+
+- `target_percentile` (optional): Which percentile value to use for regression detection. Default: `95`
+  - Must be one of the values in the `percents` list
+  - This is the value that will be analyzed for changepoints
+  - Other percentiles are calculated but not used for detection
+
+**Complete percentile example:**
+
+```yaml
+- name: pod_ready_latency_p99
+  metricName: podLatencyMeasurement
+  quantileName: Ready
+  metric_of_interest: latency_seconds
+  agg:
+    value: latency_seconds
+    agg_type: percentiles
+    percents: [50, 95, 99]
+    target_percentile: 99
+  labels:
+    - "[Jira: PerfScale]"
+  threshold: 15
+  direction: 1
+  correlation: cluster_cpu_avg
+```
+
+### Aggregation Field Naming
+
+When using aggregations, the resulting metric name follows this pattern:
+- Standard aggregations: `<name>_<agg_type>`
+  - Examples: `apiserverCPU_avg`, `memory_sum`, `latency_max`, `requests_count`
+- Percentiles: `<name>_percentiles`
+  - Example: `api_latency_percentiles`
+
+These names are used in:
+- Output files and reports
+- Correlation references
+- JUnit test names
 
 ## Labels and Filtering
 

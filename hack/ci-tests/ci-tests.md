@@ -6,8 +6,9 @@ This directory contains scripts and data for loading test metadata and metrics i
 
 - `metadata_data.json` - Test dataset containing 10 metadata entries with dates going back one day per entry
 - `metric_data.json` - Template for metric documents used in testing
+- `rhoso.json` - Pre-built dataset with `metadata` and `metrics` arrays for RHOSO/Browbeat-style integration tests
 - `load_metadata_to_opensearch.sh` - Bash script to load the metadata JSON file into OpenSearch
-- `load_metrics_to_opensearch.py` - Python script to generate and load metric documents into OpenSearch
+- `load_metrics_to_opensearch.py` - Python script to generate and load metric documents into OpenSearch (supports template mode and rhoso mode)
 
 ## Prerequisites
 
@@ -46,10 +47,18 @@ Before running the scripts, ensure you have the following tools installed:
    pip install requests
    ```
 
-2. Run with default settings:
+2. Run with default settings (template mode: generates metrics from metadata + metric template):
    ```bash
    python hack/ci-tests/load_metrics_to_opensearch.py
    ```
+
+### Loading RHOSO Data
+
+Load the pre-built `rhoso.json` file (metadata → `orion-integration-test-data`, metrics → `orion-integration-test-metrics`):
+
+```bash
+python hack/ci-tests/load_metrics_to_opensearch.py --rhoso
+```
 
 ## Metadata Loader Script
 
@@ -148,9 +157,14 @@ Summary:
 
 ## Metrics Loader Script
 
-The `load_metrics_to_opensearch.py` script generates and loads metric documents into OpenSearch. For each UUID in `metadata_data.json`, it creates 50 metric documents with timestamps spaced 30 seconds apart.
+The `load_metrics_to_opensearch.py` script can run in two modes:
+
+1. **Template mode** (default): Generates metric documents from `metadata_data.json` and `metric_data.json`. For each UUID it creates 50 metric documents with timestamps spaced 30 seconds apart.
+2. **Rhoso mode** (`--rhoso`): Loads the `rhoso.json` file as-is: metadata to `orion-integration-test-data`, metrics to `orion-integration-test-metrics`. No document generation; data is posted unchanged.
 
 ### Basic Usage
+
+**Template mode (default):**
 
 ```bash
 # Use defaults (localhost:9200, index: orion-integration-test-metrics)
@@ -167,16 +181,32 @@ python hack/ci-tests/load_metrics_to_opensearch.py \
   --interval 60
 ```
 
+**Rhoso mode:**
+
+```bash
+# Load rhoso.json to default indices (orion-integration-test-data, orion-integration-test-metrics)
+python hack/ci-tests/load_metrics_to_opensearch.py --rhoso
+
+# Custom rhoso file and indices
+python hack/ci-tests/load_metrics_to_opensearch.py --rhoso \
+  --rhoso-file /path/to/rhoso.json \
+  --metadata-index my-metadata-index \
+  --index my-metrics-index
+```
+
 ### Command-Line Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
+| `--rhoso` | Load rhoso.json: metadata and metrics to default integration-test indices | Off (template mode) |
+| `--rhoso-file PATH` | Path to rhoso JSON file (used with `--rhoso`) | `./rhoso.json` |
+| `--metadata-index NAME` | Index for metadata when using `--rhoso` | `orion-integration-test-data` |
 | `--es-server URL` | OpenSearch server URL | `https://localhost:9200` or `ES_SERVER` env var |
-| `--index NAME` | Index name for metrics | `orion-integration-test-metrics` or `ES_BENCHMARK_INDEX` env var |
-| `--metadata-file PATH` | Path to metadata JSON file | `./metadata_data.json` |
-| `--metric-file PATH` | Path to metric template JSON file | `./metric_data.json` |
-| `--count N` | Number of documents per UUID | `50` |
-| `--interval N` | Seconds between timestamps | `30` |
+| `--index NAME` | Index name for metrics (template and rhoso mode) | `orion-integration-test-metrics` or `ES_BENCHMARK_INDEX` env var |
+| `--metadata-file PATH` | Path to metadata JSON file (template mode only) | `./metadata_data.json` |
+| `--metric-file PATH` | Path to metric template JSON file (template mode only) | `./metric_data.json` |
+| `--count N` | Number of documents per UUID (template mode only) | `50` |
+| `--interval N` | Seconds between timestamps (template mode only) | `30` |
 | `--verify-ssl` | Verify SSL certificates | Disabled by default |
 | `--help` | Display help message | - |
 
@@ -195,14 +225,23 @@ python hack/ci-tests/load_metrics_to_opensearch.py
 
 ### How It Works
 
+**Template mode:**
+
 1. **Reads Metadata**: Loads UUIDs and OCP versions from `metadata_data.json`
 2. **Reads Template**: Loads the metric template from `metric_data.json`
 3. **Generates Documents**: For each UUID, creates the specified number of metric documents:
    - Replaces the `uuid` field with the actual UUID from metadata
    - Updates timestamps to be spaced at the specified interval (default: 30 seconds)
    - Updates `ocpVersion` in the metadata section to match the corresponding metadata entry
-4. **Loads to OpenSearch**: Posts all documents to the specified index
+4. **Loads to OpenSearch**: Posts all documents to the metrics index
 5. **Unique Document IDs**: Uses UUID + timestamp to create unique document IDs
+
+**Rhoso mode (`--rhoso`):**
+
+1. **Reads rhoso file**: Loads a single JSON object with `metadata` and `metrics` arrays (e.g. `rhoso.json`)
+2. **Validates**: Ensures both keys exist and are arrays
+3. **Loads metadata**: Posts each metadata document to the metadata index (`orion-integration-test-data` by default), using each document’s `uuid` as the OpenSearch document ID
+4. **Loads metrics**: Posts each metric document to the metrics index (`orion-integration-test-metrics` by default), using `browbeat_uuid` + normalized timestamp + iteration as the document ID. Document content is not modified.
 
 ### Example Output
 
@@ -274,6 +313,15 @@ The `metric_data.json` file is a template for metric documents. The script uses 
 
 The script generates **500 total documents** (10 UUIDs × 50 documents each) by default, suitable for testing Orion's metric analysis and changepoint detection.
 
+### RHOSO Data
+
+The `rhoso.json` file is a single JSON object with two keys:
+
+- **`metadata`**: Array of metadata documents (e.g. job status, cluster info, UUIDs, timestamps). Loaded to `orion-integration-test-data` when using `--rhoso`.
+- **`metrics`**: Array of pre-built metric documents (e.g. Rally/Browbeat result format with `action`, `timestamp`, `browbeat_uuid`, `raw`). Loaded to `orion-integration-test-metrics` when using `--rhoso`.
+
+No transformation is applied; both arrays are posted to OpenSearch as-is. Use `--rhoso` for RHOSO/Browbeat-style integration tests.
+
 ## Troubleshooting
 
 ### Connection Issues
@@ -325,7 +373,9 @@ If some documents fail to load:
 
 ## Integration with Orion
 
-After loading both metadata and metrics, you can use them with Orion:
+After loading both metadata and metrics, you can use them with Orion.
+
+**Using template data (metadata_data.json + generated metrics):**
 
 ```bash
 # Load metadata first
@@ -333,6 +383,21 @@ After loading both metadata and metrics, you can use them with Orion:
 
 # Load metrics
 python hack/ci-tests/load_metrics_to_opensearch.py
+
+# Run Orion with the test data
+orion \
+  --es-server https://localhost:9200 \
+  --metadata-index orion-integration-test-data \
+  --benchmark-index orion-integration-test-metrics \
+  --config hack/ci-tests/ci-test.yaml \
+  --hunter-analyze
+```
+
+**Using RHOSO data (rhoso.json):**
+
+```bash
+# Load metadata and metrics from rhoso.json in one step
+python hack/ci-tests/load_metrics_to_opensearch.py --rhoso
 
 # Run Orion with the test data
 orion \
