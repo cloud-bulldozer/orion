@@ -406,15 +406,16 @@ class Matcher:
                 self.uuid_field: uuid.key,
                 timestamp_field: uuid.time.value_as_string,
             }
+            value_key = agg_value + "_" + agg_type
             if agg_type == "percentiles":
                 # For percentiles, extract the target percentile value
                 # Default to 95th percentile if not specified
-                target_percentile = metrics["agg"].get("target_percentile", "95.0")
                 percentile_values = uuid.get(agg_value).values
                 # OpenSearch returns percentile keys as strings (e.g., "95.0")
-                data[agg_value + "_" + agg_type] = percentile_values.get(percentile_key)
+                percentile_key = str(float(metrics["agg"].get("target_percentile", "95.0")))
+                data[value_key] = percentile_values.get(percentile_key)
             else:
-                data[agg_value + "_" + agg_type] = uuid.get(agg_value).value
+                data[value_key] = uuid.get(agg_value).value
             res.append(data)
         return res
 
