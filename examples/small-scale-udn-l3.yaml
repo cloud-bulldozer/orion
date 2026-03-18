@@ -37,6 +37,7 @@ tests:
       labels.id.keyword: /system.slice/ovs-vswitchd.service
       metric_of_interest: value
       agg:
+        value: cpu
         agg_type: avg
       labels:
         - "[Jira: Networking / ovn-kubernetes]"

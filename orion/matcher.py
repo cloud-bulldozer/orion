@@ -368,14 +368,26 @@ class Matcher:
             )
         elif agg_type == "count":
             # Count aggregation uses value_count in OpenSearch
-            uuid_bucket.metric(metric_of_interest, "value_count", field=metrics["metric_of_interest"])
+            uuid_bucket.metric(metric_of_interest,
+                "value_count",
+                field=metrics["metric_of_interest"]
+            )
         else:
             # Standard aggregations (sum, avg, max, min)
+<<<<<<< HEAD
             uuid_bucket.metric(metric_of_interest, agg_type, field=metrics["metric_of_interest"])
         result = search.execute()
         self.logger.info("Executing aggregated query for metric %s against index %s",
             metrics["name"], self.index)
         self.logger.debug("Executing query \r\n%s", search.to_dict())
+=======
+            uuid_bucket.metric(metric_of_interest,
+                agg_type,
+                field=metrics["metric_of_interest"]
+            )
+
+        result = self.query_index(search)
+>>>>>>> 43cbccf (Fix tests)
         data = self.parse_agg_results(result, agg_type, timestamp_field, metrics)
         return data
 
@@ -398,6 +410,7 @@ class Matcher:
         if "aggregations" not in data:
             return res
 
+<<<<<<< HEAD
         uuids = data.aggregations.uuid.buckets
         metric_of_interest = metrics["metric_of_interest"]
         for uuid in uuids:
@@ -413,6 +426,33 @@ class Matcher:
                 # OpenSearch returns percentile keys as strings (e.g., "95.0")
                 percentile_key = str(float(metrics["agg"].get("target_percentile", "95.0")))
                 data[value_key] = percentile_values.get(percentile_key)
+=======
+        stamps = data.aggregations.time.buckets
+        agg_buckets = data.aggregations.uuid.buckets
+        metric_of_interest = metrics["metric_of_interest"]
+        for stamp in stamps:
+            dat = {}
+            dat[self.uuid_field] = stamp.key
+            dat[timestamp_field] = stamp.time.value_as_string
+            agg_values = next(
+                (item for item in agg_buckets if item.key == stamp.key), None
+            )
+            if agg_values:
+                if agg_type == "percentiles":
+                    # For percentiles, extract the target percentile value
+                    # Default to 95th percentile if not specified
+                    target_percentile = 95.0
+                    if metrics and "agg" in metrics:
+                        target_percentile = float(metrics["agg"].get("target_percentile", 95.0))
+
+                    percentile_values = agg_values[metric_of_interest].values
+                    # OpenSearch returns percentile keys as strings (e.g., "95.0")
+                    percentile_key = str(target_percentile)
+                    dat[metric_of_interest + "_" + agg_type] = percentile_values.get(percentile_key)
+                else:
+                    # Standard single-value aggregations
+                    dat[metric_of_interest + "_" + agg_type] = agg_values[metric_of_interest].value
+>>>>>>> 43cbccf (Fix tests)
             else:
                 data[value_key] = uuid.get(metric_of_interest).value
             res.append(data)

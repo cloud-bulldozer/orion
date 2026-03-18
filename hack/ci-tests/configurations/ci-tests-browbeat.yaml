@@ -31,6 +31,7 @@ tests:
         agg:
           agg_type: percentiles
           target_percentile: 99
+          percents: [99]
 
       - name: keystone_v3_list_users_P95
         metric_of_interest: raw
@@ -39,6 +40,7 @@ tests:
         direction: 1
         agg:
           agg_type: percentiles
+          percents: [95]
           target_percentile: 95
 
       - name: keystone_v3_list_users_P90
@@ -48,6 +50,7 @@ tests:
         direction: 1
         agg:
           agg_type: percentiles
+          percents: [90]
           target_percentile: 90
 
       - name: keystone_v3_list_users_max
