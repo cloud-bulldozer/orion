@@ -375,18 +375,23 @@ class Matcher:
             )
         elif agg_type == "count":
             # Count aggregation uses value_count in OpenSearch
-            uuid_bucket.metric(metric_of_interest, "value_count", field=metrics["metric_of_interest"])
+            uuid_bucket.metric(metric_of_interest,
+                "value_count",
+                field=metrics["metric_of_interest"]
+            )
         else:
             # Standard aggregations (sum, avg, max, min)
-            uuid_bucket.metric(metric_of_interest, agg_type, field=metrics["metric_of_interest"])
+            uuid_bucket.metric(metric_of_interest,
+                agg_type,
+                field=metrics["metric_of_interest"]
+            )
 
         result = self.query_index(search)
-        data = self.parse_agg_results(result, metric_of_interest, agg_type, timestamp_field, metrics)
+        data = self.parse_agg_results(result, agg_type, timestamp_field, metrics)
         return data
 
     def parse_agg_results(
         self, data: Dict[Any, Any],
-        metric_of_interest: str,
         agg_type: str,
         timestamp_field: str = "timestamp",
         metrics: Dict[str, Any] = None
@@ -394,7 +399,6 @@ class Matcher:
         """parse out CPU data from kube-burner query
         Args:
             data (dict): Aggregated data from Elasticsearch DSL query
-            metric_of_interest (str): Metric of interest field name
             agg_type (str): Aggregation type (e.g., 'avg', 'sum', 'percentiles', etc.)
             timestamp_field (str): Timestamp field name
             metrics (dict): Metrics configuration (needed for percentile target)
@@ -407,7 +411,7 @@ class Matcher:
 
         stamps = data.aggregations.time.buckets
         agg_buckets = data.aggregations.uuid.buckets
-
+        metric_of_interest = metrics["metric_of_interest"]
         for stamp in stamps:
             dat = {}
             dat[self.uuid_field] = stamp.key
