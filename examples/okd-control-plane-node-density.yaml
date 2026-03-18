@@ -43,7 +43,6 @@ tests:
       labels:
         - "[Jira: Node]"
       agg:
-        value: cpu-kubelet
         agg_type: avg
       direction: 1
       threshold: 10
@@ -54,7 +53,6 @@ tests:
       labels:
         - "[Jira: Node]"
       agg:
-        value: max-memory-kubelet
         agg_type: avg
       direction: 1
       threshold: 10
@@ -63,7 +61,6 @@ tests:
       metricName.keyword: cpu-crio
       metric_of_interest: value
       agg:
-        value: cpu-crio
         agg_type: avg
       direction: 1
       threshold: 10
@@ -72,7 +69,6 @@ tests:
       metricName.keyword: max-memory-crio
       metric_of_interest: value
       agg:
-        value: max-memory-crio
         agg_type: avg
       direction: 1
       threshold: 10

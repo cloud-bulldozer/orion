@@ -13,7 +13,6 @@ tests:
         threshold: 15
         direction: 1
         agg:
-          value: raw
           agg_type: avg
 
       - name: keystone_v3_list_users_count
@@ -22,7 +21,6 @@ tests:
         threshold: 15
         direction: 1
         agg:
-          value: raw
           agg_type: count
 
       - name: keystone_v3_list_users_P99
@@ -31,10 +29,9 @@ tests:
         threshold: 15
         direction: 1
         agg:
-          value: raw
           agg_type: percentiles
-          percents: [99]
           target_percentile: 99
+          percents: [99]
 
       - name: keystone_v3_list_users_P95
         metric_of_interest: raw
@@ -42,7 +39,6 @@ tests:
         threshold: 15
         direction: 1
         agg:
-          value: raw
           agg_type: percentiles
           percents: [95]
           target_percentile: 95
@@ -53,7 +49,6 @@ tests:
         threshold: 15
         direction: 1
         agg:
-          value: raw
           agg_type: percentiles
           percents: [90]
           target_percentile: 90
@@ -64,7 +59,6 @@ tests:
         threshold: 15
         direction: 1
         agg:
-          value: raw
           agg_type: max
 
       - name: keystone_v3_list_users_min
@@ -73,7 +67,6 @@ tests:
         threshold: 15
         direction: 1
         agg:
-          value: raw
           agg_type: min
 
       - name: keystone_v3_list_users_sum
@@ -82,5 +75,4 @@ tests:
         threshold: 15
         direction: 1
         agg:
-          value: raw
           agg_type: sum

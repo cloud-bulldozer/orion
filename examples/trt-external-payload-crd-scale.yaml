@@ -23,7 +23,6 @@ tests:
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
-        value: cpu
         agg_type: avg
       labels:
         - "[Jira: kube-apiserver]"
@@ -35,7 +34,6 @@ tests:
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
-        value: cpu
         agg_type: avg
       labels:
         - "[Jira: etcd]"

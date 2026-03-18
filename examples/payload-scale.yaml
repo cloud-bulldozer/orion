@@ -26,7 +26,6 @@ tests:
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
-        value: cpu
         agg_type: avg
 
     - name: ovnCPU
@@ -34,7 +33,6 @@ tests:
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
-        value: cpu
         agg_type: avg
 
     - name: etcdCPU
@@ -42,14 +40,12 @@ tests:
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
-        value: cpu
         agg_type: avg
 
     - name: etcdDisk
       metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
-        value: duration
         agg_type: avg
   - name: aws-payload-scale-node-density
     metadata:
@@ -76,7 +72,6 @@ tests:
       labels.namespace.keyword: openshift-kube-apiserver
       metric_of_interest: value
       agg:
-        value: cpu
         agg_type: avg
 
     - name: ovnCPU
@@ -84,7 +79,6 @@ tests:
       labels.namespace.keyword: openshift-ovn-kubernetes
       metric_of_interest: value
       agg:
-        value: cpu
         agg_type: avg
 
     - name: etcdCPU
@@ -92,13 +86,11 @@ tests:
       labels.namespace.keyword: openshift-etcd
       metric_of_interest: value
       agg:
-        value: cpu
         agg_type: avg
 
     - name: etcdDisk
       metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
       metric_of_interest: value
       agg:
-        value: duration
         agg_type: avg
 

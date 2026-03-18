@@ -84,7 +84,6 @@ The `metricsFile` field allows you to load metrics from an separate file. This i
   labels.namespace.keyword: openshift-kube-apiserver
   metric_of_interest: value
   agg:
-    value: cpu
     agg_type: avg
   labels:
     - "[Jira: kube-apiserver]"
@@ -243,7 +242,6 @@ tests:
         labels.namespace.keyword: openshift-kube-apiserver
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: kube-apiserver]"
@@ -342,7 +340,6 @@ Orion supports aggregating metric values across multiple data points per test ru
   labels.namespace.keyword: openshift-kube-apiserver
   metric_of_interest: value
   agg:
-    value: cpu
     agg_type: avg  # Calculate average CPU usage
   threshold: 10
   direction: 1
@@ -355,7 +352,6 @@ Orion supports aggregating metric values across multiple data points per test ru
   metricName: api_requests
   metric_of_interest: request_id
   agg:
-    value: request_id
     agg_type: count  # Count number of requests
   threshold: 10
   direction: 1
@@ -376,7 +372,6 @@ Percentile aggregations are particularly useful for analyzing latency distributi
   metricName: api_response_time
   metric_of_interest: latency_ms
   agg:
-    value: latency_ms
     agg_type: percentiles
   # Calculates P50, P95, P99 by default
   # Reports P95 by default
@@ -391,7 +386,6 @@ Percentile aggregations are particularly useful for analyzing latency distributi
   metricName: api_response_time
   metric_of_interest: latency_ms
   agg:
-    value: latency_ms
     agg_type: percentiles
     percents: [50, 90, 95, 99, 99.9]  # Which percentiles to calculate
     target_percentile: 99              # Which percentile to report for regression detection
@@ -418,7 +412,6 @@ Percentile aggregations are particularly useful for analyzing latency distributi
   quantileName: Ready
   metric_of_interest: latency_seconds
   agg:
-    value: latency_seconds
     agg_type: percentiles
     percents: [50, 95, 99]
     target_percentile: 99
