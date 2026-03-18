@@ -19,6 +19,7 @@ from orion.utils import get_output_extension
 from orion import constants as cnsts
 from orion.config import load_config, load_ack, merge_ack_files, auto_detect_ack_file_with_vars
 from orion.visualization import generate_test_html
+from orion.report import load_json_files, generate_report
 from version import __version__
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
@@ -99,7 +100,7 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
     mutually_exclusive=["anomaly_detection","hunter_analyze"],
 )
 @click.option("--filter", is_flag=True, help="Generate percent difference in comparison")
-@click.option("--config", help="Path to the configuration file", required=True)
+@click.option("--config", help="Path to the configuration file", required=False, default=None)
 @click.option("--ack", default="", help="Optional ack YAML to ack known regressions (can specify multiple files separated by comma)")
 @click.option("--no-default-ack", is_flag=True, default=False, help="Disable automatic default ACK file detection and loading (manual --ack files are still loaded)")
 @click.option(
@@ -154,10 +155,31 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--display", type=List(), default=["buildUrl"], help="Add metadata field as a column in the output (e.g. ocpVirt, upstreamJob)")
 @click.option("--pr-analysis", is_flag=True, help="Analyze PRs for regressions", default=False)
 @click.option("--viz", is_flag=True, default=False, help="Generate interactive HTML visualizations alongside output")
+@click.option(
+    "--report",
+    is_flag=False,
+    flag_value="INTEGRATED",
+    default=None,
+    help="Generate regression report. Without value: report after normal run. "
+         "With comma-separated JSON file paths: standalone report from pre-existing files.",
+)
 def main(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
     """
+    # Handle standalone report mode (--report with file paths)
+    report_mode = kwargs.get("report")
+    if report_mode and report_mode != "INTEGRATED":
+        files = [f.strip() for f in report_mode.split(",") if f.strip()]
+        data = load_json_files(files)
+        has_regression = generate_report(data)
+        sys.exit(2 if has_regression else 0)
+
+    # --config is required for normal operation
+    if not kwargs.get("config"):
+        click.echo("Error: --config is required (unless using --report with JSON file paths).", err=True)
+        sys.exit(1)
+
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
     if kwargs['output_format'] == cnsts.JSON :
         level = logging.ERROR
@@ -259,7 +281,7 @@ def main(**kwargs):
         if missing_vars:
             logger.error("Missing required input variables: %s", ", ".join(missing_vars))
             sys.exit(1)
-    results, results_pull = run(**kwargs)
+    results, results_pull, report_json = run(**kwargs)
     is_pull = False
     if results_pull.output:
         is_pull = True
@@ -279,6 +301,14 @@ def main(**kwargs):
                 generate_test_html(viz_data, output_base_path)
         except Exception as e:  # pylint: disable=broad-except
             logger.warning("Visualization generation failed: %s", e)
+
+    # Integrated report mode: append report after normal output
+    if report_mode == "INTEGRATED" and report_json:
+        json_data_by_workload = {}
+        for test_name, json_str in report_json.items():
+            json_data_by_workload[test_name] = json.loads(json_str)
+        report_has_regression = generate_report(json_data_by_workload)
+        has_regression = has_regression or report_has_regression
 
     if has_regression:
         sys.exit(2) ## regression detected
