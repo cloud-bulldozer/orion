@@ -401,6 +401,7 @@ class Matcher:
             return res
 
         uuids = data.aggregations.uuid.buckets
+
         for uuid in uuids:
             data = {
                 self.uuid_field: uuid.key,
@@ -408,13 +409,21 @@ class Matcher:
             }
             value_key = agg_value + "_" + agg_type
             if agg_type == "percentiles":
-                # For percentiles, extract the target percentile value
-                # Default to 95th percentile if not specified
-                percentile_values = uuid.get(agg_value).values
-                # OpenSearch returns percentile keys as strings (e.g., "95.0")
-                percentile_key = str(float(metrics["agg"].get("target_percentile", "95.0")))
-                data[value_key] = percentile_values.get(percentile_key)
+                self.logger.info("AC agg_type == percentiles")
+                percentile_dict = uuid.get(agg_value).to_dict().get("values", {})
+                if metrics and "agg" in metrics and "target_percentile" in metrics["agg"]:
+                    target_percentile = float(metrics["agg"]["target_percentile"])
+                    percentile_key = str(target_percentile)
+                    self.logger.info("found target_percentile %s", target_percentile)
+                    value_key = agg_value + "_" + agg_type + "_" + percentile_key
+                    data[value_key] = percentile_dict.get(percentile_key)
+                else:
+                    self.logger.info("no target_percentile found, using all percentiles")
+                    for key, val in percentile_dict.items():
+                        self.logger.info("percentile_values value %s", key)
+                        data[agg_value + "_" + agg_type + "_" + str(key)] = val
             else:
+                # Standard single-value aggregations
                 data[value_key] = uuid.get(agg_value).value
             res.append(data)
         return res
