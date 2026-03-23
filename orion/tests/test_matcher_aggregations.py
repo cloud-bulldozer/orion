@@ -167,7 +167,8 @@ def test_get_agg_metric_query_variants(request,
 @pytest.mark.parametrize(
     "fixture_name,test_uuids,test_metrics,data_dict,expected",
     [
-        # Test percentile aggregation with default target (95th percentile)
+        # Test percentile aggregation with no target_percentile
+        # Should return all percents
         (
             "matcher_instance",
             ["uuid1", "uuid2"],
@@ -200,8 +201,8 @@ def test_get_agg_metric_query_variants(request,
                 }
             },
             [
-                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "response_time_ms_percentiles": 250.3},
-                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "response_time_ms_percentiles": 260.8},
+                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "response_time_ms_percentiles_50.0": 100.5, "response_time_ms_percentiles_95.0": 250.3, "response_time_ms_percentiles_99.0": 350.7 },
+                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "response_time_ms_percentiles_50.0": 105.2, "response_time_ms_percentiles_95.0": 260.8, "response_time_ms_percentiles_99.0": 360.1 },
             ],
         ),
         # Test percentile aggregation with custom target (99th percentile)
@@ -238,8 +239,8 @@ def test_get_agg_metric_query_variants(request,
                 }
             },
             [
-                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "response_time_ms_percentiles": 350.7},
-                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "response_time_ms_percentiles": 360.1},
+                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "response_time_ms_percentiles_99.0": 350.7},
+                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "response_time_ms_percentiles_99.0": 360.1},
             ],
         ),
         # Test percentile aggregation with uuid_matcher_instance
@@ -276,8 +277,8 @@ def test_get_agg_metric_query_variants(request,
                 }
             },
             [
-                {"run_uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "value_ms_percentiles": 150.2},
-                {"run_uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "value_ms_percentiles": 155.8},
+                {"run_uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "value_ms_percentiles_95.0": 150.2},
+                {"run_uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "value_ms_percentiles_95.0": 155.8},
             ],
         ),
     ],

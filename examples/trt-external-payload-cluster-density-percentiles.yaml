@@ -1,0 +1,47 @@
+tests:
+  - name: payload-cluster-density-v2
+    metadata:
+      platform: AWS
+      clusterType: self-managed
+      masterNodesType: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType: m6a.xlarge
+      workerNodesCount: 6
+      benchmark.keyword: cluster-density-v2
+      ocpVersion: "{{ version }}"
+      networkType: OVNKubernetes
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
+      not:
+        stream: okd
+
+    metrics:
+      - name: podReadyLatency
+        metricName.keyword: podLatencyMeasurement
+        metric_of_interest: containersReadyLatency
+        agg:
+          value: cpu
+          agg_type: percentiles
+          percents: [10, 25, 50, 90, 95]
+        not:
+          jobConfig.name: "garbage-collection"
+        labels:
+          - "[Jira: PerfScale]"
+        direction: 1
+        threshold: 10
+
+      - name: kube-apiserverCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-kube-apiserver
+        labels.container.keyword: kube-apiserver
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: percentiles
+          percents: [10, 25, 50, 90, 95]
+        labels:
+          - "[Jira: kube-apiserver]"
+        direction: 1
+        threshold: 10
