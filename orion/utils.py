@@ -511,9 +511,7 @@ class Utils:
         Returns:
             List[str]: list of PR URLs
         """
-        prs = []
-        for pr in pr_list:
-            prs.append(pr['url'])
+        prs = list(dict.fromkeys(pr['url'] for pr in pr_list))
         return prs
 
     def sippy_pr_search(self, version: str) -> List[str]:
