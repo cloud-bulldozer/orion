@@ -14,7 +14,7 @@ from plotly.subplots import make_subplots
 from orion.logger import SingletonLogger
 
 
-class VizData:  # pylint: disable=too-few-public-methods
+class VizData:  # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """Container for all data needed to visualize one test's results."""
 
     def __init__(
