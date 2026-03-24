@@ -48,11 +48,13 @@ def uuid_matcher_instance():
                         "buckets": [
                             {
                                 "key": "uuid1",
-                                "cpu": {"value": 42},
+                                "time": {"value_as_string": "2024-02-09T12:00:00"},
+                                "value": {"value": 42},
                             },
                             {
                                 "key": "uuid2",
-                                "cpu": {"value": 56},
+                                "time": {"value_as_string": "2024-02-09T13:00:00"},
+                                "value": {"value": 56},
                             },
                         ]
                     },
@@ -80,11 +82,13 @@ def uuid_matcher_instance():
                         "buckets": [
                             {
                                 "key": "uuid1",
-                                "cpu": {"value": 42},
+                                "time": {"value_as_string": "2024-02-09T12:00:00"},
+                                "value": {"value": 42},
                             },
                             {
                                 "key": "uuid2",
-                                "cpu": {"value": 56},
+                                "time": {"value_as_string": "2024-02-09T13:00:00"},
+                                "value": {"value": 56},
                             },
                         ]
                     },
