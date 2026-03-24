@@ -26,6 +26,7 @@ class VizData:  # pylint: disable=too-few-public-methods
         uuid_field: str,
         version_field: str,
         acked_entries: list = None,
+        filename_suffix: str = "",
     ):
         self.test_name = test_name
         self.dataframe = dataframe
@@ -34,6 +35,7 @@ class VizData:  # pylint: disable=too-few-public-methods
         self.uuid_field = uuid_field
         self.version_field = version_field
         self.acked_entries = acked_entries or []
+        self.filename_suffix = filename_suffix
 
 
 def _prepare_timestamps(df: pd.DataFrame):
@@ -399,7 +401,8 @@ def generate_test_html(viz_data: VizData, output_base_path: str) -> str:
     logger = SingletonLogger.get_logger("Orion")
 
     fig = _build_test_figure(viz_data)
-    output_file = f"{output_base_path}_{viz_data.test_name}_viz.html"
+    suffix = f"_{viz_data.filename_suffix}" if viz_data.filename_suffix else ""
+    output_file = f"{output_base_path}_{viz_data.test_name}{suffix}_viz.html"
     fig.write_html(
         output_file, include_plotlyjs="cdn", full_html=True,
         default_width="100%",

@@ -459,9 +459,12 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
         viz_algorithm = expanded_algorithm if expanded_algorithm is not None else algorithm
         _, change_points_by_metric = viz_algorithm.get_analysis_results()
         acked_entries = []
+        filename_suffix = ""
         ack_map = viz_algorithm.options.get("ackMap")
         if ack_map is not None:
             acked_entries = ack_map.get("ack", [])
+        if kwargs.get("pr_analysis"):
+            filename_suffix = test["metadata"].get("jobType", "")
         viz_data = VizData(
             test_name=test["name"],
             dataframe=viz_algorithm.dataframe.copy(),
@@ -470,6 +473,7 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
             uuid_field=test["uuid_field"],
             version_field=test["version_field"],
             acked_entries=acked_entries,
+            filename_suffix=filename_suffix,
         )
 
     return AnalyzeResult(result_output, regression_flag, regression_data, average_values, viz_data)
