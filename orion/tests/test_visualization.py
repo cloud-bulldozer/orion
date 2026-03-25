@@ -120,3 +120,51 @@ def test_build_test_figure_renders_changepoints_and_skips_out_of_range():
         "#ff4444",
         "#39ff14",
     }
+
+
+def test_build_test_figure_renders_only_matching_ack_markers():
+    dataframe = pd.DataFrame(
+        {
+            "timestamp": [
+                "2026-03-01T00:00:00Z",
+                "2026-03-02T00:00:00Z",
+                "2026-03-03T00:00:00Z",
+            ],
+            "uuid": ["uuid-1", "uuid-2", "uuid-3"],
+            "ocpVersion": [
+                "4.22.0-0.nightly-2026-03-01-000000",
+                "4.22.0-0.nightly-2026-03-02-000000",
+                "4.22.0-0.nightly-2026-03-03-000000",
+            ],
+            "buildUrl": [
+                "https://example.com/build/1",
+                "https://example.com/build/2",
+                "https://example.com/build/3",
+            ],
+            "latency": [10.0, 20.0, 30.0],
+        }
+    )
+    viz_data = VizData(
+        test_name="node-density",
+        dataframe=dataframe,
+        metrics_config={"latency": {"direction": 1}},
+        change_points_by_metric={},
+        uuid_field="uuid",
+        version_field="ocpVersion",
+        acked_entries=[
+            {"metric": "latency", "uuid": "uuid-2", "reason": "known issue"},
+            {"metric": "cpu", "uuid": "uuid-2", "reason": "wrong metric"},
+            {"metric": "latency", "uuid": "missing-uuid", "reason": "missing row"},
+        ],
+    )
+
+    fig = _build_test_figure(viz_data)
+    ack_traces = [
+        trace for trace in fig.data
+        if isinstance(trace.hovertext, str) and "ACKed" in trace.hovertext
+    ]
+
+    assert len(ack_traces) == 1
+    assert ack_traces[0].x[0] == 1
+    assert ack_traces[0].marker.color == "#39ff14"
+    assert ack_traces[0].customdata[0][0] == "https://example.com/build/2"
