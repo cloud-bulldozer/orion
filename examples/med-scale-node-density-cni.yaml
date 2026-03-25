@@ -1,11 +1,11 @@
 tests:
-  - name: aws-small-scale-node-density-cni
+  - name: aws-med-scale-node-density-cni
     metadata:
       platform: AWS
-      masterNodesType: m6a.xlarge
+      masterNodesType: m6a.4xlarge
       masterNodesCount: 3
-      workerNodesType: m6a.xlarge
-      workerNodesCount: 24
+      workerNodesType: m5.xlarge
+      workerNodesCount: 120
       benchmark.keyword: node-density-cni
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
@@ -19,6 +19,17 @@ tests:
     metrics:
     - name: podReadyLatency
       metricName.keyword: podLatencyQuantilesMeasurement
+      quantileName: Ready
+      metric_of_interest: P99
+      not:
+        jobConfig.name: "garbage-collection"
+      labels:
+        - "[Jira: PerfScale]"
+      direction: 1
+      threshold: 10
+
+    - name: serviceReadyLatency
+      metricName.keyword: serviceLatencyQuantilesMeasurement
       quantileName: Ready
       metric_of_interest: P99
       not:
@@ -70,17 +81,6 @@ tests:
       metric_of_interest: value
       agg:
         value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: etcd]"
-      direction: 1
-      threshold: 10
-
-    - name: etcdDisk
-      metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
-      metric_of_interest: value
-      agg:
-        value: duration
         agg_type: avg
       labels:
         - "[Jira: etcd]"
