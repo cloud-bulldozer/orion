@@ -18,94 +18,94 @@ tests:
         stream: okd
 
     metrics:
-    - name: vmiReadyLatency
-      metricName.keyword: vmiLatencyQuantilesMeasurement
-      quantileName: VMReady
-      metric_of_interest: P99
-      not:
-        jobConfig.name: "garbage-collection"
-      labels:
-        - "[Jira: PerfScale]"
-      threshold: 10
-      direction: 1
+      - name: vmiReadyLatency
+        metricName.keyword: vmiLatencyQuantilesMeasurement
+        quantileName: VMReady
+        metric_of_interest: P99
+        not:
+          jobConfig.name: "garbage-collection"
+        labels:
+          - "[Jira: PerfScale]"
+        threshold: 10
+        direction: 1
 
-    - name: apiserverCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-kube-apiserver
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: kube-apiserver]"
-      threshold: 10
-      direction: 1
+      - name: apiserverCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-kube-apiserver
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: kube-apiserver]"
+        threshold: 10
+        direction: 1
 
-    - name: multusCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-multus
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: multus]"
-      threshold: 10
-      direction: 1
+      - name: multusCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-multus
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: multus]"
+        threshold: 10
+        direction: 1
 
-    - name: monitoringCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-monitoring
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: monitoring]"
-      threshold: 10
-      direction: 1
+      - name: monitoringCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-monitoring
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: monitoring]"
+        threshold: 10
+        direction: 1
 
-    - name: ovnCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-ovn-kubernetes
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: Networking / ovn-kubernetes]"
-      threshold: 10
-      direction: 1
+      - name: ovnCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        threshold: 10
+        direction: 1
 
-    - name: etcdCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-etcd
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: etcd]"
-      threshold: 10
-      direction: 1
+      - name: etcdCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-etcd
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: etcd]"
+        threshold: 10
+        direction: 1
 
-    - name: etcdDisk
-      metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
-      metric_of_interest: value
-      agg:
-        value: duration
-        agg_type: avg
-      labels:
-        - "[Jira: etcd]"
-      threshold: 10
+      - name: etcdDisk
+        metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
+        metric_of_interest: value
+        agg:
+          value: duration
+          agg_type: avg
+        labels:
+          - "[Jira: etcd]"
+        threshold: 10
 
-    - name: kubelet
-      metricName.keyword: kubeletCPU
-      metric_of_interest: value
-      labels:
-        - "[Jira: Node]"
-      agg:
-        value: cpu
-        agg_type: avg
-      threshold: 10
-      direction: 1
+      - name: kubelet
+        metricName.keyword: kubeletCPU
+        metric_of_interest: value
+        labels:
+          - "[Jira: Node]"
+        agg:
+          value: cpu
+          agg_type: avg
+        threshold: 10
+        direction: 1

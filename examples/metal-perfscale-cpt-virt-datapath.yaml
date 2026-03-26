@@ -22,152 +22,152 @@ tests:
 
     metrics:
 # p2p
-    - name: p2p-tput-64-1p
-      parallelism: 1
-      profile: TCP_STREAM
-      messageSize: 64
-      driver.keyword: netperf
-      hostNetwork: false
-      acrossAZ: true
-      virt: true
-      metric_of_interest: throughput
-      direction: -1
-      agg:
-        value: throughput
-        agg_type: avg
-      threshold: 10
+      - name: p2p-tput-64-1p
+        parallelism: 1
+        profile: TCP_STREAM
+        messageSize: 64
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: true
+        virt: true
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          value: throughput
+          agg_type: avg
+        threshold: 10
 
-    - name: p2p-tput-64-2p
-      parallelism: 2
-      profile: TCP_STREAM
-      messageSize: 64
-      driver.keyword: netperf
-      hostNetwork: false
-      acrossAZ: true
-      virt: true
-      metric_of_interest: throughput
-      direction: -1
-      agg:
-        value: throughput
-        agg_type: avg
-      threshold: 10
+      - name: p2p-tput-64-2p
+        parallelism: 2
+        profile: TCP_STREAM
+        messageSize: 64
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: true
+        virt: true
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          value: throughput
+          agg_type: avg
+        threshold: 10
 
-    - name: p2p-tput-1024-1p
-      parallelism: 1
-      profile: TCP_STREAM
-      messageSize: 1024
-      driver.keyword: netperf
-      hostNetwork: false
-      acrossAZ: true
-      virt: true
-      metric_of_interest: throughput
-      direction: -1
-      agg:
-        value: throughput
-        agg_type: avg
-      threshold: 10
+      - name: p2p-tput-1024-1p
+        parallelism: 1
+        profile: TCP_STREAM
+        messageSize: 1024
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: true
+        virt: true
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          value: throughput
+          agg_type: avg
+        threshold: 10
 
-    - name: p2p-tput-1024-2p
-      parallelism: 2
-      profile: TCP_STREAM
-      messageSize: 1024
-      driver.keyword: netperf
-      hostNetwork: false
-      acrossAZ: true
-      virt: true
-      metric_of_interest: throughput
-      direction: -1
-      agg:
-        value: throughput
-        agg_type: avg
-      threshold: 10
+      - name: p2p-tput-1024-2p
+        parallelism: 2
+        profile: TCP_STREAM
+        messageSize: 1024
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: true
+        virt: true
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          value: throughput
+          agg_type: avg
+        threshold: 10
 
-    - name: p2p-tput-4096-1p
-      parallelism: 1
-      profile: TCP_STREAM
-      messageSize: 4096
-      driver.keyword: netperf
-      hostNetwork: false
-      acrossAZ: true
-      virt: true
-      metric_of_interest: throughput
-      direction: -1
-      agg:
-        value: throughput
-        agg_type: avg
-      threshold: 10
+      - name: p2p-tput-4096-1p
+        parallelism: 1
+        profile: TCP_STREAM
+        messageSize: 4096
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: true
+        virt: true
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          value: throughput
+          agg_type: avg
+        threshold: 10
 
-    - name: p2p-tput-4096-2p
-      parallelism: 2
-      profile: TCP_STREAM
-      messageSize: 4096
-      driver.keyword: netperf
-      hostNetwork: false
-      acrossAZ: true
-      virt: true
-      metric_of_interest: throughput
-      direction: -1
-      agg:
-        value: throughput
-        agg_type: avg
-      threshold: 10
+      - name: p2p-tput-4096-2p
+        parallelism: 2
+        profile: TCP_STREAM
+        messageSize: 4096
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: true
+        virt: true
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          value: throughput
+          agg_type: avg
+        threshold: 10
 
-    - name: p2p-tput-8192-1p
-      parallelism: 1
-      profile: TCP_STREAM
-      messageSize: 8192
-      driver.keyword: netperf
-      hostNetwork: false
-      acrossAZ: true
-      virt: true
-      metric_of_interest: throughput
-      direction: -1
-      agg:
-        value: throughput
-        agg_type: avg
-      threshold: 10
+      - name: p2p-tput-8192-1p
+        parallelism: 1
+        profile: TCP_STREAM
+        messageSize: 8192
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: true
+        virt: true
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          value: throughput
+          agg_type: avg
+        threshold: 10
 
-    - name: p2p-tput-8192-2p
-      parallelism: 2
-      profile: TCP_STREAM
-      messageSize: 8192
-      driver.keyword: netperf
-      hostNetwork: false
-      acrossAZ: true
-      virt: true
-      metric_of_interest: throughput
-      direction: -1
-      agg:
-        value: throughput
-        agg_type: avg
-      threshold: 10
+      - name: p2p-tput-8192-2p
+        parallelism: 2
+        profile: TCP_STREAM
+        messageSize: 8192
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: true
+        virt: true
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          value: throughput
+          agg_type: avg
+        threshold: 10
 
-    - name: p2p-ltcy-1024-1p
-      parallelism: 1
-      profile: TCP_RR
-      messageSize: 1024
-      driver.keyword: netperf
-      hostNetwork: false
-      acrossAZ: true
-      virt: true
-      metric_of_interest: latency
-      agg:
-        value: latency
-        agg_type: avg
-      direction: 1
-      threshold: 10
+      - name: p2p-ltcy-1024-1p
+        parallelism: 1
+        profile: TCP_RR
+        messageSize: 1024
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: true
+        virt: true
+        metric_of_interest: latency
+        agg:
+          value: latency
+          agg_type: avg
+        direction: 1
+        threshold: 10
 
-    - name: p2p-ltcy-1024-2p
-      parallelism: 2
-      profile: TCP_RR
-      messageSize: 1024
-      driver.keyword: netperf
-      hostNetwork: false
-      acrossAZ: true
-      virt: true
-      metric_of_interest: latency
-      agg:
-        value: latency
-        agg_type: avg
-      direction: 1
-      threshold: 10
+      - name: p2p-ltcy-1024-2p
+        parallelism: 2
+        profile: TCP_RR
+        messageSize: 1024
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: true
+        virt: true
+        metric_of_interest: latency
+        agg:
+          value: latency
+          agg_type: avg
+        direction: 1
+        threshold: 10
