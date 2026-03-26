@@ -1,7 +1,7 @@
 tests:
   - name: okd-cluster-density-6nodes
     metadata:
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: self-managed
       masterNodesType: m6a.xlarge
@@ -10,10 +10,10 @@ tests:
       workerNodesCount: 6
       benchmark.keyword: cluster-density-v2
       networkType: OVNKubernetes
-      jobType: {{ jobtype | default('periodic') }}
-      pullNumber: {{ pull_number | default(0) }}
-      organization: {{ organization | default('') }}
-      repository: {{ repository | default('') }}
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
       stream: okd
 
     metrics:

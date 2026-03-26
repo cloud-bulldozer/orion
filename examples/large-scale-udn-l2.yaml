@@ -11,10 +11,10 @@ tests:
       benchmark.keyword: udn-density-pods
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
-      jobType: {{ jobtype | default('periodic') }}
-      pullNumber: {{ pull_number | default(0) }}
-      organization: {{ organization | default('') }}
-      repository: {{ repository | default('') }}
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
       not:
         stream: okd
     # encrypted: true

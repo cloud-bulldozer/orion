@@ -7,13 +7,13 @@ tests:
       masterNodesCount: 3
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
-      benchmark.keyword: {{ benchmark }}
+      benchmark.keyword: "{{ benchmark }}"
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
-      jobType: {{ jobtype | default('periodic') }}
-      pullNumber: {{ pull_number | default(0) }}
-      organization: {{ organization | default('') }}
-      repository: {{ repository | default('') }}
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
       not:
         stream: okd
 

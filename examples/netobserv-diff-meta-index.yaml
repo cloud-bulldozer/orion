@@ -1,5 +1,5 @@
 tests:
-  - name: {{ benchmark }}
+  - name: "{{ benchmark }}"
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -7,7 +7,7 @@ tests:
       masterNodesCount: 3
       workerNodesType: m5.2xlarge
       workerNodesCount: 24
-      jobConfig.name: {{ benchmark }}
+      jobConfig.name: "{{ benchmark }}"
       metricName.keyword: jobSummary
       ocpVersion: "{{ version }}"
       ocpMajorVersion: "{{ version }}"

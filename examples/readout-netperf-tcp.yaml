@@ -260,7 +260,7 @@ tests:
       agg:
         value: latency
         agg_type: avg
-#p2s
+# p2s
     - name: p2s-tput-64-1p
       parallelism: 1
       profile: TCP_STREAM

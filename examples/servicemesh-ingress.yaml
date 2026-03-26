@@ -15,7 +15,7 @@ tests:
       encrypted: false
       fips: false
       ipsec: false
-      serviceMeshMode: {{ service_mesh_mode }}
+      serviceMeshMode: "{{ service_mesh_mode }}"
       not:
         stream: okd
 

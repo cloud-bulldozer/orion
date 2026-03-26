@@ -1,7 +1,7 @@
 tests:
   - name: ols-load-generator-{{ ols_test_workers }}w-5m
     metadata:
-      olsTestWorkers: {{ ols_test_workers }}
+      olsTestWorkers: "{{ ols_test_workers }}"
       olsTestDuration: "5m"
       platform: AWS
       clusterType: self-managed
@@ -383,7 +383,7 @@ tests:
 
   - name: ols-load-generator-{{ ols_test_workers }}w-10m
     metadata:
-      olsTestWorkers: {{ ols_test_workers }}
+      olsTestWorkers: "{{ ols_test_workers }}"
       olsTestDuration: "10m"
       platform: AWS
       clusterType: self-managed
@@ -763,7 +763,7 @@ tests:
 
   - name: ols-load-generator-{{ ols_test_workers }}w-20m
     metadata:
-      olsTestWorkers: {{ ols_test_workers }}
+      olsTestWorkers: "{{ ols_test_workers }}"
       olsTestDuration: "20m"
       platform: AWS
       clusterType: self-managed

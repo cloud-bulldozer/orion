@@ -1,7 +1,7 @@
 tests:
   - name: okd-datapath-12nodes
     metadata:
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: self-managed
       masterNodesType: m6a.xlarge
@@ -281,7 +281,7 @@ tests:
       direction: 1
       threshold: 10
 
-#p2s
+# p2s
     - name: p2s-tput-64-1p
       parallelism: 1
       profile: TCP_STREAM
