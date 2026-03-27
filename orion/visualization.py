@@ -26,7 +26,6 @@ class VizData:  # pylint: disable=too-few-public-methods,too-many-instance-attri
         uuid_field: str,
         version_field: str,
         acked_entries: list = None,
-        filename_suffix: str = "",
     ):
         self.test_name = test_name
         self.dataframe = dataframe
@@ -35,7 +34,6 @@ class VizData:  # pylint: disable=too-few-public-methods,too-many-instance-attri
         self.uuid_field = uuid_field
         self.version_field = version_field
         self.acked_entries = acked_entries or []
-        self.filename_suffix = filename_suffix
 
 
 def _prepare_timestamps(df: pd.DataFrame):
@@ -388,12 +386,12 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
     return fig
 
 
-def generate_test_html(viz_data: VizData, output_base_path: str) -> str:
+def generate_test_html(viz_data: VizData, output_file: str) -> str:
     """Generate a self-contained HTML file for one test.
 
     Args:
         viz_data: VizData container with all needed data.
-        output_base_path: Base path for output files (without extension).
+        output_file: Full output path for the generated HTML file.
 
     Returns:
         str: Path to the generated HTML file.
@@ -401,8 +399,6 @@ def generate_test_html(viz_data: VizData, output_base_path: str) -> str:
     logger = SingletonLogger.get_logger("Orion")
 
     fig = _build_test_figure(viz_data)
-    suffix = f"_{viz_data.filename_suffix}" if viz_data.filename_suffix else ""
-    output_file = f"{output_base_path}_{viz_data.test_name}{suffix}_viz.html"
     fig.write_html(
         output_file, include_plotlyjs="cdn", full_html=True,
         default_width="100%",

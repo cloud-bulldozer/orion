@@ -83,6 +83,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
     result_output_pull, regression_flag_pull, regression_data_pull = {}, False, []
     average_values_df_pull, average_values_df = "", ""
     all_viz_data = []
+    all_viz_data_pull = []
     pr = 0
     for test in config["tests"]:
         # Create fingerprint Matcher
@@ -114,7 +115,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
                     regression_data = periodic_result.regression_data
                     average_values_df = periodic_result.average_values
                     if pull_result.viz_data is not None:
-                        all_viz_data.append(pull_result.viz_data)
+                        all_viz_data_pull.append(pull_result.viz_data)
                     if periodic_result.viz_data is not None:
                         all_viz_data.append(periodic_result.viz_data)
             else:
@@ -129,7 +130,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
         regression_data=regression_data_pull,
         average_values=average_values_df_pull,
         pr=pr,
-        viz_data=[],
+        viz_data=all_viz_data_pull,
     )
     results = TestResults(
         output=result_output,
@@ -459,12 +460,9 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
         viz_algorithm = expanded_algorithm if expanded_algorithm is not None else algorithm
         _, change_points_by_metric = viz_algorithm.get_analysis_results()
         acked_entries = []
-        filename_suffix = ""
         ack_map = viz_algorithm.options.get("ackMap")
         if ack_map is not None:
             acked_entries = ack_map.get("ack", [])
-        if kwargs.get("pr_analysis"):
-            filename_suffix = test["metadata"].get("jobType", "")
         viz_data = VizData(
             test_name=test["name"],
             dataframe=viz_algorithm.dataframe.copy(),
@@ -473,7 +471,6 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
             uuid_field=test["uuid_field"],
             version_field=test["version_field"],
             acked_entries=acked_entries,
-            filename_suffix=filename_suffix,
         )
 
     return AnalyzeResult(result_output, regression_flag, regression_data, average_values, viz_data)
