@@ -329,7 +329,6 @@ tests:
         labels.namespace.keyword: openshift-kube-apiserver
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 0
         threshold: 15
@@ -370,7 +369,6 @@ tests:
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 0
         threshold: 20
@@ -404,7 +402,6 @@ tests:
         labels.namespace.keyword: openshift-kube-apiserver
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: kube-apiserver]"
@@ -414,7 +411,6 @@ tests:
         labels.namespace.keyword: openshift-etcd
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: etcd]"
@@ -423,7 +419,6 @@ tests:
         metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
         metric_of_interest: value
         agg:
-          value: duration
           agg_type: avg
         labels:
           - "[Jira: etcd]"
@@ -432,7 +427,6 @@ tests:
         metricName.keyword: kubeletCPU
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Node]"
