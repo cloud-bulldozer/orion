@@ -344,3 +344,353 @@ class TestSaveResults:
         saved = pd.read_csv(str(path))
         assert "uuid" in saved.columns
         assert "value" in saved.columns
+
+
+# ---------------------------------------------------------------------------
+# get_uuid_by_metadata — since_date / lookback_date range queries
+# ---------------------------------------------------------------------------
+
+class TestGetUuidByMetadataDateRanges:
+    def test_since_date_only(self, matcher, monkeypatch):
+        """since_date alone creates an upper-bound range filter."""
+        from datetime import datetime
+        hits = [FakeHit({
+            "_source": {"uuid": "u1", "buildUrl": "http://url", "ocpVersion": "4.15"},
+        })]
+        captured = {}
+        original_query_index = matcher.query_index
+        def spy_query_index(search, **kwargs):
+            captured["query"] = search.to_dict()
+            return hits
+        monkeypatch.setattr(matcher, "query_index", spy_query_index)
+        matcher.get_uuid_by_metadata(
+            {"ocpVersion": "4.15"},
+            since_date=datetime(2024, 6, 15, 12, 0, 0),
+        )
+        query_str = str(captured["query"])
+        assert "lt" in query_str
+
+    def test_lookback_and_since_date(self, matcher, monkeypatch):
+        """Both lookback_date and since_date create a bounded range."""
+        from datetime import datetime
+        hits = [FakeHit({
+            "_source": {"uuid": "u1", "buildUrl": "http://url", "ocpVersion": "4.15"},
+        })]
+        captured = {}
+        def spy_query_index(search, **kwargs):
+            captured["query"] = search.to_dict()
+            return hits
+        monkeypatch.setattr(matcher, "query_index", spy_query_index)
+        matcher.get_uuid_by_metadata(
+            {"ocpVersion": "4.15"},
+            lookback_date=datetime(2024, 1, 1),
+            since_date=datetime(2024, 6, 15),
+        )
+        query_str = str(captured["query"])
+        assert "gt" in query_str
+        assert "lt" in query_str
+
+    def test_lookback_date_only(self, matcher, monkeypatch):
+        """lookback_date alone creates a lower-bound range filter."""
+        from datetime import datetime
+        hits = [FakeHit({
+            "_source": {"uuid": "u1", "buildUrl": "http://url", "ocpVersion": "4.15"},
+        })]
+        captured = {}
+        def spy_query_index(search, **kwargs):
+            captured["query"] = search.to_dict()
+            return hits
+        monkeypatch.setattr(matcher, "query_index", spy_query_index)
+        matcher.get_uuid_by_metadata(
+            {"ocpVersion": "4.15"},
+            lookback_date=datetime(2024, 1, 1),
+        )
+        # Check that range has 'gt' but not 'lt'
+        filters = captured["query"]["query"]["bool"]["filter"]
+        range_filter = [f for f in filters if "range" in f][0]
+        range_val = range_filter["range"]["timestamp"]
+        assert "gt" in range_val
+        assert "lt" not in range_val
+
+
+# ---------------------------------------------------------------------------
+# get_results — edge cases
+# ---------------------------------------------------------------------------
+
+class TestGetResults:
+    def test_single_uuid_removal(self, matcher, monkeypatch):
+        """When uuid is in uuids list (len>1), it gets removed."""
+        captured = {}
+        def spy_query_index(search, **kwargs):
+            captured["query"] = search.to_dict()
+            return []
+        monkeypatch.setattr(matcher, "query_index", spy_query_index)
+        uuids = ["u1", "u2", "u3"]
+        matcher.get_results("u2", uuids, {"metricName": "jobSummary"})
+        # u2 should have been removed from the list
+        assert "u2" not in uuids
+        # Query should use the modified list
+        terms = captured["query"]["query"]["bool"]["must"][0]["terms"]["uuid.keyword"]
+        assert "u2" not in terms
+
+    def test_single_uuid_not_removed_when_alone(self, matcher, monkeypatch):
+        """When uuids has only one entry, uuid is NOT removed even if it matches."""
+        captured = {}
+        def spy_query_index(search, **kwargs):
+            captured["query"] = search.to_dict()
+            return []
+        monkeypatch.setattr(matcher, "query_index", spy_query_index)
+        uuids = ["u1"]
+        matcher.get_results("u1", uuids, {"metricName": "jobSummary"})
+        assert "u1" in uuids
+
+    def test_empty_metrics(self, matcher, monkeypatch):
+        """Metrics with only name/metric_of_interest produce no metric match queries."""
+        captured = {}
+        def spy_query_index(search, **kwargs):
+            captured["query"] = search.to_dict()
+            return []
+        monkeypatch.setattr(matcher, "query_index", spy_query_index)
+        matcher.get_results("u1", ["u1", "u2"], {
+            "name": "test_metric",
+            "metric_of_interest": "value",
+        })
+        # The metric bool query should have no match clauses for name/metric_of_interest
+        query_str = str(captured["query"])
+        assert "test_metric" not in query_str
+        assert "'value'" not in query_str or "metric_of_interest" not in query_str
+
+    def test_not_queries_in_metrics(self, matcher, monkeypatch):
+        """'not' key in metrics generates must_not-style ~Q queries."""
+        captured = {}
+        def spy_query_index(search, **kwargs):
+            captured["query"] = search.to_dict()
+            return []
+        monkeypatch.setattr(matcher, "query_index", spy_query_index)
+        matcher.get_results("u1", ["u1", "u2"], {
+            "metricName": "jobSummary",
+            "not": {"jobConfig.name": "garbage-collection"},
+        })
+        # The not query generates a must_not inside the metric bool
+        query_str = str(captured["query"])
+        assert "garbage-collection" in query_str
+
+    def test_exists_fields(self, matcher, monkeypatch):
+        """exists_fields generates exists queries."""
+        captured = {}
+        def spy_query_index(search, **kwargs):
+            captured["query"] = search.to_dict()
+            return []
+        monkeypatch.setattr(matcher, "query_index", spy_query_index)
+        matcher.get_results("u1", ["u1", "u2"], {"metricName": "cpu"}, exists_fields=["field_a"])
+        query_str = str(captured["query"])
+        assert "field_a" in query_str
+        assert "exists" in query_str
+
+    def test_returns_source_data(self, matcher, monkeypatch):
+        """get_results returns _source dicts from hits."""
+        hits = [
+            FakeHit({"_source": {"uuid": "u1", "value": 42}}),
+            FakeHit({"_source": {"uuid": "u2", "value": 99}}),
+        ]
+        monkeypatch.setattr(matcher, "query_index", lambda *a, **k: hits)
+        result = matcher.get_results("u1", ["u1", "u2"], {"metricName": "cpu"})
+        assert len(result) == 2
+        assert result[0]["value"] == 42
+
+
+# ---------------------------------------------------------------------------
+# filter_runs — different iterations filtering
+# ---------------------------------------------------------------------------
+
+class TestFilterRuns:
+    def test_filters_different_iterations(self, matcher):
+        """UUIDs with different jobIterations are filtered out."""
+        pdata = [{"uuid": "pick", "jobConfig": {"jobIterations": 100}}]
+        data = [
+            {"uuid": "u1", "jobConfig": {"jobIterations": 100}},
+            {"uuid": "u2", "jobConfig": {"jobIterations": 200}},
+            {"uuid": "u3", "jobConfig": {"jobIterations": 100}},
+        ]
+        result = matcher.filter_runs(pdata, data)
+        assert "u1" in result
+        assert "u3" in result
+        assert "u2" not in result
+
+    def test_all_same_iterations(self, matcher):
+        """All UUIDs kept when iterations match."""
+        pdata = [{"uuid": "pick", "jobConfig": {"jobIterations": 50}}]
+        data = [
+            {"uuid": "u1", "jobConfig": {"jobIterations": 50}},
+            {"uuid": "u2", "jobConfig": {"jobIterations": 50}},
+        ]
+        result = matcher.filter_runs(pdata, data)
+        assert len(result) == 2
+
+    def test_none_matching(self, matcher):
+        """No UUIDs kept when none match."""
+        pdata = [{"uuid": "pick", "jobConfig": {"jobIterations": 100}}]
+        data = [
+            {"uuid": "u1", "jobConfig": {"jobIterations": 200}},
+        ]
+        result = matcher.filter_runs(pdata, data)
+        assert len(result) == 0
+
+
+# ---------------------------------------------------------------------------
+# match_kube_burner — custom timestamp field
+# ---------------------------------------------------------------------------
+
+class TestMatchKubeBurner:
+    def test_custom_timestamp_field(self, matcher, monkeypatch):
+        """Custom timestamp_field is used in the sort."""
+        captured = {}
+        def spy_query_index(search, **kwargs):
+            captured["query"] = search.to_dict()
+            return []
+        monkeypatch.setattr(matcher, "query_index", spy_query_index)
+        matcher.match_kube_burner(["u1"], timestamp_field="custom_ts")
+        sort_field = list(captured["query"]["sort"][0].keys())[0]
+        assert sort_field == "custom_ts"
+
+    def test_returns_source_dicts(self, matcher, monkeypatch):
+        """Returns _source dicts from all hits."""
+        hits = [
+            FakeHit({"_source": {"uuid": "u1", "metricName": "jobSummary", "value": 10}}),
+        ]
+        monkeypatch.setattr(matcher, "query_index", lambda *a, **k: hits)
+        result = matcher.match_kube_burner(["u1"])
+        assert len(result) == 1
+        assert result[0]["value"] == 10
+
+
+# ---------------------------------------------------------------------------
+# get_agg_metric_query — different agg types
+# ---------------------------------------------------------------------------
+
+class TestGetAggMetricQuery:
+    def _make_agg_response(self, matcher, agg_value, agg_type, value=42.0):
+        """Build a fake aggregation response."""
+        from opensearch_dsl.response import Response
+        if agg_type == "percentiles":
+            agg_data = {agg_value: {"values": {"95.0": value}}}
+        elif agg_type == "count":
+            agg_data = {agg_value: {"value": value}}
+        else:
+            agg_data = {agg_value: {"value": value}}
+        return Response(response={
+            "hits": {"hits": [], "total": {"value": 0, "relation": "eq"}},
+            "aggregations": {
+                "uuid": {
+                    "buckets": [
+                        {
+                            "key": "test-uuid",
+                            "doc_count": 5,
+                            "time": {"value": 1704067200000, "value_as_string": "2024-01-01T00:00:00Z"},
+                            **agg_data,
+                        }
+                    ]
+                }
+            },
+        }, search=Search())
+
+    def test_avg_agg_type(self, matcher, monkeypatch):
+        """Standard avg aggregation works."""
+        resp = self._make_agg_response(matcher, "cpu_pct", "avg", 85.5)
+        monkeypatch.setattr(matcher, "query_index", lambda *a, **k: resp)
+        # Mock execute on Search to return our response
+        monkeypatch.setattr(Search, "execute", lambda self: resp)
+        metrics = {
+            "name": "cpu",
+            "metric_of_interest": "cpuUsage",
+            "agg": {"agg_type": "avg", "value": "cpu_pct"},
+        }
+        result = matcher.get_agg_metric_query(["test-uuid"], metrics)
+        assert len(result) == 1
+        assert result[0]["cpu_pct_avg"] == 85.5
+
+    def test_sum_agg_type(self, matcher, monkeypatch):
+        """Sum aggregation type."""
+        resp = self._make_agg_response(matcher, "total", "sum", 1000.0)
+        monkeypatch.setattr(Search, "execute", lambda self: resp)
+        metrics = {
+            "name": "throughput",
+            "metric_of_interest": "bytes",
+            "agg": {"agg_type": "sum", "value": "total"},
+        }
+        result = matcher.get_agg_metric_query(["test-uuid"], metrics)
+        assert result[0]["total_sum"] == 1000.0
+
+    def test_max_agg_type(self, matcher, monkeypatch):
+        """Max aggregation type."""
+        resp = self._make_agg_response(matcher, "peak", "max", 99.9)
+        monkeypatch.setattr(Search, "execute", lambda self: resp)
+        metrics = {
+            "name": "latency",
+            "metric_of_interest": "latMs",
+            "agg": {"agg_type": "max", "value": "peak"},
+        }
+        result = matcher.get_agg_metric_query(["test-uuid"], metrics)
+        assert result[0]["peak_max"] == 99.9
+
+    def test_percentiles_agg_type(self, matcher, monkeypatch):
+        """Percentiles aggregation extracts target percentile."""
+        resp = self._make_agg_response(matcher, "lat", "percentiles", 12.5)
+        monkeypatch.setattr(Search, "execute", lambda self: resp)
+        metrics = {
+            "name": "latency",
+            "metric_of_interest": "latMs",
+            "agg": {"agg_type": "percentiles", "value": "lat", "percents": [50, 95, 99], "target_percentile": "95.0"},
+        }
+        result = matcher.get_agg_metric_query(["test-uuid"], metrics)
+        assert result[0]["lat_percentiles"] == 12.5
+
+    def test_count_agg_type(self, matcher, monkeypatch):
+        """Count aggregation uses value_count."""
+        resp = self._make_agg_response(matcher, "num", "count", 42)
+        monkeypatch.setattr(Search, "execute", lambda self: resp)
+        metrics = {
+            "name": "events",
+            "metric_of_interest": "eventId",
+            "agg": {"agg_type": "count", "value": "num"},
+        }
+        result = matcher.get_agg_metric_query(["test-uuid"], metrics)
+        assert result[0]["num_count"] == 42
+
+    def test_custom_timestamp_field(self, matcher, monkeypatch):
+        """Custom timestamp field used in sort and aggregation."""
+        resp = self._make_agg_response(matcher, "cpu", "avg", 50.0)
+        captured = {}
+        original_execute = Search.execute
+        def spy_execute(self):
+            captured["query"] = self.to_dict()
+            return resp
+        monkeypatch.setattr(Search, "execute", spy_execute)
+        metrics = {
+            "name": "cpu",
+            "metric_of_interest": "cpuUsage",
+            "agg": {"agg_type": "avg", "value": "cpu"},
+        }
+        matcher.get_agg_metric_query(["test-uuid"], metrics, timestamp_field="custom_ts")
+        sort_field = list(captured["query"]["sort"][0].keys())[0]
+        assert sort_field == "custom_ts"
+
+
+# ---------------------------------------------------------------------------
+# dotDictFind
+# ---------------------------------------------------------------------------
+
+class TestDotDictFind:
+    def test_single_level(self, matcher):
+        assert matcher.dotDictFind({"key": "val"}, "key") == "val"
+
+    def test_two_levels(self, matcher):
+        assert matcher.dotDictFind({"a": {"b": "deep"}}, "a.b") == "deep"
+
+    def test_three_levels(self, matcher):
+        assert matcher.dotDictFind({"a": {"b": {"c": 42}}}, "a.b.c") == 42
+
+    def test_returns_first_non_dict(self, matcher):
+        """Stops traversal at first non-dict value."""
+        data = {"a": {"b": "stop"}}
+        assert matcher.dotDictFind(data, "a.b") == "stop"
