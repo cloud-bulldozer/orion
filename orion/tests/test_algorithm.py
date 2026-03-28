@@ -6,10 +6,12 @@ edivisive.py, isolationforest.py, and cmr.py
 # pylint: disable = redefined-outer-name
 # pylint: disable = missing-function-docstring
 # pylint: disable = import-error
+# pylint: disable = missing-class-docstring
+# pylint: disable = protected-access
+# pylint: disable = no-member
 
 import json
 import logging
-from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
@@ -117,12 +119,12 @@ class TestAlgorithmFactory:
 # ---------------------------------------------------------------------------
 
 class TestAlgorithmBase:
-    def _make_algo(self, n=10, **opt_overrides):
+    def make_algo(self, n=10, **opt_overrides):
         df = _make_dataframe(n=n)
         return EDivisive(df, _make_test(), _make_options(**opt_overrides), _make_metrics_config())
 
     def test_output_json_returns_tuple(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         name, data, flag = algo.output_json()
         assert name == "test-bench"
         assert isinstance(data, str)
@@ -131,7 +133,7 @@ class TestAlgorithmBase:
         assert isinstance(flag, bool)
 
     def test_output_json_structure(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         _, data, _ = algo.output_json()
         records = json.loads(data)
         for record in records:
@@ -143,75 +145,75 @@ class TestAlgorithmBase:
             assert "percentage_change" in record["metrics"]["throughput"]
 
     def test_output_json_collapse(self):
-        algo = self._make_algo(collapse=True)
+        algo = self.make_algo(collapse=True)
         _, data_collapsed, _ = algo.output_json()
         collapsed = json.loads(data_collapsed)
         # Collapsed output should be <= full output
-        algo2 = self._make_algo(collapse=False)
+        algo2 = self.make_algo(collapse=False)
         _, data_full, _ = algo2.output_json()
         full = json.loads(data_full)
         assert len(collapsed) <= len(full)
 
     def test_output_text_returns_tuple(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         name, text, flag = algo.output_text()
         assert name == "test-bench"
         assert isinstance(text, str)
         assert isinstance(flag, bool)
 
     def test_output_junit_returns_element(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         name, element, flag = algo.output_junit()
         assert name == "test-bench"
         assert element.tag == "testsuite"
         assert isinstance(flag, bool)
 
     def test_output_dispatch_json(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         result = algo.output("json")
         assert result[0] == "test-bench"
 
     def test_output_dispatch_text(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         result = algo.output("text")
         assert result[0] == "test-bench"
 
     def test_output_dispatch_junit(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         result = algo.output("junit")
         assert result[0] == "test-bench"
 
     def test_output_dispatch_invalid_raises(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         with pytest.raises(ValueError):
             algo.output("csv")
 
     def test_analysis_cached(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         result1 = algo.get_analysis_results()
         result2 = algo.get_analysis_results()
         assert result1 is result2
 
     def test_setup_series(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         series = algo.setup_series()
         assert series.test_name == "test-bench"
         assert "throughput" in series.metrics
         assert len(series.time) == 10
 
     def test_get_github_client_no_repos(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         assert algo._get_github_client() is None
 
     def test_get_github_client_with_repos(self):
-        algo = self._make_algo(github_repos=["org/repo"])
+        algo = self.make_algo(github_repos=["org/repo"])
         client = algo._get_github_client()
         assert client is not None
         # Should be cached
         assert algo._get_github_client() is client
 
     def test_format_table_from_json(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         _, json_data, _ = algo.output_json()
         data = json.loads(json_data)
         table = algo.format_table_from_json(data)
@@ -219,7 +221,7 @@ class TestAlgorithmBase:
         assert "uuid" in table
 
     def test_format_table_empty_data(self):
-        algo = self._make_algo()
+        algo = self.make_algo()
         result = algo.format_table_from_json([])
         assert result == "No data available"
 
@@ -228,9 +230,9 @@ class TestAlgorithmBase:
 # group_change_points_by_time
 # ---------------------------------------------------------------------------
 
-class TestGroupChangePointsByTime:
+class TestGroupChangePointsByTime:  # pylint: disable=too-few-public-methods
     def test_groups_by_index(self):
-        algo = TestAlgorithmBase()._make_algo()
+        algo = TestAlgorithmBase().make_algo()
         series = algo.setup_series()
         cp1 = ChangePoint(
             index=3, qhat=0.0, metric="throughput", time=series.time[3],
@@ -270,7 +272,7 @@ class TestEDivisive:
         df = _make_dataframe(n=15)
         df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
         algo = EDivisive(df, _make_test(), _make_options(), _make_metrics_config())
-        series, cps = algo.get_analysis_results()
+        series, _cps = algo.get_analysis_results()
         assert series is not None
 
     def test_ack_removes_changepoints(self):
@@ -407,7 +409,7 @@ class TestIsolationForest:
             _make_options(anomaly_window=3, min_anomaly_percent=50),
             _make_metrics_config()
         )
-        series, cps = algo.get_analysis_results()
+        series, _cps = algo.get_analysis_results()
         assert series is not None
 
 
@@ -419,7 +421,7 @@ class TestCMR:
     def test_single_row_returns_empty_changepoints(self):
         df = _make_dataframe(n=1)
         algo = CMR(df, _make_test(), _make_options(), _make_metrics_config())
-        series, cps = algo.get_analysis_results()
+        _series, cps = algo.get_analysis_results()
         assert cps == {}
 
     def test_two_rows_produces_changepoint(self):
@@ -462,7 +464,7 @@ class TestCMR:
         df = _make_dataframe(n=3)
         df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
         algo = CMR(df, _make_test(), _make_options(), _make_metrics_config())
-        series, cps = algo.get_analysis_results()
+        series, _cps = algo.get_analysis_results()
         assert series is not None
 
     def test_output_json_with_cmr(self):

@@ -5,11 +5,10 @@ Unit tests for orion/config.py
 # pylint: disable = redefined-outer-name
 # pylint: disable = missing-function-docstring
 # pylint: disable = import-error
+# pylint: disable = missing-class-docstring
 
 import logging
-import os
-import tempfile
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 import yaml
@@ -80,7 +79,7 @@ class TestMergeConfigs:
         assert result == {}
 
     def test_empty_dicts(self):
-        assert merge_configs({}, {}) == {}
+        assert not merge_configs({}, {})
 
     def test_nested_values_not_deep_merged(self):
         config = {"meta": {"a": 1}}
@@ -133,7 +132,7 @@ class TestMergeLists:
         assert len(result) == 1
 
     def test_both_none(self):
-        assert merge_lists(None, None) == []
+        assert not merge_lists(None, None)
 
     def test_ordering_inherited_first_then_local(self):
         metrics = [{"name": "local"}]
@@ -479,7 +478,10 @@ tests:
             "tests": [{
                 "name": "t1",
                 "metadata": {},
-                "metrics": [{"name": "cpu", "metric_of_interest": "v", "agg": {"agg_type": "avg", "value": "cpu_pct"}}],
+                "metrics": [
+                    {"name": "cpu", "metric_of_interest": "v",
+                     "agg": {"agg_type": "avg", "value": "cpu_pct"}},
+                ],
             }]
         })
         path = tmp_yaml(content)

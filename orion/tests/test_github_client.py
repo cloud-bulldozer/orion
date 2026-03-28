@@ -5,6 +5,8 @@ Unit tests for orion/github_client.py
 # pylint: disable = redefined-outer-name
 # pylint: disable = missing-function-docstring
 # pylint: disable = import-error
+# pylint: disable = missing-class-docstring
+# pylint: disable = protected-access
 
 import logging
 from datetime import datetime, timezone
@@ -404,7 +406,10 @@ class TestProcessItems:
         start_dt = datetime(2024, 1, 1, tzinfo=timezone.utc)
         end_dt = datetime(2024, 1, 31, tzinfo=timezone.utc)
         payload = [
-            {"html_url": "u", "commit": {"author": {"name": "d", "email": "e", "date": "2024-01-15T00:00:00Z"}, "message": "m"}}
+            {"html_url": "u", "commit": {
+                "author": {"name": "d", "email": "e",
+                           "date": "2024-01-15T00:00:00Z"},
+                "message": "m"}}
         ]
         collected = []
         client.process_items(payload, "commits", start_dt, end_dt, collected)
@@ -453,7 +458,7 @@ class TestGetChangeContext:
         result = c.get_change_context(1704067200, 1704153600)
         assert result is None
 
-    def test_invalid_repo_format(self, client):
+    def test_invalid_repo_format(self):
         with patch.dict("os.environ", {}, clear=True):
             c = GitHubClient(["no-slash-repo"])
         result = c.get_change_context(1704067200, 1704153600)
