@@ -5,12 +5,12 @@ Unit tests for orion/run_test.py
 # pylint: disable = redefined-outer-name
 # pylint: disable = missing-function-docstring
 # pylint: disable = import-error
+# pylint: disable = missing-class-docstring
+# pylint: disable = import-outside-toplevel
 
-import json
 import logging
 from unittest.mock import MagicMock, patch
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -152,7 +152,7 @@ class TestClearEarlyChangepoints:
     def test_empty_list(self):
         data = []
         clear_early_changepoints(data, max_early_index=5)
-        assert data == []
+        assert not data
 
 
 # ---------------------------------------------------------------------------
@@ -166,7 +166,7 @@ class TestGetStartTimestamp:
         assert result == ""
 
     def test_lookback_only(self):
-        kwargs = {"lookback": "5d", "since": "", "since": None}
+        kwargs = {"lookback": "5d", "since": None}
         result = get_start_timestamp(kwargs, {}, is_pull=False)
         assert result != ""  # Should be a datetime
 

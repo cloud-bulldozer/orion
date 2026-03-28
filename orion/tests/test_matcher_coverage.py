@@ -9,6 +9,8 @@ actual logic, parse_agg_results edge cases, convert_to_df without columns.
 # pylint: disable = redefined-outer-name
 # pylint: disable = missing-function-docstring
 # pylint: disable = import-error, duplicate-code
+# pylint: disable = missing-class-docstring
+# pylint: disable = import-outside-toplevel
 
 import logging
 from unittest.mock import patch
@@ -358,8 +360,7 @@ class TestGetUuidByMetadataDateRanges:
             "_source": {"uuid": "u1", "buildUrl": "http://url", "ocpVersion": "4.15"},
         })]
         captured = {}
-        original_query_index = matcher.query_index
-        def spy_query_index(search, **kwargs):
+        def spy_query_index(search, **_kwargs):
             captured["query"] = search.to_dict()
             return hits
         monkeypatch.setattr(matcher, "query_index", spy_query_index)
@@ -377,7 +378,7 @@ class TestGetUuidByMetadataDateRanges:
             "_source": {"uuid": "u1", "buildUrl": "http://url", "ocpVersion": "4.15"},
         })]
         captured = {}
-        def spy_query_index(search, **kwargs):
+        def spy_query_index(search, **_kwargs):
             captured["query"] = search.to_dict()
             return hits
         monkeypatch.setattr(matcher, "query_index", spy_query_index)
@@ -397,7 +398,7 @@ class TestGetUuidByMetadataDateRanges:
             "_source": {"uuid": "u1", "buildUrl": "http://url", "ocpVersion": "4.15"},
         })]
         captured = {}
-        def spy_query_index(search, **kwargs):
+        def spy_query_index(search, **_kwargs):
             captured["query"] = search.to_dict()
             return hits
         monkeypatch.setattr(matcher, "query_index", spy_query_index)
@@ -421,7 +422,7 @@ class TestGetResults:
     def test_single_uuid_removal(self, matcher, monkeypatch):
         """When uuid is in uuids list (len>1), it gets removed."""
         captured = {}
-        def spy_query_index(search, **kwargs):
+        def spy_query_index(search, **_kwargs):
             captured["query"] = search.to_dict()
             return []
         monkeypatch.setattr(matcher, "query_index", spy_query_index)
@@ -436,7 +437,7 @@ class TestGetResults:
     def test_single_uuid_not_removed_when_alone(self, matcher, monkeypatch):
         """When uuids has only one entry, uuid is NOT removed even if it matches."""
         captured = {}
-        def spy_query_index(search, **kwargs):
+        def spy_query_index(search, **_kwargs):
             captured["query"] = search.to_dict()
             return []
         monkeypatch.setattr(matcher, "query_index", spy_query_index)
@@ -447,7 +448,7 @@ class TestGetResults:
     def test_empty_metrics(self, matcher, monkeypatch):
         """Metrics with only name/metric_of_interest produce no metric match queries."""
         captured = {}
-        def spy_query_index(search, **kwargs):
+        def spy_query_index(search, **_kwargs):
             captured["query"] = search.to_dict()
             return []
         monkeypatch.setattr(matcher, "query_index", spy_query_index)
@@ -463,7 +464,7 @@ class TestGetResults:
     def test_not_queries_in_metrics(self, matcher, monkeypatch):
         """'not' key in metrics generates must_not-style ~Q queries."""
         captured = {}
-        def spy_query_index(search, **kwargs):
+        def spy_query_index(search, **_kwargs):
             captured["query"] = search.to_dict()
             return []
         monkeypatch.setattr(matcher, "query_index", spy_query_index)
@@ -478,7 +479,7 @@ class TestGetResults:
     def test_exists_fields(self, matcher, monkeypatch):
         """exists_fields generates exists queries."""
         captured = {}
-        def spy_query_index(search, **kwargs):
+        def spy_query_index(search, **_kwargs):
             captured["query"] = search.to_dict()
             return []
         monkeypatch.setattr(matcher, "query_index", spy_query_index)
@@ -545,7 +546,7 @@ class TestMatchKubeBurner:
     def test_custom_timestamp_field(self, matcher, monkeypatch):
         """Custom timestamp_field is used in the sort."""
         captured = {}
-        def spy_query_index(search, **kwargs):
+        def spy_query_index(search, **_kwargs):
             captured["query"] = search.to_dict()
             return []
         monkeypatch.setattr(matcher, "query_index", spy_query_index)
@@ -569,9 +570,8 @@ class TestMatchKubeBurner:
 # ---------------------------------------------------------------------------
 
 class TestGetAggMetricQuery:
-    def _make_agg_response(self, matcher, agg_value, agg_type, value=42.0):
+    def _make_agg_response(self, agg_value, agg_type, value=42.0):
         """Build a fake aggregation response."""
-        from opensearch_dsl.response import Response
         if agg_type == "percentiles":
             agg_data = {agg_value: {"values": {"95.0": value}}}
         elif agg_type == "count":
@@ -596,7 +596,7 @@ class TestGetAggMetricQuery:
 
     def test_avg_agg_type(self, matcher, monkeypatch):
         """Standard avg aggregation works."""
-        resp = self._make_agg_response(matcher, "cpu_pct", "avg", 85.5)
+        resp = self._make_agg_response("cpu_pct", "avg", 85.5)
         monkeypatch.setattr(matcher, "query_index", lambda *a, **k: resp)
         # Mock execute on Search to return our response
         monkeypatch.setattr(Search, "execute", lambda self: resp)
@@ -611,7 +611,7 @@ class TestGetAggMetricQuery:
 
     def test_sum_agg_type(self, matcher, monkeypatch):
         """Sum aggregation type."""
-        resp = self._make_agg_response(matcher, "total", "sum", 1000.0)
+        resp = self._make_agg_response("total", "sum", 1000.0)
         monkeypatch.setattr(Search, "execute", lambda self: resp)
         metrics = {
             "name": "throughput",
@@ -623,7 +623,7 @@ class TestGetAggMetricQuery:
 
     def test_max_agg_type(self, matcher, monkeypatch):
         """Max aggregation type."""
-        resp = self._make_agg_response(matcher, "peak", "max", 99.9)
+        resp = self._make_agg_response("peak", "max", 99.9)
         monkeypatch.setattr(Search, "execute", lambda self: resp)
         metrics = {
             "name": "latency",
@@ -635,19 +635,21 @@ class TestGetAggMetricQuery:
 
     def test_percentiles_agg_type(self, matcher, monkeypatch):
         """Percentiles aggregation extracts target percentile."""
-        resp = self._make_agg_response(matcher, "lat", "percentiles", 12.5)
+        resp = self._make_agg_response("lat", "percentiles", 12.5)
         monkeypatch.setattr(Search, "execute", lambda self: resp)
         metrics = {
             "name": "latency",
             "metric_of_interest": "latMs",
-            "agg": {"agg_type": "percentiles", "value": "lat", "percents": [50, 95, 99], "target_percentile": "95.0"},
+            "agg": {"agg_type": "percentiles", "value": "lat",
+                    "percents": [50, 95, 99],
+                    "target_percentile": "95.0"},
         }
         result = matcher.get_agg_metric_query(["test-uuid"], metrics)
         assert result[0]["lat_percentiles"] == 12.5
 
     def test_count_agg_type(self, matcher, monkeypatch):
         """Count aggregation uses value_count."""
-        resp = self._make_agg_response(matcher, "num", "count", 42)
+        resp = self._make_agg_response("num", "count", 42)
         monkeypatch.setattr(Search, "execute", lambda self: resp)
         metrics = {
             "name": "events",
@@ -659,9 +661,8 @@ class TestGetAggMetricQuery:
 
     def test_custom_timestamp_field(self, matcher, monkeypatch):
         """Custom timestamp field used in sort and aggregation."""
-        resp = self._make_agg_response(matcher, "cpu", "avg", 50.0)
+        resp = self._make_agg_response("cpu", "avg", 50.0)
         captured = {}
-        original_execute = Search.execute
         def spy_execute(self):
             captured["query"] = self.to_dict()
             return resp

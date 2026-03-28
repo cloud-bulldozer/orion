@@ -5,6 +5,7 @@ Unit tests for orion/utils.py
 # pylint: disable = redefined-outer-name
 # pylint: disable = missing-function-docstring
 # pylint: disable = import-error
+# pylint: disable = missing-class-docstring
 
 import logging
 import xml.etree.ElementTree as ET

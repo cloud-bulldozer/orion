@@ -5,10 +5,11 @@ Unit tests for orion/visualization.py
 # pylint: disable = redefined-outer-name
 # pylint: disable = missing-function-docstring
 # pylint: disable = import-error
+# pylint: disable = missing-class-docstring
+# pylint: disable = no-member
 
 import logging
 from types import SimpleNamespace
-from unittest.mock import MagicMock
 
 import numpy as np
 import pandas as pd

@@ -1,4 +1,4 @@
-.PHONY: fix-lint help lint test
+.PHONY: fix-lint help pylint test
 
 help:
 	@echo "Available targets:"
@@ -20,3 +20,7 @@ fmt:
 
 test:
 	python -m pytest orion/tests/ -v
+
+pylint:
+	pylint -d R0915 -d R1702 -d R0913 -d R0914 -d C0103 -d R0912 -d R0911 -d R0917 -d E0102 \
+		$$(git ls-files '*/*.py' '*.py' | grep -v '/tests/')

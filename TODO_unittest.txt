@@ -1,0 +1,41 @@
+Unit Test TODO
+==============
+
+Status: 377 tests passing across 8 new test files + 3 pre-existing matcher test files.
+
+Covered modules:
+  - orion/utils.py              -> orion/tests/test_utils.py (62 tests)
+  - orion/config.py             -> orion/tests/test_config.py (47 tests)
+  - orion/algorithms/*          -> orion/tests/test_algorithm.py (41 tests)
+  - orion/github_client.py      -> orion/tests/test_github_client.py (60 tests)
+  - orion/run_test.py           -> orion/tests/test_run_test.py (29 tests)
+  - orion/matcher.py            -> orion/tests/test_matcher_coverage.py (44 tests)
+  - orion/visualization.py      -> orion/tests/test_visualization.py (28 tests)
+  - orion/reporting/report.py   -> orion/tests/test_report.py (22 tests)
+  - orion/matcher.py (existing) -> test_matcher.py, test_matcher_aggregations.py,
+                                   test_matcher_telco.py (44 tests)
+
+Remaining work:
+
+1. Lint cleanup for test files
+   - Test files are currently excluded from `make lint` (grep -v '/tests/')
+   - When ready, add a `lint-tests` target or include tests in lint
+   - Main issues to fix: unused imports (W0611), unused variables (W0612),
+     import-outside-toplevel (C0415), duplicate-code (R0801 between
+     test_algorithm.py and test_visualization.py _make_dataframe helpers)
+   - Partial fixes already applied: C0115 (missing-class-docstring) disabled,
+     W0212 (protected-access for existing code) disabled,
+     _make_algo renamed to make_algo, some unused vars fixed
+
+2. Pre-existing invalid tests
+   - test_matcher.py::test_get_metadata_by_uuid_found monkeypatches
+     query_index then calls it directly — never actually tests
+     get_metadata_by_uuid()
+   - test_matcher.py::test_query_index same pattern — monkeypatches
+     the method it claims to test
+
+3. Behavior guards documented
+   - test_utils.py: float epoch timestamps treated as nanoseconds by pandas
+   - test_config.py: Jinja2+YAML coerces "4.14" string to float 4.14
+   - test_visualization.py: direction=1 means increase-is-regression in
+     _classify_changepoint (opposite of EDivisive convention)

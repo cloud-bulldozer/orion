@@ -5,6 +5,8 @@ Unit tests for orion/reporting/report.py
 # pylint: disable = redefined-outer-name
 # pylint: disable = missing-function-docstring
 # pylint: disable = import-error
+# pylint: disable = missing-class-docstring
+# pylint: disable = protected-access
 
 import json
 import logging
