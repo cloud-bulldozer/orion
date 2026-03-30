@@ -208,6 +208,21 @@ ack:
     reason: https://issues.redhat.com/browse/PERFSCALE-4515
     version: '4.22'
     test: udn-density-pods
+  - uuid: f9b863c0-9780-4bf8-86d4-0ea66deafbb5
+    metric: ovnkCPU-overall_avg
+    reason: added daemonset to udn-density job
+    version: '4.22'
+    test: udn-density-pods
+  - uuid: 923bb455-04ec-4c1a-a6bc-1bf55f8dd728
+    metric: ovnCPU-northd_avg
+    reason: added daemonset to udn-density job
+    version: '4.22'
+    test: udn-density-pods
+  - uuid: b42cb882-87d1-4b50-867c-9f3ab60acbee
+    metric: ovnCPU-ovnk-controller_avg
+    reason: added daemonset to udn-density job
+    version: '4.22'
+    test: udn-density-pods
 
   # === Version 4.21 ===
 
@@ -404,6 +419,26 @@ ack:
   - uuid: f682a732-4f62-4f9b-bc8a-d8d5064fba69
     metric: ovnMem-ovncontroller_avg
     reason: https://issues.redhat.com/browse/PERFSCALE-4515
+    version: '4.21'
+    test: udn-density-pods
+  - uuid: e8a2b5f7-211b-4465-8371-5581067d8bc2
+    metric: ovsCPU-irate-all_avg
+    reason: added daemonset to udn-density job
+    version: '4.21'
+    test: udn-density-pods
+  - uuid: aad88a60-67b4-4844-871c-0aa1bcb418cf
+    metric: ovnCPU-northd_avg
+    reason: added daemonset to udn-density job
+    version: '4.21'
+    test: udn-density-pods
+  - uuid: e8a2b5f7-211b-4465-8371-5581067d8bc2
+    metric: ovnCPU-ovnk-controller_avg
+    reason: added daemonset to udn-density job
+    version: '4.21'
+    test: udn-density-pods
+  - uuid: 8cf0a474-78da-41b7-b672-455c11cb7227
+    metric: ovnMem-nbdb_avg
+    reason: added daemonset to udn-density job
     version: '4.21'
     test: udn-density-pods
 
