@@ -23,7 +23,7 @@ jobs:
           python-version: '3.x'
       
       - name: Install yamllint
-        run: pip install yamllint
+        run: pip install -r requirements-test.txt
       
       - name: Lint YAML files in examples directory
-        run: yamllint examples/
+        run: make lint

@@ -21,30 +21,30 @@ tests:
       controlPlaneArch: amd64
 
     metrics:
-    - name: cpu-kubelet
-      metricName.keyword: cpu-kubelet
-      metric_of_interest: value
-      agg:
-        value: cpu-kubelet
-        agg_type: avg
-    - name: max-memory-kubelet
-      metricName.keyword: max-memory-kubelet
-      metric_of_interest: value
-      agg:
-        value: max-memory-kubelet
-        agg_type: avg
-    - name: cpu-crio
-      metricName.keyword: cpu-crio
-      metric_of_interest: value
-      agg:
-        value: cpu-crio
-        agg_type: avg
-    - name: max-memory-crio
-      metricName.keyword: max-memory-crio
-      metric_of_interest: value
-      agg:
-        value: max-memory-crio
-        agg_type: avg
+      - name: cpu-kubelet
+        metricName.keyword: cpu-kubelet
+        metric_of_interest: value
+        agg:
+          value: cpu-kubelet
+          agg_type: avg
+      - name: max-memory-kubelet
+        metricName.keyword: max-memory-kubelet
+        metric_of_interest: value
+        agg:
+          value: max-memory-kubelet
+          agg_type: avg
+      - name: cpu-crio
+        metricName.keyword: cpu-crio
+        metric_of_interest: value
+        agg:
+          value: cpu-crio
+          agg_type: avg
+      - name: max-memory-crio
+        metricName.keyword: max-memory-crio
+        metric_of_interest: value
+        agg:
+          value: max-memory-crio
+          agg_type: avg
 
   - name: node-density-24nodes
     metadata:
@@ -68,13 +68,13 @@ tests:
       controlPlaneArch: amd64
 
     metrics:
-    - name: P99
-      metricName.keyword: podLatencyQuantilesMeasurement
-      quantileName.keyword: Ready
-      metric_of_interest: P99
-      agg:
-        value: P99
-        agg_type: avg
+      - name: P99
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName.keyword: Ready
+        metric_of_interest: P99
+        agg:
+          value: P99
+          agg_type: avg
 
   - name: node-density-120nodes
     metadata:
@@ -98,13 +98,13 @@ tests:
       controlPlaneArch: amd64
 
     metrics:
-    - name: P99
-      metricName.keyword: podLatencyQuantilesMeasurement
-      quantileName.keyword: Ready
-      metric_of_interest: P99
-      agg:
-        value: P99
-        agg_type: avg
+      - name: P99
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName.keyword: Ready
+        metric_of_interest: P99
+        agg:
+          value: P99
+          agg_type: avg
 
   - name: node-density-cni-24nodes
     metadata:
@@ -128,13 +128,13 @@ tests:
       controlPlaneArch: amd64
 
     metrics:
-    - name: P99
-      metricName.keyword: podLatencyQuantilesMeasurement
-      quantileName.keyword: Ready
-      metric_of_interest: P99
-      agg:
-        value: P99
-        agg_type: avg
+      - name: P99
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName.keyword: Ready
+        metric_of_interest: P99
+        agg:
+          value: P99
+          agg_type: avg
 
   - name: node-density-cni-120nodes
     metadata:
@@ -158,10 +158,10 @@ tests:
       controlPlaneArch: amd64
 
     metrics:
-    - name: P99
-      metricName.keyword: podLatencyQuantilesMeasurement
-      quantileName.keyword: Ready
-      metric_of_interest: P99
-      agg:
-        value: P99
-        agg_type: avg
+      - name: P99
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName.keyword: Ready
+        metric_of_interest: P99
+        agg:
+          value: P99
+          agg_type: avg
