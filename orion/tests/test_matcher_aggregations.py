@@ -201,8 +201,20 @@ def test_get_agg_metric_query_variants(request,
                 }
             },
             [
-                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "response_time_ms_percentiles_50.0": 100.5, "response_time_ms_percentiles_95.0": 250.3, "response_time_ms_percentiles_99.0": 350.7 },
-                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "response_time_ms_percentiles_50.0": 105.2, "response_time_ms_percentiles_95.0": 260.8, "response_time_ms_percentiles_99.0": 360.1 },
+                {
+                    "uuid": "uuid1",
+                    "timestamp": "2024-02-09T12:00:00",
+                    "response_time_ms_percentiles_50.0": 100.5,
+                    "response_time_ms_percentiles_95.0": 250.3,
+                    "response_time_ms_percentiles_99.0": 350.7,
+                },
+                {
+                    "uuid": "uuid2",
+                    "timestamp": "2024-02-09T13:00:00",
+                    "response_time_ms_percentiles_50.0": 105.2,
+                    "response_time_ms_percentiles_95.0": 260.8,
+                    "response_time_ms_percentiles_99.0": 360.1,
+                },
             ],
         ),
         # Test percentile aggregation with custom target (99th percentile)
@@ -239,8 +251,16 @@ def test_get_agg_metric_query_variants(request,
                 }
             },
             [
-                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "response_time_ms_percentiles_99.0": 350.7},
-                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "response_time_ms_percentiles_99.0": 360.1},
+                {
+                    "uuid": "uuid1",
+                    "timestamp": "2024-02-09T12:00:00",
+                    "response_time_ms_percentiles_99.0": 350.7,
+                },
+                {
+                    "uuid": "uuid2",
+                    "timestamp": "2024-02-09T13:00:00",
+                    "response_time_ms_percentiles_99.0": 360.1,
+                },
             ],
         ),
         # Test percentile aggregation with uuid_matcher_instance
