@@ -695,3 +695,59 @@ class TestDotDictFind:
         """Stops traversal at first non-dict value."""
         data = {"a": {"b": "stop"}}
         assert matcher.dotDictFind(data, "a.b") == "stop"
+
+
+# ---------------------------------------------------------------------------
+# query_index — return_all=False returns response directly
+# ---------------------------------------------------------------------------
+
+class TestQueryIndex:
+    def test_return_all_false_returns_response_object(self, matcher):
+        """When return_all=False, query_index should return the raw response
+        from the first execute() call, not a list of hits."""
+        fake_response = type("R", (), {
+            "hits": type("H", (), {"hits": [{"_source": {"uuid": "u1"}}]})()
+        })()
+
+        class FakeSearch:
+            def to_dict(self):
+                return {}
+            def extra(self, **_kw):
+                return self
+            def execute(self):
+                return fake_response
+
+        result = matcher.query_index(FakeSearch(), return_all=False)
+        # Must be the exact response object, not a list
+        assert result is fake_response
+        assert not isinstance(result, list)
+
+    def test_return_all_true_returns_list(self, matcher):
+        """When return_all=True, query_index should return a list of hits."""
+        class FakeMeta:
+            sort = ["sort_val"]
+        class FakeHitObj:
+            meta = FakeMeta()
+            def to_dict(self):
+                return {"_source": {"uuid": "u1"}}
+        class FakeHits:
+            hits = [FakeHitObj()]
+            def __getitem__(self, idx):
+                return self.hits[idx]
+
+        call_count = {"n": 0}
+        class FakeSearch:
+            def to_dict(self):
+                return {}
+            def extra(self, **_kw):
+                return self
+            def execute(self_inner):  # noqa: N805
+                call_count["n"] += 1
+                if call_count["n"] == 1:
+                    return type("R", (), {"hits": FakeHits()})()
+                # Second call returns empty hits to break the loop
+                return type("R", (), {"hits": type("H", (), {"hits": []})()})()
+
+        result = matcher.query_index(FakeSearch(), return_all=True)
+        assert isinstance(result, list)
+        assert len(result) == 1
