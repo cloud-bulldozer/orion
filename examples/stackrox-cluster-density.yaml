@@ -1,7 +1,7 @@
 tests :
   - name : 24-node-scale-cdv2
-    index: {{ es_metadata_index }}
-    benchmarkIndex: {{ es_benchmark_index }}
+    index: "{{ es_metadata_index }}"
+    benchmarkIndex: "{{ es_benchmark_index }}"
     metadata:
       platform: AWS
       clusterType: self-managed
@@ -10,9 +10,9 @@ tests :
       workerNodesType: m6a.xlarge
       workerNodesCount: 24
       benchmark.keyword: cluster-density-v2
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
-      jobType: {{ jobtype | default('periodic') }}
+      jobType: "{{ jobtype | default('periodic') }}"
       not:
         stream: okd
 
