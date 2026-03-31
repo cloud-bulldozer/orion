@@ -292,11 +292,12 @@ def main(**kwargs):
                     output_base_path, viz_data.test_name, run_type
                 )
                 generate_test_html(viz_data, output_file)
-            for viz_data in results_pull.viz_data:
-                output_file = build_viz_output_file(
-                    output_base_path, viz_data.test_name, "pull"
-                )
-                generate_test_html(viz_data, output_file)
+            if is_pull:
+                for viz_data in results_pull.viz_data:
+                    output_file = build_viz_output_file(
+                        output_base_path, viz_data.test_name, "pull"
+                    )
+                    generate_test_html(viz_data, output_file)
         except Exception as e:  # pylint: disable=broad-except
             logger.warning("Visualization generation failed: %s", e)
 
