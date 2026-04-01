@@ -28,6 +28,15 @@ warnings.filterwarnings(
     "ignore", category=UserWarning, message=".*Connecting to.*verify_certs=False.*"
 )
 
+
+def build_viz_output_file(
+    output_base_path: str, test_name: str, run_type: str = ""
+) -> str:
+    """Build the output path for a visualization HTML file."""
+    suffix = f"_{run_type}" if run_type else ""
+    return f"{output_base_path}_{test_name}{suffix}_viz.html"
+
+
 class Dictionary(click.ParamType):
     """Class to define a custom click type for dictionaries
 
@@ -277,9 +286,18 @@ def main(**kwargs):
     if kwargs.get("viz"):
         try:
             output_base_path = str(Path(kwargs['save_output_path']).with_suffix(''))
-            all_viz_data = results.viz_data
-            for viz_data in all_viz_data:
-                generate_test_html(viz_data, output_base_path)
+            for viz_data in results.viz_data:
+                run_type = "periodic" if is_pull else ""
+                output_file = build_viz_output_file(
+                    output_base_path, viz_data.test_name, run_type
+                )
+                generate_test_html(viz_data, output_file)
+            if is_pull:
+                for viz_data in results_pull.viz_data:
+                    output_file = build_viz_output_file(
+                        output_base_path, viz_data.test_name, "pull"
+                    )
+                    generate_test_html(viz_data, output_file)
         except Exception as e:  # pylint: disable=broad-except
             logger.warning("Visualization generation failed: %s", e)
 
