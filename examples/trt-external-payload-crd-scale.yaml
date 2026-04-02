@@ -21,6 +21,7 @@ tests:
       - name: apiserverCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-kube-apiserver
+        labels.container.keyword: kube-apiserver
         metric_of_interest: value
         agg:
           value: cpu

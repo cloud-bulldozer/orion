@@ -41,6 +41,7 @@ tests:
       - name: apiserverCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-kube-apiserver
+        labels.container.keyword: kube-apiserver
         metric_of_interest: value
         agg:
           value: cpu
@@ -53,6 +54,20 @@ tests:
       - name: ovnCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovn-controller
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnkControllerCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovnkube-controller
         metric_of_interest: value
         agg:
           value: cpu

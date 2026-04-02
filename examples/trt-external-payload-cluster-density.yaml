@@ -32,6 +32,7 @@ tests:
       - name: apiserverCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-kube-apiserver
+        labels.container.keyword: kube-apiserver
         metric_of_interest: value
         agg:
           value: cpu
@@ -44,6 +45,7 @@ tests:
       - name: multusCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-multus
+        labels.container.keyword: kube-multus
         metric_of_interest: value
         agg:
           value: cpu
@@ -53,9 +55,23 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: monitoringCPU
+      - name: multusCNIPluginCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-multus
+        labels.container.keyword: kube-multus-additional-cni-plugins
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: multus]"
+        direction: 1
+        threshold: 10
+
+      - name: monitoringPromCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-monitoring
+        labels.container.keyword: prometheus
         metric_of_interest: value
         agg:
           value: cpu
@@ -68,6 +84,20 @@ tests:
       - name: ovnCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovn-controller
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnkControllerCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovnkube-controller
         metric_of_interest: value
         agg:
           value: cpu
