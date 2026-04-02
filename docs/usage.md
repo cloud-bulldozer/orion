@@ -136,27 +136,16 @@ Generate interactive HTML visualizations alongside the standard Orion output:
 # Generate text output plus an interactive HTML visualization
 orion --config performance-config.yaml --hunter-analyze --viz
 
-# configure the path and name of the saved output and generated HTML
+# Custom output path (HTML filename derives from this)
 orion \
   --config performance-config.yaml \
   --hunter-analyze \
   --viz \
   --save-output-path ./outputs/results.txt
-
-# Generate visualizations for both periodic and PR runs
-orion \
-  --config performance-config.yaml \
-  --hunter-analyze \
-  --pr-analysis \
-  --viz \
-  --save-output-path ./outputs/pr-analysis.txt \
-  --input-vars='{"jobtype": "pull", "pull_number": "2790", "organization": "openshift", "repository": "test"}'
 ```
 
-- `--viz` keeps the output style and adds HTML files for each analyzed run
-- HTML file name uses the argument from `--save-output-path` with the Orion test name
-- Each visualization includes one subplot per metric, changepoint markers, percentage annotations, ACK markers, and hover details for timestamp, version, UUID, and build URL
-- Clicking a point opens its `buildUrl` in a new browser tab
+- `--viz` adds interactive HTML files alongside the standard output
+- When used with `--pr-analysis`, separate HTML files are generated for periodic and pull runs
 - The generated HTML loads Plotly from a CDN when opened in a browser
 
 ### Display Metadata Fields
