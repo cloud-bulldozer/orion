@@ -43,6 +43,7 @@ tests:
       - name: apiserverCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-kube-apiserver
+        labels.container.keyword: kube-apiserver
         metric_of_interest: value
         agg:
           value: cpu
@@ -55,6 +56,7 @@ tests:
       - name: multusCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-multus
+        labels.container.keyword: kube-multus
         metric_of_interest: value
         agg:
           value: cpu
@@ -64,9 +66,10 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: monitoringCPU
+      - name: monitoringPromCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-monitoring
+        labels.container.keyword: prometheus
         metric_of_interest: value
         agg:
           value: cpu
@@ -79,6 +82,7 @@ tests:
       - name: etcdCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-etcd
+        labels.container.keyword: etcd
         metric_of_interest: value
         agg:
           value: cpu
