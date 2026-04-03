@@ -437,6 +437,7 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
                     "test_name": test["name"],
                     "prev_ver": prev_ver,
                     "bad_ver": bad_ver,
+                    "build_url": result.get("buildUrl", ""),
                     "metrics_with_change": metrics_with_change,
                     "prs": [],
                     "github_context": None
