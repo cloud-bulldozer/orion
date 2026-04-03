@@ -34,6 +34,7 @@ tests:
       - name: etcdCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-etcd
+        labels.container.keyword: etcd
         metric_of_interest: value
         agg:
           value: cpu

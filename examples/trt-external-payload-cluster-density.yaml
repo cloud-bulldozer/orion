@@ -55,19 +55,6 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: multusCNIPluginCPU
-        metricName.keyword: containerCPU
-        labels.namespace.keyword: openshift-multus
-        labels.container.keyword: kube-multus-additional-cni-plugins
-        metric_of_interest: value
-        agg:
-          value: cpu
-          agg_type: avg
-        labels:
-          - "[Jira: multus]"
-        direction: 1
-        threshold: 10
-
       - name: monitoringPromCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-monitoring
@@ -82,6 +69,18 @@ tests:
         threshold: 10
 
       - name: ovnCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnControllerCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovn-controller
@@ -107,9 +106,49 @@ tests:
         direction: 1
         threshold: 10
 
+      - name: ovnCPU-northd
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: northd
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-nbdb
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: nbdb
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-sbdb
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: sbdb
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
       - name: etcdCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-etcd
+        labels.container.keyword: etcd
         metric_of_interest: value
         agg:
           value: cpu

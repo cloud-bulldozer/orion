@@ -55,16 +55,6 @@ tests:
           agg_type: avg
         direction: 1
         threshold: 10
-      - name: multusCNIPluginCPU
-        metricName.keyword: containerCPU
-        labels.namespace.keyword: openshift-multus
-        labels.container.keyword: kube-multus-additional-cni-plugins
-        metric_of_interest: value
-        agg:
-          value: cpu
-          agg_type: avg
-        direction: 1
-        threshold: 10
       - name: openshift-machine-config-operator-ns-CPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-machine-config-operator

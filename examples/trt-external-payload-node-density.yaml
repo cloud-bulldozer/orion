@@ -54,6 +54,18 @@ tests:
       - name: ovnCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnControllerCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovn-controller
         metric_of_interest: value
         agg:
@@ -77,9 +89,49 @@ tests:
         direction: 1
         threshold: 10
 
+      - name: ovnCPU-northd
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: northd
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-nbdb
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: nbdb
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-sbdb
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: sbdb
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
       - name: etcdCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-etcd
+        labels.container.keyword: etcd
         metric_of_interest: value
         agg:
           value: cpu

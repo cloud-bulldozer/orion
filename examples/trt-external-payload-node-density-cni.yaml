@@ -66,19 +66,6 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: multusCNIPluginCPU
-        metricName.keyword: containerCPU
-        labels.namespace.keyword: openshift-multus
-        labels.container.keyword: kube-multus-additional-cni-plugins
-        metric_of_interest: value
-        agg:
-          value: cpu
-          agg_type: avg
-        labels:
-          - "[Jira: multus]"
-        direction: 1
-        threshold: 10
-
       - name: monitoringPromCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-monitoring
@@ -95,6 +82,7 @@ tests:
       - name: etcdCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-etcd
+        labels.container.keyword: etcd
         metric_of_interest: value
         agg:
           value: cpu
