@@ -6,6 +6,7 @@ help:
 	@echo "  fmt       - Automatically fix common YAML linting issues"
 	@echo "  help      - Show this help message"
 	@echo "  test      - Run unit tests"
+	@echo "  pylint    - Run pylint on production (non-test) python code"
 
 .DEFAULT_GOAL := help
 lint:
