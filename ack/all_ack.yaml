@@ -248,6 +248,11 @@ ack:
     version: '4.22'
     test: node-density-cni
   # udn-density-pods
+  - uuid: 62b5fe32-0b9f-4000-9cbe-ce8ee74cc7cd
+    metric: ovnCPU-nbdb_avg
+    reason: cpu has returned, random spike
+    version: '4.22'
+    test: udn-density-pods
   - uuid: 5b665198-fd65-4832-8e92-1e03c405eb17 # l2-payload
     metric: ovnMem-nbdb_avg
     reason: https://issues.redhat.com/browse/OCPBUGS-77720
