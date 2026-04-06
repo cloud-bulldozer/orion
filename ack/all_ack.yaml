@@ -293,6 +293,31 @@ ack:
     reason: added daemonset to udn-density job
     version: '4.22'
     test: udn-density-pods
+  - uuid: 282ae6af-6613-4771-a77f-d6f4abdc729b
+    metric: ovnkCPU-overall_avg
+    reason: Metric is back to normal trend
+    version: '4.22'
+    test: udn-density-pods
+  - uuid: 282ae6af-6613-4771-a77f-d6f4abdc729b
+    metric: ovnCPU-ovncontroller_avg
+    reason: Metric is back to normal trend
+    version: '4.22'
+    test: udn-density-pods
+  - uuid: 282ae6af-6613-4771-a77f-d6f4abdc729b
+    metric: ovnCPU-nbdb_avg
+    reason: Metric is back to normal trend
+    version: '4.22'
+    test: udn-density-pods
+  - uuid: 282ae6af-6613-4771-a77f-d6f4abdc729b
+    metric: ovnCPU-sbdb_avg
+    reason: Metric is back to normal trend
+    version: '4.22'
+    test: udn-density-pods
+  - uuid: 282ae6af-6613-4771-a77f-d6f4abdc729b
+    metric: ovnCPU-ovnk-controller_avg
+    reason: Metric is back to normal trend
+    version: '4.22'
+    test: udn-density-pods
 
   # === Version 4.21 ===
 
