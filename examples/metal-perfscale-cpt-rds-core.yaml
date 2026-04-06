@@ -425,7 +425,7 @@ tests:
         threshold: 10
       - name: ovnCPU-northd
         metricName.keyword: cpu-ovnkube-node
-        labels.container.keyword: northd 
+        labels.container.keyword: northd
         metric_of_interest: value
         agg:
           value: cpu
@@ -509,4 +509,3 @@ tests:
           - "[Jira: avg-cpu-multus]"
         direction: 1
         threshold: 10
-  
