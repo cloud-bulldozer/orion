@@ -14,7 +14,7 @@ from plotly.subplots import make_subplots
 from orion.logger import SingletonLogger
 
 
-class VizData:  # pylint: disable=too-few-public-methods
+class VizData:  # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """Container for all data needed to visualize one test's results."""
 
     def __init__(
@@ -386,12 +386,12 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
     return fig
 
 
-def generate_test_html(viz_data: VizData, output_base_path: str) -> str:
+def generate_test_html(viz_data: VizData, output_file: str) -> str:
     """Generate a self-contained HTML file for one test.
 
     Args:
         viz_data: VizData container with all needed data.
-        output_base_path: Base path for output files (without extension).
+        output_file: Full output path for the generated HTML file.
 
     Returns:
         str: Path to the generated HTML file.
@@ -399,7 +399,6 @@ def generate_test_html(viz_data: VizData, output_base_path: str) -> str:
     logger = SingletonLogger.get_logger("Orion")
 
     fig = _build_test_figure(viz_data)
-    output_file = f"{output_base_path}_{viz_data.test_name}_viz.html"
     fig.write_html(
         output_file, include_plotlyjs="cdn", full_html=True,
         default_width="100%",

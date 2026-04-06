@@ -1,7 +1,7 @@
 tests:
   - name: okd-crd-scale-6nodes
     metadata:
-      ocpVersion: {{ version }}
+      ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: self-managed
       masterNodesType: m6a.xlarge
@@ -10,33 +10,33 @@ tests:
       workerNodesCount: 6
       benchmark.keyword: crd-scale
       networkType: OVNKubernetes
-      jobType: {{ jobtype | default('periodic') }}
-      pullNumber: {{ pull_number | default(0) }}
-      organization: {{ organization | default('') }}
-      repository: {{ repository | default('') }}
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
       stream: okd
 
     metrics:
-    - name: apiserverCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-kube-apiserver
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: kube-apiserver]"
-      direction: 1
-      threshold: 10
+      - name: apiserverCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-kube-apiserver
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: kube-apiserver]"
+        direction: 1
+        threshold: 10
 
-    - name: etcdCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-etcd
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: etcd]"
-      direction: 1
-      threshold: 10
+      - name: etcdCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-etcd
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: etcd]"
+        direction: 1
+        threshold: 10

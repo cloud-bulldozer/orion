@@ -1,19 +1,20 @@
 tests:
-  - name: small-scale-cluster-density-v2
+  - name: aws-small-scale-node-density
     metadata:
       platform: AWS
       masterNodesType: m6a.xlarge
       masterNodesCount: 3
       workerNodesType: m6a.xlarge
       workerNodesCount: 24
-      benchmark.keyword: cluster-density-v2
+      benchmark.keyword: node-density
       ocpVersion: "{{ version }}"
+      networkType: OVNKubernetes
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
       not:
         stream: okd
-        # networkType: OVNKubernetes
-        # encrypted: true
-        # fips: false
-        # ipsec: false
 
     metrics:
       - name: podReadyLatency
@@ -23,7 +24,19 @@ tests:
         not:
           jobConfig.name: "garbage-collection"
         labels:
+          - "[Jira: PerfScale]"
+        direction: 1
+        threshold: 10
+
+      - name: containersStartedLatency
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName: ContainersStarted
+        labels:
           - "[Jira: PodLatency]"
+        metric_of_interest: P99
+        direction: 1
+        threshold: 25
+
       - name: apiserverCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-kube-apiserver
@@ -33,6 +46,8 @@ tests:
           agg_type: avg
         labels:
           - "[Jira: kube-apiserver]"
+        direction: 1
+        threshold: 10
 
       - name: ovnCPU
         metricName.keyword: containerCPU
@@ -42,7 +57,9 @@ tests:
           value: cpu
           agg_type: avg
         labels:
-          - "[Jira: ovnKubernetes]"
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
 
       - name: etcdCPU
         metricName.keyword: containerCPU
@@ -53,13 +70,16 @@ tests:
           agg_type: avg
         labels:
           - "[Jira: etcd]"
+        direction: 1
+        threshold: 10
 
-      - name: etcdDisk
-        metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
+      - name: kubelet
+        metricName.keyword: kubeletCPU
         metric_of_interest: value
-        agg:
-          value: duration
-          agg_type: avg
         labels:
-          - "[Jira: etcd]"
-
+          - "[Jira: Node]"
+        agg:
+          value: cpu
+          agg_type: avg
+        direction: 1
+        threshold: 10

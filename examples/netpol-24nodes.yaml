@@ -1,0 +1,309 @@
+# Orion regression-detection config — network-policy workload, AWS, 24 workers
+
+tests:
+  - name: netpol-24nodes
+    metadata:
+      platform: AWS
+      clusterType: self-managed
+      masterNodesType.keyword: m6a.xlarge
+      masterNodesCount: 3
+      workerNodesType.keyword: m6a.xlarge
+      workerNodesCount: 24
+      benchmark.keyword: network-policy
+      ocpVersion: "{{ version }}"
+      networkType: OVNKubernetes
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
+
+    metrics:
+
+      # ── NetworkPolicy enforcement latency (primary signal) ────────────────────
+      - name: netpolReadyLatency
+        metricName.keyword: netpolLatencyQuantilesMeasurement
+        quantileName: Ready
+        metric_of_interest: P99
+        not:
+          jobConfig.name: "garbage-collection"
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: netpolMinReadyLatency
+        metricName.keyword: netpolLatencyQuantilesMeasurement
+        quantileName: minReady
+        metric_of_interest: P99
+        not:
+          jobConfig.name: "garbage-collection"
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      # ── OVN control-plane CPU — master nodes ──────────────────────────────────
+      - name: ovnkCPU-masters
+        metricName.keyword: containerCPU-Masters
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-northd
+        metricName.keyword: containerCPU-Masters
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: northd
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-nbdb
+        metricName.keyword: containerCPU-Masters
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: nbdb
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-sbdb
+        metricName.keyword: containerCPU-Masters
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: sbdb
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-ovncontroller
+        metricName.keyword: containerCPU-Masters
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovn-controller
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-ovnkcontroller
+        metricName.keyword: containerCPU-Masters
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovnkube-controller
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      # ── OVN control-plane Memory — master nodes ───────────────────────────────
+      - name: ovnkMem-masters
+        metricName.keyword: containerMemory-Masters
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-northd
+        metricName.keyword: containerMemory-Masters
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: northd
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-nbdb
+        metricName.keyword: containerMemory-Masters
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: nbdb
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-sbdb
+        metricName.keyword: containerMemory-Masters
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: sbdb
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-ovncontroller
+        metricName.keyword: containerMemory-Masters
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovn-controller
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-ovnkcontroller
+        metricName.keyword: containerMemory-Masters
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovnkube-controller
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      # ── ovnkube-node CPU/Memory — worker nodes ────────────────────────────────
+      - name: ovnkubeCPU-workers
+        metricName.keyword: containerCPU-AggregatedWorkers
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnkubeMem-workers
+        metricName.keyword: containerMemory-AggregatedWorkers
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      # ── OVS cgroup CPU/Memory ─────────────────────────────────────────────────
+      - name: ovsCPU
+        metricName.keyword: cgroupCPU
+        labels.id.keyword: /system.slice/ovs-vswitchd.service
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovsMemory
+        metricName.keyword: cgroupMemoryRSS
+        labels.id.keyword: /system.slice/ovs-vswitchd.service
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      # ── Kubelet CPU/Memory ────────────────────────────────────────────────────
+      - name: kubeletCPU
+        metricName.keyword: kubeletCPU
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Node]"
+        direction: 1
+        threshold: 10
+
+      - name: kubeletMemory
+        metricName.keyword: kubeletMemory
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+        labels:
+          - "[Jira: Node]"
+        direction: 1
+        threshold: 10
+
+      # ── API server CPU/Memory — master nodes ──────────────────────────────────
+      - name: apiserverCPU
+        metricName.keyword: containerCPU-Masters
+        labels.namespace.keyword: openshift-kube-apiserver
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: kube-apiserver]"
+        direction: 1
+        threshold: 10
+
+      - name: apiserverMemory
+        metricName.keyword: containerMemory-Masters
+        labels.namespace.keyword: openshift-kube-apiserver
+        metric_of_interest: value
+        agg:
+          value: mem
+          agg_type: avg
+        labels:
+          - "[Jira: kube-apiserver]"
+        direction: 1
+        threshold: 10
+
+      # ── etcd disk commit latency ──────────────────────────────────────────────
+      - name: etcdDiskCommit
+        metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
+        metric_of_interest: value
+        agg:
+          value: duration
+          agg_type: avg
+        labels:
+          - "[Jira: etcd]"
+        direction: 1
+        threshold: 10

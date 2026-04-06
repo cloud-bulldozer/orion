@@ -8,9 +8,9 @@ tests:
       ocpVersion: "{{ version }}"
       benchmark.keyword: "rds-core"
       networkType: OVNKubernetes
-      pullNumber: {{ pull_number | default(0) }}
-      organization: {{ organization | default('') }}
-      repository: {{ repository | default('') }}
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
       not:
         stream: okd
     metrics:

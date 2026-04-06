@@ -83,6 +83,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
     result_output_pull, regression_flag_pull, regression_data_pull = {}, False, []
     average_values_df_pull, average_values_df = "", ""
     all_viz_data = []
+    all_viz_data_pull = []
     pr = 0
     for test in config["tests"]:
         # Create fingerprint Matcher
@@ -114,7 +115,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
                     regression_data = periodic_result.regression_data
                     average_values_df = periodic_result.average_values
                     if pull_result.viz_data is not None:
-                        all_viz_data.append(pull_result.viz_data)
+                        all_viz_data_pull.append(pull_result.viz_data)
                     if periodic_result.viz_data is not None:
                         all_viz_data.append(periodic_result.viz_data)
             else:
@@ -129,7 +130,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
         regression_data=regression_data_pull,
         average_values=average_values_df_pull,
         pr=pr,
-        viz_data=[],
+        viz_data=all_viz_data_pull,
     )
     results = TestResults(
         output=result_output,

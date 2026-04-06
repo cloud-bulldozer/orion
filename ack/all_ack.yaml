@@ -66,6 +66,21 @@ ack:
     reason: node-density too short and sensitive, to be addressed by https://github.com/openshift/release/pull/75826
     version: '4.22'
     test: node-density
+  - uuid: 62c5ae7f-d522-4919-b806-e4ed23a4f1e1
+    metric: apiserverCPU_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density
+  - uuid: 62c5ae7f-d522-4919-b806-e4ed23a4f1e1
+    metric: kubelet_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density
+  - uuid: 62c5ae7f-d522-4919-b806-e4ed23a4f1e1
+    metric: ovnCPU_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density
   # node-density-cni
   - uuid: ade4d0f9-84d8-4edf-926a-4aa88ca14f61
     metric: ovnCPU-ovncontroller_avg
@@ -187,7 +202,57 @@ ack:
     reason: ovsCPU is a counter, need to revisit this metric
     version: '4.22'
     test: node-density-cni
+  - uuid: dc7780d9-ee64-4219-a626-0363a32dfc17
+    metric: kubelet_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density-cni
+  - uuid: dc7780d9-ee64-4219-a626-0363a32dfc17
+    metric: apiserverCPU_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density-cni
+  - uuid: dc7780d9-ee64-4219-a626-0363a32dfc17
+    metric: multusCPU_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density-cni
+  - uuid: dc7780d9-ee64-4219-a626-0363a32dfc17
+    metric: ovnCPU-nbdb_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density-cni
+  - uuid: dc7780d9-ee64-4219-a626-0363a32dfc17
+    metric: ovnCPU-sbdb_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density-cni
+  - uuid: dc7780d9-ee64-4219-a626-0363a32dfc17
+    metric: ovnCPU-northd_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density-cni
+  - uuid: dc7780d9-ee64-4219-a626-0363a32dfc17
+    metric: ovnCPU-ovncontroller_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density-cni
+  - uuid: dc7780d9-ee64-4219-a626-0363a32dfc17
+    metric: ovnkCPU-overall_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density-cni
+  - uuid: dc7780d9-ee64-4219-a626-0363a32dfc17
+    metric: ovsCPU-irate-all_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density-cni
   # udn-density-pods
+  - uuid: 62b5fe32-0b9f-4000-9cbe-ce8ee74cc7cd
+    metric: ovnCPU-nbdb_avg
+    reason: cpu has returned, random spike
+    version: '4.22'
+    test: udn-density-pods
   - uuid: 5b665198-fd65-4832-8e92-1e03c405eb17 # l2-payload
     metric: ovnMem-nbdb_avg
     reason: https://issues.redhat.com/browse/OCPBUGS-77720
@@ -206,6 +271,21 @@ ack:
   - uuid: d32d0b5b-f2f6-47fa-8f9d-314ab31c7a02
     metric: ovnMem-ovncontroller_avg
     reason: https://issues.redhat.com/browse/PERFSCALE-4515
+    version: '4.22'
+    test: udn-density-pods
+  - uuid: f9b863c0-9780-4bf8-86d4-0ea66deafbb5
+    metric: ovnkCPU-overall_avg
+    reason: added daemonset to udn-density job
+    version: '4.22'
+    test: udn-density-pods
+  - uuid: 923bb455-04ec-4c1a-a6bc-1bf55f8dd728
+    metric: ovnCPU-northd_avg
+    reason: added daemonset to udn-density job
+    version: '4.22'
+    test: udn-density-pods
+  - uuid: b42cb882-87d1-4b50-867c-9f3ab60acbee
+    metric: ovnCPU-ovnk-controller_avg
+    reason: added daemonset to udn-density job
     version: '4.22'
     test: udn-density-pods
 
@@ -262,6 +342,21 @@ ack:
   - uuid: 9ad8b601-68bd-4713-9dd9-db22114b7004
     metric: podReadyLatency_P99
     reason: node-density churn was enabled
+    version: '4.21'
+    test: node-density
+  - uuid: fe042b59-c5fe-4c44-8c2b-1b6e18e25b92
+    metric: kubelet_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.21'
+    test: node-density
+  - uuid: fe042b59-c5fe-4c44-8c2b-1b6e18e25b92
+    metric: apiserverCPU_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.21'
+    test: node-density
+  - uuid: fe042b59-c5fe-4c44-8c2b-1b6e18e25b92
+    metric: ovnCPU_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
     version: '4.21'
     test: node-density
   # node-density-cni
@@ -340,6 +435,51 @@ ack:
     reason: ovsCPU is a counter, need to revisit this metric
     version: '4.21'
     test: node-density-cni
+  - uuid: 48d2d5d2-7adf-41d8-a960-8afa4bdc1f7e
+    metric: kubelet_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.21'
+    test: node-density-cni
+  - uuid: 48d2d5d2-7adf-41d8-a960-8afa4bdc1f7e
+    metric: apiserverCPU_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.21'
+    test: node-density-cni
+  - uuid: 48d2d5d2-7adf-41d8-a960-8afa4bdc1f7e
+    metric: multusCPU_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.21'
+    test: node-density-cni
+  - uuid: 48d2d5d2-7adf-41d8-a960-8afa4bdc1f7e
+    metric: ovnCPU-nbdb_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.21'
+    test: node-density-cni
+  - uuid: 48d2d5d2-7adf-41d8-a960-8afa4bdc1f7e
+    metric: ovnCPU-sbdb_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.21'
+    test: node-density-cni
+  - uuid: 48d2d5d2-7adf-41d8-a960-8afa4bdc1f7e
+    metric: ovnCPU-northd_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.21'
+    test: node-density-cni
+  - uuid: 48d2d5d2-7adf-41d8-a960-8afa4bdc1f7e
+    metric: ovnCPU-ovncontroller_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.21'
+    test: node-density-cni
+  - uuid: 48d2d5d2-7adf-41d8-a960-8afa4bdc1f7e
+    metric: ovnkCPU-overall_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.21'
+    test: node-density-cni
+  - uuid: 48d2d5d2-7adf-41d8-a960-8afa4bdc1f7e
+    metric: ovsCPU-irate-all_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.21'
+    test: node-density-cni
   # udn-density-pods
   - uuid: 80e3e90d-d974-49fa-8e39-3e44afcbb408
     metric: ovsCPU_avg
@@ -404,6 +544,26 @@ ack:
   - uuid: f682a732-4f62-4f9b-bc8a-d8d5064fba69
     metric: ovnMem-ovncontroller_avg
     reason: https://issues.redhat.com/browse/PERFSCALE-4515
+    version: '4.21'
+    test: udn-density-pods
+  - uuid: e8a2b5f7-211b-4465-8371-5581067d8bc2
+    metric: ovsCPU-irate-all_avg
+    reason: added daemonset to udn-density job
+    version: '4.21'
+    test: udn-density-pods
+  - uuid: aad88a60-67b4-4844-871c-0aa1bcb418cf
+    metric: ovnCPU-northd_avg
+    reason: added daemonset to udn-density job
+    version: '4.21'
+    test: udn-density-pods
+  - uuid: e8a2b5f7-211b-4465-8371-5581067d8bc2
+    metric: ovnCPU-ovnk-controller_avg
+    reason: added daemonset to udn-density job
+    version: '4.21'
+    test: udn-density-pods
+  - uuid: 8cf0a474-78da-41b7-b672-455c11cb7227
+    metric: ovnMem-nbdb_avg
+    reason: added daemonset to udn-density job
     version: '4.21'
     test: udn-density-pods
 

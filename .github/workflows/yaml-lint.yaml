@@ -1,0 +1,29 @@
+name: YAML Lint
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'examples/**/*.yaml'
+      - 'examples/**/*.yml'
+jobs:
+  yaml-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      - name: Install yamllint
+        run: pip install -r requirements-test.txt
+      
+      - name: Lint YAML files in examples directory
+        run: make lint

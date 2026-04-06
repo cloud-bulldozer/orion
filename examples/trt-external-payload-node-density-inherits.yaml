@@ -5,34 +5,34 @@ tests:
     metadata:
       ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
-      jobType: {{ jobtype | default('periodic') }}
-      pullNumber: {{ pull_number | default(0) }}
-      organization: {{ organization | default('') }}
-      repository: {{ repository | default('') }}
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
       not:
         stream: okd
 
     metrics:
-    - name: etcdCPU
-      metricName: containerCPU
-      labels.namespace.keyword: openshift-etcd
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
-      labels:
-        - "[Jira: etcd]"
-      direction: 1
-      threshold: 10
+      - name: etcdCPU
+        metricName: containerCPU
+        labels.namespace.keyword: openshift-etcd
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: etcd]"
+        direction: 1
+        threshold: 10
 
-    - name: kubelet
-      metricName: kubeletCPU
-      metric_of_interest: value
-      labels:
-        - "[Jira: Node]"
-      agg:
-        value: cpu
-        agg_type: avg
-      direction: 1
-      threshold: 5
+      - name: kubelet
+        metricName: kubeletCPU
+        metric_of_interest: value
+        labels:
+          - "[Jira: Node]"
+        agg:
+          value: cpu
+          agg_type: avg
+        direction: 1
+        threshold: 5
 

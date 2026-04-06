@@ -114,13 +114,13 @@ Control where and how results are saved:
 
 ```bash
 # Custom output file location
-orion --output /path/to/results.csv --hunter-analyze
+orion --save-output-path /path/to/results.txt --hunter-analyze
 
 # JSON output format
-orion cmd o json --hunter-analyze
+orion -o json --hunter-analyze
 
 # JUnit XML format
-orion cmd o junit --hunter-analyze
+orion -o junit --hunter-analyze
 
 # Collapse text output (print only regression summary, full table saved to file)
 orion --collapse --hunter-analyze
@@ -128,6 +128,25 @@ orion --collapse --hunter-analyze
 # Collapse JSON output (include only changepoint context rows)
 orion --collapse -o json --hunter-analyze
 ```
+
+### Interactive Visualizations
+Generate interactive HTML visualizations alongside the standard Orion output:
+
+```bash
+# Generate text output plus an interactive HTML visualization
+orion --config performance-config.yaml --hunter-analyze --viz
+
+# Custom output path (HTML filename derives from this)
+orion \
+  --config performance-config.yaml \
+  --hunter-analyze \
+  --viz \
+  --save-output-path ./outputs/results.txt
+```
+
+- `--viz` adds interactive HTML files alongside the standard output
+- When used with `--pr-analysis`, separate HTML files are generated for periodic and pull runs
+- The generated HTML loads Plotly from a CDN when opened in a browser
 
 ### Display Metadata Fields
 Add custom metadata fields as columns in the output table:
@@ -486,7 +505,7 @@ orion \
   --hunter-analyze \
   --lookback 7d \
   --threshold 15 \
-  --output results.csv \
+  --save-output-path results.txt \
   --debug
 ```
 
@@ -506,7 +525,7 @@ orion \
   --config quick-check.yaml \
   --anomaly-detection \
   --lookback 24h \
-  --output anomalies.json
+  --save-output-path anomalies.txt
 ```
 
 ## Acknowledgment Examples
@@ -553,6 +572,8 @@ To achieve this the following input_vars should be provided
 ### Input Example
 
 `--input-vars='{"jobtype": "pull","pull_number": "2790", "organization": "openshift", "repository": "test"}'`
+
+Add `--viz` to this workflow to generate interactive HTML visualizations for each analyzed dataset alongside the standard PR report output.
 
 ### Example
 ```
