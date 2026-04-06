@@ -71,6 +71,11 @@ ack:
     reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
     version: '4.22'
     test: node-density
+  - uuid: 2d01e998-503b-4f7a-afce-f984fe52d6e7
+    metric: apiserverCPU_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density
   - uuid: 62c5ae7f-d522-4919-b806-e4ed23a4f1e1
     metric: kubelet_avg
     reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
@@ -552,6 +557,11 @@ ack:
     version: '4.21'
     test: udn-density-pods
   - uuid: aad88a60-67b4-4844-871c-0aa1bcb418cf
+    metric: ovnCPU-northd_avg
+    reason: added daemonset to udn-density job
+    version: '4.21'
+    test: udn-density-pods
+  - uuid: e8a2b5f7-211b-4465-8371-5581067d8bc2
     metric: ovnCPU-northd_avg
     reason: added daemonset to udn-density job
     version: '4.21'
