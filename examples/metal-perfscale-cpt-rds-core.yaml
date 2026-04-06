@@ -14,7 +14,7 @@ tests:
       not:
         stream: okd
     metrics:
-      - name: pod-ready-latency
+      - name: podReadyLatency
         metricName.keyword: podLatencyQuantilesMeasurement
         quantileName: Ready
         metric_of_interest: P99
