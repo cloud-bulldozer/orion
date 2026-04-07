@@ -601,6 +601,37 @@ ack:
     reason: added daemonset to udn-density job
     version: '4.21'
     test: udn-density-pods
+  # virt-udn-density
+  - uuid: 0e85edc5-b1e7-4d7f-b116-8a60a0b591dc
+    metric: apiserverCPU_avg
+    reason: Earlier a Preload bug diluted resource averages
+    version: '4.21'
+    test: virt-udn-density
+  - uuid: 0e85edc5-b1e7-4d7f-b116-8a60a0b591dc
+    metric: multusCPU_avg
+    reason: Earlier a Preload bug diluted resource averages
+    version: '4.21'
+    test: virt-udn-density
+  - uuid: 0e85edc5-b1e7-4d7f-b116-8a60a0b591dc
+    metric: monitoringCPU_avg
+    reason: Earlier a Preload bug diluted resource averages
+    version: '4.21'
+    test: virt-udn-density
+  - uuid: 0e85edc5-b1e7-4d7f-b116-8a60a0b591dc
+    metric: ovnCPU_avg
+    reason: Earlier a Preload bug diluted resource averages
+    version: '4.21'
+    test: virt-udn-density
+  - uuid: 0e85edc5-b1e7-4d7f-b116-8a60a0b591dc
+    metric: etcdCPU_avg
+    reason: Earlier a Preload bug diluted resource averages.
+    version: '4.21'
+    test: virt-udn-density
+  - uuid: 0e85edc5-b1e7-4d7f-b116-8a60a0b591dc
+    metric: etcdDisk_avg
+    reason: Earlier a Preload bug diluted resource averages.
+    version: '4.21'
+    test: virt-udn-density
 
   # === Version 4.20 ===
 
