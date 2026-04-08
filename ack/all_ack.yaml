@@ -71,6 +71,11 @@ ack:
     reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
     version: '4.22'
     test: node-density
+  - uuid: 2d01e998-503b-4f7a-afce-f984fe52d6e7
+    metric: apiserverCPU_avg
+    reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
+    version: '4.22'
+    test: node-density
   - uuid: 62c5ae7f-d522-4919-b806-e4ed23a4f1e1
     metric: kubelet_avg
     reason: Disabled gc-metrics in the test. https://github.com/openshift/release/pull/76871
@@ -248,6 +253,11 @@ ack:
     version: '4.22'
     test: node-density-cni
   # udn-density-pods
+  - uuid: 62b5fe32-0b9f-4000-9cbe-ce8ee74cc7cd
+    metric: nbdbCPU_avg
+    reason: cpu has returned, random spike
+    version: '4.22'
+    test: udn-density-pods
   - uuid: 5b665198-fd65-4832-8e92-1e03c405eb17 # l2-payload
     metric: nbdbMemory_avg
     reason: https://issues.redhat.com/browse/OCPBUGS-77720
@@ -643,6 +653,11 @@ ack:
     version: '4.21'
     test: udn-density-pods
   - uuid: e8a2b5f7-211b-4465-8371-5581067d8bc2
+    metric: northdCPU_avg
+    reason: added daemonset to udn-density job
+    version: '4.21'
+    test: udn-density-pods
+  - uuid: e8a2b5f7-211b-4465-8371-5581067d8bc2
     metric: ovnkControllerCPU_avg
     reason: added daemonset to udn-density job
     version: '4.21'
@@ -652,3 +667,34 @@ ack:
     reason: added daemonset to udn-density job
     version: '4.21'
     test: udn-density-pods
+  # virt-udn-density
+  - uuid: 0e85edc5-b1e7-4d7f-b116-8a60a0b591dc
+    metric: apiserverCPU_avg
+    reason: Earlier a Preload bug diluted resource averages
+    version: '4.21'
+    test: virt-udn-density
+  - uuid: 0e85edc5-b1e7-4d7f-b116-8a60a0b591dc
+    metric: multusCPU_avg
+    reason: Earlier a Preload bug diluted resource averages
+    version: '4.21'
+    test: virt-udn-density
+  - uuid: 0e85edc5-b1e7-4d7f-b116-8a60a0b591dc
+    metric: monitoringCPU_avg
+    reason: Earlier a Preload bug diluted resource averages
+    version: '4.21'
+    test: virt-udn-density
+  - uuid: 0e85edc5-b1e7-4d7f-b116-8a60a0b591dc
+    metric: ovnkCPU_avg
+    reason: Earlier a Preload bug diluted resource averages
+    version: '4.21'
+    test: virt-udn-density
+  - uuid: 0e85edc5-b1e7-4d7f-b116-8a60a0b591dc
+    metric: etcdCPU_avg
+    reason: Earlier a Preload bug diluted resource averages.
+    version: '4.21'
+    test: virt-udn-density
+  - uuid: 0e85edc5-b1e7-4d7f-b116-8a60a0b591dc
+    metric: etcdDisk_avg
+    reason: Earlier a Preload bug diluted resource averages.
+    version: '4.21'
+    test: virt-udn-density
