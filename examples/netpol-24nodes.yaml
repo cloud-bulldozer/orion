@@ -55,7 +55,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnCPU-northd
+      - name: northdCPU
         metricName.keyword: containerCPU-Masters
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: northd
@@ -68,7 +68,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnCPU-nbdb
+      - name: nbdbCPU
         metricName.keyword: containerCPU-Masters
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: nbdb
@@ -81,7 +81,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnCPU-sbdb
+      - name: sbdbCPU
         metricName.keyword: containerCPU-Masters
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: sbdb
@@ -94,7 +94,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnCPU-ovncontroller
+      - name: ovnControllerCPU
         metricName.keyword: containerCPU-Masters
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovn-controller
@@ -133,7 +133,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnMem-northd
+      - name: northdMemory
         metricName.keyword: containerMemory-Masters
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: northd
@@ -146,7 +146,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnMem-nbdb
+      - name: nbdbMemory
         metricName.keyword: containerMemory-Masters
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: nbdb
@@ -159,7 +159,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnMem-sbdb
+      - name: sbdbMemory
         metricName.keyword: containerMemory-Masters
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: sbdb
@@ -172,7 +172,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnMem-ovncontroller
+      - name: ovnControllerMemory
         metricName.keyword: containerMemory-Masters
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovn-controller
