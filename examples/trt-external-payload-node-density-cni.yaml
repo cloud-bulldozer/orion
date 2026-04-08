@@ -114,7 +114,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnCPU
+      - name: ovnkCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
@@ -227,7 +227,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnMemory
+      - name: ovnkMemory
         metricName.keyword: containerMemory
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value

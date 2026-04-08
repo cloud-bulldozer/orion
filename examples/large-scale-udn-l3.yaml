@@ -46,7 +46,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnCPU
+      - name: ovnkCPU
         metricName.keyword: containerCPU
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
@@ -168,7 +168,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnMemory
+      - name: ovnkMemory
         metricName.keyword: containerMemory
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
