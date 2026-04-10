@@ -318,6 +318,11 @@ ack:
     reason: Metric is back to normal trend
     version: '4.22'
     test: udn-density-pods
+  - uuid: bcee4a86-c0c9-4252-804c-462ba7c5a733
+    metric: ovnCPU-northd_avg
+    reason: Metric is back to normal trend
+    version: '4.22'
+    test: udn-density-pods
   # 120-node udn-density-l2
   - uuid: 77b0d861-ce3d-468c-b5c4-a557478ce452
     metric: ovsMemory-all_avg
