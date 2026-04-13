@@ -1,17 +1,20 @@
 parentConfig: config/ols-load-generator-config.yaml
 metricsFile: metrics/ols-load-generator-metrics.yaml
 tests:
-  - name: ols-load-generator-{{ ols_test_workers }}w-5m
+  - name: ols-load-generator-mcp-{{ ols_test_workers }}w-5m
     metadata:
       olsTestDuration: "5m"
+      mcpEnabled: true
     metrics:
 
-  - name: ols-load-generator-{{ ols_test_workers }}w-10m
+  - name: ols-load-generator-mcp-{{ ols_test_workers }}w-10m
     metadata:
       olsTestDuration: "10m"
+      mcpEnabled: true
     metrics:
 
-  - name: ols-load-generator-{{ ols_test_workers }}w-20m
+  - name: ols-load-generator-mcp-{{ ols_test_workers }}w-20m
     metadata:
       olsTestDuration: "20m"
+      mcpEnabled: true
     metrics:
