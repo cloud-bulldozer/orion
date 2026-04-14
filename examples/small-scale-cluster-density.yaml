@@ -74,7 +74,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsMasterMemory
+      - name: ovsMastersMemory
         metricName.keyword: cgroupMemoryRSS-Masters
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
