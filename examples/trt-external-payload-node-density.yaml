@@ -8,7 +8,8 @@ tests:
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
       benchmark.keyword: node-density
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
       jobType: "{{ jobtype | default('periodic') }}"
       pullNumber: "{{ pull_number | default(0) }}"

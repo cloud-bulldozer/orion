@@ -9,8 +9,9 @@ tests:
       workerNodesCount: 24
       jobConfig.name: "{{ benchmark }}"
       metricName.keyword: jobSummary
-      ocpVersion: "{{ version }}"
-      ocpMajorVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
+        ocpMajorVersion: "{{ version }}"
       sdnType: OVNKubernetes
       not:
         stream: okd

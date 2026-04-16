@@ -1,7 +1,6 @@
 tests:
   - name: rhbok
     metadata:
-      ocpVersion: ""
       upstreamJob.keyword: periodic-ci-openshift-kueue-operator-main-perfscale-kueue-operator-9nodes
       benchmark.keyword: "{{ benchmark }}"
 
