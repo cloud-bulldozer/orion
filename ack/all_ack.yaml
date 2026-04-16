@@ -405,6 +405,29 @@ ack:
     version: '4.22'
     test: node-density
 
+  # === Version 5.0 ===
+
+  - uuid: a9274d3c-c092-4aa9-adc8-aebfd6ebf9c3
+    metric: ovsCPU-irate-all_avg
+    reason: https://redhat.atlassian.net/browse/OCPBUGS-69936
+    version: '5.0'
+    test: cluster-density-v2
+  - uuid: 1c95b84c-5bc7-487c-8067-edb48925d7ef
+    metric: ovsCPU-irate-all_avg
+    reason: https://redhat.atlassian.net/browse/OCPBUGS-69936
+    version: '5.0'
+    test: udn-density-pods
+  - uuid: 091c3235-7236-4391-a4bb-99255d6cc464
+    metric: podReadyLatency_P99
+    reason: later run shows latency going lower.
+    version: '5.0'
+    test: udn-density-pods
+  - uuid: 091c3235-7236-4391-a4bb-99255d6cc464
+    metric: ovnCPU-ovnk-controller_avg
+    reason: later run shows cpu usage dropping.
+    version: '5.0'
+    test: udn-density-pods
+
   # === Version 4.21 ===
 
   # cluster-density
