@@ -1,0 +1,9 @@
+# File to acknowledge all the regressions at one place
+---
+ack:
+  - uuid: dummy_uuid_1
+    metric: postQuery_p99Latency
+    reason: "Increase in latency but no effect on throughput"
+  - uuid: dummy_uuid_2
+    metric: postQueryStreaming_p99Latency
+    reason: "Increase in latency but no effect on throughput"
