@@ -389,6 +389,21 @@ ack:
     reason: https://redhat.atlassian.net/browse/PERFSCALE-4572
     version: '4.22'
     test: udn-density-pods
+  - uuid: 206b4ac7-1180-4c23-b67e-f23612dec40d
+    metric: ovsCPU-irate-all_avg
+    reason: https://redhat.atlassian.net/browse/OCPBUGS-69936
+    version: '4.22'
+    test: udn-density-pods
+  - uuid: 0151d9a9-dfad-4e52-a5a9-677a9c414ebb
+    metric: ovsCPU-irate-all_avg
+    reason: https://redhat.atlassian.net/browse/OCPBUGS-69936
+    version: '4.22'
+    test: cluster-density-v2
+  - uuid: 5df0f453-c9cd-4b19-a6cb-b3f7ca1aba1d
+    metric: podReadyLatency_P99
+    reason: random spike - podReady has returned
+    version: '4.22'
+    test: node-density
 
   # === Version 4.21 ===
 
