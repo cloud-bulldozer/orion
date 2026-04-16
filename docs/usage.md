@@ -81,7 +81,8 @@ tests:
       workerNodesType.keyword: ""
       workerNodesCount: 4
       benchmark.keyword: node-density
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       networkType: OVNKubernetes
       not:
         stream: okd
@@ -100,9 +101,9 @@ tests:
 The variable `version` can be passed through the `--input-vars` flag as follows:
 
 ```shell
-$ orion --config /path/to/config.yaml --input-vars='{"version": "4.20"}' --hunter-analyze
+$ orion --config /path/to/config.yaml --input-vars='{"version": "4.20*"}' --hunter-analyze
 # Or using env vars
-$ VERSION=4.20 orion --config /path/to/config.yaml --hunter-analyze
+$ VERSION="4.20*" orion --config /path/to/config.yaml --hunter-analyze
 ```
 
 > **info**
@@ -341,7 +342,8 @@ tests:
   - name: cpu-monitoring
     metadata:
       platform: AWS
-      ocpVersion: 4.17
+      wildcard:
+        ocpVersion: "4.17*"
     metrics:
       - name: apiserverCPU
         metricName.keyword: containerCPU
@@ -381,7 +383,8 @@ tests:
   - name: correlated-performance
     metadata:
       platform: AWS
-      ocpVersion: 4.17
+      wildcard:
+        ocpVersion: "4.17*"
     metrics:
       # Base metric - must come first
       - name: ovnCPU
@@ -416,7 +419,8 @@ tests:
       clusterType: self-managed
       masterNodesCount: 3
       workerNodesCount: 6
-      ocpVersion: 4.17
+      wildcard:
+        ocpVersion: "4.17*"
     metrics:
       - name: apiserverCPU
         metricName.keyword: containerCPU

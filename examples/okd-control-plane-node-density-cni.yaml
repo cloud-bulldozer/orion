@@ -1,7 +1,8 @@
 tests:
   - name: okd-node-density-cni-6nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: self-managed
       masterNodesType: m6a.xlarge

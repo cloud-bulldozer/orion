@@ -127,8 +127,7 @@ class Matcher:
         """
         must_clause = []
         must_not_clause = []
-        if self.version_field in metadata :
-            version = str(metadata[self.version_field])[:4]
+        filter_clause = []
 
         for field, value in metadata.items():
             if field in [self.version_field, "ocpMajorVersion"]:
@@ -143,19 +142,8 @@ class Matcher:
                     values = not_value if isinstance(not_value, list) else [not_value]
                     for val in values:
                         must_not_clause.append(Q("match", **{not_field: str(val)}))
-
-        if "ocpMajorVersion" in metadata:
-            version = metadata["ocpMajorVersion"]
-            filter_clause = [
-                Q("wildcard", ocpMajorVersion=f"{version}*"),
-            ]
-        elif self.version_field in metadata:
-            filter_clause = [
-                Q("wildcard", **{self.version_field: {"value": f"{version}*"}}),
-            ]
-        else :
-            filter_clause = []
-
+        for field, value in metadata.get("wildcard", {}).items():
+            filter_clause.append(Q("wildcard", **{field: {"value": f"{value}"}}))
         if isinstance(lookback_date, datetime):
             lookback_date = lookback_date.strftime("%Y-%m-%dT%H:%M:%SZ")
         if isinstance(since_date, datetime):
@@ -184,7 +172,7 @@ class Matcher:
             .sort({timestamp_field: {"order": "desc"}})
             .extra(size=lookback_size)
         )
-        all_hits = self.query_index(s,return_all=True)
+        all_hits = self.query_index(s, return_all=True)
         uuids_docs = []
         for hit in all_hits:
             doc= {self.uuid_field: hit.to_dict()["_source"][self.uuid_field]}

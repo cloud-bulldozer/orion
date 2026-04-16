@@ -1,7 +1,8 @@
 tests:
   - name: cluster-density-v2-24nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: cluster-density-v2
@@ -38,7 +39,8 @@ tests:
 
   - name: cluster-density-v2-120nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: cluster-density-v2
@@ -73,7 +75,8 @@ tests:
 
   - name: cluster-density-v2-249nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: cluster-density-v2
@@ -108,7 +111,8 @@ tests:
 
   - name: cdv2-kube-apiserver-etcd-249nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: cluster-density-v2
@@ -155,7 +159,8 @@ tests:
 
   - name: cd-v2-controller-manager-249nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: cluster-density-v2
@@ -197,7 +202,8 @@ tests:
 
   - name: cd-v2-api-request-latency-249nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: cluster-density-v2
@@ -240,7 +246,8 @@ tests:
 
   - name: cd-v2-etcd-latency-249nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: cluster-density-v2

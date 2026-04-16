@@ -1,7 +1,8 @@
 tests:
   - name: servicemesh-{{ service_mesh_mode }}-ingress-perf
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       platform: AWS
       clusterType: self-managed
       benchmark.keyword: ingress-perf

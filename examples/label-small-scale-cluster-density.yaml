@@ -7,8 +7,9 @@ tests:
       workerNodesType: m6a.xlarge
       workerNodesCount: 24
       benchmark.keyword: cluster-density-v2
-      ocpVersion: "{{ version }}"
       fips: "{{ fips | default('false') }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       not:
         stream: okd
         # networkType: OVNKubernetes

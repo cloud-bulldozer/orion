@@ -8,8 +8,9 @@ tests:
       workerNodesType: e2-standard-4
       workerNodesCount: 3
       benchmark.keyword: olm
-      ocpVersion: "{{ version }}"
       fips: "{{ fips | default('false') }}"
+      wildcard:
+        ocpVersion: "{{ version }}"
       not:
         stream: okd
     metrics:
