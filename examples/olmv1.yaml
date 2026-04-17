@@ -9,7 +9,7 @@ tests:
       workerNodesCount: 3
       benchmark.keyword: olm
       wildcard:
-        ocpVersion: "{{ version }}"
+        ocpVersion: "{{ version }}*"
       not:
         stream: okd
     metrics:

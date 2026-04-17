@@ -2,7 +2,7 @@ tests:
   - name: okd-cluster-density-6nodes
     metadata:
       wildcard:
-        ocpVersion: "{{ version }}"
+        ocpVersion: "{{ version }}*"
       platform: AWS
       clusterType: self-managed
       masterNodesType: m6a.xlarge

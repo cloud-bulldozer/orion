@@ -2,7 +2,7 @@ tests:
   - name: metal-perfscale-cpt-ingress-perf
     metadata:
       wildcard:
-        ocpVersion: "{{ version }}"
+        ocpVersion: "{{ version }}*"
       platform: BareMetal
       clusterType: self-managed
       benchmark.keyword: ingress-perf

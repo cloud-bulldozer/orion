@@ -8,7 +8,7 @@ tests:
       workerNodesCount: 24
       benchmark.keyword: cluster-density-v2
       wildcard:
-        ocpVersion: "{{ version }}"
+        ocpVersion: "{{ version }}*"
       networkType: OVNKubernetes
       not:
         stream: okd

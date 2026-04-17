@@ -20,7 +20,7 @@ tests:
     uuid_field: run_uuid
     metadata:
       wildcard:
-        cluster_version: "{{ version }}"
+        cluster_version: "{{ version }}*"
       scenarios.scenario_type: "{{ scenario_type }}"
       cloud_infrastructure: "{{ cloud_infrastructure }}"
       cloud_type: "{{ cloud_type }}"

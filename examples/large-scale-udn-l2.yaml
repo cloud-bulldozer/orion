@@ -10,7 +10,7 @@ tests:
       infraNodesType: r5.4xlarge
       benchmark.keyword: udn-density-pods
       wildcard:
-        ocpVersion: "{{ version }}"
+        ocpVersion: "{{ version }}*"
       networkType: OVNKubernetes
       jobType: "{{ jobtype | default('periodic') }}"
       pullNumber: "{{ pull_number | default(0) }}"

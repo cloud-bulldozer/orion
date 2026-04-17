@@ -10,8 +10,8 @@ tests:
       jobConfig.name: "{{ benchmark }}"
       metricName.keyword: jobSummary
       wildcard:
-        ocpVersion: "{{ version }}"
-        ocpMajorVersion: "{{ version }}"
+        ocpVersion: "{{ version }}*"
+        ocpMajorVersion: "{{ version }}*"
       sdnType: OVNKubernetes
       not:
         stream: okd
