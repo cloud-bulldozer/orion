@@ -14,7 +14,7 @@ metadata:
   workerNodesCount: 3
   benchmark.keyword: ols-load-generator
   wildcard:
-    ocpVersion: "{{ version }}"
+    ocpVersion: "{{ version }}*"
   networkType: OVNKubernetes
   mcpEnabled: false
   fips: "{{ fips | default('false') }}"

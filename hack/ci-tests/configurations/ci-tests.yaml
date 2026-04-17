@@ -7,8 +7,9 @@ tests:
       masterNodesCount: 3
       workerNodesType: e2-custom-6-16384
       workerNodesCount: 3
-      benchmark.keyword: olm 
-      ocpVersion: "{{ version }}"
+      benchmark.keyword: olm
+      wildcard:
+        ocpVersion: "{{ version }}*"
       networkType: OVNKubernetes
       jobType: {{ jobtype | default('periodic') }}
       pullNumber: {{ pull_number | default(0) }}

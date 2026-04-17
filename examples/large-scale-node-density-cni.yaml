@@ -8,7 +8,7 @@ tests:
       workerNodesCount: 252
       benchmark.keyword: node-density-cni
       wildcard:
-        ocpVersion: "{{ version }}"
+        ocpVersion: "{{ version }}*"
       networkType: OVNKubernetes
       jobType: "{{ jobtype | default('periodic') }}"
       pullNumber: "{{ pull_number | default(0) }}"

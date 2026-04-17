@@ -9,7 +9,7 @@ tests:
       benchmark.keyword: cluster-density-v2
       fips: "{{ fips | default('false') }}"
       wildcard:
-        ocpVersion: "{{ version }}"
+        ocpVersion: "{{ version }}*"
       not:
         stream: okd
         # networkType: OVNKubernetes

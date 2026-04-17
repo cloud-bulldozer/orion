@@ -2,7 +2,7 @@ tests:
   - name: small-scale-cluster-density-v2-report
     metadata:
       wildcard:
-        ocpVersion: "{{ version }}"
+        ocpVersion: "{{ version }}*"
       platform: AWS
       benchmark.keyword: cluster-density-v2
       masterNodesCount: 3
