@@ -134,14 +134,13 @@ class Matcher:
                 continue
             if field == "pullNumber" and value == 0 :
                 continue
-            if field != "not":
-                must_clause.append(Q("match", **{field: str(value)}))
-            else:
-                for not_field, not_value in metadata["not"].items():
-                    # Handle not_value as single value or list
-                    values = not_value if isinstance(not_value, list) else [not_value]
-                    for val in values:
-                        must_not_clause.append(Q("match", **{not_field: str(val)}))
+            if field in ("not", "wildcard"):
+                continue
+            must_clause.append(Q("match", **{field: str(value)}))
+        for not_field, not_value in metadata.get("not", {}).items():
+            values = not_value if isinstance(not_value, list) else [not_value]
+            for val in values:
+                must_not_clause.append(Q("match", **{not_field: str(val)}))
         for field, value in metadata.get("wildcard", {}).items():
             filter_clause.append(Q("wildcard", **{field: {"value": f"{value}"}}))
         if isinstance(lookback_date, datetime):
