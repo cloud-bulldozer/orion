@@ -64,7 +64,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnkCPU
+      - name: ovnCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
@@ -99,7 +99,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsCPUIrateAll
+      - name: ovsCPU-irate-all
         metricName.keyword: cgroupCPU
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
@@ -111,7 +111,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsWorkersMemory
+      - name: ovsMemory-Workers
         metricName.keyword: cgroupMemoryRSS-Workers
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
@@ -123,7 +123,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsMastersMemory
+      - name: ovsMemory-Masters
         metricName.keyword: cgroupMemoryRSS-Masters
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
@@ -135,7 +135,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsMemory
+      - name: ovsMemory-all
         metricName.keyword: cgroupMemoryRSS
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value

@@ -32,7 +32,7 @@ tests:
           - "[Jira: PerfScale]"
         direction: 1
         threshold: 10
-      - name: ovsCPUIrateAll
+      - name: ovsCPU-irate-all
         metricName.keyword: cgroupCPU
         jobName.keyword: udn-density-l3-pods
         labels.id.keyword: /system.slice/ovs-vswitchd.service
@@ -45,7 +45,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnkCPU
+      - name: ovnkCPU-overall
         metricName.keyword: containerCPU
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
@@ -58,7 +58,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnControllerCPU
+      - name: ovnCPU-ovncontroller
         metricName.keyword: containerCPU
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
@@ -72,7 +72,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: northdCPU
+      - name: ovnCPU-northd
         metricName.keyword: containerCPU
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
@@ -86,7 +86,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: nbdbCPU
+      - name: ovnCPU-nbdb
         metricName.keyword: containerCPU
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
@@ -100,7 +100,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: sbdbCPU
+      - name: ovnCPU-sbdb
         metricName.keyword: containerCPU
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
@@ -114,7 +114,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnkControllerCPU
+      - name: ovnCPU-ovnk-controller
         metricName.keyword: containerCPU
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
@@ -128,7 +128,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsWorkersMemory
+      - name: ovsMemory-Workers
         metricName.keyword: cgroupMemoryRSS-Workers
         jobName.keyword: udn-density-l3-pods
         labels.id.keyword: /system.slice/ovs-vswitchd.service
@@ -141,7 +141,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsMastersMemory
+      - name: ovsMemory-Masters
         metricName.keyword: cgroupMemoryRSS-Masters
         jobName.keyword: udn-density-l3-pods
         labels.id.keyword: /system.slice/ovs-vswitchd.service
@@ -154,7 +154,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsMemory
+      - name: ovsMemory-all
         metricName.keyword: cgroupMemoryRSS
         jobName.keyword: udn-density-l3-pods
         labels.id.keyword: /system.slice/ovs-vswitchd.service
@@ -167,7 +167,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnkMemory
+      - name: ovnkMem-overall
         metricName.keyword: containerMemory
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
@@ -180,7 +180,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnControllerMemory
+      - name: ovnMem-ovncontroller
         metricName.keyword: containerMemory
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
@@ -194,7 +194,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: northdMemory
+      - name: ovnMem-northd
         metricName.keyword: containerMemory
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
@@ -208,7 +208,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: nbdbMemory
+      - name: ovnMem-nbdb
         metricName.keyword: containerMemory
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
@@ -222,7 +222,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: sbdbMemory
+      - name: ovnMem-sbdb
         metricName.keyword: containerMemory
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes
@@ -236,7 +236,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnkControllerMemory
+      - name: ovnMem-ovnk-controller
         metricName.keyword: containerMemory
         jobName.keyword: udn-density-l3-pods
         labels.namespace.keyword: openshift-ovn-kubernetes

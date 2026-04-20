@@ -34,7 +34,7 @@ tests:
         labels:
           - "[Jira: kube-apiserver]"
 
-      - name: ovnkCPU
+      - name: ovnCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value

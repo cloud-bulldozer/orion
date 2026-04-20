@@ -98,7 +98,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsCPUIrateAll
+      - name: ovsCPU-irate-all
         metricName.keyword: cgroupCPU
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
@@ -110,7 +110,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnkCPU
+      - name: ovnkCPU-overall
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
@@ -122,7 +122,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnControllerCPU
+      - name: ovnCPU-ovncontroller
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovn-controller
@@ -135,7 +135,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: northdCPU
+      - name: ovnCPU-northd
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: northd
@@ -148,7 +148,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: nbdbCPU
+      - name: ovnCPU-nbdb
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: nbdb
@@ -161,7 +161,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: sbdbCPU
+      - name: ovnCPU-sbdb
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: sbdb
@@ -174,7 +174,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnkControllerCPU
+      - name: ovnCPU-ovnk-controller
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovnkube-controller
@@ -187,7 +187,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsWorkersMemory
+      - name: ovsMemory-Workers
         metricName.keyword: cgroupMemoryRSS-Workers
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
@@ -199,7 +199,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsMastersMemory
+      - name: ovsMemory-Masters
         metricName.keyword: cgroupMemoryRSS-Masters
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
@@ -211,7 +211,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsMemory
+      - name: ovsMemory-all
         metricName.keyword: cgroupMemoryRSS
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
@@ -223,7 +223,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnkMemory
+      - name: ovnkMem-overall
         metricName.keyword: containerMemory
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
@@ -235,7 +235,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnControllerMemory
+      - name: ovnMem-ovncontroller
         metricName.keyword: containerMemory
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovn-controller
@@ -248,7 +248,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: northdMemory
+      - name: ovnMem-northd
         metricName.keyword: containerMemory
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: northd
@@ -261,7 +261,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: nbdbMemory
+      - name: ovnMem-nbdb
         metricName.keyword: containerMemory
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: nbdb
@@ -274,7 +274,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: sbdbMemory
+      - name: ovnMem-sbdb
         metricName.keyword: containerMemory
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: sbdb
@@ -287,7 +287,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnkControllerMemory
+      - name: ovnMem-ovnk-controller
         metricName.keyword: containerMemory
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovnkube-controller

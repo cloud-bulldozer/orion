@@ -51,7 +51,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnkCPU
+      - name: ovnCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
@@ -63,7 +63,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnControllerCPU
+      - name: ovnCPU-ovncontroller
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovn-controller
@@ -76,7 +76,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovnkControllerCPU
+      - name: ovnCPU-ovnk-controller
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovnkube-controller
@@ -89,7 +89,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: northdCPU
+      - name: ovnCPU-northd
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: northd
@@ -102,7 +102,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: nbdbCPU
+      - name: ovnCPU-nbdb
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: nbdb
@@ -115,7 +115,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: sbdbCPU
+      - name: ovnCPU-sbdb
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: sbdb

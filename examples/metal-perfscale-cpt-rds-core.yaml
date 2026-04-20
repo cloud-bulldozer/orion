@@ -423,7 +423,7 @@ tests:
           - "[Jira: Networking / Average memory-ovnkube-node]"
         direction: 1
         threshold: 10
-      - name: northdCPU
+      - name: ovnCPU-northd
         metricName.keyword: cpu-ovnkube-node
         labels.container.keyword: northd
         metric_of_interest: value
@@ -434,7 +434,7 @@ tests:
           - "[Jira: Networking / ovn-kubernetes]"
         direction: 1
         threshold: 10
-      - name: nbdbCPU
+      - name: ovnCPU-nbdb
         metricName.keyword: cpu-ovnkube-node
         labels.container.keyword: nbdb
         metric_of_interest: value
@@ -445,7 +445,7 @@ tests:
           - "[Jira: Networking / ovn-kubernetes]"
         direction: 1
         threshold: 10
-      - name: sbdbCPU
+      - name: ovnCPU-sbdb
         metricName.keyword: cpu-ovnkube-node
         labels.container.keyword: sbdb
         metric_of_interest: value
@@ -456,7 +456,7 @@ tests:
           - "[Jira: Networking / ovn-kubernetes]"
         direction: 1
         threshold: 10
-      - name: northdMemory
+      - name: ovnMem-northd
         metricName.keyword: memory-ovnkube-node
         labels.container.keyword: northd
         metric_of_interest: value
@@ -467,7 +467,7 @@ tests:
           - "[Jira: Networking / ovn-kubernetes]"
         direction: 1
         threshold: 10
-      - name: nbdbMemory
+      - name: ovnMem-nbdb
         metricName.keyword: memory-ovnkube-node
         labels.container.keyword: nbdb
         metric_of_interest: value
@@ -478,7 +478,7 @@ tests:
           - "[Jira: Networking / ovn-kubernetes]"
         direction: 1
         threshold: 10
-      - name: sbdbMemory
+      - name: ovnMem-sbdb
         metricName.keyword: memory-ovnkube-node
         labels.container.keyword: sbdb
         metric_of_interest: value
