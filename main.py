@@ -5,23 +5,21 @@ This is the cli file for orion, tool to detect regressions using hunter
 # pylint: disable = import-error, line-too-long, no-member
 import json
 import logging
-import os
 from pathlib import Path
 import re
 import sys
 import warnings
 from typing import Any
-import xml.etree.ElementTree as ET
-import xml.dom.minidom
 import click
 from orion.logger import SingletonLogger
-from orion.run_test import run, TestResults
-from orion.utils import get_output_extension
+from orion.run_test import run
 from orion import constants as cnsts
 from orion.config import load_config, load_ack, merge_ack_files, auto_detect_ack_file_with_vars
 from orion.visualization import generate_test_html
 from orion.reporting.standalone import load_json_files, generate_report
-from orion.reporting.summary import print_regression_summary
+from orion.pipeline.formatters.text import TextFormatter
+from orion.pipeline.formatters.json_fmt import JsonFormatter
+from orion.pipeline.formatters.junit import JUnitFormatter
 from version import __version__
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
@@ -293,17 +291,15 @@ def main(**kwargs):
             logger.error("Missing required input variables: %s", ", ".join(missing_vars))
             sys.exit(1)
     results, results_pull = run(**kwargs)
-    is_pull = False
-    if results_pull.output:
-        is_pull = True
-    if kwargs['output_format'] == cnsts.JSON:
-        has_regression = print_json(logger, kwargs, results, results_pull, is_pull)
-    elif kwargs['output_format'] == cnsts.JUNIT:
-        has_regression = print_junit(logger, kwargs, results, results_pull, is_pull)
-    else:
-        has_regression = print_output(logger, kwargs, results, is_pull)
-        if is_pull:
-            print_output(logger, kwargs, results_pull, is_pull)
+    is_pull = bool(results_pull.output)
+
+    formatters = {
+        cnsts.JSON: JsonFormatter(),
+        cnsts.JUNIT: JUnitFormatter(),
+        cnsts.TEXT: TextFormatter(),
+    }
+    formatter = formatters[kwargs['output_format']]
+    has_regression = formatter.format(logger, kwargs, results, results_pull, is_pull)
     if kwargs.get("viz"):
         try:
             output_base_path = str(Path(kwargs['save_output_path']).with_suffix(''))
@@ -324,125 +320,3 @@ def main(**kwargs):
 
     if has_regression:
         sys.exit(2) ## regression detected
-
-def save_text_table(test_name, result_table, save_output_path):
-    """Save the text table to a file."""
-    output_file_name = f"{os.path.splitext(save_output_path)[0]}_table_{test_name}.txt"
-    with open(output_file_name, 'w', encoding="utf-8") as file:
-        file.write(str(result_table))
-
-
-def print_output(
-        logger,
-        kwargs,
-        results: TestResults,
-        is_pull: bool = False) -> bool:
-    """
-    Print the output of the tests
-
-    Args:
-        logger: logger object
-        kwargs: keyword arguments
-        results: results of the tests
-        is_pull: whether the tests are pull requests
-    """
-    output = results.output
-    regression_flag = results.regression_flag
-    regression_data = results.regression_data
-    average_values = results.average_values
-    pr = results.pr if is_pull else 0
-    if not output:
-        logger.error("Terminating test")
-        sys.exit(0)
-    for test_name, result_table in output.items():
-        save_text_table(test_name, result_table, kwargs['save_output_path'])
-        if not kwargs['collapse']:
-            text = test_name
-            if pr > 0:
-                text = test_name + " | Pull Request #" + str(pr)
-            print(text)
-            print("=" * len(text))
-            print(result_table)
-            if is_pull and pr < 1:
-                text = test_name + " | Average of above Periodic runs"
-                print("\n" + text)
-                print("=" * len(text))
-                print(average_values)
-    if regression_flag:
-        print_regression_summary(regression_data)
-        if not is_pull:
-            return True
-    else:
-        print("No regressions found")
-    return False
-
-
-def print_json(logger, kwargs, results: TestResults, results_pull: TestResults, is_pull):
-    """
-    Print the output of the tests in json format
-    """
-    logger.info("Printing json output")
-    output = results.output
-    regression_flag = results.regression_flag
-    average_values = results.average_values
-    output_pull = []
-    if not output:
-        logger.error("Terminating test")
-        sys.exit(0)
-    if is_pull and results_pull.pr:
-        output_pull = results_pull.output
-    for test_name, result_table in output.items():
-        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
-        if is_pull:
-            results_json = {
-                "periodic": json.loads(result_table),
-                "periodic_avg": json.loads(average_values),
-                "pull": json.loads(output_pull.get(test_name)),
-            }
-            print(json.dumps(results_json, indent=2))
-            with open(output_file_name, 'w', encoding="utf-8") as file:
-                file.write(json.dumps(results_json, indent=2))
-        else:
-            print(result_table)
-            with open(output_file_name, 'w', encoding="utf-8") as file:
-                file.write(str(result_table))
-        logger.info("Output saved to %s", output_file_name)
-        if regression_flag:
-            return True
-    return False
-
-def print_junit(logger, kwargs, results: TestResults, results_pull: TestResults, is_pull):
-    """
-    Print the output of the tests in junit format
-    """
-    logger.info("Printing junit output")
-    output = results.output
-    regression_flag = results.regression_flag
-    average_values = results.average_values
-    output_pull = []
-    if not output:
-        logger.error("Terminating test")
-        sys.exit(0)
-    if is_pull and results_pull.pr:
-        output_pull = results_pull.output
-    testsuites = ET.Element("testsuites")
-    for test_name, result_table in output.items():
-        if not is_pull:
-            testsuites.append(result_table)
-        else:
-            testsuites.append(result_table)
-            average_values.tag = "periodic_avg"
-            testsuites.append(average_values)
-            output_pull.get(test_name).tag = "pull"
-            testsuites.append(output_pull.get(test_name))
-        xml_str = ET.tostring(testsuites, encoding="utf8", method="xml").decode()
-        dom = xml.dom.minidom.parseString(xml_str)
-        pretty_xml_as_string = dom.toprettyxml()
-        print(pretty_xml_as_string)
-        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}.{get_output_extension(kwargs['output_format'])}"
-        with open(output_file_name, 'w', encoding="utf-8") as file:
-            file.write(str(pretty_xml_as_string))
-        logger.info("Output saved to %s", output_file_name)
-        if regression_flag:
-            return True
-    return False
