@@ -13,7 +13,7 @@ def save_text_table(test_name, result_table, save_output_path):
         file.write(str(result_table))
 
 
-class TextFormatter:
+class TextFormatter: # pylint: disable=too-few-public-methods
     """Formats test results as text tables and prints to stdout/file."""
 
     def format(self, logger, kwargs, results, results_pull, is_pull) -> bool:

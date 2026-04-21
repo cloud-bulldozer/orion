@@ -1,14 +1,14 @@
 """JUnit XML output formatter for Orion pipeline."""
 
 import os
-import sys
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 
+from orion.pipeline.formatters import validate_output
 from orion.utils import get_output_extension
 
 
-class JUnitFormatter:
+class JUnitFormatter: # pylint: disable=too-few-public-methods
     """Formats test results as JUnit XML and prints to stdout/file."""
 
     def format(self, logger, kwargs, results, results_pull, is_pull) -> bool:
@@ -25,23 +25,14 @@ class JUnitFormatter:
             bool: True if regression detected
         """
         logger.info("Printing junit output")
-        output = results.output
-        regression_flag = results.regression_flag
-        average_values = results.average_values
-        output_pull = []
-        if not output:
-            logger.error("Terminating test")
-            sys.exit(0)
-        if is_pull and results_pull.pr:
-            output_pull = results_pull.output
+        output_pull = validate_output(logger, results, results_pull, is_pull)
         testsuites = ET.Element("testsuites")
-        for test_name, result_table in output.items():
-            if not is_pull:
-                testsuites.append(result_table)
-            else:
-                testsuites.append(result_table)
-                average_values.tag = "periodic_avg"
-                testsuites.append(average_values)
+        ext = get_output_extension(kwargs['output_format'])
+        for test_name, result_table in results.output.items():
+            testsuites.append(result_table)
+            if is_pull:
+                results.average_values.tag = "periodic_avg"
+                testsuites.append(results.average_values)
                 output_pull.get(test_name).tag = "pull"
                 testsuites.append(output_pull.get(test_name))
             xml_str = ET.tostring(testsuites, encoding="utf8", method="xml").decode()
@@ -49,12 +40,11 @@ class JUnitFormatter:
             pretty_xml_as_string = dom.toprettyxml()
             print(pretty_xml_as_string)
             output_file_name = (
-                f"{os.path.splitext(kwargs['save_output_path'])[0]}"
-                f".{get_output_extension(kwargs['output_format'])}"
+                f"{os.path.splitext(kwargs['save_output_path'])[0]}.{ext}"
             )
             with open(output_file_name, 'w', encoding="utf-8") as file:
                 file.write(str(pretty_xml_as_string))
             logger.info("Output saved to %s", output_file_name)
-            if regression_flag:
+            if results.regression_flag:
                 return True
         return False
