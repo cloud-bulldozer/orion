@@ -9,11 +9,11 @@ def validate_output(logger, results, results_pull, is_pull):
     Calls sys.exit(0) if results have no output.
 
     Returns:
-        The pull request output dict, or an empty list if not applicable.
+        dict: The pull request output dict, or an empty dict if not applicable.
     """
     if not results.output:
         logger.error("Terminating test")
         sys.exit(0)
     if is_pull and results_pull.pr:
         return results_pull.output
-    return []
+    return {}

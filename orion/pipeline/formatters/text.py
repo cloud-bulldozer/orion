@@ -6,9 +6,10 @@ import sys
 from orion.reporting.summary import print_regression_summary
 
 
-def save_text_table(test_name, result_table, save_output_path):
+def save_text_table(test_name, result_table, save_output_path, run_type=""):
     """Save the text table to a file."""
-    output_file_name = f"{os.path.splitext(save_output_path)[0]}_table_{test_name}.txt"
+    suffix = f"_{run_type}" if run_type else ""
+    output_file_name = f"{os.path.splitext(save_output_path)[0]}_table_{test_name}{suffix}.txt"
     with open(output_file_name, 'w', encoding="utf-8") as file:
         file.write(str(result_table))
 
@@ -45,7 +46,11 @@ class TextFormatter: # pylint: disable=too-few-public-methods
             logger.error("Terminating test")
             sys.exit(0)
         for test_name, result_table in output.items():
-            save_text_table(test_name, result_table, kwargs['save_output_path'])
+            if is_pull:
+                run_type = f"pull_{pr}" if pr > 0 else "periodic"
+            else:
+                run_type = ""
+            save_text_table(test_name, result_table, kwargs['save_output_path'], run_type)
             if not kwargs['collapse']:
                 text = test_name
                 if pr > 0:
