@@ -28,6 +28,8 @@ class JUnitFormatter: # pylint: disable=too-few-public-methods
         output_pull = validate_output(logger, results, results_pull, is_pull)
         testsuites = ET.Element("testsuites")
         ext = get_output_extension(kwargs['output_format'])
+        # TODO: XML serialization inside the loop causes duplicate stdout output  # pylint: disable=fixme
+        # on multi-test runs. Move serialization/writing after the loop in Phase 6.
         for test_name, result_table in results.output.items():
             testsuites.append(result_table)
             if is_pull:

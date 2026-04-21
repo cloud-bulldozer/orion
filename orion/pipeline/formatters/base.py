@@ -1,4 +1,9 @@
-"""Base formatter ABC and registry for Orion pipeline output."""
+"""Base formatter ABC and registry for Orion pipeline output.
+
+TODO: Concrete formatters (TextFormatter, JsonFormatter, JUnitFormatter) currently
+use a legacy calling convention and do not subclass this ABC. In Phase 6, update
+them to inherit from Formatter and accept (list[TransformedResult], CLIOptions).
+"""
 
 from abc import ABC, abstractmethod
 

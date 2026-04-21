@@ -41,7 +41,11 @@ class TextFormatter: # pylint: disable=too-few-public-methods
         regression_flag = results.regression_flag
         regression_data = results.regression_data
         average_values = results.average_values
-        pr = results.pr if is_pull else 0
+        # results.pr may be a string from YAML/Jinja templates
+        try:
+            pr = int(results.pr) if is_pull else 0
+        except (ValueError, TypeError):
+            pr = 0
         if not output:
             logger.error("Terminating test")
             sys.exit(0)
