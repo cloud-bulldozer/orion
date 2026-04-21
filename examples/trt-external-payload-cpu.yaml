@@ -48,6 +48,7 @@ tests:
       - name: openshift-multus-ns-CPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-multus
+        labels.container.keyword: kube-multus
         metric_of_interest: value
         agg:
           value: cpu
