@@ -30,6 +30,7 @@ tests:
       - name: passthrough_avg_rps
         config.termination: passthrough
         metric_of_interest: total_avg_rps
+        direction: -1
         agg:
           value: total_avg_rps
           agg_type: avg
@@ -60,6 +61,7 @@ tests:
       - name: reencrypt_avg_rps
         config.termination: reencrypt
         metric_of_interest: total_avg_rps
+        direction: -1
         agg:
           value: total_avg_rps
           agg_type: avg
