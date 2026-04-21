@@ -31,7 +31,7 @@ tests:
           value: cpu
           agg_type: avg
 
-      - name: ovnCPU
+      - name: ovnkCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
@@ -54,7 +54,7 @@ tests:
           value: duration
           agg_type: avg
 
-      - name: ovsCPU-irate-all
+      - name: ovsCPUAll
         metricName.keyword: cgroupCPU
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
@@ -64,7 +64,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsMemory-Workers
+      - name: ovsWorkersMemory
         metricName.keyword: cgroupMemoryRSS-Workers
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
@@ -74,7 +74,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsMemory-Masters
+      - name: ovsMastersMemory
         metricName.keyword: cgroupMemoryRSS-Masters
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
@@ -84,7 +84,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: ovsMemory-all
+      - name: ovsMemory
         metricName.keyword: cgroupMemoryRSS
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
