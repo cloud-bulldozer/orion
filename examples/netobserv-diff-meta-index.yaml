@@ -12,6 +12,7 @@ tests:
       ocpVersion: "{{ version }}"
       ocpMajorVersion: "{{ version }}"
       sdnType: OVNKubernetes
+      fips: "{{ fips | default('false') }}"
       not:
         stream: okd
 

@@ -11,7 +11,7 @@ tests:
       workerNodesType: m5.2xlarge
       networkType: OVNKubernetes
       encrypted: false
-      fips: false
+      fips: "{{ fips | default('false') }}"
       ipsec: false
       not:
         stream: okd

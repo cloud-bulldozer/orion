@@ -14,7 +14,7 @@ tests:
       totalNodesCount: 15
       networkType: OVNKubernetes
       encrypted: true
-      fips: false
+      fips: "{{ fips | default('false') }}"
       ipsec: false
       not:
         stream: okd

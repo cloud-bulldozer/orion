@@ -31,6 +31,7 @@ tests:
       fips_enabled: "{{ fips_enabled }}"
       ipsec_enabled: "{{ ipsec_enabled }}"
       tag.keyword: "{{ run_tag }}"
+      fips: "{{ fips | default('false') }}"
     metrics:
       # Recovery & Health metrics
       - name: affected_nodes_recovery

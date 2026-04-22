@@ -12,6 +12,7 @@ tests:
       ocpVersion: "{{ ocp_version }}"
       quayVersion: "{{ quay_version }}"
       networkType: OVNKubernetes
+      fips: "{{ fips | default('false') }}"
 
     metrics:
       - name: image_pulls_success_count
