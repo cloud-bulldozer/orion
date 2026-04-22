@@ -10,6 +10,7 @@ def validate_output(logger, results, results_pull, is_pull):
 
     Returns:
         dict: The pull request output dict, or an empty dict if not applicable.
+              Returns dict (not list) so callers can safely use .get().
     """
     if not results.output:
         logger.error("Terminating test")

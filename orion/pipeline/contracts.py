@@ -57,7 +57,7 @@ class CLIOptions:
     pr_analysis: bool
     pr_vars: PRAnalysisVars | None
     convert_tinyurl: bool
-    display: bool
+    display: list[str]
     node_count: int | None
     filter_args: str | None
     anomaly_window: int
