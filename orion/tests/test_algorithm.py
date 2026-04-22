@@ -270,7 +270,7 @@ class TestEDivisive:
 
     def test_analyze_with_iso_timestamps(self):
         df = _make_dataframe(n=15)
-        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
+        df.replace(pd.to_datetime(df["timestamp"], unit="s"))
         algo = EDivisive(df, _make_test(), _make_options(), _make_metrics_config())
         series, _cps = algo.get_analysis_results()
         assert series is not None
@@ -382,7 +382,7 @@ class TestIsolationForest:
 
     def test_analyze_with_iso_timestamps(self):
         df = _make_dataframe(n=30)
-        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
+        df.replace(pd.to_datetime(df["timestamp"], unit="s"))
         algo = IsolationForestWeightedMean(
             df, _make_test(), _make_options(), _make_metrics_config()
         )
@@ -462,7 +462,7 @@ class TestCMR:
 
     def test_iso_timestamps_converted(self):
         df = _make_dataframe(n=3)
-        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
+        df.replace(pd.to_datetime(df["timestamp"], unit="s"))
         algo = CMR(df, _make_test(), _make_options(), _make_metrics_config())
         series, _cps = algo.get_analysis_results()
         assert series is not None
