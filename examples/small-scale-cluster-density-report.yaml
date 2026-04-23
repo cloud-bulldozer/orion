@@ -14,7 +14,7 @@ tests:
       networkType: OVNKubernetes
       ipsec: false
       encrypted: true
-      fips: false
+      fips: "{{ fips | default('false') }}"
       publish: External
       computeArch: amd64
       controlPlaneArch: amd64

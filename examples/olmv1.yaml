@@ -9,6 +9,7 @@ tests:
       workerNodesCount: 3
       benchmark.keyword: olm
       ocpVersion: "{{ version }}"
+      fips: "{{ fips | default('false') }}"
       not:
         stream: okd
     metrics:

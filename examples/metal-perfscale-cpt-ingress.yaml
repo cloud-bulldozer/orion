@@ -13,12 +13,12 @@ tests:
       infraNodesType.keyword: ""
       networkType: OVNKubernetes
       encrypted: false
-      fips: false
       ipsec: false
       jobType: "{{ jobtype | default('periodic') }}"
       pullNumber: "{{ pull_number | default(0) }}"
       organization: "{{ organization | default('') }}"
       repository: "{{ repository | default('') }}"
+      fips: "{{ fips | default('false') }}"
       not:
         stream: okd
         serviceMeshMode:

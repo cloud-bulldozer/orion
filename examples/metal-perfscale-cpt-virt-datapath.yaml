@@ -14,6 +14,7 @@ tests:
       pullNumber: "{{ pull_number | default(0) }}"
       organization: "{{ organization | default('') }}"
       repository: "{{ repository | default('') }}"
+      fips: "{{ fips | default('false') }}"
       not:
         stream: okd
         serviceMeshMode:

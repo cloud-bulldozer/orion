@@ -8,11 +8,11 @@ tests:
       workerNodesCount: 24
       benchmark.keyword: cluster-density-v2
       ocpVersion: "{{ version }}"
+      fips: "{{ fips | default('false') }}"
       not:
         stream: okd
         # networkType: OVNKubernetes
         # encrypted: true
-        # fips: false
         # ipsec: false
 
     metrics:

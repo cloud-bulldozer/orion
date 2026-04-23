@@ -15,10 +15,10 @@ tests:
       networkType: OVNKubernetes
       ipsec: false
       encrypted: true
-      fips: false
       publish: External
       computeArch: amd64
       controlPlaneArch: amd64
+      fips: "{{ fips | default('false') }}"
       not:
         stream: okd
 

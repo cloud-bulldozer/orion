@@ -13,7 +13,7 @@ tests:
       infraNodesType: c6i.4xlarge
       networkType: OVNKubernetes
       encrypted: false
-      fips: false
+      fips: "{{ fips | default('false') }}"
       ipsec: false
       serviceMeshMode: "{{ service_mesh_mode }}"
       not:

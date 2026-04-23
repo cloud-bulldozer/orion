@@ -16,5 +16,6 @@ metadata:
   ocpVersion: "{{ version }}"
   networkType: OVNKubernetes
   mcpEnabled: false
+  fips: "{{ fips | default('false') }}"
   not:
     stream: okd

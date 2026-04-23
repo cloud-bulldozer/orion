@@ -10,6 +10,7 @@ tests:
       workerNodesCount: 9
       benchmark.keyword: k8s-netperf
       networkType: OVNKubernetes
+      fips: "{{ fips | default('false') }}"
       stream: okd
       not:
         serviceMeshMode:
