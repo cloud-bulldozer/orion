@@ -180,7 +180,8 @@ def main(**kwargs):
     report_value = kwargs.pop("report", None)
     if report_value:
         level = logging.DEBUG if kwargs["debug"] else logging.INFO
-        SingletonLogger(debug=level, name="Orion")
+        logger = SingletonLogger(debug=level, name="Orion")
+        logger.info("Orion version: %s", __version__)
         files = [f.strip() for f in report_value.split(",") if f.strip()]
         data = load_json_files(files)
         has_regression = generate_report(data)
@@ -195,7 +196,7 @@ def main(**kwargs):
     if kwargs['output_format'] == cnsts.JSON :
         level = logging.ERROR
     logger = SingletonLogger(debug=level, name="Orion")
-    logger.info("🏹 Starting Orion in command-line mode")
+    logger.info("🏹 Starting Orion (%s) in command-line mode", __version__)
 
     # Load config first (needed for auto-detection)
     kwargs["config"] = load_config(kwargs["config"], kwargs["input_vars"])
