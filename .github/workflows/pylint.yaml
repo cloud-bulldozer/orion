@@ -14,7 +14,7 @@ jobs:
           persist-credentials: false
       - name: Install dependencies
         run: |
-          pip install -c build-constraint.txt -r requirements.txt
+          pip install -r requirements.txt
           pip install -r requirements-test.txt
 
       - name: Analysing the code with pylint
