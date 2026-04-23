@@ -28,6 +28,7 @@ class AnalyzeResult(NamedTuple):
 
 class TestResults(NamedTuple):
     """Return type for run() results tuples."""
+    __test__ = False
     output: Optional[Dict[str, Any]]
     regression_flag: bool
     regression_data: list
