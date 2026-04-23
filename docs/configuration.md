@@ -501,4 +501,120 @@ Orion validates configuration files and will report errors for:
 - Conflicting settings
 - Malformed YAML syntax
 
-Use the `--debug` flag to get detailed validation information. 
+Use the `--debug` flag to get detailed validation information.
+
+## JIRA Integration for Regression Tracking
+
+Orion supports tracking performance regressions as JIRA issues instead of (or in addition to) flat YAML files. This enables teams to manage regressions using their existing issue tracking workflows.
+
+### ACK Provider Overview
+
+ACK (Acknowledgment) providers allow Orion to query for known regressions before reporting new ones. Orion supports two types of providers:
+
+- **File-based provider**: Reads acknowledgments from YAML files (default behavior)
+- **JIRA provider**: Queries acknowledgments from JIRA issues (new in this release)
+
+You can use both providers simultaneously in "hybrid mode" to transition from file-based to JIRA-based tracking.
+
+### Basic JIRA Usage
+
+**Query existing JIRA acknowledgments:**
+
+```bash
+orion --config config.yaml --jira-ack \
+  --jira-url https://issues.example.com \
+  --jira-project PERFSCALE \
+  --jira-component CPT_ISSUES
+```
+
+**Auto-create JIRA issues for new regressions:**
+
+```bash
+orion --config config.yaml --jira-ack --jira-auto-create \
+  --jira-url https://issues.example.com \
+  --jira-project PERFSCALE \
+  --jira-component CPT_ISSUES
+```
+
+### Authentication
+
+JIRA authentication requires environment variables based on your JIRA deployment type:
+
+**On-premise JIRA (Personal Access Token):**
+
+```bash
+export JIRA_TOKEN="your_personal_access_token"
+```
+
+**Atlassian Cloud (Email + API Token):**
+
+```bash
+export JIRA_EMAIL="your@email.com"
+export JIRA_TOKEN="your_api_token"
+```
+
+### JIRA Configuration Options
+
+#### Command-line Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--jira-ack` | Enable JIRA ACK provider | `false` |
+| `--jira-auto-create` | Auto-create JIRA issues for new regressions | `false` |
+| `--jira-url` | JIRA instance URL (e.g., `https://issues.redhat.com`) | Required |
+| `--jira-project` | JIRA project key | `PERFSCALE` |
+| `--jira-component` | JIRA component name | `CPT_ISSUES` |
+
+#### Configuration File Options
+
+You can also configure JIRA settings in your YAML configuration file:
+
+```yaml
+jira_url: https://issues.example.com
+jira_project: PERFSCALE
+jira_component: CPT_ISSUES
+jira_uuid_field: description      # Field to store UUID (default)
+jira_metric_field: labels          # Field to store metric name (default)
+```
+
+### Auto-created Issue Content
+
+When `--jira-auto-create` is enabled, Orion creates rich JIRA issues that include:
+
+- **Summary**: `Regression in <metric> (<version>)`
+- **Description** (JIRA markup format):
+  - Test name and UUID
+  - Version change (e.g., `4.21 → 4.22`)
+  - Build URL and timestamp
+  - Percentage change for primary metric
+  - Table of all affected metrics
+  - Related pull requests between versions
+  - GitHub context (commits and releases)
+- **Labels**: Version, test type, and metric name
+- **Component**: Specified via `--jira-component`
+- **Issue Type**: Bug
+
+### JIRA-only Mode
+
+Skip file-based ACKs entirely:
+
+```bash
+# Use JIRA exclusively (no file ACK auto-detection)
+orion --config config.yaml --jira-ack
+```
+
+Without `--ack`, Orion won't auto-detect or load file-based acknowledgments.
+
+### Troubleshooting
+
+**Debug mode:**
+
+```bash
+orion --config config.yaml --jira-ack --debug
+```
+
+This will show:
+- JIRA connection status
+- JQL queries being executed
+- Issue parsing details
+- Permission check results 

@@ -10,7 +10,7 @@ from pathlib import Path
 import re
 import sys
 import warnings
-from typing import Any
+from typing import Any, Optional
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 import click
@@ -18,10 +18,11 @@ from orion.logger import SingletonLogger
 from orion.run_test import run, TestResults
 from orion.utils import get_output_extension
 from orion import constants as cnsts
-from orion.config import load_config, load_ack, merge_ack_files, auto_detect_ack_file_with_vars
+from orion.config import load_config, auto_detect_ack_file_with_vars
 from orion.visualization import generate_test_html
 from orion.reporting.standalone import load_json_files, generate_report
 from orion.reporting.summary import print_regression_summary
+from orion.ack_providers import AckProvider, FileAckProvider, JiraAckProvider
 from version import __version__
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
@@ -36,6 +37,200 @@ def build_viz_output_file(
     """Build the output path for a visualization HTML file."""
     suffix = f"_{run_type}" if run_type else ""
     return f"{output_base_path}_{test_name}{suffix}_viz.html"
+
+
+def _format_pr_section(prs: list, prev_ver: str, bad_ver: str) -> str:
+    """Format the PR section of JIRA description."""
+    if not prs:
+        return ""
+
+    section = "h3. Related Pull Requests\n"
+    section += f"PRs introduced between {prev_ver} and {bad_ver}:\n\n"
+    for pr in prs:
+        if isinstance(pr, str):
+            section += f"* {pr}\n"
+        elif isinstance(pr, dict):
+            pr_url = pr.get("url", pr.get("html_url", ""))
+            pr_title = pr.get("title", "")
+            if pr_url and pr_title:
+                section += f"* [{pr_title}|{pr_url}]\n"
+            elif pr_url:
+                section += f"* {pr_url}\n"
+    section += "\n"
+    return section
+
+
+def _format_github_context(github_context: dict) -> str:
+    """Format the GitHub context section (commits and releases)."""
+    if not github_context:
+        return ""
+
+    repos = github_context.get("repositories", {})
+    if not repos:
+        return ""
+
+    section = "h3. GitHub Context\n"
+    for repo_name, repo_data in repos.items():
+        commits = repo_data.get("commits", {})
+        if commits.get("count", 0) > 0:
+            section += f"h4. {repo_name} - Commits ({commits['count']})\n"
+            for commit in commits.get("items", [])[:10]:
+                msg = commit.get("message", "").split("\n")[0][:80]
+                url = commit.get("html_url", "")
+                date = commit.get("commit_timestamp", "")
+                author = commit.get("commit_author", {}).get("email", "")
+                if url:
+                    section += f"* [{msg}|{url}] - {author} - {date}\n"
+                else:
+                    section += f"* {msg} - {author} - {date}\n"
+            if commits.get("count", 0) > 10:
+                section += f"* _... and {commits['count'] - 10} more commits_\n"
+            section += "\n"
+
+        releases = repo_data.get("releases", {})
+        if releases.get("count", 0) > 0:
+            section += f"h4. {repo_name} - Releases ({releases['count']})\n"
+            for release in releases.get("items", [])[:5]:
+                name = release.get("name", release.get("tag_name", ""))
+                url = release.get("html_url", "")
+                date = release.get("published_at", "")
+                if url:
+                    section += f"* [{name}|{url}] - {date}\n"
+                else:
+                    section += f"* {name} - {date}\n"
+            section += "\n"
+
+    return section
+
+
+def format_jira_description(regression: dict, metric_name: str, pct_change: float) -> str:
+    """
+    Format a rich JIRA description with all regression details.
+
+    Args:
+        regression: Regression data dictionary
+        metric_name: Name of the specific metric for this issue
+        pct_change: Percentage change for this metric
+
+    Returns:
+        Formatted JIRA description text
+    """
+    # Build description using JIRA markup
+    desc = "h2. Performance Regression Detected by Orion\n\n"
+
+    # Basic info
+    desc += "h3. Changepoint Details\n"
+    desc += f"*Test:* {regression.get('test_name')}\n"
+    desc += f"*UUID:* {{{regression.get('uuid')}}}\n"
+    desc += f"*Version Change:* {regression.get('prev_ver')} → {regression.get('bad_ver')}\n"
+    if regression.get("timestamp"):
+        desc += f"*Timestamp:* {regression.get('timestamp')}\n"
+    if regression.get("buildUrl"):
+        desc += f"*Build URL:* [View Build|{regression.get('buildUrl')}]\n"
+    desc += "\n"
+
+    # Primary metric for this issue
+    desc += "h3. Primary Regression\n"
+    desc += f"*Metric:* {metric_name}\n"
+    desc += f"*Change:* {pct_change:+.2f}%\n"
+    desc += "\n"
+
+    # All affected metrics
+    metrics_with_change = regression.get("metrics_with_change", [])
+    if len(metrics_with_change) > 1:
+        desc += "h3. All Affected Metrics\n"
+        desc += "|| Metric || Change || Value ||\n"
+        for metric in metrics_with_change:
+            labels = metric.get("labels", [])
+            label_str = f" ({', '.join(labels)})" if labels else ""
+            desc += f"| {metric.get('name')}{label_str} | {metric.get('percentage_change', 0):+.2f}% | {metric.get('value', 'N/A')} |\n"
+        desc += "\n"
+
+    # Add PR and GitHub context sections
+    desc += _format_pr_section(
+        regression.get("prs", []),
+        regression.get("prev_ver", ""),
+        regression.get("bad_ver", "")
+    )
+    desc += _format_github_context(regression.get("github_context"))
+
+    # Footer
+    desc += "----\n"
+    desc += "_This issue was automatically created by Orion regression detection._\n"
+
+    return desc
+
+
+def auto_create_jira_issues(regression_data: list, provider: AckProvider, logger) -> int:
+    """
+    Automatically create JIRA issues for detected regressions.
+
+    Args:
+        regression_data: List of regression dictionaries from run()
+        provider: JIRA ACK provider to use for creation
+        logger: Logger instance
+
+    Returns:
+        Number of JIRA issues successfully created
+    """
+    if not regression_data:
+        return 0
+
+    created_count = 0
+    skipped_count = 0
+
+    for regression in regression_data:
+        uuid = regression.get("uuid")
+        if not uuid:
+            logger.warning("Skipping JIRA creation: no UUID in regression data")
+            continue
+
+        # Create JIRA issue for each regressed metric
+        for metric_info in regression.get("metrics_with_change", []):
+            metric_name = metric_info.get("name")
+            if not metric_name:
+                continue
+
+            pct_change = metric_info.get("percentage_change", 0)
+
+            logger.info(
+                "Creating JIRA issue for regression: test=%s, uuid=%s, metric=%s, change=%+.2f%%",
+                regression.get("test_name"), uuid[:8], metric_name, pct_change
+            )
+
+            try:
+                # Normalize versions to short format (e.g., "4.22" from "4.22.0-ec.3")
+                bad_ver = regression.get("bad_ver")
+                prev_ver = regression.get("prev_ver")
+
+                success = provider.create_ack(
+                    uuid=uuid,
+                    metric=metric_name,
+                    reason=format_jira_description(regression, metric_name, pct_change),
+                    version=str(bad_ver)[:4].rstrip('.') if bad_ver else None,
+                    test=regression.get("benchmark_type") or regression.get("test_name"),
+                    build_url=regression.get("buildUrl", ""),
+                    pct_change=f"{pct_change:+.2f}",
+                    prev_version=str(prev_ver)[:4].rstrip('.') if prev_ver else None
+                )
+
+                if success:
+                    created_count += 1
+                    logger.info("✓ Created JIRA issue for %s / %s", uuid[:8], metric_name)
+                else:
+                    skipped_count += 1
+                    logger.debug("Skipped (likely already exists): %s / %s", uuid[:8], metric_name)
+
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.error("Failed to create JIRA issue for %s / %s: %s", uuid[:8], metric_name, e)
+                skipped_count += 1
+
+    if created_count > 0:
+        logger.info("📝 Created %d JIRA issue(s) for regressions", created_count)
+    if skipped_count > 0:
+        logger.debug("Skipped %d issue(s) (already exist or failed)", skipped_count)
+
+    return created_count
 
 
 class Dictionary(click.ParamType):
@@ -100,6 +295,109 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
     return value
 
 
+def _resolve_template_variable(value: str, input_vars: dict) -> str:
+    """Resolve template variable like {{VERSION}} from input_vars."""
+    if not value or "{{" not in str(value):
+        return str(value).strip('"')
+
+    match = re.search(r'\{\{\s*(\w+)\s*\}\}', str(value))
+    if match:
+        var_name = match.group(1)
+        return input_vars.get(var_name) or input_vars.get(var_name.lower())
+    return value
+
+
+def _extract_version_and_test(config: dict, input_vars: dict) -> tuple:
+    """Extract version and test type from config."""
+    if "tests" not in config or not config["tests"]:
+        return None, None
+
+    test = config["tests"][0]
+    metadata = test.get("metadata", {})
+
+    # Resolve version
+    version_field = test.get("version_field", "ocpVersion")
+    version = _resolve_template_variable(metadata.get(version_field, ""), input_vars)
+
+    # Resolve test type
+    test_type = _resolve_template_variable(metadata.get("benchmark.keyword", ""), input_vars)
+
+    return version, test_type
+
+
+def _create_jira_provider(kwargs: dict, config: dict, logger) -> JiraAckProvider:
+    """Create and initialize a JIRA ACK provider."""
+    jira_url = kwargs.get("jira_url") or config.get("jira_url")
+    if not jira_url:
+        logger.error("JIRA URL required when --jira-ack is enabled. Use --jira-url or set JIRA_URL env var")
+        sys.exit(1)
+
+    try:
+        provider = JiraAckProvider(
+            jira_url=jira_url,
+            project=kwargs.get("jira_project", "PERFSCALE"),
+            component=kwargs.get("jira_component", "CPT_ISSUES"),
+            token=kwargs.get("jira_token") or config.get("jira_token"),
+            email=kwargs.get("jira_email") or config.get("jira_email"),
+            uuid_field=config.get("jira_uuid_field", "description"),
+            metric_field=config.get("jira_metric_field", "labels")
+        )
+        logger.info("✓ JIRA ACK provider initialized: %s/%s",
+                   provider.project, provider.component)
+        return provider
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger.error("Failed to initialize JIRA provider: %s", e)
+        logger.error("See JIRA_PERMISSIONS_TROUBLESHOOTING.md for help")
+        sys.exit(1)
+
+
+def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvider], Optional[str], Optional[str]]:
+    """
+    Factory function to create ACK providers based on configuration.
+
+    Args:
+        kwargs: CLI arguments
+        config: Loaded configuration dict
+        logger: Logger instance
+
+    Returns:
+        Tuple of (list of ACK provider instances, version string, test type string)
+    """
+    providers = []
+
+    # Extract version and test type from config
+    version, test_type = _extract_version_and_test(config, kwargs["input_vars"])
+
+    # JIRA provider
+    if kwargs.get("jira_ack"):
+        providers.append(_create_jira_provider(kwargs, config, logger))
+
+    # File-based provider (auto-detect unless disabled or JIRA-only mode)
+    jira_only_mode = kwargs.get("jira_ack") and not kwargs.get("ack")
+
+    if jira_only_mode:
+        logger.info("JIRA-only mode: skipping default file-based ACKs (use --ack to enable hybrid mode)")
+    elif not kwargs.get("no_default_ack"):
+        auto_ack_file = auto_detect_ack_file_with_vars(
+            config,
+            kwargs["input_vars"],
+            ack_dir="ack"
+        )
+        if auto_ack_file:
+            providers.append(FileAckProvider(auto_ack_file))
+            logger.info("✓ File ACK provider initialized: %s", auto_ack_file)
+    else:
+        logger.info("default ACK loading disabled")
+
+    # Manual ACK files (always processed if provided)
+    if kwargs.get("ack"):
+        for ack_file in [f.strip() for f in kwargs["ack"].split(",") if f.strip()]:
+            providers.append(FileAckProvider(ack_file))
+            logger.info("✓ Manual file ACK provider initialized: %s", ack_file)
+
+    return providers, version, test_type
+
+
 # pylint: disable=too-many-locals
 @click.version_option(version=__version__, message="%(prog)s %(version)s")
 @click.command(context_settings={"show_default": True, "max_content_width": 180})
@@ -114,6 +412,13 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--config", help="Path to the configuration file", required=False, default=None)
 @click.option("--ack", default="", help="Optional ack YAML to ack known regressions (can specify multiple files separated by comma)")
 @click.option("--no-default-ack", is_flag=True, default=False, help="Disable automatic default ACK file detection and loading (manual --ack files are still loaded)")
+@click.option("--jira-ack", is_flag=True, default=False, help="Use JIRA to track and retrieve acknowledgments instead of YAML files")
+@click.option("--jira-url", default="https://issues.redhat.com", envvar="JIRA_URL", help="JIRA instance URL (e.g., https://issues.redhat.com). Can be set via JIRA_URL env var")
+@click.option("--jira-project", default="PERFSCALE", help="JIRA project key for acknowledgments")
+@click.option("--jira-component", default="CPT_ISSUES", help="JIRA component name for acknowledgments (use empty string '' to skip component)")
+@click.option("--jira-token", default="", envvar="JIRA_TOKEN", help="JIRA API token (Cloud) or personal access token (on-premise). Can be set via JIRA_TOKEN env var")
+@click.option("--jira-email", default="", envvar="JIRA_EMAIL", help="Email address for Atlassian Cloud authentication (required for *.atlassian.net). Can be set via JIRA_EMAIL env var")
+@click.option("--jira-auto-create", is_flag=True, default=False, help="Automatically create JIRA issues for detected regressions (requires --jira-ack)")
 @click.option(
     "--save-data-path", default="data.csv", help="Path to save the output file"
 )
@@ -201,80 +506,53 @@ def main(**kwargs):
     # Load config first (needed for auto-detection)
     kwargs["config"] = load_config(kwargs["config"], kwargs["input_vars"])
 
-    # Handle ACK file loading
-    # Logic: Auto-load ack/all_ack.yaml unless --no-default-ack. Manual --ack files are always loaded and merged.
-    ack_maps = []
+    # Validate --jira-auto-create requires --jira-ack
+    if kwargs.get("jira_auto_create") and not kwargs.get("jira_ack"):
+        logger.error("--jira-auto-create requires --jira-ack to be enabled")
+        sys.exit(1)
 
-    # Step 1: Auto-detect and load consolidated ACK file (skipped when --no-default-ack)
-    if kwargs["no_default_ack"]:
-        logger.info("Automatic default ACK loading disabled (--no-default-ack flag)")
-    else:
-        auto_ack_file = auto_detect_ack_file_with_vars(
-            kwargs["config"],
-            kwargs["input_vars"],
-            ack_dir="ack"
-        )
-        if auto_ack_file:
-            # Extract version and test type from config for filtering
-            version = None
-            test_type = None
+    # Handle ACK loading using provider system
+    providers, version, test_type = get_ack_providers(kwargs, kwargs["config"], logger)
 
-            if "tests" in kwargs["config"] and len(kwargs["config"]["tests"]) > 0:
-                test = kwargs["config"]["tests"][0]
-                metadata = test.get("metadata", {})
+    # Save JIRA provider reference for auto-creation later
+    jira_provider = None
+    if providers:
+        for provider in providers:
+            if isinstance(provider, JiraAckProvider):
+                jira_provider = provider
+                break
 
-                # Resolve version
-                version_field = test.get("version_field", "ocpVersion")
-                version_value = metadata.get(version_field, "")
-                if version_value and "{{" not in str(version_value):
-                    version = str(version_value).strip('"')
-                elif version_value and "{{" in str(version_value):
-                    match = re.search(r'\{\{\s*(\w+)\s*\}\}', str(version_value))
-                    if match:
-                        var_name = match.group(1)
-                        version = kwargs["input_vars"].get(var_name) or kwargs["input_vars"].get(var_name.lower())
+    if providers:
+        # Collect ACKs from all providers
+        all_acks = []
+        for provider in providers:
+            try:
+                acks = provider.get_acks(version=version, test_type=test_type)
+                if acks:
+                    all_acks.extend(acks)
+                    logger.info(
+                        "✓ Loaded %d ACK entries from %s (version=%s, test=%s)",
+                        len(acks),
+                        provider.__class__.__name__,
+                        version or "all",
+                        test_type or "all"
+                    )
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.error("Failed to load ACKs from %s: %s", provider.__class__.__name__, e)
 
-                # Resolve test type
-                test_type_value = metadata.get("benchmark.keyword", "")
-                if test_type_value and "{{" not in str(test_type_value):
-                    test_type = str(test_type_value).strip()
-                elif test_type_value and "{{" in str(test_type_value):
-                    match = re.search(r'\{\{\s*(\w+)\s*\}\}', str(test_type_value))
-                    if match:
-                        var_name = match.group(1)
-                        test_type = kwargs["input_vars"].get(var_name) or kwargs["input_vars"].get(var_name.lower())
-
-            # Load auto-detected ACK file with filtering
-            auto_ack_map = load_ack(auto_ack_file, version=version, test_type=test_type)
-            if auto_ack_map and auto_ack_map.get("ack") and len(auto_ack_map.get("ack", [])) > 0:
-                ack_maps.append(auto_ack_map)
-                logger.info("✓ Auto-loaded ACK file: %s (version=%s, test_type=%s, matching entries=%d)",
-                           auto_ack_file, version or "all", test_type or "all",
-                           len(auto_ack_map.get("ack", [])))
-            elif auto_ack_file:
-                logger.info("✓ Loaded ACK file: %s (version=%s, test_type=%s, no matching entries found)",
-                           auto_ack_file, version or "all", test_type or "all")
-
-    # Load manually specified ACK files (if any) — always runs even with --no-default-ack
-    if kwargs["ack"]:
-        # Support multiple ACK files separated by comma
-        ack_files = [f.strip() for f in kwargs["ack"].split(",") if f.strip()]
-        for ack_file in ack_files:
-            if len(ack_file) > 0:
-                manual_ack_map = load_ack(ack_file)
-                if manual_ack_map and manual_ack_map.get("ack"):
-                    ack_maps.append(manual_ack_map)
-                    logger.info("✓ Loaded manual ACK file: %s (entries=%d)",
-                               ack_file, len(manual_ack_map.get("ack", [])))
-
-    # Merge all ACK maps (auto-loaded + manual)
-    if ack_maps:
-        kwargs["ackMap"] = merge_ack_files(ack_maps)
-        total_entries = len(kwargs["ackMap"].get("ack", []))
-        logger.info("✓ Total ACK entries loaded: %d", total_entries)
+        # Merge and deduplicate
+        if all_acks:
+            # Use the base provider's merge method to deduplicate
+            merged_acks = providers[0].merge_acks([all_acks])
+            kwargs["ackMap"] = {"ack": merged_acks}
+            logger.info("✓ Total ACK entries loaded: %d (after deduplication)", len(merged_acks))
+        else:
+            kwargs["ackMap"] = None
+            logger.debug("No ACK entries loaded")
     else:
         kwargs["ackMap"] = None
-        logger.debug("No ACK entries loaded")
+        if not kwargs.get("no_default_ack"):
+            logger.info("No ACK providers configured")
 
     if not kwargs["metadata_index"] or not kwargs["es_server"]:
         logger.error("metadata-index and es-server flags must be provided")
@@ -297,6 +575,25 @@ def main(**kwargs):
     is_pull = False
     if results_pull.output:
         is_pull = True
+
+    # Auto-create JIRA issues for regressions if enabled
+    if kwargs.get("jira_auto_create") and jira_provider:
+        if results.regression_flag and results.regression_data:
+            logger.info("Auto-creating JIRA issues for detected regressions...")
+            created = auto_create_jira_issues(results.regression_data, jira_provider, logger)
+            if created == 0 and results.regression_data:
+                logger.warning(
+                    "No JIRA issues were created. This may be due to permissions. "
+                    "See JIRA_PERMISSIONS_TROUBLESHOOTING.md for help."
+                )
+        if is_pull and results_pull.regression_flag and results_pull.regression_data:
+            logger.info("Auto-creating JIRA issues for pull request regressions...")
+            created = auto_create_jira_issues(results_pull.regression_data, jira_provider, logger)
+            if created == 0 and results_pull.regression_data:
+                logger.warning(
+                    "No JIRA issues were created. This may be due to permissions. "
+                    "See JIRA_PERMISSIONS_TROUBLESHOOTING.md for help."
+                )
     if kwargs['output_format'] == cnsts.JSON:
         has_regression = print_json(logger, kwargs, results, results_pull, is_pull)
     elif kwargs['output_format'] == cnsts.JUNIT:
