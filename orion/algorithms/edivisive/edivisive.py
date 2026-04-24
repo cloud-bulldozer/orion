@@ -5,6 +5,7 @@ import logging
 from typing import Dict, List
 import pandas as pd
 from otava.analysis import ChangePoint
+from otava.series import AnalysisOptions
 from orion.algorithms.algorithm import Algorithm
 
 logger = logging.getLogger("Orion")
@@ -23,7 +24,9 @@ class EDivisive(Algorithm):
             self.dataframe["timestamp"] = pd.to_datetime(self.dataframe["timestamp"])
             self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int) // 10**9
         series = self.setup_series()
-        change_points_by_metric = series.analyze().change_points
+        options = AnalysisOptions()
+        options.orig_edivisive = True
+        change_points_by_metric = series.analyze(options).change_points
 
         # Process if we have ack'ed regression
         ackSet = set()

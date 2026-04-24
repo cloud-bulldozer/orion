@@ -23,5 +23,5 @@ CMR="cmr"
 # past. Run frequency varies by team; unbounded + cap guarantees we take only what
 # we need and don't depend on a fixed number of days.
 #
-CHANGEPOINT_BUFFER = 5
-EXPAND_POINTS = 5
+CHANGEPOINT_BUFFER = 0
+EXPAND_POINTS = 0
