@@ -2,6 +2,8 @@
 Unit tests for run_test analyze behavior.
 """
 
+# pylint: disable=missing-function-docstring,too-few-public-methods
+
 import json
 import logging
 from types import SimpleNamespace
@@ -9,11 +11,13 @@ from types import SimpleNamespace
 import pandas as pd
 
 import orion.constants as cnsts
-import orion.run_test as run_test
+from orion import run_test
 from orion.logger import SingletonLogger
 
 
 class FakeAlgorithm:
+    """Minimal algorithm stub used by analyze() tests."""
+
     def __init__(self, test_name, json_payload, formatted_output, regression_flag):
         self.test_name = test_name
         self.json_payload = json_payload
@@ -23,6 +27,7 @@ class FakeAlgorithm:
         self.dataframe = pd.DataFrame()
 
     def output(self, output_format):
+        """Return canned output in the requested format."""
         if output_format == cnsts.JSON:
             return (
                 self.test_name,
@@ -182,10 +187,13 @@ def test_analyze_writes_sidecar_json_after_window_expansion(tmp_path, monkeypatc
     ]
 
     class FakeUtils:
+        """Return original data first, then expanded data."""
+
         def __init__(self, *_args, **_kwargs):
             self.calls = 0
 
         def process_test(self, *_args, **_kwargs):
+            """Simulate the second fetch used by window expansion."""
             self.calls += 1
             if self.calls == 1:
                 return original_df, metrics_config
@@ -205,10 +213,13 @@ def test_analyze_writes_sidecar_json_after_window_expansion(tmp_path, monkeypatc
     )
 
     class FakeAlgorithmFactory:
+        """Instantiate the original algorithm, then the expanded one."""
+
         def __init__(self):
             self.calls = 0
 
         def instantiate_algorithm(self, *_args, **_kwargs):
+            """Return the algorithm matching the current analyze stage."""
             self.calls += 1
             if self.calls == 1:
                 return original_algorithm
