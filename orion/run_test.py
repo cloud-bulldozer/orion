@@ -283,21 +283,19 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
     sidecar_output_prefix = (
         os.path.splitext(kwargs["save_output_path"])[0] if write_sidecar_json else None
     )
-    final_json_testname = None
-    final_json_payload = None
+    sidecar_json = None
 
     testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
     result_output[testname] = result_data
     if kwargs["output_format"] == cnsts.JSON:
-        final_json_testname = testname
-        final_json_payload = result_data
+        sidecar_json = (testname, result_data)
     elif write_sidecar_json or test_flag:
-        final_json_testname, final_json_payload, _ = algorithm.output(cnsts.JSON)
+        json_testname, json_payload, _ = algorithm.output(cnsts.JSON)
+        sidecar_json = (json_testname, json_payload)
     # Query with JSON
     regression_data = []
     if test_flag:
-        testname = final_json_testname
-        result_data = final_json_payload
+        testname, result_data = sidecar_json
         result_data_json = json.loads(result_data)
         current_points = len(fingerprint_matched_df)
 
@@ -370,8 +368,7 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
                         test["name"],
                     )
                     result_data_json = expanded_result_data_json
-                    final_json_testname = expanded_testname
-                    final_json_payload = expanded_result_data
+                    sidecar_json = (expanded_testname, expanded_result_data)
                     test_flag = expanded_test_flag
                     (expanded_testname, expanded_result_data_formatted, _) = (
                         expanded_algorithm.output(kwargs["output_format"])
@@ -380,8 +377,7 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
                 else:
                     test_flag = False
                     result_data_json = expanded_result_data_json
-                    final_json_testname = expanded_testname
-                    final_json_payload = expanded_result_data
+                    sidecar_json = (expanded_testname, expanded_result_data)
                     (_, expanded_result_data_formatted, _) = (
                         expanded_algorithm.output(kwargs["output_format"])
                     )
@@ -398,7 +394,7 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
                 clear_early_changepoints(result_data_json, changepoint_buffer)
                 # Use a copy of cleared data for output so table/JSON/JUnit show no changepoint
                 cleared_json = copy.deepcopy(result_data_json)
-                final_json_payload = json.dumps(cleared_json, indent=2)
+                sidecar_json = (testname, json.dumps(cleared_json, indent=2))
                 if kwargs["output_format"] == cnsts.TEXT:
                     # result_output[testname] = algorithm.format_table_from_json(
                     #     cleared_json
@@ -418,13 +414,11 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
                         display_fields=kwargs.get("display"),
                     )
 
-    if (
-        write_sidecar_json and sidecar_output_prefix and final_json_testname
-        and final_json_payload is not None
-    ):
-        output_file_name = f"{sidecar_output_prefix}_{final_json_testname}.json"
+    if write_sidecar_json and sidecar_output_prefix and sidecar_json is not None:
+        sidecar_testname, sidecar_payload = sidecar_json
+        output_file_name = f"{sidecar_output_prefix}_{sidecar_testname}.json"
         with open(output_file_name, 'w', encoding="utf-8") as file:
-            file.write(final_json_payload)
+            file.write(sidecar_payload)
 
     if test_flag:
         logger.info(
