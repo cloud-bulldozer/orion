@@ -457,7 +457,7 @@ metadata:
     ocpVersion: "4.17*"
 ```
 
-This matches any `ocpVersion` starting with `4.17` (e.g., `4.17.0`, `4.17.5-rc1`, etc.). Multiple wildcard fields can be specified:
+This matches any `ocpVersion` starting with `4.17` (e.g., `4.17.0`, `4.17.5-rc1`, etc.).
 
 ## Labels and Filtering
 
