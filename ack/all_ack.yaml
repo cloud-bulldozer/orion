@@ -8,23 +8,7 @@ ack:
 
   # === Version 4.22 ===
 
-  # payload-cluster-density-v2
-  - uuid: 5728b8ad-7ee4-473a-9d36-c0ae9c608da6
-    metric: ovnCPU-northd_avg
-    reason: the value is gradually declining
-    version: '5.0'
-    test: payload-cluster-density-v2
-  - uuid: 5728b8ad-7ee4-473a-9d36-c0ae9c608da6
-    metric: ovnCPU-ovncontroller_avg
-    reason: the value is gradually declining
-    version: '5.0'
-    test: payload-cluster-density-v2
   # payload-udn-density-l2-pods
-  - uuid: 091c3235-7236-4391-a4bb-99255d6cc464
-    metric: ovnkCPU-overall_avg
-    reason: the average value is back to normal(before) trend
-    version: '5.0'
-    test: payload-udn-density-l2-pods
   - uuid: 6d5e9f8f-4d58-405b-9c59-d8d034b70a19
     metric: ovnCPU-ovnk-controller_avg
     reason: the average value is back to normal wrt to extended window
@@ -439,6 +423,23 @@ ack:
 
   # === Version 5.0 ===
 
+  # payload-udn-density-l2-pods
+  - uuid: 091c3235-7236-4391-a4bb-99255d6cc464
+    metric: ovnkCPU-overall_avg
+    reason: the average value is back to normal(before) trend
+    version: '5.0'
+    test: payload-udn-density-l2-pods
+  # payload-cluster-density-v2
+  - uuid: 5728b8ad-7ee4-473a-9d36-c0ae9c608da6
+    metric: ovnCPU-northd_avg
+    reason: the value is gradually declining
+    version: '5.0'
+    test: payload-cluster-density-v2
+  - uuid: 5728b8ad-7ee4-473a-9d36-c0ae9c608da6
+    metric: ovnCPU-ovncontroller_avg
+    reason: the value is gradually declining
+    version: '5.0'
+    test: payload-cluster-density-v2
   - uuid: a9274d3c-c092-4aa9-adc8-aebfd6ebf9c3
     metric: ovsCPU-irate-all_avg
     reason: https://redhat.atlassian.net/browse/OCPBUGS-69936
