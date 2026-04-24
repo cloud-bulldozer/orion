@@ -69,19 +69,21 @@ class Utils:
             self.logger.info("Collecting %s", metric_name)
             try:
                 if "agg" in metric:
-                    metric_df, metric_dataframe_name = self.process_aggregation_metric(
+                    metric_df, metric_dataframe_names = self.process_aggregation_metric(
                         uuids, metric, match, timestamp_field
                     )
                 else:
-                    metric_df, metric_dataframe_name = self.process_standard_metric(
+                    metric_df, single_name = self.process_standard_metric(
                         uuids, metric, match, metric_value_field, timestamp_field
                     )
+                    metric_dataframe_names = [single_name]
                 metric["labels"] = labels
                 metric["direction"] = direction
                 metric["threshold"] = threshold
                 metric["correlation"] = correlation
                 metric["context"] = context
-                metrics_config[metric_dataframe_name] = metric
+                for metric_dataframe_name in metric_dataframe_names:
+                    metrics_config[metric_dataframe_name] = metric
                 dataframe_list.append(metric_df)
                 self.logger.debug(metric_df)
             except Exception as e:
@@ -96,39 +98,64 @@ class Utils:
     def process_aggregation_metric(
         self, uuids: List[str],  metric: Dict[str, Any], match: Matcher, timestamp_field: str="timestamp"
     ) -> pd.DataFrame:
-        """Method to get aggregated dataframe
+        """
+        Method to get an aggregated dataframe for a given metric.
 
         Args:
-            uuids (List[str]): _description_
-            metric (Dict[str, Any]): _description_
-            match (Matcher): _description_
+            uuids (List[str]): List of UUIDs to include in the aggregation.
+            metric (Dict[str, Any]): Metric configuration dictionary.
+            match (Matcher): Matcher instance for query operations.
+            timestamp_field (str, optional): Timestamp field to use. Defaults to "timestamp".
 
         Returns:
-            pd.DataFrame: _description_
+            pd.DataFrame: Aggregated metric dataframe and list of metric column names.
         """
+        self.logger.info("process_aggregation_metric")
         aggregated_metric_data = match.get_agg_metric_query(uuids, metric, timestamp_field)
+        self.logger.info("aggregated_metric_data %s", aggregated_metric_data)
         aggregation_value = metric["agg"]["value"]
         aggregation_type = metric["agg"]["agg_type"]
-        aggregation_name = f"{aggregation_value}_{aggregation_type}"
+
+        if aggregation_type == "percentiles":
+            percentile_prefix = f"{aggregation_value}_{aggregation_type}_"
+            if aggregated_metric_data:
+                agg_columns = [k for k in aggregated_metric_data[0].keys()
+                               if k.startswith(percentile_prefix)]
+            else:
+                agg_columns = []
+            self.logger.info("percentile columns found: %s", agg_columns)
+        else:
+            agg_columns = [f"{aggregation_value}_{aggregation_type}"]
+
+        all_columns = [self.uuid_field, timestamp_field] + agg_columns
+
         if len(aggregated_metric_data) == 0:
-            aggregated_df = pd.DataFrame(columns=[self.uuid_field, timestamp_field, aggregation_name])
+            aggregated_df = pd.DataFrame(columns=all_columns)
         else:
             aggregated_df = match.convert_to_df(
-                aggregated_metric_data, columns=[self.uuid_field, timestamp_field, aggregation_name],
+                aggregated_metric_data, columns=all_columns,
                 timestamp_field=timestamp_field
             )
             aggregated_df.loc[:, timestamp_field] = aggregated_df[timestamp_field].apply(self.standardize_timestamp)
 
         aggregated_df = aggregated_df.drop_duplicates(subset=[self.uuid_field], keep="first")
-        aggregated_metric_name = f"{metric['name']}_{aggregation_type}"
-        aggregated_df = aggregated_df.rename(
-            columns={aggregation_name: aggregated_metric_name}
-        )
+
+        rename_map = {}
+        aggregated_metric_names = []
+        for col in agg_columns:
+            if aggregation_type == "percentiles":
+                suffix = col[len(f"{aggregation_value}_{aggregation_type}_"):]
+                new_name = f"{metric['name']}_{aggregation_type}_{suffix}"
+            else:
+                new_name = f"{metric['name']}_{aggregation_type}"
+            rename_map[col] = new_name
+            aggregated_metric_names.append(new_name)
+
+        aggregated_df = aggregated_df.rename(columns=rename_map)
         if timestamp_field != "timestamp":
-            aggregated_df = aggregated_df.rename(
-                columns={timestamp_field: "timestamp"}
-            )
-        return aggregated_df, aggregated_metric_name
+            aggregated_df = aggregated_df.rename(columns={timestamp_field: "timestamp"})
+
+        return aggregated_df, aggregated_metric_names
 
     def standardize_timestamp(self, timestamp: Any) -> str:
         """Method to standardize timestamp formats
