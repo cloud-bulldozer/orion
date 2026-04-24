@@ -277,18 +277,27 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
     expanded_algorithm = None
     # This is env is only present in prow ci
     prow_job_id = os.getenv("PROW_JOB_ID")
-    if kwargs["output_format"] != cnsts.JSON and prow_job_id and prow_job_id.strip():
-        testname, result_data, _ = algorithm.output(cnsts.JSON)
-        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}_{testname}.json"
-        with open(output_file_name, 'w', encoding="utf-8") as file:
-            file.write(str(result_data))
+    write_sidecar_json = (
+        kwargs["output_format"] != cnsts.JSON and prow_job_id and prow_job_id.strip()
+    )
+    sidecar_output_prefix = (
+        os.path.splitext(kwargs["save_output_path"])[0] if write_sidecar_json else None
+    )
+    final_json_testname = None
+    final_json_payload = None
 
     testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
     result_output[testname] = result_data
+    if kwargs["output_format"] == cnsts.JSON:
+        final_json_testname = testname
+        final_json_payload = result_data
+    elif write_sidecar_json or test_flag:
+        final_json_testname, final_json_payload, _ = algorithm.output(cnsts.JSON)
     # Query with JSON
     regression_data = []
     if test_flag:
-        testname, result_data, test_flag = algorithm.output(cnsts.JSON)
+        testname = final_json_testname
+        result_data = final_json_payload
         result_data_json = json.loads(result_data)
         current_points = len(fingerprint_matched_df)
 
@@ -361,6 +370,8 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
                         test["name"],
                     )
                     result_data_json = expanded_result_data_json
+                    final_json_testname = expanded_testname
+                    final_json_payload = expanded_result_data
                     test_flag = expanded_test_flag
                     (expanded_testname, expanded_result_data_formatted, _) = (
                         expanded_algorithm.output(kwargs["output_format"])
@@ -369,6 +380,8 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
                 else:
                     test_flag = False
                     result_data_json = expanded_result_data_json
+                    final_json_testname = expanded_testname
+                    final_json_payload = expanded_result_data
                     (_, expanded_result_data_formatted, _) = (
                         expanded_algorithm.output(kwargs["output_format"])
                     )
@@ -385,6 +398,7 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
                 clear_early_changepoints(result_data_json, changepoint_buffer)
                 # Use a copy of cleared data for output so table/JSON/JUnit show no changepoint
                 cleared_json = copy.deepcopy(result_data_json)
+                final_json_payload = json.dumps(cleared_json, indent=2)
                 if kwargs["output_format"] == cnsts.TEXT:
                     # result_output[testname] = algorithm.format_table_from_json(
                     #     cleared_json
@@ -404,53 +418,61 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
                         display_fields=kwargs.get("display"),
                     )
 
-        if test_flag:
-            logger.info(
-                "Regression reported: changepoint validated (test=%s)",
-                test["name"],
-            )
-            for index, result in enumerate(result_data_json):
-                prev_ver = None
-                bad_ver = None
-                if result["is_changepoint"]:
-                    bad_ver = result[test["version_field"]]
-                    if index > 0:
-                        prior = result_data_json[index - 1]
-                        prev_ver = prior[test["version_field"]]
-                else:
-                    continue
+    if (
+        write_sidecar_json and sidecar_output_prefix and final_json_testname
+        and final_json_payload is not None
+    ):
+        output_file_name = f"{sidecar_output_prefix}_{final_json_testname}.json"
+        with open(output_file_name, 'w', encoding="utf-8") as file:
+            file.write(final_json_payload)
 
-                metrics_with_change = []
-                for metric_name, metric_data in result["metrics"].items():
-                    if metric_data.get("percentage_change", 0) != 0:
-                        metrics_with_change.append({
-                            "name": metric_name,
-                            "value": metric_data.get("value"),
-                            "percentage_change": metric_data.get("percentage_change", 0),
-                            "labels": metric_data.get("labels", [])
-                        })
+    if test_flag:
+        logger.info(
+            "Regression reported: changepoint validated (test=%s)",
+            test["name"],
+        )
+        for index, result in enumerate(result_data_json):
+            prev_ver = None
+            bad_ver = None
+            if result["is_changepoint"]:
+                bad_ver = result[test["version_field"]]
+                if index > 0:
+                    prior = result_data_json[index - 1]
+                    prev_ver = prior[test["version_field"]]
+            else:
+                continue
 
-                github_context = result.get("github_context")
-                prs = result.get("prs")
+            metrics_with_change = []
+            for metric_name, metric_data in result["metrics"].items():
+                if metric_data.get("percentage_change", 0) != 0:
+                    metrics_with_change.append({
+                        "name": metric_name,
+                        "value": metric_data.get("value"),
+                        "percentage_change": metric_data.get("percentage_change", 0),
+                        "labels": metric_data.get("labels", [])
+                    })
 
-                doc = {
-                    "test_name": test["name"],
-                    "prev_ver": prev_ver,
-                    "bad_ver": bad_ver,
-                    "build_url": result.get("buildUrl", ""),
-                    "metrics_with_change": metrics_with_change,
-                    "prs": [],
-                    "github_context": None
-                    }
-                if github_context is not None:
-                    doc["github_context"] = github_context
-                if prs is not None:
+            github_context = result.get("github_context")
+            prs = result.get("prs")
+
+            doc = {
+                "test_name": test["name"],
+                "prev_ver": prev_ver,
+                "bad_ver": bad_ver,
+                "build_url": result.get("buildUrl", ""),
+                "metrics_with_change": metrics_with_change,
+                "prs": [],
+                "github_context": None
+                }
+            if github_context is not None:
+                doc["github_context"] = github_context
+            if prs is not None:
+                doc["prs"] = prs
+            if sippy_pr_search:
+                prs = Utils().sippy_pr_diff(prev_ver, bad_ver)
+                if prs:
                     doc["prs"] = prs
-                if sippy_pr_search:
-                    prs = Utils().sippy_pr_diff(prev_ver, bad_ver)
-                    if prs:
-                        doc["prs"] = prs
-                regression_data.append(doc)
+            regression_data.append(doc)
 
     regression_flag = regression_flag or test_flag
 
