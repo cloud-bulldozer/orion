@@ -278,11 +278,6 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
     expanded_algorithm = None
     # This is env is only present in prow ci
     prow_job_id = os.getenv("PROW_JOB_ID")
-    if kwargs["output_format"] != cnsts.JSON and prow_job_id and prow_job_id.strip():
-        testname, result_data, _ = algorithm.output(cnsts.JSON)
-        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}_{testname}.json"
-        with open(output_file_name, 'w', encoding="utf-8") as file:
-            file.write(str(result_data))
 
     testname, result_data, test_flag = algorithm.output(kwargs["output_format"])
     result_output[testname] = result_data
@@ -404,6 +399,13 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
                         uuid_field=test["uuid_field"],
                         display_fields=kwargs.get("display"),
                     )
+
+        if kwargs["output_format"] != cnsts.JSON and prow_job_id and prow_job_id.strip():
+            output_file_name = (
+                f"{os.path.splitext(kwargs['save_output_path'])[0]}_{testname}.json"
+            )
+            with open(output_file_name, 'w', encoding="utf-8") as file:
+                file.write(json.dumps(result_data_json, indent=2))
 
         if test_flag:
             logger.info(
