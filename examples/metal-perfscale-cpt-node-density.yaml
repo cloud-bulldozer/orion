@@ -61,7 +61,7 @@ tests:
           - "[Jira: multus]"
         threshold: 10
 
-      - name: monitoringCPU
+      - name: monitoringPromCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-monitoring
         metric_of_interest: value
@@ -72,7 +72,7 @@ tests:
           - "[Jira: monitoring]"
         threshold: 10
 
-      - name: ovnCPU
+      - name: ovnkCPU
         metricName.keyword: containerCPU
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
