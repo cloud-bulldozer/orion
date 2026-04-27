@@ -34,7 +34,6 @@ tests:
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -47,7 +46,6 @@ tests:
         labels.container.keyword: ovn-controller
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -60,7 +58,6 @@ tests:
         labels.container.keyword: northd
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -73,7 +70,6 @@ tests:
         labels.container.keyword: nbdb
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -86,7 +82,6 @@ tests:
         labels.container.keyword: sbdb
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -99,7 +94,6 @@ tests:
         labels.container.keyword: ovnkube-controller
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -111,7 +105,6 @@ tests:
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -123,7 +116,6 @@ tests:
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -136,7 +128,6 @@ tests:
         labels.container.keyword: ovn-controller
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -149,7 +140,6 @@ tests:
         labels.container.keyword: northd
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -162,7 +152,6 @@ tests:
         labels.container.keyword: nbdb
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -175,7 +164,6 @@ tests:
         labels.container.keyword: sbdb
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -188,7 +176,6 @@ tests:
         labels.container.keyword: ovnkube-controller
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -200,7 +187,6 @@ tests:
         labels.namespace.keyword: openshift-kube-apiserver
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: kube-apiserver]"
@@ -212,7 +198,6 @@ tests:
         labels.namespace.keyword: openshift-multus
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: multus]"
@@ -224,7 +209,6 @@ tests:
         labels.namespace.keyword: openshift-monitoring
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: monitoring]"
@@ -236,7 +220,6 @@ tests:
         labels.namespace.keyword: openshift-etcd
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: etcd]"
@@ -249,7 +232,6 @@ tests:
         labels:
           - "[Jira: Node]"
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10

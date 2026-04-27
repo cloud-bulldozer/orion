@@ -33,7 +33,6 @@ tests:
         acrossAZ: false
         metric_of_interest: throughput
         agg:
-          value: throughput
           agg_type: avg
 
       - name: throughput_1024_1p
@@ -46,7 +45,6 @@ tests:
         acrossAZ: false
         metric_of_interest: throughput
         agg:
-          value: throughput
           agg_type: avg
 
       - name: throughput_8192_1p
@@ -59,7 +57,6 @@ tests:
         acrossAZ: false
         metric_of_interest: throughput
         agg:
-          value: throughput
           agg_type: avg
 
       - name: throughput_64_2p
@@ -72,7 +69,6 @@ tests:
         acrossAZ: false
         metric_of_interest: throughput
         agg:
-          value: throughput
           agg_type: avg
 
       - name: throughput_1024_2p
@@ -85,7 +81,6 @@ tests:
         acrossAZ: false
         metric_of_interest: throughput
         agg:
-          value: throughput
           agg_type: avg
 
       - name: throughput_8192_2p
@@ -98,7 +93,6 @@ tests:
         acrossAZ: false
         metric_of_interest: throughput
         agg:
-          value: throughput
           agg_type: avg
 
       - name: throughput_64_4p
@@ -111,7 +105,6 @@ tests:
         acrossAZ: false
         metric_of_interest: throughput
         agg:
-          value: throughput
           agg_type: avg
 
       - name: throughput_1024_4p
@@ -124,7 +117,6 @@ tests:
         acrossAZ: false
         metric_of_interest: throughput
         agg:
-          value: throughput
           agg_type: avg
 
       - name: throughput_8192_4p
@@ -137,7 +129,6 @@ tests:
         acrossAZ: false
         metric_of_interest: throughput
         agg:
-          value: throughput
           agg_type: avg
 
       # latency tests
@@ -151,7 +142,6 @@ tests:
         acrossAZ: false
         metric_of_interest: latency
         agg:
-          value: latency
           agg_type: avg
 
       - name: latency_1024_1p
@@ -164,7 +154,6 @@ tests:
         acrossAZ: false
         metric_of_interest: latency
         agg:
-          value: latency
           agg_type: avg
 
       - name: latency_8192_1p
@@ -177,5 +166,4 @@ tests:
         acrossAZ: false
         metric_of_interest: latency
         agg:
-          value: latency
           agg_type: avg

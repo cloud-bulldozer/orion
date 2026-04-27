@@ -20,7 +20,6 @@ tests:
         targets: image_pulls
         metric_of_interest: success_count
         agg:
-          value: success
           agg_type: sum
         direction: -1
         threshold: 10
@@ -30,7 +29,6 @@ tests:
         targets: image_pulls
         metric_of_interest: failure_count
         agg:
-          value: failure
           agg_type: sum
         direction: -1
         threshold: 10
@@ -40,7 +38,6 @@ tests:
         targets: image_pulls
         metric_of_interest: elapsed_time
         agg:
-          value: latency
           agg_type: max
         direction: 1
         threshold: 10
@@ -51,7 +48,6 @@ tests:
         targets: image_pushes
         metric_of_interest: success_count
         agg:
-          value: success
           agg_type: sum
         direction: -1
         threshold: 10
@@ -61,7 +57,6 @@ tests:
         targets: image_pushes
         metric_of_interest: failure_count
         agg:
-          value: failure
           agg_type: sum
         direction: -1
         threshold: 10
@@ -71,7 +66,6 @@ tests:
         targets: image_pushes
         metric_of_interest: elapsed_time
         agg:
-          value: latency
           agg_type: max
         direction: 1
         threshold: 10

@@ -39,7 +39,6 @@ tests:
         metric_of_interest: total_recovery_time
         type: recovered
         agg:
-          value: total_recovery_time
           agg_type: avg
       - name: affected_rescheduled
         threshold: 15
@@ -48,7 +47,6 @@ tests:
         metric_of_interest: pod_rescheduling_time
         type: recovered
         agg:
-          value: pod_rescheduling_time
           agg_type: avg
       - name: affected_readiness
         threshold: 15
@@ -57,5 +55,4 @@ tests:
         metric_of_interest: pod_readiness_time
         type: recovered
         agg:
-          value: pod_readiness_time
           agg_type: avg

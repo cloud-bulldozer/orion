@@ -33,14 +33,12 @@ tests:
         metric_of_interest: total_avg_rps
         direction: -1
         agg:
-          value: total_avg_rps
           agg_type: avg
 
       - name: passthrough_p95_lat
         config.termination: passthrough
         metric_of_interest: p95_lat_us
         agg:
-          value: p95_lat_us
           agg_type: avg
 
       - name: http_avg_rps
@@ -49,14 +47,12 @@ tests:
         direction: -1
         config.tool: wrk
         agg:
-          value: total_avg_rps
           agg_type: avg
 
       - name: http_p95_lat
         config.termination: http
         metric_of_interest: p95_lat_us
         agg:
-          value: p95_lat_us
           agg_type: avg
 
       - name: reencrypt_avg_rps
@@ -64,14 +60,12 @@ tests:
         metric_of_interest: total_avg_rps
         direction: -1
         agg:
-          value: total_avg_rps
           agg_type: avg
 
       - name: reencrypt_p95_lat
         config.termination: reencrypt
         metric_of_interest: p95_lat_us
         agg:
-          value: p95_lat_us
           agg_type: avg
 
       - name: edge_avg_rps
@@ -80,19 +74,16 @@ tests:
         direction: -1
         config.tool: wrk
         agg:
-          value: total_avg_rps
           agg_type: avg
 
       - name: edge_p95_lat
         config.termination: edge
         metric_of_interest: p95_lat_us
         agg:
-          value: p95_lat_us
           agg_type: avg
 
       - name: http_avg_cpu_usage_router_pods
         config.termination: http
         metric_of_interest: infra_metrics.avg_cpu_usage_router_pods
         agg:
-          value: infra_metrics.avg_cpu_usage_router_pods
           agg_type: avg

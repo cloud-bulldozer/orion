@@ -49,20 +49,20 @@ def uuid_matcher_instance():
                             {
                                 "key": "uuid1",
                                 "time": {"value_as_string": "2024-02-09T12:00:00"},
-                                "cpu": {"value": 42},
+                                "value": {"value": 42},
                             },
                             {
                                 "key": "uuid2",
                                 "time": {"value_as_string": "2024-02-09T13:00:00"},
-                                "cpu": {"value": 56},
+                                "value": {"value": 56},
                             },
                         ]
                     },
                 }
             },
             [
-                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "cpu_avg": 42},
-                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "cpu_avg": 56},
+                {"uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "value_avg": 42},
+                {"uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "value_avg": 56},
             ],
         ),
         # uuid_matcher_instance with values
@@ -83,20 +83,20 @@ def uuid_matcher_instance():
                             {
                                 "key": "uuid1",
                                 "time": {"value_as_string": "2024-02-09T12:00:00"},
-                                "cpu": {"value": 42},
+                                "value": {"value": 42},
                             },
                             {
                                 "key": "uuid2",
                                 "time": {"value_as_string": "2024-02-09T13:00:00"},
-                                "cpu": {"value": 56},
+                                "value": {"value": 56},
                             },
                         ]
                     },
                 }
             },
             [
-                {"run_uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "cpu_avg": 42},
-                {"run_uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "cpu_avg": 56},
+                {"run_uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "value_avg": 42},
+                {"run_uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "value_avg": 56},
             ],
         ),
         # matcher_instance with no agg values (empty uuid buckets)

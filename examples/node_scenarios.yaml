@@ -41,5 +41,4 @@ tests:
         metricName.keyword: affected_nodes_recovery
         metric_of_interest: ready_time
         agg:
-          value: ready_time
           agg_type: avg
