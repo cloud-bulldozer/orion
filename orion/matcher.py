@@ -340,7 +340,7 @@ class Matcher:
             .extra(size=0)
             .sort({timestamp_field: {"order": "desc"}})
         )
-        metric_of_interest = metric["metric_of_interest"]
+        metric_of_interest = metrics["metric_of_interest"]
         agg_type = metrics["agg"]["agg_type"]
         uuid_bucket = search.aggs.bucket("uuid", "terms", field=self.uuid_field+".keyword", size=len(uuids))
         uuid_bucket.metric("time", "avg", field=timestamp_field)
