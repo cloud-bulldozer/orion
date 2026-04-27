@@ -57,7 +57,7 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             entry["metrics"] = {
                 key: {"value": entry.pop(key),
                       "percentage_change": 0,
-                      "labels": " ".join(value["labels"]) if value["labels"] else ""}
+                      "labels": value["labels"] if value["labels"] else []}
                 for key, value in self.metrics_config.items()
             }
             entry["is_changepoint"] = False

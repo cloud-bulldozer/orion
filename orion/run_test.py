@@ -434,14 +434,20 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
                 github_context = result.get("github_context")
                 prs = result.get("prs")
 
+                # Extract benchmark type for JIRA label consistency
+                benchmark_type = test.get("metadata", {}).get("benchmark.keyword", "")
+
                 doc = {
                     "test_name": test["name"],
+                    "benchmark_type": benchmark_type if benchmark_type else None,
                     "prev_ver": prev_ver,
                     "bad_ver": bad_ver,
-                    "build_url": result.get("buildUrl", ""),
+                    "buildUrl": result.get("buildUrl"),
                     "metrics_with_change": metrics_with_change,
                     "prs": [],
-                    "github_context": None
+                    "github_context": None,
+                    "uuid": result.get(test["uuid_field"]),
+                    "timestamp": result.get("timestamp")
                     }
                 if github_context is not None:
                     doc["github_context"] = github_context
