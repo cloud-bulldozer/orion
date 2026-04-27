@@ -400,7 +400,6 @@
   metricName.keyword: avg-llm-call-failures
   metric_of_interest: value
   agg:
-    value: callFailures
     agg_type: avg
   direction: 1
   threshold: 10
@@ -409,7 +408,6 @@
   metricName.keyword: avg-llm-validation-errors
   metric_of_interest: value
   agg:
-    value: validationErrors
     agg_type: avg
   direction: 1
   threshold: 10
@@ -420,7 +418,6 @@
   labels.namespace.keyword: openshift-lightspeed
   metric_of_interest: value
   agg:
-    value: cpu
     agg_type: avg
   direction: 1
   threshold: 10
@@ -430,7 +427,6 @@
   labels.namespace.keyword: openshift-lightspeed
   metric_of_interest: value
   agg:
-    value: memory
     agg_type: avg
   direction: 1
   threshold: 10

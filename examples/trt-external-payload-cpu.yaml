@@ -25,7 +25,6 @@ tests:
         labels.namespace.keyword: openshift-monitoring
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -34,7 +33,6 @@ tests:
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -43,7 +41,6 @@ tests:
         labels.namespace.keyword: openshift-cluster-csi-drivers
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -53,7 +50,6 @@ tests:
         labels.container.keyword: kube-multus
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -62,7 +58,6 @@ tests:
         labels.namespace.keyword: openshift-machine-config-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -71,7 +66,6 @@ tests:
         labels.namespace.keyword: openshift-etcd
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -80,7 +74,6 @@ tests:
         labels.namespace.keyword: openshift-e2e-loki
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -89,7 +82,6 @@ tests:
         labels.namespace.keyword: openshift-dns
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -98,7 +90,6 @@ tests:
         labels.namespace.keyword: openshift-kube-apiserver
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -107,7 +98,6 @@ tests:
         labels.namespace.keyword: openshift-machine-api
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -116,7 +106,6 @@ tests:
         labels.namespace.keyword: openshift-kube-controller-manager
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -125,7 +114,6 @@ tests:
         labels.namespace.keyword: openshift-insights
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -134,7 +122,6 @@ tests:
         labels.namespace.keyword: openshift-kube-scheduler
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -143,7 +130,6 @@ tests:
         labels.namespace.keyword: openshift-cluster-node-tuning-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -152,7 +138,6 @@ tests:
         labels.namespace.keyword: openshift-network-diagnostics
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -161,7 +146,6 @@ tests:
         labels.namespace.keyword: openshift-image-registry
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -170,7 +154,6 @@ tests:
         labels.namespace.keyword: openshift-operator-lifecycle-manager
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -179,7 +162,6 @@ tests:
         labels.namespace.keyword: openshift-apiserver
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -188,7 +170,6 @@ tests:
         labels.namespace.keyword: openshift-network-node-identity
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -197,7 +178,6 @@ tests:
         labels.namespace.keyword: openshift-network-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -206,7 +186,6 @@ tests:
         labels.namespace.keyword: openshift-marketplace
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -215,7 +194,6 @@ tests:
         labels.namespace.keyword: kube-system
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -224,7 +202,6 @@ tests:
         labels.namespace.keyword: openshift-cluster-storage-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -233,7 +210,6 @@ tests:
         labels.namespace.keyword: openshift-console
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -242,7 +218,6 @@ tests:
         labels.namespace.keyword: openshift-cloud-credential-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -251,7 +226,6 @@ tests:
         labels.namespace.keyword: openshift-ingress-canary
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -260,7 +234,6 @@ tests:
         labels.namespace.keyword: openshift-cloud-controller-manager-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -269,7 +242,6 @@ tests:
         labels.namespace.keyword: openshift-authentication
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -278,7 +250,6 @@ tests:
         labels.namespace.keyword: openshift-route-controller-manager
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -287,7 +258,6 @@ tests:
         labels.namespace.keyword: openshift-cluster-samples-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -296,7 +266,6 @@ tests:
         labels.namespace.keyword: openshift-dns-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -305,7 +274,6 @@ tests:
         labels.namespace.keyword: openshift-ingress-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -314,7 +282,6 @@ tests:
         labels.namespace.keyword: openshift-cloud-controller-manager
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -323,7 +290,6 @@ tests:
         labels.namespace.keyword: openshift-cluster-machine-approver
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -332,7 +298,6 @@ tests:
         labels.namespace.keyword: openshift-kube-storage-version-migrator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -341,7 +306,6 @@ tests:
         labels.namespace.keyword: openshift-authentication-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -350,7 +314,6 @@ tests:
         labels.namespace.keyword: openshift-oauth-apiserver
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -359,7 +322,6 @@ tests:
         labels.namespace.keyword: openshift-controller-manager
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -368,7 +330,6 @@ tests:
         labels.namespace.keyword: openshift-ingress
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -377,7 +338,6 @@ tests:
         labels.namespace.keyword: openshift-kube-scheduler-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -386,7 +346,6 @@ tests:
         labels.namespace.keyword: openshift-operator-controller
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -395,7 +354,6 @@ tests:
         labels.namespace.keyword: openshift-apiserver-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -404,7 +362,6 @@ tests:
         labels.namespace.keyword: openshift-cluster-olm-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -413,7 +370,6 @@ tests:
         labels.namespace.keyword: openshift-controller-manager-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -422,7 +378,6 @@ tests:
         labels.namespace.keyword: openshift-etcd-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -431,7 +386,6 @@ tests:
         labels.namespace.keyword: openshift-kube-apiserver-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -440,7 +394,6 @@ tests:
         labels.namespace.keyword: openshift-cloud-network-config-controller
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -449,7 +402,6 @@ tests:
         labels.namespace.keyword: openshift-cluster-version
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -458,7 +410,6 @@ tests:
         labels.namespace.keyword: openshift-kube-controller-manager-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -467,7 +418,6 @@ tests:
         labels.namespace.keyword: openshift-service-ca-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -476,7 +426,6 @@ tests:
         labels.namespace.keyword: openshift-console-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -485,7 +434,6 @@ tests:
         labels.namespace.keyword: openshift-service-ca
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -494,7 +442,6 @@ tests:
         labels.namespace.keyword: openshift-catalogd
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -503,7 +450,6 @@ tests:
         labels.namespace.keyword: openshift-config-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -512,7 +458,6 @@ tests:
         labels.namespace.keyword: openshift-kube-storage-version-migrator-operator
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -521,7 +466,6 @@ tests:
         labels.namespace.keyword: openshift-network-console
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -530,7 +474,6 @@ tests:
         labels.namespace.keyword: default
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10

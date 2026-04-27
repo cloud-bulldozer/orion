@@ -21,7 +21,6 @@ tests:
         labels.container.keyword: etcd
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: etcd]"
@@ -34,7 +33,6 @@ tests:
         labels:
           - "[Jira: Node]"
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 5

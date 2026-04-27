@@ -37,7 +37,6 @@ tests:
         not:
           jobConfig.name: "garbage-collection"
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: OLM]"
@@ -48,7 +47,6 @@ tests:
         not:
           jobConfig.name: "garbage-collection"
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: OLM]"

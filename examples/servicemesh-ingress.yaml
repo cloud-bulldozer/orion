@@ -28,7 +28,6 @@ tests:
         not:
           config.requestRate: 5000
         agg:
-          value: total_avg_rps
           agg_type: avg
 
       - name: http_avg_cpu_usage_ingress_gateway_pods
@@ -37,7 +36,6 @@ tests:
         not:
           config.requestRate: 5000
         agg:
-          value: infra_metrics.avg_cpu_usage_ingress_gateway_pods
           agg_type: avg
 
       - name: http_avg_lat
@@ -45,7 +43,6 @@ tests:
         config.requestRate: 5000
         metric_of_interest: avg_lat_us
         agg:
-          value: avg_lat_us
           agg_type: avg
 
       - name: edge_avg_rps
@@ -54,7 +51,6 @@ tests:
         not:
           config.requestRate: 5000
         agg:
-          value: total_avg_rps
           agg_type: avg
 
       - name: edge_avg_cpu_usage_ingress_gateway_pods
@@ -63,7 +59,6 @@ tests:
         not:
           config.requestRate: 5000
         agg:
-          value: infra_metrics.avg_cpu_usage_ingress_gateway_pods
           agg_type: avg
 
       - name: edge_avg_lat
@@ -71,5 +66,4 @@ tests:
         config.requestRate: 5000
         metric_of_interest: avg_lat_us
         agg:
-          value: avg_lat_us
           agg_type: avg

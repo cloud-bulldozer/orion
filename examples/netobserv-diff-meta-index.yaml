@@ -23,7 +23,6 @@ tests:
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -33,7 +32,6 @@ tests:
         metricName.keyword: ovsVswitchdCPU
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -42,7 +40,6 @@ tests:
         metricName.keyword: ovsVswitchdMemory
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -51,7 +48,6 @@ tests:
         metricName.keyword: ovsVswitchdCPU
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: max
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -60,7 +56,6 @@ tests:
         metricName.keyword: ovsVswitchdMemory
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: max
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -70,7 +65,6 @@ tests:
         labels.namespace.keyword: openshift-netobserv
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -81,7 +75,6 @@ tests:
         labels.namespace.keyword: openshift-netobserv-privileged
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -92,7 +85,6 @@ tests:
         labels.namespace.keyword: openshift-netobserv
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: max
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -103,7 +95,6 @@ tests:
         labels.namespace.keyword: openshift-netobserv-privileged
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: max
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -114,7 +105,6 @@ tests:
         labels.namespace.keyword: openshift-netobserv
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -125,7 +115,6 @@ tests:
         labels.namespace.keyword: openshift-netobserv-privileged
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -136,7 +125,6 @@ tests:
         labels.namespace.keyword: openshift-netobserv
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: max
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -147,7 +135,6 @@ tests:
         labels.namespace.keyword: openshift-netobserv-privileged
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: max
         labels:
           - "[Jira: Networking / ovn-kubernetes]"

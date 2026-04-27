@@ -26,7 +26,6 @@ tests:
         labels.container.keyword: kube-apiserver
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: kube-apiserver]"
@@ -39,7 +38,6 @@ tests:
         labels.container.keyword: etcd
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: etcd]"

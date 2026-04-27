@@ -28,25 +28,21 @@ tests:
         metricName.keyword: cpu-kubelet
         metric_of_interest: value
         agg:
-          value: cpu-kubelet
           agg_type: avg
       - name: max-memory-kubelet
         metricName.keyword: max-memory-kubelet
         metric_of_interest: value
         agg:
-          value: max-memory-kubelet
           agg_type: avg
       - name: cpu-crio
         metricName.keyword: cpu-crio
         metric_of_interest: value
         agg:
-          value: cpu-crio
           agg_type: avg
       - name: max-memory-crio
         metricName.keyword: max-memory-crio
         metric_of_interest: value
         agg:
-          value: max-memory-crio
           agg_type: avg
 
   - name: node-density-24nodes
@@ -77,7 +73,6 @@ tests:
         quantileName.keyword: Ready
         metric_of_interest: P99
         agg:
-          value: P99
           agg_type: avg
 
   - name: node-density-120nodes
@@ -108,7 +103,6 @@ tests:
         quantileName.keyword: Ready
         metric_of_interest: P99
         agg:
-          value: P99
           agg_type: avg
 
   - name: node-density-249nodes
@@ -139,7 +133,6 @@ tests:
         quantileName.keyword: Ready
         metric_of_interest: P99
         agg:
-          value: P99
           agg_type: avg
 
   - name: node-density-cni-24nodes
@@ -170,7 +163,6 @@ tests:
         quantileName.keyword: Ready
         metric_of_interest: P99
         agg:
-          value: P99
           agg_type: avg
 
   - name: node-density-cni-120nodes
@@ -201,7 +193,6 @@ tests:
         quantileName.keyword: Ready
         metric_of_interest: P99
         agg:
-          value: P99
           agg_type: avg
 
   - name: node-density-cni-249nodes
@@ -232,5 +223,4 @@ tests:
         quantileName.keyword: Ready
         metric_of_interest: P99
         agg:
-          value: P99
           agg_type: avg

@@ -25,7 +25,6 @@ tests:
         labels:
           - "[Jira: PodReadyLatency]"
         agg:
-          value: P99
           agg_type: avg
         direction: 1
         threshold: 10
@@ -35,7 +34,6 @@ tests:
         labels:
           - "[Jira: kubelet_cpu_max_worker]"
         agg:
-          value: cpu
           agg_type: max
         direction: 1
         threshold: 10
@@ -45,7 +43,6 @@ tests:
         labels:
           - "[Jira: kubelet_cpu_avg_worker]"
         agg:
-          value: cpu-kubelet
           agg_type: avg
         direction: 1
         threshold: 10
@@ -55,7 +52,6 @@ tests:
         labels:
           - "[Jira: kubelet_mem_max_worker]"
         agg:
-          value: max-memory-kubelet
           agg_type: max
         direction: 1
         threshold: 10
@@ -65,7 +61,6 @@ tests:
         labels:
           - "[Jira: kubelet_mem_avg_worker]"
         agg:
-          value: memory-kubelet
           agg_type: avg
         direction: 1
         threshold: 10
@@ -75,7 +70,6 @@ tests:
         labels:
           - "[Jira: crio_cpu_max_worker]"
         agg:
-          value: max-cpu-crio
           agg_type: max
         direction: 1
         threshold: 10
@@ -85,7 +79,6 @@ tests:
         labels:
           - "[Jira: crio_cpu_avg_worker]"
         agg:
-          value: cpu-crio
           agg_type: avg
         direction: 1
         threshold: 10
@@ -95,7 +88,6 @@ tests:
         labels:
           - "[Jira: crio_mem_max_worker]"
         agg:
-          value: max-memory-crio
           agg_type: max
         direction: 1
         threshold: 10
@@ -105,7 +97,6 @@ tests:
         labels:
           - "[Jira: crio_mem_avg_worker]"
         agg:
-          value: memory-crio
           agg_type: avg
         direction: 1
         threshold: 10
@@ -115,7 +106,6 @@ tests:
         labels:
           - "[Jira: openshift_apiserver_cpu_avg]"
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -125,7 +115,6 @@ tests:
         labels:
           - "[Jira: openshift_apiserver_mem_max]"
         agg:
-          value: mem
           agg_type: max
         direction: 1
         threshold: 10
@@ -135,7 +124,6 @@ tests:
         labels:
           - "[Jira: openshift_apiserver_mem_avg]"
         agg:
-          value: mem
           agg_type: avg
         direction: 1
         threshold: 10
@@ -143,7 +131,6 @@ tests:
         metricName.keyword: max-ro-apicalls-latency
         metric_of_interest: value
         agg:
-          value: latency
           agg_type: max
         labels:
           - "[Jira: max-ro-apicalls-latency]"
@@ -153,7 +140,6 @@ tests:
         metricName.keyword: avg-ro-apicalls-latency
         metric_of_interest: value
         agg:
-          value: latency
           agg_type: avg
         labels:
           - "[Jira: avg-ro-apicalls-latency]"
@@ -163,7 +149,6 @@ tests:
         metricName.keyword: max-mutating-apicalls-latency
         metric_of_interest: value
         agg:
-          value: latency
           agg_type: max
         labels:
           - "[Jira: max-mutating-apicalls-latency]"
@@ -173,7 +158,6 @@ tests:
         metricName.keyword: avg-mutating-apicalls-latency
         metric_of_interest: value
         agg:
-          value: latency
           agg_type: avg
         labels:
           - "[Jira: avg-mutating-apicalls-latency]"
@@ -183,7 +167,6 @@ tests:
         metricName.keyword: max-cpu-etcd
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: max
         labels:
           - "[Jira: max-cpu-etcd]"
@@ -193,7 +176,6 @@ tests:
         metricName.keyword: cpu-etcd
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: avg-cpu-etcd]"
@@ -203,7 +185,6 @@ tests:
         metricName.keyword: max-memory-etcd
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: max
         labels:
           - "[Jira: max-memory-etcd]"
@@ -213,7 +194,6 @@ tests:
         metricName.keyword: memory-etcd
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: avg-memory-etcd]"
@@ -223,7 +203,6 @@ tests:
         metricName.keyword: 99thEtcdRoundTripTime
         metric_of_interest: value
         agg:
-          value: P99
           agg_type: avg
         labels:
           - "[Jira: 99thEtcdRoundTripTime]"
@@ -233,7 +212,6 @@ tests:
         metricName.keyword: 99thEtcdDiskWalFsync
         metric_of_interest: value
         agg:
-          value: P99
           agg_type: avg
         labels:
           - "[Jira: 99thEtcdDiskWalFsync]"
@@ -243,7 +221,6 @@ tests:
         metricName.keyword: 99thEtcdDiskBackendCommit
         metric_of_interest: value
         agg:
-          value: P99
           agg_type: avg
         labels:
           - "[Jira: 99thEtcdDiskBackendCommit]"
@@ -255,7 +232,6 @@ tests:
         not:
           jobConfig.name: "garbage-collection"
         agg:
-          value: mem
           agg_type: max
         labels:
           - "[Jira: max-memory-masters]"
@@ -267,7 +243,6 @@ tests:
         not:
           jobConfig.name: "garbage-collection"
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: avg-memory-masters]"
@@ -279,7 +254,6 @@ tests:
         not:
           jobConfig.name: "garbage-collection"
         agg:
-          value: mem
           agg_type: max
         labels:
           - "[Jira: max-memory-workers]"
@@ -291,7 +265,6 @@ tests:
         not:
           jobConfig.name: "garbage-collection"
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: avg-memory-workers]"
@@ -303,7 +276,6 @@ tests:
         not:
           jobConfig.name: "garbage-collection"
         agg:
-          value: cpu
           agg_type: max
         labels:
           - "[Jira: max-cpu-masters]"
@@ -315,7 +287,6 @@ tests:
         not:
           jobConfig.name: "garbage-collection"
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: avg-cpu-masters]"
@@ -327,7 +298,6 @@ tests:
         not:
           jobConfig.name: "garbage-collection"
         agg:
-          value: cpu
           agg_type: max
         labels:
           - "[Jira: max-cpu-workers]"
@@ -339,7 +309,6 @@ tests:
         not:
           jobConfig.name: "garbage-collection"
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: avg-cpu-workers]"
@@ -349,7 +318,6 @@ tests:
         metricName.keyword: max-cpu-ovn-control-plane
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: max
         labels:
           - "[Jira: Networking / ovs Maximum cpu-ovn-control-plane]"
@@ -359,7 +327,6 @@ tests:
         metricName.keyword: cpu-ovn-control-plane
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovs Average cpu-ovn-control-plane]"
@@ -369,7 +336,6 @@ tests:
         metricName.keyword: max-cpu-ovnkube-node
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: max
         labels:
           - "[Jira: Networking / ovs Maximum cpu-ovnkube-node]"
@@ -379,7 +345,6 @@ tests:
         metricName.keyword: cpu-ovnkube-node
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovs Average cpu-ovnkube-node]"
@@ -389,7 +354,6 @@ tests:
         metricName.keyword: max-memory-ovn-control-plane
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: max
         labels:
           - "[Jira: Networking / ovs Maximum memory-ovn-control-plane]"
@@ -399,7 +363,6 @@ tests:
         metricName.keyword: memory-ovn-control-plane
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / ovs Average memory-ovn-control-plane]"
@@ -409,7 +372,6 @@ tests:
         metricName.keyword: max-memory-ovnkube-node
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: max
         labels:
           - "[Jira: Networking / Maximum memory-ovnkube-node]"
@@ -419,7 +381,6 @@ tests:
         metricName.keyword: memory-ovnkube-node
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / Average memory-ovnkube-node]"
@@ -430,7 +391,6 @@ tests:
         labels.container.keyword: northd
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -441,7 +401,6 @@ tests:
         labels.container.keyword: nbdb
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -452,7 +411,6 @@ tests:
         labels.container.keyword: sbdb
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -463,7 +421,6 @@ tests:
         labels.container.keyword: northd
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -474,7 +431,6 @@ tests:
         labels.container.keyword: nbdb
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -485,7 +441,6 @@ tests:
         labels.container.keyword: sbdb
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         labels:
           - "[Jira: Networking / ovn-kubernetes]"
@@ -495,7 +450,6 @@ tests:
         metricName.keyword: max-cpu-multus
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: max
         labels:
           - "[Jira: max-cpu-multus]"
@@ -505,7 +459,6 @@ tests:
         metricName.keyword: cpu-multus
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: avg-cpu-multus]"

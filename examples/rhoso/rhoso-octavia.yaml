@@ -30,7 +30,6 @@ tests:
         doc_type: result
         metric_of_interest: raw
         agg:
-          value: duration
           agg_type: percentiles
           percents: [95]
           target_percentile: 95
@@ -43,7 +42,6 @@ tests:
         doc_type: result
         metric_of_interest: raw
         agg:
-          value: duration
           agg_type: percentiles
           percents: [95]
           target_percentile: 95

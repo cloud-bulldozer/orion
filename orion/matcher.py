@@ -340,7 +340,7 @@ class Matcher:
             .extra(size=0)
             .sort({timestamp_field: {"order": "desc"}})
         )
-        agg_value = metrics["agg"]["value"]
+        metric_of_interest = metric["metric_of_interest"]
         agg_type = metrics["agg"]["agg_type"]
         uuid_bucket = search.aggs.bucket("uuid", "terms", field=self.uuid_field+".keyword", size=len(uuids))
         uuid_bucket.metric("time", "avg", field=timestamp_field)
@@ -349,26 +349,25 @@ class Matcher:
             # Get the percentile values from config (default to [50, 95, 99])
             percents = metrics["agg"].get("percents", [50, 95, 99])
             uuid_bucket.metric(
-                agg_value, "percentiles",
+                metric_of_interest, "percentiles",
                 field=metrics["metric_of_interest"],
                 percents=percents
             )
         elif agg_type == "count":
             # Count aggregation uses value_count in OpenSearch
-            uuid_bucket.metric(agg_value, "value_count", field=metrics["metric_of_interest"])
+            uuid_bucket.metric(metric_of_interest, "value_count", field=metrics["metric_of_interest"])
         else:
             # Standard aggregations (sum, avg, max, min)
-            uuid_bucket.metric(agg_value, agg_type, field=metrics["metric_of_interest"])
+            uuid_bucket.metric(metric_of_interest, agg_type, field=metrics["metric_of_interest"])
         result = search.execute()
         self.logger.info("Executing aggregated query for metric %s against index %s",
             metrics["name"], self.index)
         self.logger.debug("Executing query \r\n%s", search.to_dict())
-        data = self.parse_agg_results(result, agg_value, agg_type, timestamp_field, metrics)
+        data = self.parse_agg_results(result, agg_type, timestamp_field, metrics)
         return data
 
     def parse_agg_results(
         self, data: Dict[Any, Any],
-        agg_value: str,
         agg_type: str,
         timestamp_field: str = "timestamp",
         metrics: Dict[str, Any] = None
@@ -376,7 +375,6 @@ class Matcher:
         """parse out CPU data from kube-burner query
         Args:
             data (dict): Aggregated data from Elasticsearch DSL query
-            agg_value (str): Aggregation value field name
             agg_type (str): Aggregation type (e.g., 'avg', 'sum', 'percentiles', etc.)
             timestamp_field (str): Timestamp field name
             metrics (dict): Metrics configuration (needed for percentile target)
@@ -386,7 +384,7 @@ class Matcher:
         res = []
         if "aggregations" not in data:
             return res
-
+        metric_of_interest = metrics["metric_of_interest"]
         uuids = data.aggregations.uuid.buckets
 
         for uuid in uuids:
@@ -394,24 +392,24 @@ class Matcher:
                 self.uuid_field: uuid.key,
                 timestamp_field: uuid.time.value_as_string,
             }
-            value_key = agg_value + "_" + agg_type
+            value_key = metric_of_interest + "_" + agg_type
             if agg_type == "percentiles":
                 self.logger.info("AC agg_type == percentiles")
-                percentile_dict = uuid.get(agg_value).to_dict().get("values", {})
+                percentile_dict = uuid.get(metric_of_interest).to_dict().get("values", {})
                 if metrics and "agg" in metrics and "target_percentile" in metrics["agg"]:
                     target_percentile = float(metrics["agg"]["target_percentile"])
                     percentile_key = str(target_percentile)
                     self.logger.info("found target_percentile %s", target_percentile)
-                    value_key = agg_value + "_" + agg_type + "_" + percentile_key
+                    value_key = metric_of_interest + "_" + agg_type + "_" + percentile_key
                     data[value_key] = percentile_dict.get(percentile_key)
                 else:
                     self.logger.info("no target_percentile found, using all percentiles")
                     for key, val in percentile_dict.items():
                         self.logger.info("percentile_values value %s", key)
-                        data[agg_value + "_" + agg_type + "_" + str(key)] = val
+                        data[metric_of_interest + "_" + agg_type + "_" + str(key)] = val
             else:
                 # Standard single-value aggregations
-                data[value_key] = uuid.get(agg_value).value
+                data[value_key] = uuid.get(metric_of_interest).value
             res.append(data)
         return res
 

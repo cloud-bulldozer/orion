@@ -22,7 +22,6 @@ tests:
         metricName.keyword: podLatencyMeasurement
         metric_of_interest: containersReadyLatency
         agg:
-          value: cpu
           agg_type: percentiles
           percents: [10, 25, 50, 90, 95]
         not:
@@ -38,7 +37,6 @@ tests:
         labels.container.keyword: kube-apiserver
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: percentiles
           percents: [10, 25, 50, 90, 95]
         labels:

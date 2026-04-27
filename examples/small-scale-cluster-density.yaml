@@ -29,7 +29,6 @@ tests:
         labels.namespace.keyword: openshift-kube-apiserver
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
 
       - name: ovnCPU
@@ -37,7 +36,6 @@ tests:
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
 
       - name: etcdCPU
@@ -45,14 +43,12 @@ tests:
         labels.namespace.keyword: openshift-etcd
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
 
       - name: etcdDisk
         metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
         metric_of_interest: value
         agg:
-          value: duration
           agg_type: avg
 
       - name: ovsCPU-irate-all
@@ -60,7 +56,6 @@ tests:
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         direction: 1
         threshold: 10
@@ -70,7 +65,6 @@ tests:
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: max
         direction: 1
         threshold: 10
@@ -80,7 +74,6 @@ tests:
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: max
         direction: 1
         threshold: 10
@@ -90,7 +83,6 @@ tests:
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
         agg:
-          value: mem
           agg_type: avg
         direction: 1
         threshold: 10
