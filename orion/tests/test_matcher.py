@@ -506,8 +506,8 @@ def test_get_results_with_exists_fields_and_timestamp_field(request,
                 }
             },
             [
-                {"run_uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "valu_avg": 42},
-                {"run_uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "valu_avg": 56},
+                {"run_uuid": "uuid1", "timestamp": "2024-02-09T12:00:00", "value_avg": 42},
+                {"run_uuid": "uuid2", "timestamp": "2024-02-09T13:00:00", "value_avg": 56},
             ],
         ),
         # matcher_instance with no agg values (empty uuid buckets)
