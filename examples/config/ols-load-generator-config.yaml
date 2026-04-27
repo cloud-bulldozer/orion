@@ -13,7 +13,8 @@ metadata:
   workerNodesType.keyword: m6i.xlarge
   workerNodesCount: 3
   benchmark.keyword: ols-load-generator
-  ocpVersion: "{{ version }}"
+  wildcard:
+    ocpVersion: "{{ version }}*"
   networkType: OVNKubernetes
   mcpEnabled: false
   fips: "{{ fips | default('false') }}"

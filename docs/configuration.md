@@ -47,7 +47,8 @@ parentConfig: parent.yaml
 tests:
   - name: payload-node-density
     metadata:
-      ocpVersion: "4.17"
+      wildcard:
+        ocpVersion: "4.17*"
       networkType: OVNKubernetes
       # Inherits all metadata from parent.yaml
       # Can override parent values if needed
@@ -116,7 +117,8 @@ metricsFile: metrics.yaml
 tests:
   - name: payload-node-density
     metadata:
-      ocpVersion: "4.17"
+      wildcard:
+        ocpVersion: "4.17*"
       # Inherits metadata from parent.yaml
     metrics:
       # Inherits metrics from metrics.yaml
@@ -164,7 +166,8 @@ tests:
     local_config: local_config.yaml
     local_metrics: local_metrics.yaml
     metadata:
-      ocpVersion: "4.17"   # Overrides or adds to local_config metadata
+      wildcard:
+        ocpVersion: "4.17*"
     metrics:
       - name: testSpecificMetric
         # ... only this test gets this metric; global metrics are not used
@@ -221,7 +224,8 @@ tests:
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
       benchmark.keyword: cluster-density-v2
-      ocpVersion: 4.17
+      wildcard:
+        ocpVersion: "4.17*"
       networkType: OVNKubernetes
 
     metrics:
@@ -441,6 +445,19 @@ These names are used in:
 - Output files and reports
 - Correlation references
 - JUnit test names
+
+## Wildcard Matching
+
+The `wildcard` key in metadata defines fields that are matched using wildcard queries instead of exact matches. The value is passed directly to the OpenSearch wildcard query, so you must include wildcard characters (`*`, `?`) in the value yourself.
+
+```yaml
+metadata:
+  platform: AWS
+  wildcard:
+    ocpVersion: "4.17*"
+```
+
+This matches any `ocpVersion` starting with `4.17` (e.g., `4.17.0`, `4.17.5-rc1`, etc.).
 
 ## Labels and Filtering
 

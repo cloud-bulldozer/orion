@@ -8,7 +8,8 @@ tests:
       workerNodesType.keyword: ""
       workerNodesCount: 4
       benchmark.keyword: node-density-heavy
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}*"
       networkType: OVNKubernetes
       jobType: "{{ jobtype | default('periodic') }}"
       pullNumber: "{{ pull_number | default(0) }}"

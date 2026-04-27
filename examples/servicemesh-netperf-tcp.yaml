@@ -1,7 +1,8 @@
 tests:
   - name: servicemesh-{{ service_mesh_mode }}-k8s-netperf-tcp
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}*"
       platform: AWS
       clusterType: self-managed
       benchmark.keyword: k8s-netperf
