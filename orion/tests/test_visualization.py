@@ -70,8 +70,15 @@ def test_generate_test_html_writes_expected_file_and_injects_click_handler(
     html = (tmp_path / "output_payload_node-density_viz.html").read_text(encoding="utf-8")
     assert "Orion: node-density" in html
     assert ".plotly-graph-div { width: 100% !important; }" in html
-    assert "attachClickHandlers" in html
+    assert "attachHandlers" in html
     assert "window.open(pt.customdata[0], '_blank');" in html
+    assert "plotly_hover" in html
+    assert "plotly_unhover" in html
+    assert "contextmenu" in html
+    assert "clipboard" in html
+    assert "orion-toast" in html
+    assert "right-click to copy UUID" in html
+    assert "stopPropagation" in html
 
 
 def test_build_test_figure_renders_changepoints_and_skips_out_of_range(sample_dataframe):
@@ -104,6 +111,11 @@ def test_build_test_figure_renders_changepoints_and_skips_out_of_range(sample_da
     assert len(changepoint_traces) == 2
     assert {trace.x[0] for trace in changepoint_traces} == {1, 2}
 
+    for trace in changepoint_traces:
+        cd = trace.customdata[0]
+        assert len(cd) == 2, "customdata should contain [build_url, uuid]"
+        assert cd[1].startswith("uuid-"), "second element should be the UUID"
+
 
 def test_build_test_figure_renders_only_matching_ack_markers(sample_dataframe):
     viz_data = VizData(
@@ -129,3 +141,4 @@ def test_build_test_figure_renders_only_matching_ack_markers(sample_dataframe):
     assert len(ack_traces) == 1
     assert ack_traces[0].x[0] == 1
     assert ack_traces[0].customdata[0][0] == "https://example.com/build/2"
+    assert ack_traces[0].customdata[0][1] == "uuid-2"
