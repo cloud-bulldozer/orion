@@ -388,6 +388,8 @@ class Utils:
             return None, None
         match.index = options.get("benchmark_index") or test.get("benchmark_index")
 
+        kb_versions = match.get_kb_version(uuids, timestamp_field)
+
         uuids = self.filter_uuids_on_index(
             metadata,
             options["benchmark_index"],
@@ -428,6 +430,10 @@ class Utils:
                 lambda uuid: versions[uuid]
             )
             merged_df.loc[:, "prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
+
+        merged_df.loc[:, "kbVersion"] = merged_df[self.uuid_field].apply(
+            lambda uuid: kb_versions.get(uuid, "N/A")
+        )
 
         # Add display field data if requested
         display_data = {run[self.uuid_field]: {field: run.get(field) for field in options["display"]} for run in runs}
