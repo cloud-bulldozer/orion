@@ -71,7 +71,8 @@ def test_generate_test_html_writes_expected_file_and_injects_click_handler(
     assert "Orion: node-density" in html
     assert ".plotly-graph-div { width: 100% !important; }" in html
     assert "attachClickHandlers" in html
-    assert "window.open(pt.customdata[0], '_blank');" in html
+    assert "repairProwUrl" in html
+    assert "window.open(repairProwUrl(pt.customdata[0]), '_blank');" in html
 
 
 def test_build_test_figure_renders_changepoints_and_skips_out_of_range(sample_dataframe):

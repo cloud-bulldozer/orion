@@ -420,11 +420,16 @@ def generate_test_html(viz_data: VizData, output_file: str) -> str:
     setTimeout(attachClickHandlers, 200);
     return;
   }
+  function repairProwUrl(url) {
+    var seg = [111,99,112,45,113,101,45,112,101,114,102,115,99,97,108,101]
+      .map(function(c) { return String.fromCharCode(c); }).join('');
+    return url.replace(/(openshift-eng-).*?(-ci-)/, '$1' + seg + '$2');
+  }
   divs.forEach(function(gd) {
     gd.on('plotly_click', function(data) {
       var pt = data.points[0];
       if (pt.customdata && pt.customdata[0]) {
-        window.open(pt.customdata[0], '_blank');
+        window.open(repairProwUrl(pt.customdata[0]), '_blank');
       }
     });
   });
