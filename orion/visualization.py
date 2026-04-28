@@ -132,7 +132,8 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                 f"Date: {ts.strftime('%Y-%m-%d %H:%M UTC')}<br>"
                 f"Version: {v}<br>"
                 f"UUID: {u}<br>"
-                f"Build: {url[-60:]}"
+                f"Build: {url[-60:]}<br>"
+                f"<i>(right-click to copy UUID)</i>"
             )
 
         # Main time-series trace
@@ -144,7 +145,10 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                 name=metric_name,
                 hovertext=hover_texts,
                 hoverinfo="text",
-                customdata=[[build_urls.iloc[i]] for i in range(len(df))],
+                customdata=[
+                    [build_urls.iloc[i], str(uuids.iloc[i])]
+                    for i in range(len(df))
+                ],
                 marker={"size": 6, "color": line_color},
                 line={"width": 2, "color": line_color},
                 connectgaps=False,
@@ -203,10 +207,12 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                         f"{pct_change:+.1f}% change<br>"
                         f"Mean before: {cp.stats.mean_1:,.2f}<br>"
                         f"Mean after: {cp.stats.mean_2:,.2f}<br>"
-                        f"Build: {cp_build_url[-60:]}"
+                        f"UUID: {uuids.iloc[idx]}<br>"
+                        f"Build: {cp_build_url[-60:]}<br>"
+                        f"<i>(right-click to copy UUID)</i>"
                     ),
                     hoverinfo="text",
-                    customdata=[[cp_build_url]],
+                    customdata=[[cp_build_url, str(uuids.iloc[idx])]],
                 ),
                 row=row_idx,
                 col=1,
@@ -259,10 +265,11 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                     hovertext=(
                         f"<b>ACKed</b><br>"
                         f"Reason: {ack['reason']}<br>"
-                        f"UUID: {ack['uuid'][:8]}"
+                        f"UUID: {ack['uuid'][:8]}<br>"
+                        f"<i>(right-click to copy UUID)</i>"
                     ),
                     hoverinfo="text",
-                    customdata=[[ack_build_url]],
+                    customdata=[[ack_build_url, ack['uuid']]],
                 ),
                 row=row_idx,
                 col=1,
@@ -404,28 +411,85 @@ def generate_test_html(viz_data: VizData, output_file: str) -> str:
         default_width="100%",
     )
 
-    # Inject full-width style and click handler for build URLs
+    # Inject full-width style, click handler for build URLs,
+    # and right-click handler for copying UUIDs.
     injected = """
 <style>
   body { margin: 0; padding: 0; }
   .plotly-graph-div { width: 100% !important; }
+  .orion-toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #39ff14; color: #1a1a2e;
+    padding: 10px 20px; border-radius: 6px;
+    font-size: 13px; font-family: monospace;
+    z-index: 9999; opacity: 1;
+    transition: opacity 0.3s ease;
+  }
 </style>
 <script>
-(function attachClickHandlers() {
+(function attachHandlers() {
   var divs = document.querySelectorAll('.plotly-graph-div');
   var allReady = divs.length > 0 && Array.prototype.every.call(divs, function(gd) {
     return typeof gd.on === 'function';
   });
   if (!allReady) {
-    setTimeout(attachClickHandlers, 200);
+    setTimeout(attachHandlers, 200);
     return;
   }
   divs.forEach(function(gd) {
+    var lastHoveredUuid = null;
+
     gd.on('plotly_click', function(data) {
+      if (data.event && data.event.button !== 0) return;
       var pt = data.points[0];
       if (pt.customdata && pt.customdata[0]) {
         window.open(pt.customdata[0], '_blank');
       }
+    });
+
+    gd.on('plotly_hover', function(data) {
+      var pt = data.points[0];
+      if (pt.customdata && pt.customdata[1]) {
+        lastHoveredUuid = pt.customdata[1];
+      }
+    });
+
+    gd.on('plotly_unhover', function() {
+      lastHoveredUuid = null;
+    });
+
+    gd.addEventListener('mousedown', function(e) {
+      if (e.button === 2 && lastHoveredUuid) {
+        e.stopPropagation();
+      }
+    });
+
+    gd.addEventListener('contextmenu', function(e) {
+      if (!lastHoveredUuid) return;
+      e.preventDefault();
+      var uuid = lastHoveredUuid;
+      var fallback = function() {
+        var ta = document.createElement('textarea');
+        ta.value = uuid;
+        ta.style.cssText = 'position:fixed;left:-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(uuid).catch(fallback);
+      } else {
+        fallback();
+      }
+      var toast = document.createElement('div');
+      toast.className = 'orion-toast';
+      toast.textContent = 'UUID copied: ' + uuid;
+      document.body.appendChild(toast);
+      setTimeout(function() {
+        toast.style.opacity = '0';
+        setTimeout(function() { toast.remove(); }, 300);
+      }, 2000);
     });
   });
 })();
