@@ -19,18 +19,16 @@ $ podman run orion orion --config examples/trt-external-payload-node-density.yam
 
 ### Installation
 
+Requirements:
+- Python 3.11 or higher
+- pip or uv
+
+
 ```bash
-$ git clone <repository_url>
-$ python3.11 -m venv venv
+$ git clone https://github.com/cloud-bulldozer/orion.git
+$ cd orion && uv venv
 $ source venv/bin/activate
-$ pip install -r requirements.txt
-$ pip install .
-```
-
-Using `uv`
-
-```bash
-$ uv tool install -p 3.11 orion --from git+https://github.com/cloud-bulldozer/orion.git
+$ make install
 ```
 
 ### Basic Usage
