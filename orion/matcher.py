@@ -227,6 +227,45 @@ class Matcher:
         runs = [hit.to_dict()["_source"] for hit in all_hits]
         return runs
 
+    def get_kb_version(self, uuids: List[str],
+                       timestamp_field: str = "timestamp") -> Dict[str, str]:
+        """Get kube-burner-ocp version for each UUID from jobSummary docs.
+
+        Args:
+            uuids (list): list of uuids
+            timestamp_field (str): timestamp field in data
+
+        Returns:
+            dict: mapping of uuid to kube-burner-ocp version string
+        """
+        query = Q(
+            "bool",
+            filter=[
+                Q("terms", **{self.uuid_field + ".keyword": uuids}),
+                Q("match", metricName="jobSummary"),
+                ~Q("match", **{"jobConfig.name": "garbage-collection"}),
+            ],
+        )
+        search = (
+            Search(using=self.es, index=self.index)
+            .query(query)
+            .source([self.uuid_field, "version"])
+            .extra(size=self.search_size)
+            .sort({timestamp_field: {"order": "desc"}})
+        )
+        try:
+            all_hits = self.query_index(search, return_all=True)
+        except Exception:  # pylint: disable=broad-except
+            return {}
+        kb_versions = {}
+        for hit in all_hits:
+            src = hit.to_dict()["_source"]
+            uid = src.get(self.uuid_field)
+            if uid and uid not in kb_versions:
+                ver = src.get("version", "N/A")
+                kb_versions[uid] = ver.split("@")[0] if "@" in ver else ver
+        return kb_versions
+
     def filter_runs(self, pdata: Dict[Any, Any], data: Dict[Any, Any]) -> List[str]:
         """filter out runs with different jobIterations
         Args:

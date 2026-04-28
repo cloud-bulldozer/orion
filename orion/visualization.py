@@ -92,6 +92,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
     versions = df.get(viz_data.version_field, pd.Series(["N/A"] * len(df)))
     uuids = df.get(viz_data.uuid_field, pd.Series(["N/A"] * len(df)))
     build_urls = df.get("buildUrl", pd.Series([""] * len(df)))
+    kb_versions = df.get("kbVersion", pd.Series(["N/A"] * len(df)))
 
     # Evenly spaced x-axis
     x_indices = list(range(len(df)))
@@ -123,14 +124,15 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
 
         # Rich hover with all relevant metadata
         hover_texts = []
-        for i, (ts, v, u, val) in enumerate(
-            zip(timestamps, versions, uuids, values)
+        for i, (ts, v, u, val, kb) in enumerate(
+            zip(timestamps, versions, uuids, values, kb_versions)
         ):
             url = build_urls.iloc[i] if i < len(build_urls) else ""
             hover_texts.append(
                 f"<b>{metric_name}: {val}</b><br>"
                 f"Date: {ts.strftime('%Y-%m-%d %H:%M UTC')}<br>"
                 f"Version: {v}<br>"
+                f"kube-burner-ocp: {kb}<br>"
                 f"UUID: {u}<br>"
                 f"Build: {url[-60:]}"
             )
@@ -203,6 +205,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                         f"{pct_change:+.1f}% change<br>"
                         f"Mean before: {cp.stats.mean_1:,.2f}<br>"
                         f"Mean after: {cp.stats.mean_2:,.2f}<br>"
+                        f"kube-burner-ocp: {kb_versions.iloc[idx]}<br>"
                         f"Build: {cp_build_url[-60:]}"
                     ),
                     hoverinfo="text",
@@ -259,6 +262,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                     hovertext=(
                         f"<b>ACKed</b><br>"
                         f"Reason: {ack['reason']}<br>"
+                        f"kube-burner-ocp: {kb_versions.iloc[ack_idx]}<br>"
                         f"UUID: {ack['uuid'][:8]}"
                     ),
                     hoverinfo="text",
