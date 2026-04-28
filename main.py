@@ -10,13 +10,13 @@ from pathlib import Path
 import re
 import sys
 import warnings
-from typing import Any, Optional
-import xml.etree.ElementTree as ET
 import xml.dom.minidom
+import xml.etree.ElementTree as ET
+from typing import Any, Optional
 import click
 from orion.logger import SingletonLogger
-from orion.run_test import run, TestResults
-from orion.utils import get_output_extension
+from orion.run_test import run
+from orion.pipeline.formatters import FormatterFactory
 from orion import constants as cnsts
 from orion.config import load_config, auto_detect_ack_file_with_vars
 from orion.visualization import generate_test_html
@@ -572,36 +572,181 @@ def main(**kwargs):
             logger.error("Missing required input variables: %s", ", ".join(missing_vars))
             sys.exit(1)
     results, results_pull = run(**kwargs)
-    is_pull = False
-    if results_pull.output:
-        is_pull = True
+    is_pull = bool(results_pull.analyses)
 
     # Auto-create JIRA issues for regressions if enabled
     if kwargs.get("jira_auto_create") and jira_provider:
-        if results.regression_flag and results.regression_data:
+        formatter_for_regression = FormatterFactory.get_formatter(cnsts.JSON)
+        if results.regression_flag:
             logger.info("Auto-creating JIRA issues for detected regressions...")
-            created = auto_create_jira_issues(results.regression_data, jira_provider, logger)
-            if created == 0 and results.regression_data:
+            all_reg_data = []
+            for analysis in results.analyses:
+                all_reg_data.extend(
+                    formatter_for_regression.extract_regression_data(analysis)
+                )
+            created = auto_create_jira_issues(all_reg_data, jira_provider, logger)
+            if created == 0 and all_reg_data:
                 logger.warning(
                     "No JIRA issues were created. This may be due to permissions. "
                     "See JIRA_PERMISSIONS_TROUBLESHOOTING.md for help."
                 )
-        if is_pull and results_pull.regression_flag and results_pull.regression_data:
+        if is_pull and results_pull.regression_flag:
             logger.info("Auto-creating JIRA issues for pull request regressions...")
-            created = auto_create_jira_issues(results_pull.regression_data, jira_provider, logger)
-            if created == 0 and results_pull.regression_data:
+            pull_reg_data = []
+            for analysis in results_pull.analyses:
+                pull_reg_data.extend(
+                    formatter_for_regression.extract_regression_data(analysis)
+                )
+            created = auto_create_jira_issues(pull_reg_data, jira_provider, logger)
+            if created == 0 and pull_reg_data:
                 logger.warning(
                     "No JIRA issues were created. This may be due to permissions. "
                     "See JIRA_PERMISSIONS_TROUBLESHOOTING.md for help."
                 )
-    if kwargs['output_format'] == cnsts.JSON:
-        has_regression = print_json(logger, kwargs, results, results_pull, is_pull)
-    elif kwargs['output_format'] == cnsts.JUNIT:
-        has_regression = print_junit(logger, kwargs, results, results_pull, is_pull)
+
+    formatter = FormatterFactory.get_formatter(kwargs["output_format"])
+    has_regression = False
+    all_regression_data = []
+
+    if not results.analyses:
+        logger.error("Terminating test")
+        sys.exit(0)
+
+    if is_pull:
+        for i, analysis in enumerate(results.analyses):
+            formatted_periodic = formatter.format(analysis)
+            avg_formatted = formatter.format_average(analysis)
+
+            pull_analysis = (
+                results_pull.analyses[i]
+                if i < len(results_pull.analyses)
+                else None
+            )
+            formatted_pull = (
+                formatter.format(pull_analysis) if pull_analysis else None
+            )
+
+            if kwargs["output_format"] == cnsts.JSON:
+                results_json = {
+                    "periodic": json.loads(
+                        formatted_periodic[analysis.test_name]
+                    ),
+                    "periodic_avg": json.loads(avg_formatted),
+                }
+                if formatted_pull and pull_analysis:
+                    results_json["pull"] = json.loads(
+                        formatted_pull[pull_analysis.test_name]
+                    )
+                combined = json.dumps(results_json, indent=2)
+                print(combined)
+                base = os.path.splitext(kwargs["save_output_path"])[0]
+                output_file = f"{base}_{analysis.test_name}.json"
+                with open(output_file, "w", encoding="utf-8") as f:
+                    f.write(combined)
+                logger.info("Output saved to %s", output_file)
+            elif kwargs["output_format"] == cnsts.JUNIT:
+                testsuites = ET.Element("testsuites")
+                testsuites.append(
+                    formatted_periodic[analysis.test_name]
+                )
+                avg_formatted.tag = "periodic_avg"
+                testsuites.append(avg_formatted)
+                if formatted_pull and pull_analysis:
+                    pull_el = formatted_pull[pull_analysis.test_name]
+                    pull_el.tag = "pull"
+                    testsuites.append(pull_el)
+                xml_str = ET.tostring(
+                    testsuites, encoding="utf8", method="xml"
+                ).decode()
+                dom = xml.dom.minidom.parseString(xml_str)
+                pretty_xml = dom.toprettyxml()
+                print(pretty_xml)
+                base = os.path.splitext(kwargs["save_output_path"])[0]
+                output_file = f"{base}.xml"
+                with open(output_file, "w", encoding="utf-8") as f:
+                    f.write(pretty_xml)
+                logger.info("Output saved to %s", output_file)
+            else:
+                formatter.save(
+                    analysis.test_name,
+                    formatted_periodic[analysis.test_name],
+                    kwargs["save_output_path"],
+                )
+                formatter.print_output(
+                    analysis.test_name,
+                    formatted_periodic[analysis.test_name],
+                    analysis,
+                )
+                if isinstance(avg_formatted, str) and avg_formatted:
+                    text = (
+                        analysis.test_name
+                        + " | Average of above Periodic runs"
+                    )
+                    print("\n" + text)
+                    print("=" * len(text))
+                    print(avg_formatted)
+                if pull_analysis and formatted_pull:
+                    formatter.save(
+                        pull_analysis.test_name,
+                        formatted_pull[pull_analysis.test_name],
+                        kwargs["save_output_path"],
+                    )
+                    formatter.print_output(
+                        pull_analysis.test_name,
+                        formatted_pull[pull_analysis.test_name],
+                        pull_analysis,
+                        pr=results_pull.pr,
+                        is_pull=True,
+                    )
+
+            if analysis.regression_flag:
+                has_regression = True
+                regression_data = formatter.extract_regression_data(
+                    analysis
+                )
+                all_regression_data.extend(regression_data)
     else:
-        has_regression = print_output(logger, kwargs, results, is_pull)
-        if is_pull:
-            print_output(logger, kwargs, results_pull, is_pull)
+        for analysis in results.analyses:
+            formatted = formatter.format(analysis)
+            formatter.save(
+                analysis.test_name,
+                formatted[analysis.test_name],
+                kwargs["save_output_path"],
+            )
+            formatter.print_output(
+                analysis.test_name,
+                formatted[analysis.test_name],
+                analysis,
+            )
+
+            if analysis.regression_flag:
+                has_regression = True
+                regression_data = formatter.extract_regression_data(
+                    analysis
+                )
+                all_regression_data.extend(regression_data)
+
+    # Prow CI: always save JSON regardless of output format
+    prow_job_id = os.getenv("PROW_JOB_ID")
+    if (
+        prow_job_id
+        and prow_job_id.strip()
+        and kwargs["output_format"] != cnsts.JSON
+    ):
+        json_formatter = FormatterFactory.get_formatter(cnsts.JSON)
+        for analysis in results.analyses:
+            json_formatted = json_formatter.format(analysis)
+            json_formatter.save(
+                analysis.test_name,
+                json_formatted[analysis.test_name],
+                kwargs["save_output_path"],
+            )
+
+    if has_regression:
+        print_regression_summary(all_regression_data)
+    else:
+        print("No regressions found")
+
     if kwargs.get("viz"):
         try:
             output_base_path = str(Path(kwargs['save_output_path']).with_suffix(''))
@@ -621,126 +766,4 @@ def main(**kwargs):
             logger.warning("Visualization generation failed: %s", e)
 
     if has_regression:
-        sys.exit(2) ## regression detected
-
-def save_text_table(test_name, result_table, save_output_path):
-    """Save the text table to a file."""
-    output_file_name = f"{os.path.splitext(save_output_path)[0]}_table_{test_name}.txt"
-    with open(output_file_name, 'w', encoding="utf-8") as file:
-        file.write(str(result_table))
-
-
-def print_output(
-        logger,
-        kwargs,
-        results: TestResults,
-        is_pull: bool = False) -> bool:
-    """
-    Print the output of the tests
-
-    Args:
-        logger: logger object
-        kwargs: keyword arguments
-        results: results of the tests
-        is_pull: whether the tests are pull requests
-    """
-    output = results.output
-    regression_flag = results.regression_flag
-    regression_data = results.regression_data
-    average_values = results.average_values
-    pr = results.pr if is_pull else 0
-    if not output:
-        logger.error("Terminating test")
-        sys.exit(0)
-    for test_name, result_table in output.items():
-        save_text_table(test_name, result_table, kwargs['save_output_path'])
-        if not kwargs['collapse']:
-            text = test_name
-            if pr > 0:
-                text = test_name + " | Pull Request #" + str(pr)
-            print(text)
-            print("=" * len(text))
-            print(result_table)
-            if is_pull and pr < 1:
-                text = test_name + " | Average of above Periodic runs"
-                print("\n" + text)
-                print("=" * len(text))
-                print(average_values)
-    if regression_flag:
-        print_regression_summary(regression_data)
-        if not is_pull:
-            return True
-    else:
-        print("No regressions found")
-    return False
-
-
-def print_json(logger, kwargs, results: TestResults, results_pull: TestResults, is_pull):
-    """
-    Print the output of the tests in json format
-    """
-    logger.info("Printing json output")
-    output = results.output
-    regression_flag = results.regression_flag
-    average_values = results.average_values
-    output_pull = []
-    if not output:
-        logger.error("Terminating test")
-        sys.exit(0)
-    if is_pull and results_pull.pr:
-        output_pull = results_pull.output
-    for test_name, result_table in output.items():
-        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
-        if is_pull:
-            results_json = {
-                "periodic": json.loads(result_table),
-                "periodic_avg": json.loads(average_values),
-                "pull": json.loads(output_pull.get(test_name)),
-            }
-            print(json.dumps(results_json, indent=2))
-            with open(output_file_name, 'w', encoding="utf-8") as file:
-                file.write(json.dumps(results_json, indent=2))
-        else:
-            print(result_table)
-            with open(output_file_name, 'w', encoding="utf-8") as file:
-                file.write(str(result_table))
-        logger.info("Output saved to %s", output_file_name)
-        if regression_flag:
-            return True
-    return False
-
-def print_junit(logger, kwargs, results: TestResults, results_pull: TestResults, is_pull):
-    """
-    Print the output of the tests in junit format
-    """
-    logger.info("Printing junit output")
-    output = results.output
-    regression_flag = results.regression_flag
-    average_values = results.average_values
-    output_pull = []
-    if not output:
-        logger.error("Terminating test")
-        sys.exit(0)
-    if is_pull and results_pull.pr:
-        output_pull = results_pull.output
-    testsuites = ET.Element("testsuites")
-    for test_name, result_table in output.items():
-        if not is_pull:
-            testsuites.append(result_table)
-        else:
-            testsuites.append(result_table)
-            average_values.tag = "periodic_avg"
-            testsuites.append(average_values)
-            output_pull.get(test_name).tag = "pull"
-            testsuites.append(output_pull.get(test_name))
-        xml_str = ET.tostring(testsuites, encoding="utf8", method="xml").decode()
-        dom = xml.dom.minidom.parseString(xml_str)
-        pretty_xml_as_string = dom.toprettyxml()
-        print(pretty_xml_as_string)
-        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}.{get_output_extension(kwargs['output_format'])}"
-        with open(output_file_name, 'w', encoding="utf-8") as file:
-            file.write(str(pretty_xml_as_string))
-        logger.info("Output saved to %s", output_file_name)
-        if regression_flag:
-            return True
-    return False
+        sys.exit(2)
