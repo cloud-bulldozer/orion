@@ -1,15 +1,23 @@
+# pylint: disable=missing-class-docstring,missing-function-docstring
 """Tests for formatter classes."""
+
+import json
+import xml.etree.ElementTree as ET
 
 import pandas as pd
 import pytest
 from otava.series import Series, Metric
 
+from orion.pipeline.analysis_result import AnalysisResult
+from orion.pipeline.formatters import FormatterFactory
+from orion.pipeline.formatters.base import BaseFormatter
+from orion.pipeline.formatters.json_formatter import JsonFormatter
+from orion.pipeline.formatters.junit_formatter import JUnitFormatter
+from orion.pipeline.formatters.text_formatter import TextFormatter
 from orion.tests.conftest import make_change_point
 
 
 def _make_analysis_result(change_points=None, regression_flag=True):
-    from orion.pipeline.analysis_result import AnalysisResult
-
     df = pd.DataFrame({
         "uuid": ["uuid-1", "uuid-2", "uuid-3"],
         "ocpVersion": ["4.18", "4.19", "4.20"],
@@ -62,8 +70,6 @@ def _make_analysis_result(change_points=None, regression_flag=True):
 
 class TestExtractRegressionData:
     def test_extracts_regression_from_changepoint(self):
-        from orion.pipeline.formatters.base import BaseFormatter
-
         data = _make_analysis_result()
 
         class ConcreteFormatter(BaseFormatter):
@@ -74,6 +80,8 @@ class TestExtractRegressionData:
             def save(self, test_name, formatted, save_output_path):
                 pass
             def print_output(self, test_name, formatted, data, pr=0, is_pull=False):
+                pass
+            def print_and_save_pr(self, periodic, pull, save_output_path, pr=0):
                 pass
 
         formatter = ConcreteFormatter()
@@ -91,8 +99,6 @@ class TestExtractRegressionData:
         assert reg["metrics_with_change"][0]["labels"] == ["infra"]
 
     def test_no_regressions_when_no_changepoints(self):
-        from orion.pipeline.formatters.base import BaseFormatter
-
         data = _make_analysis_result(change_points={"cpu": []}, regression_flag=False)
 
         class ConcreteFormatter(BaseFormatter):
@@ -104,6 +110,8 @@ class TestExtractRegressionData:
                 pass
             def print_output(self, test_name, formatted, data, pr=0, is_pull=False):
                 pass
+            def print_and_save_pr(self, periodic, pull, save_output_path, pr=0):
+                pass
 
         formatter = ConcreteFormatter()
         regressions = formatter.extract_regression_data(data)
@@ -111,8 +119,6 @@ class TestExtractRegressionData:
         assert len(regressions) == 0
 
     def test_extracts_benchmark_type(self):
-        from orion.pipeline.formatters.base import BaseFormatter
-
         data = _make_analysis_result()
 
         class ConcreteFormatter(BaseFormatter):
@@ -124,6 +130,8 @@ class TestExtractRegressionData:
                 pass
             def print_output(self, test_name, formatted, data, pr=0, is_pull=False):
                 pass
+            def print_and_save_pr(self, periodic, pull, save_output_path, pr=0):
+                pass
 
         formatter = ConcreteFormatter()
         regressions = formatter.extract_regression_data(data)
@@ -131,13 +139,8 @@ class TestExtractRegressionData:
         assert regressions[0]["benchmark_type"] == "node-density"
 
 
-import json
-
-
 class TestJsonFormatter:
     def test_format_produces_valid_json(self):
-        from orion.pipeline.formatters.json_formatter import JsonFormatter
-
         data = _make_analysis_result()
         formatter = JsonFormatter()
         result = formatter.format(data)
@@ -148,8 +151,6 @@ class TestJsonFormatter:
         assert len(parsed) == 3
 
     def test_format_sets_is_changepoint(self):
-        from orion.pipeline.formatters.json_formatter import JsonFormatter
-
         data = _make_analysis_result()
         formatter = JsonFormatter()
         result = formatter.format(data)
@@ -160,8 +161,6 @@ class TestJsonFormatter:
         assert changepoint_records[0]["ocpVersion"] == "4.20"
 
     def test_format_injects_metrics_with_percentage(self):
-        from orion.pipeline.formatters.json_formatter import JsonFormatter
-
         data = _make_analysis_result()
         formatter = JsonFormatter()
         result = formatter.format(data)
@@ -173,8 +172,6 @@ class TestJsonFormatter:
         assert cp_record["metrics"]["cpu"]["labels"] == ["infra"]
 
     def test_format_non_changepoint_has_zero_percentage(self):
-        from orion.pipeline.formatters.json_formatter import JsonFormatter
-
         data = _make_analysis_result()
         formatter = JsonFormatter()
         result = formatter.format(data)
@@ -186,8 +183,6 @@ class TestJsonFormatter:
                 assert metric_data["percentage_change"] == 0
 
     def test_format_collapse_returns_context_only(self):
-        from orion.pipeline.formatters.json_formatter import JsonFormatter
-
         data = _make_analysis_result()
         data.collapse = True
         formatter = JsonFormatter()
@@ -198,8 +193,6 @@ class TestJsonFormatter:
         assert len(parsed) <= 3
 
     def test_format_no_changepoints(self):
-        from orion.pipeline.formatters.json_formatter import JsonFormatter
-
         data = _make_analysis_result(change_points={"cpu": []}, regression_flag=False)
         formatter = JsonFormatter()
         result = formatter.format(data)
@@ -208,8 +201,6 @@ class TestJsonFormatter:
         assert all(not r["is_changepoint"] for r in parsed)
 
     def test_format_average_returns_json_string(self):
-        from orion.pipeline.formatters.json_formatter import JsonFormatter
-
         data = _make_analysis_result()
         formatter = JsonFormatter()
         avg = formatter.format_average(data)
@@ -221,8 +212,6 @@ class TestJsonFormatter:
 
 class TestTextFormatter:
     def test_format_produces_string_output(self):
-        from orion.pipeline.formatters.text_formatter import TextFormatter
-
         data = _make_analysis_result()
         formatter = TextFormatter()
         result = formatter.format(data)
@@ -232,8 +221,6 @@ class TestTextFormatter:
         assert len(result["test-workload"]) > 0
 
     def test_format_average_produces_tabulated_string(self):
-        from orion.pipeline.formatters.text_formatter import TextFormatter
-
         data = _make_analysis_result()
         formatter = TextFormatter()
         avg = formatter.format_average(data)
@@ -242,13 +229,8 @@ class TestTextFormatter:
         assert "cpu" in avg
 
 
-import xml.etree.ElementTree as ET
-
-
 class TestJUnitFormatter:
     def test_format_produces_xml_element(self):
-        from orion.pipeline.formatters.junit_formatter import JUnitFormatter
-
         data = _make_analysis_result()
         formatter = JUnitFormatter()
         result = formatter.format(data)
@@ -257,8 +239,6 @@ class TestJUnitFormatter:
         assert isinstance(result["test-workload"], ET.Element)
 
     def test_format_sets_failures_count(self):
-        from orion.pipeline.formatters.junit_formatter import JUnitFormatter
-
         data = _make_analysis_result()
         formatter = JUnitFormatter()
         result = formatter.format(data)
@@ -267,8 +247,6 @@ class TestJUnitFormatter:
         assert element.get("failures") == "1"
 
     def test_format_average_produces_xml_element(self):
-        from orion.pipeline.formatters.junit_formatter import JUnitFormatter
-
         data = _make_analysis_result()
         formatter = JUnitFormatter()
         avg = formatter.format_average(data)
@@ -278,28 +256,17 @@ class TestJUnitFormatter:
 
 class TestFormatterFactory:
     def test_get_json_formatter(self):
-        from orion.pipeline.formatters import FormatterFactory
-        from orion.pipeline.formatters.json_formatter import JsonFormatter
-
         formatter = FormatterFactory.get_formatter("json")
         assert isinstance(formatter, JsonFormatter)
 
     def test_get_text_formatter(self):
-        from orion.pipeline.formatters import FormatterFactory
-        from orion.pipeline.formatters.text_formatter import TextFormatter
-
         formatter = FormatterFactory.get_formatter("text")
         assert isinstance(formatter, TextFormatter)
 
     def test_get_junit_formatter(self):
-        from orion.pipeline.formatters import FormatterFactory
-        from orion.pipeline.formatters.junit_formatter import JUnitFormatter
-
         formatter = FormatterFactory.get_formatter("junit")
         assert isinstance(formatter, JUnitFormatter)
 
     def test_invalid_format_raises(self):
-        from orion.pipeline.formatters import FormatterFactory
-
         with pytest.raises(ValueError, match="Unsupported output format"):
             FormatterFactory.get_formatter("csv")

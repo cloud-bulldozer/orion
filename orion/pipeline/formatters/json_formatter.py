@@ -2,7 +2,7 @@
 
 import json
 import os
-from typing import Any
+from typing import Any, Optional
 
 from orion.pipeline.analysis_result import AnalysisResult
 from orion.pipeline.formatters.base import BaseFormatter
@@ -101,3 +101,25 @@ class JsonFormatter(BaseFormatter):
                      data: AnalysisResult, pr: int = 0,
                      is_pull: bool = False) -> None:
         print(formatted)
+
+    def print_and_save_pr(self, periodic: AnalysisResult,
+                          pull: Optional[AnalysisResult],
+                          save_output_path: str,
+                          pr: int = 0) -> None:
+        formatted_periodic = self.format(periodic)
+        avg_formatted = self.format_average(periodic)
+        results_json = {
+            "periodic": json.loads(formatted_periodic[periodic.test_name]),
+            "periodic_avg": json.loads(avg_formatted),
+        }
+        if pull:
+            formatted_pull = self.format(pull)
+            results_json["pull"] = json.loads(
+                formatted_pull[pull.test_name]
+            )
+        combined = json.dumps(results_json, indent=2)
+        print(combined)
+        base = os.path.splitext(save_output_path)[0]
+        output_file = f"{base}_{periodic.test_name}.json"
+        with open(output_file, "w", encoding="utf-8") as f:
+            f.write(combined)

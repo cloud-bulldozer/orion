@@ -1,13 +1,13 @@
 """Formatter classes for Orion output."""
 
+import orion.constants as cnsts
 from .base import BaseFormatter
 from .json_formatter import JsonFormatter
 from .text_formatter import TextFormatter
 from .junit_formatter import JUnitFormatter
-import orion.constants as cnsts
 
 
-class FormatterFactory:
+class FormatterFactory: # pylint: disable=too-few-public-methods
     """Factory for creating formatter instances."""
 
     @staticmethod

@@ -30,6 +30,13 @@ class BaseFormatter(ABC):
                      is_pull: bool = False) -> None:
         """Print formatted output to stdout."""
 
+    @abstractmethod
+    def print_and_save_pr(self, periodic: AnalysisResult,
+                          pull: Optional[AnalysisResult],
+                          save_output_path: str,
+                          pr: int = 0) -> None:
+        """Format, print, and save combined PR output (periodic + pull)."""
+
     def extract_regression_data(self, data: AnalysisResult) -> list:
         """Extract regression data from raw change points and dataframe."""
         if not data.regression_flag:

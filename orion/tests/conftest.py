@@ -13,7 +13,7 @@ def _init_logger():
     SingletonLogger(debug=logging.DEBUG, name="Orion")
 
 
-def make_change_point(metric, index, mean_1=100.0, mean_2=200.0):
+def make_change_point(metric, index, mean_1=100.0, mean_2=200.0): # pylint: disable=missing-function-docstring
     return ChangePoint(
         metric=metric,
         index=index,
