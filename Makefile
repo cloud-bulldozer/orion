@@ -10,8 +10,8 @@ help:
 	@echo "  help      - Show this help message"
 
 .DEFAULT_GOAL := help
-lint:
-	$(PIP) install yamllint
+
+lint: deps-test
 	yamllint examples
 
 fmt:
@@ -35,5 +35,5 @@ install: deps
 uninstall:
 	$(PIP) uninstall orion
 
-test: lint deps-test
+test: deps-test lint
 	pytest orion/tests/
