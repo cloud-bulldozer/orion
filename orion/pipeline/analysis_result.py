@@ -8,7 +8,7 @@ from otava.series import Series, ChangePoint, ChangePointGroup
 
 
 @dataclass
-class AnalysisResult:
+class AnalysisResult: # pylint: disable=too-many-instance-attributes
     """Carries all raw analysis results without formatting.
 
     No algorithm or infrastructure references - pure data.

@@ -1,8 +1,10 @@
+# pylint: disable=missing-function-docstring
 """Tests for AnalysisResult and group_change_points_by_time."""
 
 import pandas as pd
 from otava.series import Series, Metric
 
+from orion.pipeline.analysis_result import AnalysisResult, group_change_points_by_time
 from orion.tests.conftest import make_change_point
 
 
@@ -18,8 +20,6 @@ def _make_series():
 
 
 def test_analysis_result_creation():
-    from orion.pipeline.analysis_result import AnalysisResult
-
     df = pd.DataFrame({"uuid": ["a"], "timestamp": [1000], "cpu": [10.0]})
     series = _make_series()
 
@@ -47,8 +47,6 @@ def test_analysis_result_creation():
 
 
 def test_group_change_points_by_time_groups_same_index():
-    from orion.pipeline.analysis_result import group_change_points_by_time
-
     series = _make_series()
     cp1 = make_change_point("cpu", index=2)
     cp2 = make_change_point("memory", index=2)
@@ -62,8 +60,6 @@ def test_group_change_points_by_time_groups_same_index():
 
 
 def test_group_change_points_by_time_different_indices():
-    from orion.pipeline.analysis_result import group_change_points_by_time
-
     series = _make_series()
     cp1 = make_change_point("cpu", index=1)
     cp2 = make_change_point("cpu", index=3)
@@ -77,8 +73,6 @@ def test_group_change_points_by_time_different_indices():
 
 
 def test_group_change_points_by_time_empty():
-    from orion.pipeline.analysis_result import group_change_points_by_time
-
     series = _make_series()
     change_points = {"cpu": []}
 

@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 """Tests for CMR direction filtering in _analyze()."""
 
 import pandas as pd

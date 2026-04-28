@@ -2,7 +2,7 @@
 
 import json
 import os
-from typing import Any
+from typing import Any, Optional
 
 import pandas as pd
 from tabulate import tabulate
@@ -93,6 +93,42 @@ class TextFormatter(BaseFormatter):
             print(text)
             print("=" * len(text))
             print(formatted)
+
+    def print_and_save_pr(self, periodic: AnalysisResult,
+                          pull: Optional[AnalysisResult],
+                          save_output_path: str,
+                          pr: int = 0) -> None:
+        formatted_periodic = self.format(periodic)
+        self.save(
+            periodic.test_name,
+            formatted_periodic[periodic.test_name],
+            save_output_path,
+        )
+        self.print_output(
+            periodic.test_name,
+            formatted_periodic[periodic.test_name],
+            periodic,
+        )
+        avg_formatted = self.format_average(periodic)
+        if isinstance(avg_formatted, str) and avg_formatted:
+            text = periodic.test_name + " | Average of above Periodic runs"
+            print("\n" + text)
+            print("=" * len(text))
+            print(avg_formatted)
+        if pull:
+            formatted_pull = self.format(pull)
+            self.save(
+                pull.test_name,
+                formatted_pull[pull.test_name],
+                save_output_path,
+            )
+            self.print_output(
+                pull.test_name,
+                formatted_pull[pull.test_name],
+                pull,
+                pr=pr,
+                is_pull=True,
+            )
 
 
 def tabulate_average_values(

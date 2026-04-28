@@ -10,8 +10,6 @@ from pathlib import Path
 import re
 import sys
 import warnings
-import xml.dom.minidom
-import xml.etree.ElementTree as ET
 from typing import Any, Optional
 import click
 from orion.logger import SingletonLogger
@@ -614,90 +612,17 @@ def main(**kwargs):
 
     if is_pull:
         for i, analysis in enumerate(results.analyses):
-            formatted_periodic = formatter.format(analysis)
-            avg_formatted = formatter.format_average(analysis)
-
             pull_analysis = (
                 results_pull.analyses[i]
                 if i < len(results_pull.analyses)
                 else None
             )
-            formatted_pull = (
-                formatter.format(pull_analysis) if pull_analysis else None
+            formatter.print_and_save_pr(
+                analysis,
+                pull_analysis,
+                kwargs["save_output_path"],
+                pr=results_pull.pr,
             )
-
-            if kwargs["output_format"] == cnsts.JSON:
-                results_json = {
-                    "periodic": json.loads(
-                        formatted_periodic[analysis.test_name]
-                    ),
-                    "periodic_avg": json.loads(avg_formatted),
-                }
-                if formatted_pull and pull_analysis:
-                    results_json["pull"] = json.loads(
-                        formatted_pull[pull_analysis.test_name]
-                    )
-                combined = json.dumps(results_json, indent=2)
-                print(combined)
-                base = os.path.splitext(kwargs["save_output_path"])[0]
-                output_file = f"{base}_{analysis.test_name}.json"
-                with open(output_file, "w", encoding="utf-8") as f:
-                    f.write(combined)
-                logger.info("Output saved to %s", output_file)
-            elif kwargs["output_format"] == cnsts.JUNIT:
-                testsuites = ET.Element("testsuites")
-                testsuites.append(
-                    formatted_periodic[analysis.test_name]
-                )
-                avg_formatted.tag = "periodic_avg"
-                testsuites.append(avg_formatted)
-                if formatted_pull and pull_analysis:
-                    pull_el = formatted_pull[pull_analysis.test_name]
-                    pull_el.tag = "pull"
-                    testsuites.append(pull_el)
-                xml_str = ET.tostring(
-                    testsuites, encoding="utf8", method="xml"
-                ).decode()
-                dom = xml.dom.minidom.parseString(xml_str)
-                pretty_xml = dom.toprettyxml()
-                print(pretty_xml)
-                base = os.path.splitext(kwargs["save_output_path"])[0]
-                output_file = f"{base}.xml"
-                with open(output_file, "w", encoding="utf-8") as f:
-                    f.write(pretty_xml)
-                logger.info("Output saved to %s", output_file)
-            else:
-                formatter.save(
-                    analysis.test_name,
-                    formatted_periodic[analysis.test_name],
-                    kwargs["save_output_path"],
-                )
-                formatter.print_output(
-                    analysis.test_name,
-                    formatted_periodic[analysis.test_name],
-                    analysis,
-                )
-                if isinstance(avg_formatted, str) and avg_formatted:
-                    text = (
-                        analysis.test_name
-                        + " | Average of above Periodic runs"
-                    )
-                    print("\n" + text)
-                    print("=" * len(text))
-                    print(avg_formatted)
-                if pull_analysis and formatted_pull:
-                    formatter.save(
-                        pull_analysis.test_name,
-                        formatted_pull[pull_analysis.test_name],
-                        kwargs["save_output_path"],
-                    )
-                    formatter.print_output(
-                        pull_analysis.test_name,
-                        formatted_pull[pull_analysis.test_name],
-                        pull_analysis,
-                        pr=results_pull.pr,
-                        is_pull=True,
-                    )
 
             if analysis.regression_flag:
                 has_regression = True
