@@ -275,7 +275,7 @@ class Matcher:
         metric_queries = [
             Q("match", **{metric_key: metric_value})
             for metric_key, metric_value in metrics.items()
-            if metric_key not in ["name", "metric_of_interest", "not"]
+            if metric_key not in ["name", "metric_of_interest", "not", "type"]
         ]
         exists_queries = []
         if exists_fields:
@@ -324,7 +324,7 @@ class Matcher:
         metric_queries = [
             Q("match", **{metric_key: metric_value})
             for metric_key, metric_value in metrics.items()
-            if metric_key not in ["name", "metric_of_interest", "not", "agg"]
+            if metric_key not in ["name", "metric_of_interest", "not", "agg", "type"]
         ]
         metric_query = Q("bool", must=metric_queries + not_queries)
         query = Q(

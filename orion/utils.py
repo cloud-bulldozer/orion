@@ -55,6 +55,7 @@ class Utils:
         """
         dataframe_list = []
         metrics_config = {}
+        metadata_columns = []
 
         for metric in metrics:
             metric_name = metric["name"]
@@ -66,6 +67,7 @@ class Utils:
             timestamp_field = metric.pop("timestamp", timestamp_field)
             correlation = metric.pop("correlation", "")
             context = metric.pop("context", 5)
+            metric_type = metric.pop("type", None)
             self.logger.info("Collecting %s", metric_name)
             try:
                 if "agg" in metric:
@@ -82,8 +84,11 @@ class Utils:
                 metric["threshold"] = threshold
                 metric["correlation"] = correlation
                 metric["context"] = context
-                for metric_dataframe_name in metric_dataframe_names:
-                    metrics_config[metric_dataframe_name] = metric
+                if metric_type != "metadata":
+                    for metric_dataframe_name in metric_dataframe_names:
+                        metrics_config[metric_dataframe_name] = metric
+                else:
+                    metadata_columns.extend(metric_dataframe_names)
                 dataframe_list.append(metric_df)
                 self.logger.debug(metric_df)
             except Exception as e:
@@ -92,7 +97,7 @@ class Utils:
                     metric_name,
                     e,
                 )
-        return dataframe_list, metrics_config
+        return dataframe_list, metrics_config, metadata_columns
 
 
     def process_aggregation_metric(
@@ -330,7 +335,7 @@ class Utils:
         match: Matcher,
         options: Dict[str, Any],
         start_timestamp: datetime
-    ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    ) -> Tuple[pd.DataFrame, Dict[str, Any], List[str]]:
         """
         Process a test and get the data for the test
 
@@ -341,7 +346,7 @@ class Utils:
             start_timestamp (datetime): start time for the run
 
         Returns:
-            tuple: A tuple of a dataframe and a dictionary of metrics
+            tuple: A tuple of a dataframe, a dictionary of metrics, and metadata column names
         """
         self.logger.info("The test %s has started", test["name"])
 
@@ -398,11 +403,11 @@ class Utils:
         )
         # get metrics data and dataframe
         metrics = test["metrics"]
-        dataframe_list, metrics_config = self.get_metric_data(
+        dataframe_list, metrics_config, metadata_columns = self.get_metric_data(
             uuids, metrics, match, test_threshold, timestamp_field
         )
         if not dataframe_list:
-            return None, metrics_config
+            return None, metrics_config, metadata_columns
 
         uuid_timestamp_map = pd.DataFrame()
         for df in dataframe_list:
@@ -449,7 +454,7 @@ class Utils:
         # save the dataframe
         output_file_path = f"{options['save_data_path'].split('.')[0]}-{test['name']}.csv"
         match.save_results(merged_df, csv_file_path=output_file_path)
-        return merged_df, metrics_config
+        return merged_df, metrics_config, metadata_columns
 
 
     def shorten_url(self, shortener: any, uuids: str) -> str:

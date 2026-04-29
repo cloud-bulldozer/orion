@@ -135,6 +135,10 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         # Use default apache_otava report
         series, change_points_by_metric = self.get_analysis_results()
 
+        for col in self.options.get("metadata_columns", []):
+            if col in self.dataframe.columns and col not in series.data:
+                series.data[col] = self.dataframe[col]
+
         # Append display_data to series.data in the same format
         if display_data and display_fields:
             for display_field in display_fields:

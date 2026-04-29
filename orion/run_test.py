@@ -220,12 +220,13 @@ def analyze(test, kwargs, is_pull = False) -> AnalyzeResult:
     result_output = {}
     regression_flag = False
     start_timestamp = get_start_timestamp(kwargs, test, is_pull)
-    fingerprint_matched_df, metrics_config = utils.process_test(
+    fingerprint_matched_df, metrics_config, metadata_columns = utils.process_test(
         test,
         matcher,
         kwargs,
         start_timestamp
     )
+    kwargs["metadata_columns"] = metadata_columns
 
     if fingerprint_matched_df is None:
         if is_pull:
