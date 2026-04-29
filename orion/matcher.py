@@ -46,6 +46,25 @@ class Matcher:
         self.version_field = version_field
         self.uuid_field = uuid_field
 
+    @staticmethod
+    def _build_field_query(field: str, value: str) -> Q:
+        """Build a match or wildcard query depending on whether the value contains wildcards.
+
+        If the value contains '*', an Elasticsearch wildcard query is used.
+        Otherwise, a standard match query is used.
+
+        Args:
+            field: The field name to query against.
+            value: The value to match, may include '*' for wildcard matching.
+
+        Returns:
+            Q: An opensearch-dsl query object.
+        """
+        str_value = str(value)
+        if '*' in str_value:
+            return Q("wildcard", **{field: {"value": str_value}})
+        return Q("match", **{field: str_value})
+
     def get_metadata_by_uuid(self, uuid: str) -> dict:
         """Returns back metadata when uuid is given
 
@@ -269,11 +288,11 @@ class Matcher:
             uuids.remove(uuid)
         metric_queries = []
         not_queries = [
-            ~Q("match", **{not_item_key: not_item_value})
+            ~self._build_field_query(not_item_key, not_item_value)
             for not_item_key, not_item_value in metrics.get("not", {}).items()
         ]
         metric_queries = [
-            Q("match", **{metric_key: metric_value})
+            self._build_field_query(metric_key, metric_value)
             for metric_key, metric_value in metrics.items()
             if metric_key not in ["name", "metric_of_interest", "not"]
         ]
@@ -318,11 +337,11 @@ class Matcher:
         """
         metric_queries = []
         not_queries = [
-            ~Q("match", **{not_item_key: not_item_value})
+            ~self._build_field_query(not_item_key, not_item_value)
             for not_item_key, not_item_value in metrics.get("not", {}).items()
         ]
         metric_queries = [
-            Q("match", **{metric_key: metric_value})
+            self._build_field_query(metric_key, metric_value)
             for metric_key, metric_value in metrics.items()
             if metric_key not in ["name", "metric_of_interest", "not", "agg"]
         ]
