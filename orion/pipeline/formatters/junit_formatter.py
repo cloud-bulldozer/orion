@@ -41,7 +41,7 @@ class JUnitFormatter(BaseFormatter):
     def save(self, test_name: str, formatted: Any,
              save_output_path: str) -> None:
         base = os.path.splitext(save_output_path)[0]
-        output_file = f"{base}.xml"
+        output_file = f"{base}_{test_name}.xml"
         testsuites = ET.Element("testsuites")
         testsuites.append(formatted)
         xml_str = ET.tostring(
@@ -85,6 +85,6 @@ class JUnitFormatter(BaseFormatter):
         pretty_xml = dom.toprettyxml()
         print(pretty_xml)
         base = os.path.splitext(save_output_path)[0]
-        output_file = f"{base}.xml"
+        output_file = f"{base}_{periodic.test_name}.xml"
         with open(output_file, "w", encoding="utf-8") as f:
             f.write(pretty_xml)

@@ -73,7 +73,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
                     futures_pull = executor.submit(
                         analyze, test, kwargs, True
                     )
-                    pr = test["metadata"]["pullNumber"]
+                    pr = int(test["metadata"]["pullNumber"])
                     test_periodic = copy.deepcopy(test)
                     test_periodic["metadata"]["jobType"] = "periodic"
                     test_periodic["metadata"]["pullNumber"] = 0
@@ -214,8 +214,6 @@ def analyze(test, kwargs, is_pull=False):
     if algorithm_name == cnsts.ISOLATION_FOREST:
         fingerprint_matched_df = fingerprint_matched_df.dropna().reset_index()
 
-    avg_values = fingerprint_matched_df[metrics].mean()
-
     algorithm_factory = AlgorithmFactory()
     algorithm = algorithm_factory.instantiate_algorithm(
         algorithm_name,
@@ -343,6 +341,7 @@ def analyze(test, kwargs, is_pull=False):
         )
 
     series = final_algorithm.setup_series()
+    avg_values = final_algorithm.dataframe[metrics].mean()
 
     analysis_result = AnalysisResult(
         test_name=test["name"],

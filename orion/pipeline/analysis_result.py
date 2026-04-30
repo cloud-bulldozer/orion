@@ -48,12 +48,14 @@ def group_change_points_by_time(
     changes.sort(key=lambda c: c.index)
     points = []
     for k, g in groupby(changes, key=lambda c: c.index):
+        prev_time = series.time[k - 1] if k > 0 else None
+        prev_attributes = series.attributes_at(k - 1) if k > 0 else None
         cp = ChangePointGroup(
             index=k,
             time=series.time[k],
-            prev_time=series.time[k - 1],
+            prev_time=prev_time,
             attributes=series.attributes_at(k),
-            prev_attributes=series.attributes_at(k - 1),
+            prev_attributes=prev_attributes,
             changes=list(g),
         )
         points.append(cp)

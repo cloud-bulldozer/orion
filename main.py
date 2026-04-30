@@ -631,12 +631,11 @@ def main(**kwargs):
         sys.exit(0)
 
     if is_pull:
-        for i, analysis in enumerate(results.analyses):
-            pull_analysis = (
-                results_pull.analyses[i]
-                if i < len(results_pull.analyses)
-                else None
-            )
+        pull_analyses_by_test = {
+            a.test_name: a for a in results_pull.analyses
+        }
+        for analysis in results.analyses:
+            pull_analysis = pull_analyses_by_test.get(analysis.test_name)
             formatter.print_and_save_pr(
                 analysis,
                 pull_analysis,
