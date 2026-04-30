@@ -411,17 +411,17 @@ setup() {
 
   failure=$(echo 'failures="1"')
   # Check if the failures string exists in the output file
-  if ! grep -q $failure ./outputs/results.xml; then
-    echo "Expected string '$failure' not found in results.xml"
-    cat ./outputs/results.xml
+  if ! grep -q $failure ./outputs/results_olm-integration-test.xml; then
+    echo "Expected string '$failure' not found in results_olm-integration-test.xml"
+    cat ./outputs/results_olm-integration-test.xml
     exit 1
   fi
 
   changepoint=$(echo '404.549 | https://prow.ci/2013174937652563968 | -- changepoint')
   # Check if the changepoint string exists in the output file
-  if ! grep -q $changepoint ./outputs/results.xml; then
-    echo "Expected string '$changepoint' not found in results.xml"
-    cat ./outputs/results.xml
+  if ! grep -q $changepoint ./outputs/results_olm-integration-test.xml; then
+    echo "Expected string '$changepoint' not found in results_olm-integration-test.xml"
+    cat ./outputs/results_olm-integration-test.xml
     exit 1
   fi
 
@@ -510,25 +510,25 @@ setup() {
 
   failure=$(echo 'failures="1"')
   # Check if the failures string exists in the output file
-  if ! grep -q $failure ./outputs/results.xml; then
-    echo "Expected string '$failure' not found in results.xml"
-    cat ./outputs/results.xml
+  if ! grep -q $failure ./outputs/results_olm-integration-test.xml; then
+    echo "Expected string '$failure' not found in results_olm-integration-test.xml"
+    cat ./outputs/results_olm-integration-test.xml
     exit 1
   fi
 
   changepoint=$(echo '404.549')
   # Check if the changepoint string exists in the output file
-  if ! grep -q $changepoint ./outputs/results.xml; then
-    echo "Expected string '$changepoint' not found in results.xml"
-    cat ./outputs/results.xml
+  if ! grep -q $changepoint ./outputs/results_olm-integration-test.xml; then
+    echo "Expected string '$changepoint' not found in results_olm-integration-test.xml"
+    cat ./outputs/results_olm-integration-test.xml
     exit 1
   fi
 
   customDisplay="upstreamJob"
   # Check if the customDisplay string exists in the output file
-  if ! grep -q $customDisplay ./outputs/results.xml; then
-    echo "Expected string '$customDisplay' not found in results.xml"
-    cat ./outputs/results.xml
+  if ! grep -q $customDisplay ./outputs/results_olm-integration-test.xml; then
+    echo "Expected string '$customDisplay' not found in results_olm-integration-test.xml"
+    cat ./outputs/results_olm-integration-test.xml
     exit 1
   fi
 
@@ -664,20 +664,20 @@ setup() {
   fi
 
   # Check if the percentage #1 string exists in the output file
-  if ! grep -q "155.648" ./outputs/results-anomaly.xml; then
-    echo "Expected string '155.648' not found in ./outputs/results-anomaly.xml"
+  if ! grep -q "155.648" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected string '155.648' not found in ./outputs/results-anomaly_olm-integration-test.xml"
     exit 1
   fi
 
   # Check if the percentage #2 string exists in the output file
-  if ! grep -q "56.7208" ./outputs/results-anomaly.xml; then
-    echo "Expected string '56.7208' not found in ./outputs/results-anomaly.xml"
+  if ! grep -q "56.7208" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected string '56.7208' not found in ./outputs/results-anomaly_olm-integration-test.xml"
     exit 1
   fi
 
   # Check if the percentage #3 string exists in the output file
-  if ! grep -q "38.8858" ./outputs/results-anomaly.xml; then
-    echo "Expected string '38.8858' not found in ./outputs/results-anomaly.xml"
+  if ! grep -q "38.8858" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected string '38.8858' not found in ./outputs/results-anomaly_olm-integration-test.xml"
     exit 1
   fi
 
@@ -689,7 +689,7 @@ setup() {
   orion --lookback 15d --since 2026-01-20 --cmr --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-cmr.txt
   EXIT_CODE=$?
 
-  if [ ! $EXIT_CODE -eq 0 ]; then
+  if [ ! $EXIT_CODE -eq 2 ]; then
     echo "no regression found"
     exit 1
   fi
@@ -708,7 +708,7 @@ setup() {
   orion --lookback 15d --since 2026-01-20 --cmr --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format json --save-output-path=./outputs/results-cmr.json
   EXIT_CODE=$?
 
-  if [ ! $EXIT_CODE -eq 0 ]; then
+  if [ ! $EXIT_CODE -eq 2 ]; then
     echo "no regression found"
     exit 1
   fi
@@ -727,14 +727,14 @@ setup() {
   orion --lookback 15d --since 2026-01-20 --cmr --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' --output-format junit --save-output-path=./outputs/results-cmr.xml
   EXIT_CODE=$?
 
-  if [ ! $EXIT_CODE -eq 0 ]; then
+  if [ ! $EXIT_CODE -eq 2 ]; then
     echo "no regression found"
     exit 1
   fi
 
   # Check if the percentage string exists in the output file
-  if ! grep -q "True             |             160.879" ./outputs/results-cmr.xml; then
-    echo "Expected string 'True             |             160.879' not found in results-cmr.xml"
+  if ! grep -q "True             |             160.879" ./outputs/results-cmr_olm-integration-test.xml; then
+    echo "Expected string 'True             |             160.879' not found in results-cmr_olm-integration-test.xml"
     exit 1
   fi
 

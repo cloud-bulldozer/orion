@@ -228,7 +228,7 @@ def analyze(test, kwargs, is_pull=False):
     final_algorithm = algorithm
     expanded_algorithm = None
 
-    if regression_flag and has_early_changepoint_raw(
+    if regression_flag and algorithm_name != cnsts.CMR and has_early_changepoint_raw(
         change_points_by_metric, max_early_index=cnsts.CHANGEPOINT_BUFFER
     ):
         logger.info(
