@@ -59,14 +59,6 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: eipRecoveryLatencyTotal
-        metricName.keyword: eipRecoveryLatencyTotal
-        metric_of_interest: value
-        labels:
-          - "[Jira: Networking / ovn-kubernetes]"
-        direction: 1
-        threshold: 10
-
       - name: startupEipNodeIPReqCount
         metricName.keyword: startupEipNodeIPReqCount
         metric_of_interest: value
@@ -77,3 +69,12 @@ tests:
           - "[Jira: Networking / ovn-kubernetes]"
         direction: 1
         threshold: 10
+
+      - name: eipRecoveryLatencyTotal
+        metricName.keyword: eipRecoveryLatencyTotal
+        metric_of_interest: value
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
