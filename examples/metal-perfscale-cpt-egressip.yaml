@@ -1,0 +1,79 @@
+tests:
+  - name: metal-perfscale-cpt-node-density
+    metadata:
+      platform: BareMetal
+      clusterType: self-managed
+      masterNodesType.keyword: ""
+      masterNodesCount: 3
+      workerNodesType.keyword: ""
+      workerNodesCount: 24
+      benchmark.keyword: egressip
+      wildcard:
+        ocpVersion: "{{ version }}*"
+      networkType: OVNKubernetes
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
+      fips: "{{ fips | default('false') }}"
+      not:
+        stream: okd
+
+    metrics:
+      - name: podReadyLatency
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName: Ready
+        metric_of_interest: P99
+        not:
+          jobConfig.name: "garbage-collection"
+        labels:
+          - "[Jira: PodLatency]"
+        threshold: 10
+
+      - name: containersStartedLatency
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName: ContainersStarted
+        labels:
+          - "[Jira: PodLatency]"
+        metric_of_interest: P99
+        direction: 1
+        threshold: 25
+
+      - name: ovsCPU-Workers
+        metricName.keyword: cgroupCPUSeconds-Workers
+        labels.id.keyword: /system.slice/ovs-vswitchd.service
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: eipStartupLatencyTotal
+        metricName.keyword: eipStartupLatencyTotal
+        metric_of_interest: value
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: eipRecoveryLatencyTotal
+        metricName.keyword: eipRecoveryLatencyTotal
+        metric_of_interest: value
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: startupEipNodeIPReqCount
+        metricName.keyword: startupEipNodeIPReqCount
+        metric_of_interest: value
+        agg:
+          value: startupEipNodeIPReqCount
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
