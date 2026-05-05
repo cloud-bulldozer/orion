@@ -58,48 +58,193 @@ class Utils:
         metadata_columns = []
         global_timestamp_field = timestamp_field
 
-        for metric in metrics:
-            metric_name = metric["name"]
-            metric_value_field = metric["metric_of_interest"]
+        agg_metrics = []
+        std_metrics = []
+        meta_by_name = {}
 
+        for metric in metrics:
             labels = metric.pop("labels", None)
             direction = int(metric.pop("direction", 0))
             threshold = abs(int(metric.pop("threshold", test_threshold)))
-            timestamp_field = metric.pop("timestamp", global_timestamp_field)
+            ts = metric.pop("timestamp", global_timestamp_field)
             correlation = metric.pop("correlation", "")
             context = metric.pop("context", 5)
             metric_type = metric.get("type")
-            self.logger.info("Collecting %s", metric_name)
-            try:
-                if "agg" in metric:
-                    metric_df, metric_dataframe_names = self.process_aggregation_metric(
-                        uuids, metric, match, timestamp_field
-                    )
-                else:
-                    metric_df, single_name = self.process_standard_metric(
-                        uuids, metric, match, metric_value_field, timestamp_field
-                    )
-                    metric_dataframe_names = [single_name]
-                metric["labels"] = labels
-                metric["direction"] = direction
-                metric["threshold"] = threshold
-                metric["timestamp"] = timestamp_field
-                metric["correlation"] = correlation
-                metric["context"] = context
-                if metric_type != "metadata":
-                    for metric_dataframe_name in metric_dataframe_names:
-                        metrics_config[metric_dataframe_name] = metric
-                else:
-                    metadata_columns.extend(metric_dataframe_names)
-                dataframe_list.append(metric_df)
-                self.logger.debug(metric_df)
-            except Exception as e:
-                self.logger.error(
-                    "Couldn't get metrics %s, exception %s",
-                    metric_name,
-                    e,
-                )
+
+            meta_by_name[metric["name"]] = {
+                "labels": labels, "direction": direction, "threshold": threshold,
+                "correlation": correlation, "context": context, "timestamp": ts,
+                "type": metric_type,
+            }
+
+            if "agg" in metric:
+                agg_metrics.append(metric)
+            else:
+                std_metrics.append(metric)
+
+        if agg_metrics:
+            self._process_agg_batch(
+                uuids, agg_metrics, match, meta_by_name,
+                dataframe_list, metrics_config, global_timestamp_field,
+                metadata_columns
+            )
+
+        if std_metrics:
+            self._process_std_batch(
+                uuids, std_metrics, match, meta_by_name,
+                dataframe_list, metrics_config, global_timestamp_field,
+                metadata_columns
+            )
+
         return dataframe_list, metrics_config, metadata_columns
+
+    def _restore_meta(self, metric, meta):
+        """Re-attach popped metadata fields to metric dict."""
+        metric["labels"] = meta["labels"]
+        metric["direction"] = meta["direction"]
+        metric["threshold"] = meta["threshold"]
+        metric["timestamp"] = meta["timestamp"]
+        metric["correlation"] = meta["correlation"]
+        metric["context"] = meta["context"]
+
+    def _register_columns(self, col_names, metric, meta, metrics_config, metadata_columns):
+        """Route column names to metrics_config or metadata_columns based on type."""
+        if meta.get("type") == "metadata" and metadata_columns is not None:
+            metadata_columns.extend(col_names)
+        else:
+            for col_name in col_names:
+                metrics_config[col_name] = metric
+
+    def _process_agg_batch(self, uuids, agg_metrics, match, meta_by_name,
+                           dataframe_list, metrics_config, timestamp_field,
+                           metadata_columns=None):
+        """Batch all aggregation metrics into a single ES query with fallback."""
+        try:
+            self.logger.info("Batching %d aggregation metrics", len(agg_metrics))
+            batch_results = match.get_agg_metrics_batch(
+                uuids, agg_metrics, timestamp_field
+            )
+            for metric in agg_metrics:
+                name = metric["name"]
+                data = batch_results.get(name, [])
+                meta = meta_by_name[name]
+                try:
+                    metric_df, col_names = self._build_agg_dataframe(
+                        data, metric, match, meta["timestamp"]
+                    )
+                    dataframe_list.append(metric_df)
+                    self._restore_meta(metric, meta)
+                    self._register_columns(col_names, metric, meta, metrics_config, metadata_columns)
+                except Exception as e:
+                    self.logger.error(
+                        "Couldn't process batched agg metric %s", name, exc_info=e
+                    )
+                    self._restore_meta(metric, meta)
+        except Exception as e:
+            self.logger.warning(
+                "Batch aggregation failed, falling back to single queries", exc_info=e
+            )
+            for metric in agg_metrics:
+                name = metric["name"]
+                meta = meta_by_name[name]
+                try:
+                    metric_df, col_names = self.process_aggregation_metric(
+                        uuids, metric, match, meta["timestamp"]
+                    )
+                    dataframe_list.append(metric_df)
+                    self._restore_meta(metric, meta)
+                    self._register_columns(col_names, metric, meta, metrics_config, metadata_columns)
+                except Exception as e2:
+                    self.logger.error("Couldn't get metric %s: %s", name, e2)
+                    self._restore_meta(metric, meta)
+
+    def _process_std_batch(self, uuids, std_metrics, match, meta_by_name,
+                           dataframe_list, metrics_config, timestamp_field,
+                           metadata_columns=None):
+        """Batch all standard metrics into a single ES query with fallback."""
+        try:
+            self.logger.info("Batching %d standard metrics", len(std_metrics))
+            batch_results = match.get_results_batch(
+                uuids, std_metrics, timestamp_field
+            )
+            for metric in std_metrics:
+                name = metric["name"]
+                data = batch_results.get(name, [])
+                meta = meta_by_name[name]
+                try:
+                    metric_df, single_name = self.process_standard_metric(
+                        uuids, metric, match, metric["metric_of_interest"],
+                        meta["timestamp"], preloaded_data=data,
+                    )
+                    dataframe_list.append(metric_df)
+                    self._restore_meta(metric, meta)
+                    self._register_columns([single_name], metric, meta, metrics_config, metadata_columns)
+                except Exception as e:
+                    self.logger.error(
+                        "Couldn't process batched standard metric %s", name, exc_info=e
+                    )
+                    self._restore_meta(metric, meta)
+        except Exception as e:
+            self.logger.warning(
+                "Batch standard query failed, falling back to single queries", exc_info=e
+            )
+            for metric in std_metrics:
+                name = metric["name"]
+                meta = meta_by_name[name]
+                try:
+                    metric_df, single_name = self.process_standard_metric(
+                        uuids, metric, match, metric["metric_of_interest"],
+                        meta["timestamp"],
+                    )
+                    dataframe_list.append(metric_df)
+                    self._restore_meta(metric, meta)
+                    self._register_columns([single_name], metric, meta, metrics_config, metadata_columns)
+                except Exception as e2:
+                    self.logger.error("Couldn't get metric %s: %s", name, e2)
+                    self._restore_meta(metric, meta)
+
+    def _build_agg_dataframe(self, data, metric, match, timestamp_field="timestamp"):
+        """Build a DataFrame from pre-fetched aggregation data."""
+        aggregation_value = metric["metric_of_interest"]
+        aggregation_type = metric["agg"]["agg_type"]
+
+        if aggregation_type == "percentiles":
+            percentile_prefix = f"{aggregation_value}_{aggregation_type}_"
+            agg_columns = [k for k in data[0].keys()
+                           if k.startswith(percentile_prefix)] if data else []
+        else:
+            agg_columns = [f"{aggregation_value}_{aggregation_type}"]
+
+        all_columns = [self.uuid_field, timestamp_field] + agg_columns
+
+        if not data:
+            aggregated_df = pd.DataFrame(columns=all_columns)
+        else:
+            aggregated_df = match.convert_to_df(
+                data, columns=all_columns, timestamp_field=timestamp_field
+            )
+            aggregated_df.loc[:, timestamp_field] = aggregated_df[timestamp_field].apply(
+                self.standardize_timestamp
+            )
+
+        aggregated_df = aggregated_df.drop_duplicates(subset=[self.uuid_field], keep="first")
+
+        rename_map = {}
+        names = []
+        for col in agg_columns:
+            if aggregation_type == "percentiles":
+                suffix = col[len(f"{aggregation_value}_{aggregation_type}_"):]
+                new_name = f"{metric['name']}_{aggregation_type}_{suffix}"
+            else:
+                new_name = f"{metric['name']}_{aggregation_type}"
+            rename_map[col] = new_name
+            names.append(new_name)
+
+        aggregated_df = aggregated_df.rename(columns=rename_map)
+        if timestamp_field != "timestamp":
+            aggregated_df = aggregated_df.rename(columns={timestamp_field: "timestamp"})
+
+        return aggregated_df, names
 
 
     def process_aggregation_metric(
@@ -190,7 +335,8 @@ class Utils:
         metric: Dict[str, Any],
         match: Matcher,
         metric_value_field: str,
-        timestamp_field: str="timestamp"
+        timestamp_field: str="timestamp",
+        preloaded_data: List[Dict[Any, Any]] = None
     ) -> pd.DataFrame:
         """Method to get dataframe of standard metric
 
@@ -199,11 +345,15 @@ class Utils:
             metric (Dict[str, Any]): _description_
             match (Matcher): _description_
             metric_value_field (str): _description_
+            preloaded_data (list, optional): Pre-fetched data from batch query.
 
         Returns:
             pd.DataFrame: _description_
         """
-        standard_metric_data = match.get_results("", uuids, metric, timestamp_field=timestamp_field)
+        if preloaded_data is not None:
+            standard_metric_data = preloaded_data
+        else:
+            standard_metric_data = match.get_results("", uuids, metric, timestamp_field=timestamp_field)
         if len(standard_metric_data) == 0:
             standard_metric_df = pd.DataFrame(columns=[self.uuid_field, timestamp_field, metric_value_field])
         else:
