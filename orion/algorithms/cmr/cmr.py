@@ -43,6 +43,22 @@ class CMR(Algorithm):
 
         df, change_points_by_metric = self.run_cmr(self.dataframe)
         series.data= df
+
+        for metric, cps in change_points_by_metric.items():
+            direction = self.metrics_config[metric]["direction"]
+            if direction != 0:
+                filtered = []
+                for cp in cps:
+                    delta = cp.stats.mean_2 - cp.stats.mean_1
+                    if abs(cp.stats.mean_1) < 1e-12:
+                        if abs(delta) > 1e-12 and delta * direction > 0:
+                            filtered.append(cp)
+                    elif (delta / cp.stats.mean_1 * 100) * direction > 0:
+                        filtered.append(cp)
+                change_points_by_metric[metric] = filtered
+
+        self.regression_flag = any(change_points_by_metric.values())
+
         return series, change_points_by_metric
 
 
