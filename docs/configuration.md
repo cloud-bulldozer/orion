@@ -321,6 +321,46 @@ Works complementary to `correlation` by analyzing runs before and after the curr
 context: 5  # Analyze 5 runs before and after (default)
 ```
 
+## Metadata Metrics
+
+Metrics can be marked with `type: metadata` to fetch data from OpenSearch without including it in regression analysis. Metadata metrics are carried alongside the test results as attributes — they appear in text, JSON, and JUnit output but are not analyzed for changepoints.
+
+This is useful for attaching contextual information to each test run, such as the Kubernetes version, cluster configuration, or any other field that helps identify what changed between runs without being a performance metric itself.
+
+### Usage
+
+Add `type: metadata` to any metric definition. The metric is fetched and merged into the results dataframe like any other metric, but it is treated as an attribute (like UUID or version) rather than an analyzed metric.
+
+```yaml
+metrics:
+  - name: kubeBurnerVersion
+    metricName.keyword: jobSummary
+    metric_of_interest: k8sVersion
+    not:
+      jobConfig.name: "garbage-collection"
+    type: metadata
+
+  - name: podReadyLatency
+    metricName.keyword: podLatencyQuantilesMeasurement
+    quantileName: Ready
+    metric_of_interest: P99
+    not:
+      jobConfig.name: "garbage-collection"
+    labels:
+      - "[Jira: PerfScale]"
+    direction: 1
+    threshold: 10
+```
+
+In this example, `kubeBurnerVersion` fetches the `k8sVersion` field from `jobSummary` documents. It appears in every output row next to UUID and version, but Orion does not run changepoint detection or regression analysis on it. The `podReadyLatency` metric is analyzed normally.
+
+### Behavior
+
+- Metadata metrics use the same query fields (`metricName`, `metric_of_interest`, `not`, etc.) as regular metrics
+- They are excluded from `metrics_config`, so algorithms skip them during analysis
+- They are included as **attributes** in the output series, appearing in report tables alongside UUID and version columns
+- The `direction`, `threshold`, `labels`, and `correlation` fields are ignored for metadata metrics (they can be omitted)
+
 ## Aggregation Metrics
 
 Orion supports aggregating metric values across multiple data points per test run. This is useful for computing statistics like average CPU usage, total memory consumed, or latency percentiles.
