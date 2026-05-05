@@ -64,12 +64,14 @@ class Matcher:
             result = dict(hits[0].to_dict()["_source"])
         return result
 
-    def query_index(self, search: Search, return_all: bool = False):
+    def query_index(self, search: Search, return_all: bool = False, max_hits: int = 0):
         """Query index using search_after
 
         Args:
             search (Search): Search object with query
             return_all (bool): Returns full list of documents (optional)
+            max_hits (int): When > 0 and return_all is True, stop collecting
+                after this many hits. Defaults to 0 (no limit).
         """
         self.logger.info("Executing query against index: %s", self.index)
         self.logger.debug("Executing query \r\n%s", search.to_dict())
@@ -90,6 +92,11 @@ class Matcher:
                 return response
 
             all_hits.extend(hits)
+
+            if 0 < max_hits <= len(all_hits):
+                all_hits = all_hits[:max_hits]
+                break
+
             search_after = response.hits[-1].meta.sort
         return all_hits
 
@@ -171,7 +178,7 @@ class Matcher:
             .sort({timestamp_field: {"order": "desc"}})
             .extra(size=lookback_size)
         )
-        all_hits = self.query_index(s, return_all=True)
+        all_hits = self.query_index(s, return_all=True, max_hits=lookback_size)
         uuids_docs = []
         for hit in all_hits:
             doc= {self.uuid_field: hit.to_dict()["_source"][self.uuid_field]}
