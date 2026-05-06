@@ -409,7 +409,7 @@ class JiraAckProvider(AckProvider):
             reason: Reason for acknowledgment
             version: OpenShift version
             test: Test type
-            **kwargs: Additional fields (e.g., build_url, pct_change)
+            **kwargs: Additional fields (e.g., build_url, build_id, pct_change)
 
         Returns:
             JIRA issue key (e.g. 'PERFSCALE-123') on success, None on failure
@@ -454,6 +454,8 @@ class JiraAckProvider(AckProvider):
             # Add additional context from kwargs
             if "build_url" in kwargs:
                 description += f"Build URL: {kwargs['build_url']}\n"
+            if "build_id" in kwargs:
+                description += f"Build ID: {kwargs['build_id']}\n"
             if "pct_change" in kwargs:
                 description += f"Change: {kwargs['pct_change']}%\n"
 

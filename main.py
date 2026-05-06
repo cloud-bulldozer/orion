@@ -101,7 +101,7 @@ def _format_github_context(github_context: dict) -> str:
     return section
 
 
-def format_jira_description(regression: dict, metric_name: str, pct_change: float) -> str:
+def format_jira_description(regression: dict, metric_name: str, pct_change: float, build_id: str = "") -> str:
     """
     Format a rich JIRA description with all regression details.
 
@@ -109,6 +109,7 @@ def format_jira_description(regression: dict, metric_name: str, pct_change: floa
         regression: Regression data dictionary
         metric_name: Name of the specific metric for this issue
         pct_change: Percentage change for this metric
+        build_id: Build ID extracted from the build URL
 
     Returns:
         Formatted JIRA description text
@@ -125,6 +126,8 @@ def format_jira_description(regression: dict, metric_name: str, pct_change: floa
         desc += f"*Timestamp:* {regression.get('timestamp')}\n"
     if regression.get("buildUrl"):
         desc += f"*Build URL:* [View Build|{regression.get('buildUrl')}]\n"
+    if build_id:
+        desc += f"*Build ID:* {build_id}\n"
     desc += "\n"
 
     # Primary metric for this issue
@@ -203,13 +206,18 @@ def auto_create_jira_issues(regression_data: list, provider: AckProvider, logger
                 bad_ver = regression.get("bad_ver")
                 prev_ver = regression.get("prev_ver")
 
+                # Extract Build ID from Build URL (once, for use in both rich and simple formats)
+                build_url = regression.get("buildUrl", "")
+                build_id = build_url.rstrip('/').split('/')[-1] if build_url else ""
+
                 issue_key = provider.create_ack(
                     uuid=uuid,
                     metric=metric_name,
-                    reason=format_jira_description(regression, metric_name, pct_change),
+                    reason=format_jira_description(regression, metric_name, pct_change, build_id),
                     version=str(bad_ver)[:4].rstrip('.') if bad_ver else None,
                     test=regression.get("benchmark_type") or regression.get("test_name"),
-                    build_url=regression.get("buildUrl", ""),
+                    build_url=build_url,
+                    build_id=build_id,
                     pct_change=f"{pct_change:+.2f}",
                     prev_version=str(prev_ver)[:4].rstrip('.') if prev_ver else None
                 )
