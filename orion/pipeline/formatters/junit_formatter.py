@@ -19,12 +19,14 @@ class JUnitFormatter(BaseFormatter):
         json_formatter = JsonFormatter()
         json_result = json_formatter.format(data)
         data_json = json.loads(json_result[data.test_name])
+        metadata_cols = data.test.get("metadata_columns", [])
+        all_display = (data.display_fields or []) + metadata_cols
         data_junit = json_to_junit(
             test_name=data.test_name,
             data_json=data_json,
             metrics_config=data.metrics_config,
             uuid_field=data.uuid_field,
-            display_fields=data.display_fields,
+            display_fields=all_display,
         )
         return {data.test_name: data_junit}
 

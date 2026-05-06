@@ -40,17 +40,18 @@ class Utils:
     # pylint: disable=too-many-locals
     def get_metric_data(
         self, uuids: List[str], metrics: Dict[str, Any], match: Matcher, test_threshold: int, timestamp_field: str="timestamp"
-    ) -> List[pd.DataFrame]:
+    ) -> Tuple[List[pd.DataFrame], Dict[str, Any], List[str]]:
         """Gets details metrics based on metric yaml list
 
         Args:
-            ids (list): list of all uuids
+            uuids (list): list of all uuids
             metrics (dict): metrics to gather data on
             match (Matcher): current matcher instance
-            logger (logger): log data to one output
+            test_threshold (int): default threshold for metrics
+            timestamp_field (str): field name for timestamps
 
         Returns:
-            dataframe_list: dataframe of the all metrics
+            tuple: (dataframe_list, metrics_config, metadata_columns)
         """
         dataframe_list = []
         metrics_config = {}
@@ -67,7 +68,7 @@ class Utils:
             timestamp_field = metric.pop("timestamp", global_timestamp_field)
             correlation = metric.pop("correlation", "")
             context = metric.pop("context", 5)
-            metric_type = metric.pop("type", None)
+            metric_type = metric.get("type")
             self.logger.info("Collecting %s", metric_name)
             try:
                 if "agg" in metric:
