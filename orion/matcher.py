@@ -520,6 +520,9 @@ class Matcher:
                 field = metric["metric_of_interest"]
                 filtered = uuid_bucket[agg_name]
 
+                if filtered.doc_count == 0:
+                    continue
+
                 row = {
                     self.uuid_field: uuid_val,
                     timestamp_field: ts_val,
@@ -601,7 +604,10 @@ class Matcher:
         results = {m["name"]: [] for m in metrics_list}
         for doc in runs:
             for metric_name, match_fields in filter_fields_by_metric:
-                if all(doc.get(k) == v for k, v in match_fields.items()):
+                if all(
+                    doc.get(k.replace(".keyword", "")) == v
+                    for k, v in match_fields.items()
+                ):
                     results[metric_name].append(doc)
                     break
 
