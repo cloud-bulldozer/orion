@@ -433,14 +433,14 @@ class TestGetResultsBatch:
             _make_fake_hit({
                 "uuid": "uuid1",
                 "metricName": "containerCPU",
-                "labels.namespace.keyword": "openshift-kube-apiserver",
+                "labels.namespace": "openshift-kube-apiserver",
                 "cpu": 0.42,
                 "timestamp": "2024-02-09T12:00:00",
             }),
             _make_fake_hit({
                 "uuid": "uuid2",
                 "metricName": "containerCPU",
-                "labels.namespace.keyword": "openshift-kube-apiserver",
+                "labels.namespace": "openshift-kube-apiserver",
                 "cpu": 0.55,
                 "timestamp": "2024-02-09T13:00:00",
             }),
@@ -476,14 +476,14 @@ class TestGetResultsBatch:
             {
                 "uuid": "uuid1",
                 "metricName": "containerCPU",
-                "labels.namespace.keyword": "openshift-kube-apiserver",
+                "labels.namespace": "openshift-kube-apiserver",
                 "cpu": 0.42,
                 "timestamp": "2024-02-09T12:00:00",
             },
             {
                 "uuid": "uuid2",
                 "metricName": "containerCPU",
-                "labels.namespace.keyword": "openshift-kube-apiserver",
+                "labels.namespace": "openshift-kube-apiserver",
                 "cpu": 0.55,
                 "timestamp": "2024-02-09T13:00:00",
             },

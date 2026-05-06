@@ -578,7 +578,8 @@ class Matcher:
                 for k, v in metric.get("not", {}).items()
             ]
             should_clauses.append(Q("bool", must=filter_clauses + not_clauses))
-            filter_fields_by_metric.append((metric["name"], match_fields))
+            not_fields = metric.get("not", {})
+            filter_fields_by_metric.append((metric["name"], match_fields, not_fields))
 
         query = Q(
             "bool",
@@ -603,13 +604,25 @@ class Matcher:
 
         results = {m["name"]: [] for m in metrics_list}
         for doc in runs:
-            for metric_name, match_fields in filter_fields_by_metric:
-                if all(
+            matched = False
+            for metric_name, match_fields, not_fields in filter_fields_by_metric:
+                matches_positive = all(
                     doc.get(k.replace(".keyword", "")) == v
                     for k, v in match_fields.items()
-                ):
+                )
+                matches_negative = all(
+                    doc.get(k.replace(".keyword", "")) != v
+                    for k, v in not_fields.items()
+                )
+                if matches_positive and matches_negative:
                     results[metric_name].append(doc)
+                    matched = True
                     break
+            if not matched:
+                self.logger.debug(
+                    "Document did not match any metric filter: %s",
+                    doc.get(self.uuid_field)
+                )
 
         return results
 
