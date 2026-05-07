@@ -9,7 +9,7 @@ tests:
       workerNodesCount: 24
       infraNodesCount: 3
       masterNodesType: m5.2xlarge
-      workerNodesType: m5.xlarge
+      workerNodesType: m6a.xlarge
       infraNodesType: r5.xlarge
       totalNodesCount: 30
       networkType: OVNKubernetes
