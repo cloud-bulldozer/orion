@@ -353,8 +353,13 @@ class Matcher:
         uuid_bucket.metric("time", "avg", field=timestamp_field)
          # Handle percentile aggregations differently from single-value aggregations
         if agg_type == "percentiles":
-            # Get the percentile values from config (default to [50, 95, 99])
-            percents = metrics["agg"].get("percents", [50, 95, 99])
+            percents = metrics["agg"].get("percents")
+            if not percents:
+                self.logger.error(
+                    "Metric '%s' has agg_type 'percentiles' but no 'percents' list — skipping",
+                    metrics["name"]
+                )
+                return []
             uuid_bucket.metric(
                 metric_of_interest, "percentiles",
                 field=metrics["metric_of_interest"],
@@ -473,7 +478,13 @@ class Matcher:
             filtered_bucket = uuid_bucket.bucket(agg_name, "filter", metric_filter)
 
             if agg_type == "percentiles":
-                percents = metric["agg"].get("percents", [50, 95, 99])
+                percents = metric["agg"].get("percents")
+                if not percents:
+                    self.logger.error(
+                        "Metric '%s' has agg_type 'percentiles' but no 'percents' list — skipping",
+                        metric["name"]
+                    )
+                    continue
                 filtered_bucket.metric(field, "percentiles", field=field, percents=percents)
             elif agg_type == "count":
                 filtered_bucket.metric(field, "value_count", field=field)
