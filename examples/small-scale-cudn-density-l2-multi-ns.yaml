@@ -1,15 +1,16 @@
 # This is a template file
 tests:
-  - name: aws-small-scale-cudn-density-l3-pods
+  - name: aws-small-scale-cudn-density-l2-multi-ns
     metadata:
       platform: AWS
-      masterNodesType: m6a.xlarge
+      masterNodesType: m6a.2xlarge
       masterNodesCount: 3
       workerNodesType: m6a.2xlarge
       workerNodesCount: 24
       benchmark.keyword: cudn-density
       wildcard:
         ocpVersion: "{{ version }}*"
+        upstreamJob.keyword: "*cudn-density-multi-ns-500*"
       networkType: OVNKubernetes
       jobType: "{{ jobtype | default('periodic') }}"
       pullNumber: "{{ pull_number | default(0) }}"
@@ -25,7 +26,7 @@ tests:
       - name: podReadyLatency
         metricName.keyword: podLatencyQuantilesMeasurement
         quantileName: Ready
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         metric_of_interest: P99
         not:
           jobConfig.name: "garbage-collection"
@@ -35,7 +36,7 @@ tests:
         threshold: 10
       - name: ovsCPU-irate-all
         metricName.keyword: cgroupCPU
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
         agg:
@@ -47,7 +48,7 @@ tests:
 
       - name: ovnkCPU-overall
         metricName.keyword: containerCPU
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
         agg:
@@ -59,7 +60,7 @@ tests:
 
       - name: ovnCPU-ovncontroller
         metricName.keyword: containerCPU
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovn-controller
         metric_of_interest: value
@@ -72,7 +73,7 @@ tests:
 
       - name: ovnCPU-northd
         metricName.keyword: containerCPU
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: northd
         metric_of_interest: value
@@ -85,7 +86,7 @@ tests:
 
       - name: ovnCPU-nbdb
         metricName.keyword: containerCPU
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: nbdb
         metric_of_interest: value
@@ -98,7 +99,7 @@ tests:
 
       - name: ovnCPU-sbdb
         metricName.keyword: containerCPU
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: sbdb
         metric_of_interest: value
@@ -111,7 +112,7 @@ tests:
 
       - name: ovnCPU-ovnk-controller
         metricName.keyword: containerCPU
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovnkube-controller
         metric_of_interest: value
@@ -124,7 +125,7 @@ tests:
 
       - name: ovsMemory-Workers
         metricName.keyword: cgroupMemoryRSS-Workers
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
         agg:
@@ -136,7 +137,7 @@ tests:
 
       - name: ovsMemory-Masters
         metricName.keyword: cgroupMemoryRSS-Masters
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
         agg:
@@ -148,7 +149,7 @@ tests:
 
       - name: ovsMemory-all
         metricName.keyword: cgroupMemoryRSS
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.id.keyword: /system.slice/ovs-vswitchd.service
         metric_of_interest: value
         agg:
@@ -160,7 +161,7 @@ tests:
 
       - name: ovnkMem-overall
         metricName.keyword: containerMemory
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.namespace.keyword: openshift-ovn-kubernetes
         metric_of_interest: value
         agg:
@@ -172,7 +173,7 @@ tests:
 
       - name: ovnMem-ovncontroller
         metricName.keyword: containerMemory
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovn-controller
         metric_of_interest: value
@@ -185,7 +186,7 @@ tests:
 
       - name: ovnMem-northd
         metricName.keyword: containerMemory
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: northd
         metric_of_interest: value
@@ -198,7 +199,7 @@ tests:
 
       - name: ovnMem-nbdb
         metricName.keyword: containerMemory
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: nbdb
         metric_of_interest: value
@@ -211,7 +212,7 @@ tests:
 
       - name: ovnMem-sbdb
         metricName.keyword: containerMemory
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: sbdb
         metric_of_interest: value
@@ -224,7 +225,7 @@ tests:
 
       - name: ovnMem-ovnk-controller
         metricName.keyword: containerMemory
-        jobName.keyword: cudn-density-l3-pods
+        jobName.keyword: cudn-density-workload
         labels.namespace.keyword: openshift-ovn-kubernetes
         labels.container.keyword: ovnkube-controller
         metric_of_interest: value

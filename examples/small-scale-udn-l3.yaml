@@ -5,7 +5,7 @@ tests:
       platform: AWS
       masterNodesType: m6a.xlarge
       masterNodesCount: 3
-      workerNodesType: m5.xlarge
+      workerNodesType: m6a.xlarge
       workerNodesCount: 24
       benchmark.keyword: udn-density-pods
       wildcard:
