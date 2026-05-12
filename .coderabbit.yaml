@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  sequence_diagrams: false
+  path_filters:
+    - "!**/golden_files/**"
+    - "!outputs/**"
+    - "!data-*.csv"
+    - "!output_*.json"
+    - "!output_*.xml"
+    - "!output_*.txt"
+  auto_review:
+    enabled: false
+    drafts: false
+    base_branches:
+      - main
+    ignore_title_keywords:
+      - "WIP"
+      - "[WIP]"
+      - "do-not-merge"
+      - "work-in-progress"
+      - "[skip ci]"
+  path_instructions:
+    - path: "orion/**"
+      instructions: >
+        Focus on Python best practices, error handling, and type correctness.
+        Flag any hardcoded credentials, secrets, or OpenSearch connection strings.
+        Check for proper pandas DataFrame handling and avoid silent data loss.
+    - path: "orion/algorithms/**"
+      instructions: >
+        Verify algorithm implementations follow the Algorithm ABC contract.
+        Check that factory registration is correct.
+        Ensure statistical methods are used correctly (changepoint detection, anomaly scoring).
+    - path: "orion/pipeline/**"
+      instructions: >
+        Verify formatters implement all BaseFormatter abstract methods.
+        Check that AnalysisResult is used as a pure data contract with no algorithm references.
+        Ensure regression data extraction logic is consistent across formatters.
+    - path: "orion/ack_providers/**"
+      instructions: >
+        Verify ACK matching logic (UUID + metric name).
+        Check Jira API error handling and authentication patterns.
+        Ensure file-based ACK provider handles missing or malformed YAML gracefully.
+    - path: "orion/tests/**"
+      instructions: >
+        Ensure test coverage for edge cases.
+        Verify mocks and fixtures are properly scoped.
+        Check that conftest helpers (make_change_point, etc.) are used consistently.
+    - path: "main.py"
+      instructions: >
+        This is the CLI entrypoint using Click. Check for proper argument validation,
+        exit code handling (0=no regression, 2=regression, 3=insufficient data),
+        and correct delegation to run_test and FormatterFactory.
+    - path: "examples/**"
+      instructions: >
+        Verify YAML config files are well-formed and follow the config inheritance
+        pattern (parentConfig, metricsFile). Check Jinja2 template variables are
+        properly documented.
+    - path: ".github/workflows/**"
+      instructions: >
+        Check for proper secret handling, job dependencies, and workflow triggers.
+        Verify CI steps are idempotent where possible.
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "CONTRIBUTING.md"
+      - "README.md"
+      - "LLM_POLICY.md"
