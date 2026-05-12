@@ -10,7 +10,7 @@ Unit tests for batched metric dispatch in orion/utils.py
 
 import copy
 import logging
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -412,3 +412,84 @@ class TestMetadataPopBeforeBatch:
         match_mock.get_results_batch.side_effect = capture_batch_args
 
         utils.get_metric_data(UUIDS, metrics, match_mock, test_threshold=0)
+
+
+# ---------------------------------------------------------------------------
+# Tests: chunked batching when metrics exceed BATCH_METRIC_CHUNK_SIZE
+# ---------------------------------------------------------------------------
+
+class TestChunkedBatching:
+
+    @patch("orion.utils.BATCH_METRIC_CHUNK_SIZE", 3)
+    def test_agg_metrics_split_into_chunks(self, utils, match_mock):
+        metrics = [copy.deepcopy(_agg_metric(f"agg_{i}")) for i in range(7)]
+
+        def batch_side_effect(_uuids, chunk, _ts):
+            return {m["name"]: _agg_batch_data() for m in chunk}
+
+        match_mock.get_agg_metrics_batch.side_effect = batch_side_effect
+
+        df_list, config = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert match_mock.get_agg_metrics_batch.call_count == 3  # ceil(7/3)
+        assert len(df_list) == 7
+        for i in range(7):
+            assert f"agg_{i}_avg" in config
+
+    @patch("orion.utils.BATCH_METRIC_CHUNK_SIZE", 3)
+    def test_std_metrics_split_into_chunks(self, utils, match_mock):
+        metrics = [copy.deepcopy(_std_metric(f"std_{i}")) for i in range(5)]
+
+        def batch_side_effect(_uuids, chunk, _ts):
+            return {m["name"]: _std_batch_data() for m in chunk}
+
+        match_mock.get_results_batch.side_effect = batch_side_effect
+
+        df_list, config = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert match_mock.get_results_batch.call_count == 2  # ceil(5/3)
+        assert len(df_list) == 5
+        for i in range(5):
+            assert f"std_{i}_value" in config
+
+    @patch("orion.utils.BATCH_METRIC_CHUNK_SIZE", 2)
+    def test_chunk_fallback_only_retries_failed_chunk(self, utils, match_mock):
+        metrics = [copy.deepcopy(_agg_metric(f"m_{i}")) for i in range(4)]
+
+        call_count = {"n": 0}
+
+        def batch_side_effect(_uuids, chunk, _ts):
+            call_count["n"] += 1
+            if call_count["n"] == 2:
+                raise RuntimeError("chunk 2 failed")
+            return {m["name"]: _agg_batch_data() for m in chunk}
+
+        match_mock.get_agg_metrics_batch.side_effect = batch_side_effect
+        match_mock.get_agg_metric_query.return_value = _agg_batch_data()
+
+        df_list, _ = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert match_mock.get_agg_metrics_batch.call_count == 2
+        assert match_mock.get_agg_metric_query.call_count == 2
+        assert len(df_list) == 4
+
+    @patch("orion.utils.BATCH_METRIC_CHUNK_SIZE", 5)
+    def test_fewer_metrics_than_chunk_size_single_call(self, utils, match_mock):
+        metrics = [copy.deepcopy(_agg_metric(f"small_{i}")) for i in range(3)]
+
+        match_mock.get_agg_metrics_batch.return_value = {
+            m["name"]: _agg_batch_data() for m in metrics
+        }
+
+        df_list, _ = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert match_mock.get_agg_metrics_batch.call_count == 1
+        assert len(df_list) == 3

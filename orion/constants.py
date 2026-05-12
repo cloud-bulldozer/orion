@@ -25,3 +25,9 @@ CMR="cmr"
 #
 CHANGEPOINT_BUFFER = 5
 EXPAND_POINTS = 5
+
+# Maximum number of metrics to include in a single batched ES query.
+# Configs with many metrics (50+) can produce queries whose cross-product
+# exhausts memory during DataFrame merges. Chunking at 15 keeps each
+# round-trip manageable while still reducing total queries vs one-at-a-time.
+BATCH_METRIC_CHUNK_SIZE = 15

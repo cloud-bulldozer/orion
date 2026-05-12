@@ -19,6 +19,7 @@ from tabulate import tabulate
 
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
+from orion.constants import BATCH_METRIC_CHUNK_SIZE
 
 
 class Utils:
@@ -118,90 +119,103 @@ class Utils:
     def _process_agg_batch(self, uuids, agg_metrics, match, meta_by_name,
                            dataframe_list, metrics_config, timestamp_field,
                            metadata_columns=None):
-        """Batch all aggregation metrics into a single ES query with fallback."""
-        try:
-            self.logger.info("Batching %d aggregation metrics", len(agg_metrics))
-            batch_results = match.get_agg_metrics_batch(
-                uuids, agg_metrics, timestamp_field
-            )
-            for metric in agg_metrics:
-                name = metric["name"]
-                data = batch_results.get(name, [])
-                meta = meta_by_name[name]
-                try:
-                    metric_df, col_names = self._build_agg_dataframe(
-                        data, metric, match, meta["timestamp"]
-                    )
-                    dataframe_list.append(metric_df)
-                    self._restore_meta(metric, meta)
-                    self._register_columns(col_names, metric, meta, metrics_config, metadata_columns)
-                except Exception as e:
-                    self.logger.error(
-                        "Couldn't process batched agg metric %s", name, exc_info=e
-                    )
-                    self._restore_meta(metric, meta)
-        except Exception as e:
-            self.logger.warning(
-                "Batch aggregation failed, falling back to single queries", exc_info=e
-            )
-            for metric in agg_metrics:
-                name = metric["name"]
-                meta = meta_by_name[name]
-                try:
-                    metric_df, col_names = self.process_aggregation_metric(
-                        uuids, metric, match, meta["timestamp"]
-                    )
-                    dataframe_list.append(metric_df)
-                    self._restore_meta(metric, meta)
-                    self._register_columns(col_names, metric, meta, metrics_config, metadata_columns)
-                except Exception as e2:
-                    self.logger.error("Couldn't get metric %s: %s", name, e2)
-                    self._restore_meta(metric, meta)
+        """Batch aggregation metrics into chunked ES queries with fallback."""
+        for i in range(0, len(agg_metrics), BATCH_METRIC_CHUNK_SIZE):
+            chunk = agg_metrics[i:i + BATCH_METRIC_CHUNK_SIZE]
+            try:
+                self.logger.info(
+                    "Batching aggregation metrics chunk %d-%d of %d",
+                    i + 1, i + len(chunk), len(agg_metrics),
+                )
+                batch_results = match.get_agg_metrics_batch(
+                    uuids, chunk, timestamp_field
+                )
+                for metric in chunk:
+                    name = metric["name"]
+                    data = batch_results.get(name, [])
+                    meta = meta_by_name[name]
+                    try:
+                        metric_df, col_names = self._build_agg_dataframe(
+                            data, metric, match, meta["timestamp"]
+                        )
+                        dataframe_list.append(metric_df)
+                        self._restore_meta(metric, meta)
+                        self._register_columns(col_names, metric, meta, metrics_config, metadata_columns)
+                    except Exception as e:
+                        self.logger.error(
+                            "Couldn't process batched agg metric %s", name, exc_info=e
+                        )
+                        self._restore_meta(metric, meta)
+            except Exception as e:
+                self.logger.warning(
+                    "Batch aggregation chunk failed, falling back to single queries",
+                    exc_info=e,
+                )
+                for metric in chunk:
+                    name = metric["name"]
+                    meta = meta_by_name[name]
+                    try:
+                        metric_df, col_names = self.process_aggregation_metric(
+                            uuids, metric, match, meta["timestamp"]
+                        )
+                        dataframe_list.append(metric_df)
+                        self._restore_meta(metric, meta)
+                        self._register_columns(col_names, metric, meta, metrics_config, metadata_columns)
+                    except Exception as e2:
+                        self.logger.error("Couldn't get metric %s: %s", name, e2)
+                        self._restore_meta(metric, meta)
 
     def _process_std_batch(self, uuids, std_metrics, match, meta_by_name,
                            dataframe_list, metrics_config, timestamp_field,
                            metadata_columns=None):
-        """Batch all standard metrics into a single ES query with fallback."""
-        try:
-            self.logger.info("Batching %d standard metrics", len(std_metrics))
-            batch_results = match.get_results_batch(
-                uuids, std_metrics, timestamp_field
-            )
-            for metric in std_metrics:
-                name = metric["name"]
-                data = batch_results.get(name, [])
-                meta = meta_by_name[name]
-                try:
-                    metric_df, single_name = self.process_standard_metric(
-                        uuids, metric, match, metric["metric_of_interest"],
-                        meta["timestamp"], preloaded_data=data,
-                    )
-                    dataframe_list.append(metric_df)
-                    self._restore_meta(metric, meta)
-                    self._register_columns([single_name], metric, meta, metrics_config, metadata_columns)
-                except Exception as e:
-                    self.logger.error(
-                        "Couldn't process batched standard metric %s", name, exc_info=e
-                    )
-                    self._restore_meta(metric, meta)
-        except Exception as e:
-            self.logger.warning(
-                "Batch standard query failed, falling back to single queries", exc_info=e
-            )
-            for metric in std_metrics:
-                name = metric["name"]
-                meta = meta_by_name[name]
-                try:
-                    metric_df, single_name = self.process_standard_metric(
-                        uuids, metric, match, metric["metric_of_interest"],
-                        meta["timestamp"],
-                    )
-                    dataframe_list.append(metric_df)
-                    self._restore_meta(metric, meta)
-                    self._register_columns([single_name], metric, meta, metrics_config, metadata_columns)
-                except Exception as e2:
-                    self.logger.error("Couldn't get metric %s: %s", name, e2)
-                    self._restore_meta(metric, meta)
+        """Batch standard metrics into chunked ES queries with fallback."""
+        for i in range(0, len(std_metrics), BATCH_METRIC_CHUNK_SIZE):
+            chunk = std_metrics[i:i + BATCH_METRIC_CHUNK_SIZE]
+            try:
+                self.logger.info(
+                    "Batching standard metrics chunk %d-%d of %d",
+                    i + 1, i + len(chunk), len(std_metrics),
+                )
+                batch_results = match.get_results_batch(
+                    uuids, chunk, timestamp_field
+                )
+                for metric in chunk:
+                    name = metric["name"]
+                    data = batch_results.get(name, [])
+                    meta = meta_by_name[name]
+                    try:
+                        metric_df, single_name = self.process_standard_metric(
+                            uuids, metric, match, metric["metric_of_interest"],
+                            meta["timestamp"], preloaded_data=data,
+                        )
+                        dataframe_list.append(metric_df)
+                        self._restore_meta(metric, meta)
+                        self._register_columns([single_name], metric, meta, metrics_config, metadata_columns)
+                    except Exception as e:
+                        self.logger.error(
+                            "Couldn't process batched standard metric %s", name,
+                            exc_info=e,
+                        )
+                        self._restore_meta(metric, meta)
+            except Exception as e:
+                self.logger.warning(
+                    "Batch standard chunk failed, falling back to single queries",
+                    exc_info=e,
+                )
+                for metric in chunk:
+                    name = metric["name"]
+                    meta = meta_by_name[name]
+                    try:
+                        metric_df, single_name = self.process_standard_metric(
+                            uuids, metric, match, metric["metric_of_interest"],
+                            meta["timestamp"],
+                        )
+                        dataframe_list.append(metric_df)
+                        self._restore_meta(metric, meta)
+                        self._register_columns([single_name], metric, meta, metrics_config, metadata_columns)
+                    except Exception as e2:
+                        self.logger.error("Couldn't get metric %s: %s", name, e2)
+                        self._restore_meta(metric, meta)
 
     def _build_agg_dataframe(self, data, metric, match, timestamp_field="timestamp"):
         """Build a DataFrame from pre-fetched aggregation data."""
