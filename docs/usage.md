@@ -551,10 +551,44 @@ orion --config performance-config.yaml --hunter-analyze --ack known-issues.yaml
 When executing Orion with the flag `--pr-analysis` a pull request analysis will executed and the output for it will contain three sections
 
 1. An analysis section of all payload results (No PR data)
-2. A section with the AVG of all payload results
-3. An analysis section from all PR runs
+2. An analysis section from all PR runs
+3. A comparison table summarizing AVG, changepoint values, and PR results per metric
 
-Having the AVG section will provide an easy way to compare the PR results to the payload results, allow to locate any issues.
+The comparison table provides a quick way to compare the PR results against the payload baseline and any detected changepoints. The columns are:
+
+- **Metric** — the metric name
+- **AVG** — the average of all periodic (payload) runs
+- **Pre-CP#N** — the metric value from the run **immediately before** the Nth changepoint (shown for every metric, as a baseline reference)
+- **CP#N** — the metric value **at** the Nth changepoint, but only for metrics where a regression was detected at that point. Metrics without a changepoint there show `-`
+- **PR#number** — the value from the latest PR run
+
+**How to read CP columns:** Changepoints are numbered in chronological order (`CP#1` is the earliest detected, `CP#2` the next, etc.). Each changepoint represents a moment in the payload history where a statistically significant shift was detected. To spot a regression, compare `Pre-CP#N` (the value just before the shift) with `CP#N` (the value at the shift). If `CP#N` shows `-`, that metric was stable at that point — only metrics that actually changed will have a value.
+
+For example, in the table below, `CP#1` corresponds to the 6th payload run (index 5). Only `podReadyLatency_P99` and `ovnCPU_avg` had changepoints detected there — so they show values, while the rest show `-`:
+
+```text
+Metric                        AVG    Pre-CP#1    CP#1    PR#2394
+--------------------------  ------  ----------  ------  --------
+podReadyLatency_P99          15000       15000   18000     15000
+apiserverCPU_avg            4.776       4.834       -    4.7328
+ovnCPU_avg                  1.4801      1.5497  2.4297    1.7267
+etcdCPU_avg                 3.4659      3.4602      -    3.4675
+```
+
+Here `ovnCPU_avg` jumped from `1.5497` (Pre-CP#1) to `2.4297` (CP#1), and the PR value `1.7267` is consistent with the pre-changepoint level — so the PR is addressing this regression.
+
+On the other hand, you could have this:
+
+```text
+Metric                        AVG    Pre-CP#1    CP#1    PR#2387
+--------------------------  ------  ----------  ------  --------
+podReadyLatency_P99          15000       15000   18000     18000
+apiserverCPU_avg            4.776       4.834       -    4.7328
+ovnCPU_avg                  1.4801      1.5497  2.4297    2.7267
+etcdCPU_avg                 3.4659      3.4602      -    3.4675
+```
+
+Here `ovnCPU_avg` jumped from `1.5497` (Pre-CP#1) to `2.4297` (CP#1), and the PR value `2.7267` is consistent with the changepoint level — so the PR is probably the culprit of the regression.
 
 | The only section that can trigger a failure in the job is the one in section one, the payload data, and it is not related to the changes in the PR.
 
@@ -577,23 +611,28 @@ Add `--viz` to this workflow to generate interactive HTML visualizations for eac
 ```
 payload-cluster-density-v2
 ==========================
-time                       uuid                                  ocpVersion                          buildUrl          podReadyLatency_P99    apiserverCPU_avg    multusCPU_avg    monitoringCPU_avg    ovnCPU_avg    etcdCPU_avg    kubelet_avg    ovsCPU-irate-all_avg    ovsMemory-Workers_max    ovsMemory-Masters_max    ovsMemory-all_avg
--------------------------  ------------------------------------  ----------------------------------  --------------  ---------------------  ------------------  ---------------  -------------------  ------------  -------------  -------------  ----------------------  -----------------------  -----------------------  -------------------
-2025-10-12 19:39:00 +0000  ce6bd7dd-568e-4df2-9ac1-659206440a76  4.21.0-0.nightly-2025-10-12-174700  https://pro456                  15000             4.59079         0.135002             0.922528       1.45358        3.33058        22.4811                0.16045               4.73473e+08              1.69095e+08          6.39637e+07
-2025-10-13 03:07:04 +0000  b6bea795-9a66-4f1a-85bb-c6386c49b28c  4.21.0-0.nightly-2025-10-13-011858  https://pro536                  15000             4.8343          0.130706             1.04589        1.54966        3.46015        22.9901                0.158266              4.71241e+08              1.62673e+08          6.28333e+07
-
-payload-cluster-density-v2 | Average of above Periodic runs
-===========================================================
-time                       uuid                                  ocpVersion                          buildUrl          podReadyLatency_P99    apiserverCPU_avg    multusCPU_avg    monitoringCPU_avg    ovnCPU_avg    etcdCPU_avg    kubelet_avg    ovsCPU-irate-all_avg    ovsMemory-Workers_max    ovsMemory-Masters_max    ovsMemory-all_avg
--------------------------  ------------------------------------  ----------------------------------  --------------  ---------------------  ------------------  ---------------  -------------------  ------------  -------------  -------------  ----------------------  -----------------------  -----------------------  -------------------
-0000-00-00 00:00:00 +0000  xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxx            14991.22807              4.7760         0.129298              1.02638       1.48013        3.46592        22.6555                0.154375              4.70554e+08              1.66524e+08          6.32719e+07
+time                       uuid                                  ocpVersion                          ...
+-------------------------  ------------------------------------  ----------------------------------  ---
+2025-10-12 19:39:00 +0000  ce6bd7dd-568e-4df2-9ac1-659206440a76  4.21.0-0.nightly-2025-10-12-174700  ...
+2025-10-13 03:07:04 +0000  b6bea795-9a66-4f1a-85bb-c6386c49b28c  4.21.0-0.nightly-2025-10-13-011858  ...
 
 payload-cluster-density-v2 | Pull Request #2394
 ===============================================
-time                       uuid                                  ocpVersion                                                buildUrl            podReadyLatency_P99    apiserverCPU_avg    multusCPU_avg    monitoringCPU_avg    ovnCPU_avg    etcdCPU_avg    kubelet_avg    ovsCPU-irate-all_avg    ovsMemory-Workers_max    ovsMemory-Masters_max    ovsMemory-all_avg
--------------------------  ------------------------------------  --------------------------------------------------------  ----------------  ---------------------  ------------------  ---------------  -------------------  ------------  -------------  -------------  ----------------------  -----------------------  -----------------------  -------------------
-2025-09-24 12:44:42 +0000  ce18087e-3cc2-4bb7-869c-9cb5e779d6c2  4.21.0-0.ci-2025-09-24-105904-test-ci-op-ylr50c4n-latest  https://prow1744                  15000             4.84306         0.13679               0.91342       1.39937        3.39843        21.6341              nan                     4.70409e+08              1.68456e+08        nan
-2025-10-10 15:41:01 +0000  05a5c8d0-7977-4320-b24e-fd755a8ce6b4  4.21.0-0.ci-2025-10-10-134628-test-ci-op-0hx9q2xv-latest  https://prow8256                  15000             4.73279         0.132954              0.93639       1.42667        3.46745        21.5639                0.150409              4.64753e+08              1.70643e+08          6.32196e+07
+time                       uuid                                  ocpVersion                                                ...
+-------------------------  ------------------------------------  --------------------------------------------------------  ---
+2025-09-24 12:44:42 +0000  ce18087e-3cc2-4bb7-869c-9cb5e779d6c2  4.21.0-0.ci-2025-09-24-105904-test-ci-op-ylr50c4n-latest  ...
+2025-10-10 15:41:01 +0000  05a5c8d0-7977-4320-b24e-fd755a8ce6b4  4.21.0-0.ci-2025-10-10-134628-test-ci-op-0hx9q2xv-latest  ...
+
+payload-cluster-density-v2 | Comparison
+=======================================
+Metric                        AVG    Pre-CP#1    CP#1    PR#2394
+--------------------------  ------  ----------  ------  --------
+podReadyLatency_P99          15000       15000   15000     15000
+apiserverCPU_avg            4.776       4.834       -    4.7328
+multusCPU_avg               0.1293      0.1307      -    0.1330
+ovnCPU_avg                  1.4801      1.5497  1.4297    1.4267
+etcdCPU_avg                 3.4659      3.4602      -    3.4675
+kubelet_avg                 22.656      22.990      -    21.564
 ```
 
 ## Tips and Best Practices

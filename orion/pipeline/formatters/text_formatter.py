@@ -89,7 +89,7 @@ class TextFormatter(BaseFormatter):
         if not data.collapse:
             text = test_name
             if pr > 0:
-                text = test_name + " | Pull Request #" + str(pr)
+                text = "\n" + test_name + " | Pull Request #" + str(pr)
             print(text)
             print("=" * len(text))
             print(formatted)
@@ -109,12 +109,6 @@ class TextFormatter(BaseFormatter):
             formatted_periodic[periodic.test_name],
             periodic,
         )
-        avg_formatted = self.format_average(periodic)
-        if isinstance(avg_formatted, str) and avg_formatted:
-            text = periodic.test_name + " | Average of above Periodic runs"
-            print("\n" + text)
-            print("=" * len(text))
-            print(avg_formatted)
         if pull:
             formatted_pull = self.format(pull)
             self.save(
@@ -129,6 +123,12 @@ class TextFormatter(BaseFormatter):
                 pr=pr,
                 is_pull=True,
             )
+        comparison = _format_comparison_table(periodic, pull, pr)
+        if comparison:
+            text = periodic.test_name + " | Comparison"
+            print("\n" + text)
+            print("=" * len(text))
+            print(comparison + "\n")
 
 
 def tabulate_average_values(
@@ -164,4 +164,65 @@ def tabulate_average_values(
         headers=headers,
         tablefmt="simple",
         floatfmt=[".2f", ".5f", ".6f", ".5f", ".5f", ".4f"],
+    )
+
+
+def _format_comparison_table(
+    periodic: AnalysisResult,
+    pull: Optional[AnalysisResult],
+    pr: int = 0,
+) -> str:
+    """Build a metric comparison table: AVG | pre-CP | CP | ... | PR value."""
+    metrics = list(periodic.avg_values.index)
+    if not metrics:
+        return ""
+
+    cp_indices = sorted({
+        cp.index
+        for cps in periodic.change_points_by_metric.values()
+        for cp in cps
+    })
+
+    cp_metrics_at_index = {}
+    for metric, cps in periodic.change_points_by_metric.items():
+        for cp in cps:
+            cp_metrics_at_index[(metric, cp.index)] = True
+
+    df = periodic.dataframe
+
+    headers = ["Metric", "AVG"]
+    for cp_num, idx in enumerate(cp_indices, start=1):
+        headers.append(f"Pre-CP#{cp_num}")
+        headers.append(f"CP#{cp_num}")
+    if pull is not None:
+        pr_label = f"PR#{pr}" if pr else "PR"
+        headers.append(pr_label)
+        pull_last_row = (
+            pull.dataframe.iloc[-1] if len(pull.dataframe) > 0 else None
+        )
+    else:
+        pull_last_row = None
+
+    rows = []
+    for metric in metrics:
+        row = [metric, periodic.avg_values[metric]]
+        for idx in cp_indices:
+            prev_val = df.iloc[idx - 1][metric] if 0 < idx < len(df) else "-"
+            row.append(prev_val)
+            if (metric, idx) in cp_metrics_at_index:
+                row.append(df.iloc[idx][metric] if idx < len(df) else "-")
+            else:
+                row.append("-")
+        if pull_last_row is not None:
+            row.append(pull_last_row.get(metric, "-"))
+        elif pull is not None:
+            row.append("-")
+        rows.append(row)
+
+    num_value_cols = len(headers) - 1
+    fmts = [""] + [".5g"] * num_value_cols
+    col_align = ["left"] + ["right"] * num_value_cols
+    return tabulate(
+        rows, headers=headers, tablefmt="simple",
+        floatfmt=fmts, colalign=col_align,
     )

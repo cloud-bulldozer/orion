@@ -694,10 +694,11 @@ def main(**kwargs):
                 kwargs["save_output_path"],
             )
 
-    if has_regression:
-        print_regression_summary(all_regression_data)
-    else:
-        print("No regressions found")
+    if kwargs["output_format"] != cnsts.JSON:
+        if has_regression:
+            print_regression_summary(all_regression_data)
+        else:
+            print("No regressions found")
 
     if kwargs.get("viz"):
         try:
