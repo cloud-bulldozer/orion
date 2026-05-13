@@ -43,10 +43,12 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
             for column, value in self.metrics_config.items()
         }
         data = {column: self.dataframe[column] for column in self.metrics_config}
+        attribute_fields = [self.test["uuid_field"], self.test["version_field"]]
+        attribute_fields += self.test.get("metadata_columns", [])
         attributes = {
             column: self.dataframe[column]
             for column in self.dataframe.columns
-            if column in [self.test["uuid_field"], self.test["version_field"]]
+            if column in attribute_fields
         }
         series = Series(
             test_name=self.test["name"],
