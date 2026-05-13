@@ -40,6 +40,42 @@ class FakeHit:
         return self._doc[key]
 
 
+def make_hits(n, start=1):
+    """Generate n raw hit dicts with sequential uuids and sort values."""
+    return [
+        {"_source": {"uuid": f"u{start + i}"}, "sort": [(start + i) * 100]}
+        for i in range(n)
+    ]
+
+
+def make_paginated_execute(pages):
+    """Build a mock Search.execute that returns pre-built pages in order.
+
+    Args:
+        pages: list of lists, each inner list contains raw hit dicts.
+               An empty terminal page is appended automatically.
+    """
+    responses = []
+    for page in pages:
+        responses.append(Response(
+            search=Search(),
+            response={"hits": {"hits": page}},
+        ))
+    responses.append(Response(
+        search=Search(),
+        response={"hits": {"hits": []}},
+    ))
+
+    call_count = [0]
+
+    def mock_execute(self): # pylint: disable=unused-argument
+        idx = call_count[0]
+        call_count[0] += 1
+        return responses[idx]
+
+    return mock_execute, call_count
+
+
 def make_matcher_fixture(index, uuid_field="uuid", version_field=None):
     """Factory for building matcher fixtures with different uuid fields."""
     sample_output = {
@@ -111,6 +147,99 @@ def test_query_index(request, fixture_name, monkeypatch):
     ]
 
     assert result == expected
+
+
+def test_query_index_return_all_false(matcher_instance):
+    page = make_hits(3)
+    mock_exec, call_count = make_paginated_execute([page])
+    with patch.object(Search, "execute", mock_exec):
+        result = matcher_instance.query_index(Search(), return_all=False)
+    assert isinstance(result, Response)
+    assert call_count[0] == 1
+
+
+def test_query_index_return_all_no_limit(matcher_instance):
+    pages = [make_hits(3, start=1), make_hits(3, start=4)]
+    mock_exec, call_count = make_paginated_execute(pages)
+    with patch.object(Search, "execute", mock_exec):
+        result = matcher_instance.query_index(Search(), return_all=True)
+    assert len(result) == 6
+    assert call_count[0] == 3
+    uuids = [h["_source"]["uuid"] for h in result]
+    assert uuids == [f"u{i}" for i in range(1, 7)]
+
+
+def test_query_index_max_hits_zero_unbounded(matcher_instance):
+    pages = [make_hits(3, start=1), make_hits(3, start=4)]
+    mock_exec, call_count = make_paginated_execute(pages)
+    with patch.object(Search, "execute", mock_exec):
+        result = matcher_instance.query_index(
+            Search(), return_all=True, max_hits=0
+        )
+    assert len(result) == 6
+    assert call_count[0] == 3
+    uuids = [h["_source"]["uuid"] for h in result]
+    assert uuids == [f"u{i}" for i in range(1, 7)]
+
+
+def test_query_index_max_hits_less_than_page_size(matcher_instance):
+    page = make_hits(5)
+    mock_exec, call_count = make_paginated_execute([page])
+    with patch.object(Search, "execute", mock_exec):
+        result = matcher_instance.query_index(
+            Search(), return_all=True, max_hits=3
+        )
+    assert len(result) == 3
+    assert call_count[0] == 1
+    uuids = [h["_source"]["uuid"] for h in result]
+    assert uuids == ["u1", "u2", "u3"]
+
+
+def test_query_index_max_hits_equals_page_size(matcher_instance):
+    pages = [make_hits(5, start=1), make_hits(3, start=6)]
+    mock_exec, call_count = make_paginated_execute(pages)
+    with patch.object(Search, "execute", mock_exec):
+        result = matcher_instance.query_index(
+            Search(), return_all=True, max_hits=5
+        )
+    assert len(result) == 5
+    assert call_count[0] == 1
+    uuids = [h["_source"]["uuid"] for h in result]
+    assert uuids == [f"u{i}" for i in range(1, 6)]
+
+
+def test_query_index_max_hits_multiple_pages(matcher_instance):
+    pages = [make_hits(3, start=1), make_hits(3, start=4), make_hits(3, start=7)]
+    mock_exec, call_count = make_paginated_execute(pages)
+    with patch.object(Search, "execute", mock_exec):
+        result = matcher_instance.query_index(
+            Search(), return_all=True, max_hits=7
+        )
+    assert len(result) == 7
+    assert call_count[0] == 3
+    uuids = [h["_source"]["uuid"] for h in result]
+    assert uuids == [f"u{i}" for i in range(1, 8)]
+
+
+def test_query_index_max_hits_exact_multi_page_boundary(matcher_instance):
+    pages = [make_hits(3, start=1), make_hits(3, start=4)]
+    mock_exec, call_count = make_paginated_execute(pages)
+    with patch.object(Search, "execute", mock_exec):
+        result = matcher_instance.query_index(
+            Search(), return_all=True, max_hits=6
+        )
+    assert len(result) == 6
+    assert call_count[0] == 2
+    uuids = [h["_source"]["uuid"] for h in result]
+    assert uuids == [f"u{i}" for i in range(1, 7)]
+
+
+def test_query_index_return_all_empty_index(matcher_instance):
+    mock_exec, call_count = make_paginated_execute([])
+    with patch.object(Search, "execute", mock_exec):
+        result = matcher_instance.query_index(Search(), return_all=True)
+    assert result == []
+    assert call_count[0] == 1
 
 
 @pytest.mark.parametrize(
