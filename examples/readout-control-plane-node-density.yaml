@@ -1,7 +1,8 @@
 tests:
   - name: node-density-heavy-24nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}*"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: node-density-heavy
@@ -15,42 +16,39 @@ tests:
       networkType: OVNKubernetes
       ipsec: false
       encrypted: true
-      fips: false
       publish: External
       computeArch: amd64
       controlPlaneArch: amd64
+      fips: "{{ fips | default('false') }}"
       not:
         stream: okd
 
     metrics:
-    - name: cpu-kubelet
-      metricName.keyword: cpu-kubelet
-      metric_of_interest: value
-      agg:
-        value: cpu-kubelet
-        agg_type: avg
-    - name: max-memory-kubelet
-      metricName.keyword: max-memory-kubelet
-      metric_of_interest: value
-      agg:
-        value: max-memory-kubelet
-        agg_type: avg
-    - name: cpu-crio
-      metricName.keyword: cpu-crio
-      metric_of_interest: value
-      agg:
-        value: cpu-crio
-        agg_type: avg
-    - name: max-memory-crio
-      metricName.keyword: max-memory-crio
-      metric_of_interest: value
-      agg:
-        value: max-memory-crio
-        agg_type: avg
+      - name: cpu-kubelet
+        metricName.keyword: cpu-kubelet
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+      - name: max-memory-kubelet
+        metricName.keyword: max-memory-kubelet
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+      - name: cpu-crio
+        metricName.keyword: cpu-crio
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+      - name: max-memory-crio
+        metricName.keyword: max-memory-crio
+        metric_of_interest: value
+        agg:
+          agg_type: avg
 
   - name: node-density-24nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}*"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: node-density
@@ -70,17 +68,17 @@ tests:
       controlPlaneArch: amd64
 
     metrics:
-    - name: P99
-      metricName.keyword: podLatencyQuantilesMeasurement
-      quantileName.keyword: Ready
-      metric_of_interest: P99
-      agg:
-        value: P99
-        agg_type: avg
+      - name: P99
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName.keyword: Ready
+        metric_of_interest: P99
+        agg:
+          agg_type: avg
 
   - name: node-density-120nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}*"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: node-density
@@ -100,17 +98,17 @@ tests:
       controlPlaneArch: amd64
 
     metrics:
-    - name: P99
-      metricName.keyword: podLatencyQuantilesMeasurement
-      quantileName.keyword: Ready
-      metric_of_interest: P99
-      agg:
-        value: P99
-        agg_type: avg
+      - name: P99
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName.keyword: Ready
+        metric_of_interest: P99
+        agg:
+          agg_type: avg
 
   - name: node-density-249nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}*"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: node-density
@@ -130,17 +128,17 @@ tests:
       controlPlaneArch: amd64
 
     metrics:
-    - name: P99
-      metricName.keyword: podLatencyQuantilesMeasurement
-      quantileName.keyword: Ready
-      metric_of_interest: P99
-      agg:
-        value: P99
-        agg_type: avg
+      - name: P99
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName.keyword: Ready
+        metric_of_interest: P99
+        agg:
+          agg_type: avg
 
   - name: node-density-cni-24nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}*"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: node-density-cni
@@ -160,17 +158,17 @@ tests:
       controlPlaneArch: amd64
 
     metrics:
-    - name: P99
-      metricName.keyword: podLatencyQuantilesMeasurement
-      quantileName.keyword: Ready
-      metric_of_interest: P99
-      agg:
-        value: P99
-        agg_type: avg
+      - name: P99
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName.keyword: Ready
+        metric_of_interest: P99
+        agg:
+          agg_type: avg
 
   - name: node-density-cni-120nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}*"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: node-density-cni
@@ -190,17 +188,17 @@ tests:
       controlPlaneArch: amd64
 
     metrics:
-    - name: P99
-      metricName.keyword: podLatencyQuantilesMeasurement
-      quantileName.keyword: Ready
-      metric_of_interest: P99
-      agg:
-        value: P99
-        agg_type: avg
+      - name: P99
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName.keyword: Ready
+        metric_of_interest: P99
+        agg:
+          agg_type: avg
 
   - name: node-density-cni-249nodes
     metadata:
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}*"
       platform: AWS
       clusterType: rosa
       benchmark.keyword: node-density-cni
@@ -220,10 +218,9 @@ tests:
       controlPlaneArch: amd64
 
     metrics:
-    - name: P99
-      metricName.keyword: podLatencyQuantilesMeasurement
-      quantileName.keyword: Ready
-      metric_of_interest: P99
-      agg:
-        value: P99
-        agg_type: avg
+      - name: P99
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName.keyword: Ready
+        metric_of_interest: P99
+        agg:
+          agg_type: avg

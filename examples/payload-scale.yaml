@@ -8,49 +8,47 @@ tests:
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
       benchmark.keyword: cluster-density-v2
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}*"
       networkType: OVNKubernetes
+      fips: "{{ fips | default('false') }}"
       not:
         stream: okd
 
     metrics:
-    - name: podReadyLatency
-      metricName.keyword: podLatencyQuantilesMeasurement
-      quantileName: Ready
-      metric_of_interest: P99
-      not:
-        jobConfig.name: "garbage-collection"
+      - name: podReadyLatency
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName: Ready
+        metric_of_interest: P99
+        not:
+          jobConfig.name: "garbage-collection"
 
-    - name: apiserverCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-kube-apiserver
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
+      - name: apiserverCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-kube-apiserver
+        metric_of_interest: value
+        agg:
+          agg_type: avg
 
-    - name: ovnCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-ovn-kubernetes
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
+      - name: ovnCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          agg_type: avg
 
-    - name: etcdCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-etcd
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
+      - name: etcdCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-etcd
+        metric_of_interest: value
+        agg:
+          agg_type: avg
 
-    - name: etcdDisk
-      metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
-      metric_of_interest: value
-      agg:
-        value: duration
-        agg_type: avg
+      - name: etcdDisk
+        metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
+        metric_of_interest: value
+        agg:
+          agg_type: avg
   - name: aws-payload-scale-node-density
     metadata:
       platform: AWS
@@ -60,45 +58,42 @@ tests:
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
       benchmark.keyword: node-density
-      ocpVersion: "{{ version }}"
+      wildcard:
+        ocpVersion: "{{ version }}*"
       networkType: OVNKubernetes
 
     metrics:
-    - name: podReadyLatency
-      metricName.keyword: podLatencyQuantilesMeasurement
-      quantileName: Ready
-      metric_of_interest: P99
-      not:
-        jobConfig.name: "garbage-collection"
+      - name: podReadyLatency
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName: Ready
+        metric_of_interest: P99
+        not:
+          jobConfig.name: "garbage-collection"
 
-    - name: apiserverCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-kube-apiserver
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
+      - name: apiserverCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-kube-apiserver
+        metric_of_interest: value
+        agg:
+          agg_type: avg
 
-    - name: ovnCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-ovn-kubernetes
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
+      - name: ovnCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          agg_type: avg
 
-    - name: etcdCPU
-      metricName.keyword: containerCPU
-      labels.namespace.keyword: openshift-etcd
-      metric_of_interest: value
-      agg:
-        value: cpu
-        agg_type: avg
+      - name: etcdCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-etcd
+        metric_of_interest: value
+        agg:
+          agg_type: avg
 
-    - name: etcdDisk
-      metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
-      metric_of_interest: value
-      agg:
-        value: duration
-        agg_type: avg
+      - name: etcdDisk
+        metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
+        metric_of_interest: value
+        agg:
+          agg_type: avg
 

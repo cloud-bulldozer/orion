@@ -1,30 +1,49 @@
-FROM python:3.11.8-slim-bookworm
-# So that STDOUT/STDERR is printed
+FROM quay.io/fedora/python-314:latest AS builder
+
+USER 0
+
+RUN dnf install -y \
+    git \
+    gcc \
+    make \
+    rust \
+    cargo \
+    openssl-devel \
+    python3-devel \
+    pkg-config \
+    && dnf clean all
+
+WORKDIR /build
+COPY . .
+
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir setuptools && \
+    pip install --no-cache-dir --no-binary cryptography cryptography && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir .
+
+RUN ORION_PATH=$(which orion) && \
+    echo "orion binary: $ORION_PATH" && \
+    python3 -c "import site; print('site-packages:', site.getsitepackages())" && \
+    ORION_DIR=$(dirname "$ORION_PATH") && \
+    mkdir -p "/install${ORION_DIR}" && \
+    cp "$ORION_PATH" "/install${ORION_PATH}" && \
+    for sp in $(python3 -c "import site; print(' '.join(site.getsitepackages()))"); do \
+        if [ -d "$sp" ]; then \
+            mkdir -p "/install${sp}" && \
+            cp -r "$sp"/* "/install${sp}/"; \
+        fi; \
+    done
+
+FROM quay.io/fedora/python-314:latest
+
 ENV PYTHONUNBUFFERED="1"
 
-# First let's just get things updated.
-# Install System dependencies
-RUN apt-get update --assume-yes && \
-    apt-get install -o 'Dpkg::Options::=--force-confnew' -y --force-yes -q \
-    git \
-    openssh-client \
-    gcc \
-    clang \
-    build-essential \
-    make \
-    curl \
-    virtualenv \
-    && rm -rf /var/lib/apt/lists/*
+USER 0
+RUN dnf install -y openssl && dnf clean all
 
-ENV PATH="~/bin:$PATH"
+COPY --from=builder /install/ /
 
-ADD . orion/
+USER 1001
 
-RUN cd orion \
-    pip install setuptools && \
-    pip install -r requirements.txt && \
-    python setup.py install && \
-    pip install . && \
-    ln -s ../venv/bin/orion ~/bin
-
-CMD orion
+ENTRYPOINT ["orion"]

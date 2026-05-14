@@ -24,12 +24,12 @@ setup(
         'opensearch-py==3.0.0',
         'Jinja2==3.1.3',
         'PyYAML==6.0.1',
-        'pyshorteners==1.0.1',
         "numpy==2.2.0; python_version=='3.14'",
         'scikit-learn==1.5.0',
-        "pandas==2.3.1; python_version=='3.14'",
+        "pandas==2.3.3; python_version=='3.14'",
         'tabulate==0.9.0',
         'plotly>=5.18.0',
+        'jira>=3.5.0',
     ],
     entry_points={
         'console_scripts': [

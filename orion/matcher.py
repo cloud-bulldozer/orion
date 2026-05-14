@@ -64,12 +64,14 @@ class Matcher:
             result = dict(hits[0].to_dict()["_source"])
         return result
 
-    def query_index(self, search: Search, return_all: bool = False):
+    def query_index(self, search: Search, return_all: bool = False, max_hits: int = 0):
         """Query index using search_after
 
         Args:
             search (Search): Search object with query
             return_all (bool): Returns full list of documents (optional)
+            max_hits (int): When > 0 and return_all is True, stop collecting
+                after this many hits. Defaults to 0 (no limit).
         """
         self.logger.info("Executing query against index: %s", self.index)
         self.logger.debug("Executing query \r\n%s", search.to_dict())
@@ -90,6 +92,11 @@ class Matcher:
                 return response
 
             all_hits.extend(hits)
+
+            if 0 < max_hits <= len(all_hits):
+                all_hits = all_hits[:max_hits]
+                break
+
             search_after = response.hits[-1].meta.sort
         return all_hits
 
@@ -127,35 +134,22 @@ class Matcher:
         """
         must_clause = []
         must_not_clause = []
-        if self.version_field in metadata :
-            version = str(metadata[self.version_field])[:4]
+        filter_clause = []
 
         for field, value in metadata.items():
             if field in [self.version_field, "ocpMajorVersion"]:
                 continue
             if field == "pullNumber" and value == 0 :
                 continue
-            if field != "not":
-                must_clause.append(Q("match", **{field: str(value)}))
-            else:
-                for not_field, not_value in metadata["not"].items():
-                    # Handle not_value as single value or list
-                    values = not_value if isinstance(not_value, list) else [not_value]
-                    for val in values:
-                        must_not_clause.append(Q("match", **{not_field: str(val)}))
-
-        if "ocpMajorVersion" in metadata:
-            version = metadata["ocpMajorVersion"]
-            filter_clause = [
-                Q("wildcard", ocpMajorVersion=f"{version}*"),
-            ]
-        elif self.version_field in metadata:
-            filter_clause = [
-                Q("wildcard", **{self.version_field: {"value": f"{version}*"}}),
-            ]
-        else :
-            filter_clause = []
-
+            if field in ("not", "wildcard"):
+                continue
+            must_clause.append(Q("match", **{field: str(value)}))
+        for not_field, not_value in metadata.get("not", {}).items():
+            values = not_value if isinstance(not_value, list) else [not_value]
+            for val in values:
+                must_not_clause.append(Q("match", **{not_field: str(val)}))
+        for field, value in metadata.get("wildcard", {}).items():
+            filter_clause.append(Q("wildcard", **{field: {"value": f"{value}"}}))
         if isinstance(lookback_date, datetime):
             lookback_date = lookback_date.strftime("%Y-%m-%dT%H:%M:%SZ")
         if isinstance(since_date, datetime):
@@ -184,7 +178,7 @@ class Matcher:
             .sort({timestamp_field: {"order": "desc"}})
             .extra(size=lookback_size)
         )
-        all_hits = self.query_index(s,return_all=True)
+        all_hits = self.query_index(s, return_all=True, max_hits=lookback_size)
         uuids_docs = []
         for hit in all_hits:
             doc= {self.uuid_field: hit.to_dict()["_source"][self.uuid_field]}
@@ -288,7 +282,7 @@ class Matcher:
         metric_queries = [
             Q("match", **{metric_key: metric_value})
             for metric_key, metric_value in metrics.items()
-            if metric_key not in ["name", "metric_of_interest", "not"]
+            if metric_key not in ["name", "metric_of_interest", "not", "type"]
         ]
         exists_queries = []
         if exists_fields:
@@ -337,7 +331,7 @@ class Matcher:
         metric_queries = [
             Q("match", **{metric_key: metric_value})
             for metric_key, metric_value in metrics.items()
-            if metric_key not in ["name", "metric_of_interest", "not", "agg"]
+            if metric_key not in ["name", "metric_of_interest", "not", "agg", "type"]
         ]
         metric_query = Q("bool", must=metric_queries + not_queries)
         query = Q(
@@ -353,7 +347,7 @@ class Matcher:
             .extra(size=0)
             .sort({timestamp_field: {"order": "desc"}})
         )
-        agg_value = metrics["agg"]["value"]
+        metric_of_interest = metrics["metric_of_interest"]
         agg_type = metrics["agg"]["agg_type"]
         uuid_bucket = search.aggs.bucket("uuid", "terms", field=self.uuid_field+".keyword", size=len(uuids))
         uuid_bucket.metric("time", "avg", field=timestamp_field)
@@ -362,26 +356,25 @@ class Matcher:
             # Get the percentile values from config (default to [50, 95, 99])
             percents = metrics["agg"].get("percents", [50, 95, 99])
             uuid_bucket.metric(
-                agg_value, "percentiles",
+                metric_of_interest, "percentiles",
                 field=metrics["metric_of_interest"],
                 percents=percents
             )
         elif agg_type == "count":
             # Count aggregation uses value_count in OpenSearch
-            uuid_bucket.metric(agg_value, "value_count", field=metrics["metric_of_interest"])
+            uuid_bucket.metric(metric_of_interest, "value_count", field=metrics["metric_of_interest"])
         else:
             # Standard aggregations (sum, avg, max, min)
-            uuid_bucket.metric(agg_value, agg_type, field=metrics["metric_of_interest"])
+            uuid_bucket.metric(metric_of_interest, agg_type, field=metrics["metric_of_interest"])
         result = search.execute()
         self.logger.info("Executing aggregated query for metric %s against index %s",
             metrics["name"], self.index)
         self.logger.debug("Executing query \r\n%s", search.to_dict())
-        data = self.parse_agg_results(result, agg_value, agg_type, timestamp_field, metrics)
+        data = self.parse_agg_results(result, agg_type, timestamp_field, metrics)
         return data
 
     def parse_agg_results(
         self, data: Dict[Any, Any],
-        agg_value: str,
         agg_type: str,
         timestamp_field: str = "timestamp",
         metrics: Dict[str, Any] = None
@@ -389,7 +382,6 @@ class Matcher:
         """parse out CPU data from kube-burner query
         Args:
             data (dict): Aggregated data from Elasticsearch DSL query
-            agg_value (str): Aggregation value field name
             agg_type (str): Aggregation type (e.g., 'avg', 'sum', 'percentiles', etc.)
             timestamp_field (str): Timestamp field name
             metrics (dict): Metrics configuration (needed for percentile target)
@@ -399,23 +391,32 @@ class Matcher:
         res = []
         if "aggregations" not in data:
             return res
-
+        metric_of_interest = metrics["metric_of_interest"]
         uuids = data.aggregations.uuid.buckets
+
         for uuid in uuids:
             data = {
                 self.uuid_field: uuid.key,
                 timestamp_field: uuid.time.value_as_string,
             }
-            value_key = agg_value + "_" + agg_type
+            value_key = metric_of_interest + "_" + agg_type
             if agg_type == "percentiles":
-                # For percentiles, extract the target percentile value
-                # Default to 95th percentile if not specified
-                percentile_values = uuid.get(agg_value).values
-                # OpenSearch returns percentile keys as strings (e.g., "95.0")
-                percentile_key = str(float(metrics["agg"].get("target_percentile", "95.0")))
-                data[value_key] = percentile_values.get(percentile_key)
+                self.logger.info("AC agg_type == percentiles")
+                percentile_dict = uuid.get(metric_of_interest).to_dict().get("values", {})
+                if metrics and "agg" in metrics and "target_percentile" in metrics["agg"]:
+                    target_percentile = float(metrics["agg"]["target_percentile"])
+                    percentile_key = str(target_percentile)
+                    self.logger.info("found target_percentile %s", target_percentile)
+                    value_key = metric_of_interest + "_" + agg_type + "_" + percentile_key
+                    data[value_key] = percentile_dict.get(percentile_key)
+                else:
+                    self.logger.info("no target_percentile found, using all percentiles")
+                    for key, val in percentile_dict.items():
+                        self.logger.info("percentile_values value %s", key)
+                        data[metric_of_interest + "_" + agg_type + "_" + str(key)] = val
             else:
-                data[value_key] = uuid.get(agg_value).value
+                # Standard single-value aggregations
+                data[value_key] = uuid.get(metric_of_interest).value
             res.append(data)
         return res
 

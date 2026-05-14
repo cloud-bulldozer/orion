@@ -19,18 +19,16 @@ $ podman run orion orion --config examples/trt-external-payload-node-density.yam
 
 ### Installation
 
+Requirements:
+- Python 3.11 or higher
+- pip or uv
+
+
 ```bash
-$ git clone <repository_url>
-$ python3.11 -m venv venv
+$ git clone https://github.com/cloud-bulldozer/orion.git
+$ cd orion && uv venv
 $ source venv/bin/activate
-$ pip install -r requirements.txt
-$ pip install .
-```
-
-Using `uv`
-
-```bash
-$ uv tool install -p 3.11 orion --from git+https://github.com/cloud-bulldozer/orion.git
+$ make install
 ```
 
 ### Basic Usage
@@ -54,6 +52,29 @@ etc.
 - **Multiple Algorithms**: Support for Hunter, CMR, and anomaly detection
 - **Flexible Configuration**: YAML-based configuration with extensive customization options
 - **Multiple Output Formats**: JSON, CSV, and JUnit XML output support
+- **JIRA Integration**: Track and auto-create regression acknowledgments in JIRA
+
+### JIRA Integration
+
+Track performance regressions as JIRA issues with automatic creation and rich context:
+
+```bash
+# Query existing JIRA acknowledgments
+orion --config config.yaml --jira-ack
+
+# Auto-create JIRA issues for new regressions
+orion --config config.yaml --jira-ack --jira-auto-create \
+  --jira-url https://issues.example.com \
+  --jira-project PERFSCALE \
+  --jira-component CPT_ISSUES
+```
+
+Set environment variables for authentication:
+```bash
+export JIRA_TOKEN="your_token"
+```
+
+Auto-created issues include full regression details, affected metrics, related PRs, and GitHub context. See the [Configuration documentation](docs/configuration.md) for complete configuration options.
 
 ## Documentation
 

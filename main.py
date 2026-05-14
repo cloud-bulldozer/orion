@@ -10,23 +10,258 @@ from pathlib import Path
 import re
 import sys
 import warnings
-from typing import Any
-import xml.etree.ElementTree as ET
-import xml.dom.minidom
+from typing import Any, Optional
 import click
-from tabulate import tabulate
 from orion.logger import SingletonLogger
-from orion.run_test import run, TestResults
-from orion.utils import get_output_extension
+from orion.run_test import run
+from orion.pipeline.formatters import FormatterFactory
 from orion import constants as cnsts
-from orion.config import load_config, load_ack, merge_ack_files, auto_detect_ack_file_with_vars
+from orion.config import load_config, auto_detect_ack_file_with_vars
 from orion.visualization import generate_test_html
+from orion.reporting.standalone import load_json_files, generate_report
+from orion.reporting.summary import print_regression_summary
+from orion.ack_providers import AckProvider, FileAckProvider, JiraAckProvider
 from version import __version__
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
 warnings.filterwarnings(
     "ignore", category=UserWarning, message=".*Connecting to.*verify_certs=False.*"
 )
+
+
+def build_viz_output_file(
+    output_base_path: str, test_name: str, run_type: str = ""
+) -> str:
+    """Build the output path for a visualization HTML file."""
+    suffix = f"_{run_type}" if run_type else ""
+    return f"{output_base_path}_{test_name}{suffix}_viz.html"
+
+
+def _format_pr_section(prs: list, prev_ver: str, bad_ver: str) -> str:
+    """Format the PR section of JIRA description."""
+    if not prs:
+        return ""
+
+    section = "h3. Related Pull Requests\n"
+    section += f"PRs introduced between {prev_ver} and {bad_ver}:\n\n"
+    for pr in prs:
+        if isinstance(pr, str):
+            section += f"* {pr}\n"
+        elif isinstance(pr, dict):
+            pr_url = pr.get("url", pr.get("html_url", ""))
+            pr_title = pr.get("title", "")
+            if pr_url and pr_title:
+                section += f"* [{pr_title}|{pr_url}]\n"
+            elif pr_url:
+                section += f"* {pr_url}\n"
+    section += "\n"
+    return section
+
+
+def _format_github_context(github_context: dict) -> str:
+    """Format the GitHub context section (commits and releases)."""
+    if not github_context:
+        return ""
+
+    repos = github_context.get("repositories", {})
+    if not repos:
+        return ""
+
+    section = "h3. GitHub Context\n"
+    for repo_name, repo_data in repos.items():
+        commits = repo_data.get("commits", {})
+        if commits.get("count", 0) > 0:
+            section += f"h4. {repo_name} - Commits ({commits['count']})\n"
+            for commit in commits.get("items", [])[:10]:
+                msg = commit.get("message", "").split("\n")[0][:80]
+                url = commit.get("html_url", "")
+                date = commit.get("commit_timestamp", "")
+                author = commit.get("commit_author", {}).get("email", "")
+                if url:
+                    section += f"* [{msg}|{url}] - {author} - {date}\n"
+                else:
+                    section += f"* {msg} - {author} - {date}\n"
+            if commits.get("count", 0) > 10:
+                section += f"* _... and {commits['count'] - 10} more commits_\n"
+            section += "\n"
+
+        releases = repo_data.get("releases", {})
+        if releases.get("count", 0) > 0:
+            section += f"h4. {repo_name} - Releases ({releases['count']})\n"
+            for release in releases.get("items", [])[:5]:
+                name = release.get("name", release.get("tag_name", ""))
+                url = release.get("html_url", "")
+                date = release.get("published_at", "")
+                if url:
+                    section += f"* [{name}|{url}] - {date}\n"
+                else:
+                    section += f"* {name} - {date}\n"
+            section += "\n"
+
+    return section
+
+
+def format_jira_description(regression: dict, metric_name: str, pct_change: float, build_id: str = "") -> str:
+    """
+    Format a rich JIRA description with all regression details.
+
+    Args:
+        regression: Regression data dictionary
+        metric_name: Name of the specific metric for this issue
+        pct_change: Percentage change for this metric
+        build_id: Build ID extracted from the build URL
+
+    Returns:
+        Formatted JIRA description text
+    """
+    # Build description using JIRA markup
+    desc = "h2. Performance Regression Detected by Orion\n\n"
+
+    # Basic info
+    desc += "h3. Changepoint Details\n"
+    desc += f"*Test:* {regression.get('test_name')}\n"
+    desc += f"*UUID:* {{{regression.get('uuid')}}}\n"
+    desc += f"*Version Change:* {regression.get('prev_ver')} → {regression.get('bad_ver')}\n"
+    if regression.get("timestamp"):
+        desc += f"*Timestamp:* {regression.get('timestamp')}\n"
+    if regression.get("buildUrl"):
+        desc += f"*Regressing build URL:* [View Build|{regression.get('buildUrl')}]\n"
+    if build_id:
+        desc += f"*Build ID:* {build_id}\n"
+
+    # If orion is running in Prow, add the current job build URL to the JIRA issue description
+    if os.getenv("PROW_JOB_ID") and os.getenv("JOB_NAME") and os.getenv("BUILD_ID"):
+        prow_base_url=f"https://prow.ci.openshift.org/view/gs/origin-ci-test/logs/{os.getenv('JOB_NAME')}/{os.getenv('BUILD_ID')}"
+        desc += f"*Jira created from job build:* [View Build|{prow_base_url}]\n"
+    desc += "\n"
+
+    # Primary metric for this issue
+    desc += "h3. Primary Regression\n"
+    desc += f"*Metric:* {metric_name}\n"
+    desc += f"*Change:* {pct_change:+.2f}%\n"
+    desc += "\n"
+
+    # All affected metrics
+    metrics_with_change = regression.get("metrics_with_change", [])
+    if len(metrics_with_change) > 1:
+        desc += "h3. All Affected Metrics\n"
+        desc += "|| Metric || Change || Value ||\n"
+        for metric in metrics_with_change:
+            labels = metric.get("labels", [])
+            label_str = f" ({', '.join(labels)})" if labels else ""
+            desc += f"| {metric.get('name')}{label_str} | {metric.get('percentage_change', 0):+.2f}% | {metric.get('value', 'N/A')} |\n"
+        desc += "\n"
+
+    # Add PR and GitHub context sections
+    desc += _format_pr_section(
+        regression.get("prs", []),
+        regression.get("prev_ver", ""),
+        regression.get("bad_ver", "")
+    )
+    desc += _format_github_context(regression.get("github_context"))
+
+    # Footer
+    desc += "----\n"
+    desc += "_This issue was automatically created by Orion regression detection._\n"
+
+    return desc
+
+
+def auto_create_jira_issues(regression_data: list, provider: AckProvider, logger) -> tuple[int, dict[str, list[str]]]:  # pylint: disable=too-many-locals
+    """
+    Automatically create JIRA issues for detected regressions.
+
+    Args:
+        regression_data: List of regression dictionaries from run()
+        provider: JIRA ACK provider to use for creation
+        logger: Logger instance
+
+    Returns:
+        Tuple of (created_count, issue_keys_by_test) where issue_keys_by_test
+        maps test_name to a list of created JIRA issue keys.
+    """
+    issue_keys_by_test: dict[str, list[str]] = {}
+    if not regression_data:
+        return 0, issue_keys_by_test
+
+    created_count = 0
+    skipped_count = 0
+
+    for regression in regression_data:
+        uuid = regression.get("uuid")
+        if not uuid:
+            logger.warning("Skipping JIRA creation: no UUID in regression data")
+            continue
+
+        # Create JIRA issue for each regressed metric
+        for metric_info in regression.get("metrics_with_change", []):
+            metric_name = metric_info.get("name")
+            if not metric_name:
+                continue
+
+            pct_change = metric_info.get("percentage_change", 0)
+
+            logger.info(
+                "Creating JIRA issue for regression: test=%s, uuid=%s, metric=%s, change=%+.2f%%",
+                regression.get("test_name"), uuid[:8], metric_name, pct_change
+            )
+
+            try:
+                # Normalize versions to short format (e.g., "4.22" from "4.22.0-ec.3")
+                bad_ver = regression.get("bad_ver")
+                prev_ver = regression.get("prev_ver")
+
+                # Extract Build ID from Build URL (once, for use in both rich and simple formats)
+                build_url = regression.get("buildUrl", "")
+                build_id = build_url.rstrip('/').split('/')[-1] if build_url else ""
+
+                issue_key = provider.create_ack(
+                    uuid=uuid,
+                    metric=metric_name,
+                    reason=format_jira_description(regression, metric_name, pct_change, build_id),
+                    version=str(bad_ver)[:4].rstrip('.') if bad_ver else None,
+                    test=regression.get("benchmark_type") or regression.get("test_name"),
+                    build_url=build_url,
+                    build_id=build_id,
+                    pct_change=f"{pct_change:+.2f}",
+                    prev_version=str(prev_ver)[:4].rstrip('.') if prev_ver else None
+                )
+
+                if issue_key:
+                    created_count += 1
+                    logger.info("✓ Created JIRA issue %s for %s / %s", issue_key, uuid[:8], metric_name)
+                    test_name = regression.get("test_name")
+                    if test_name:
+                        issue_keys_by_test.setdefault(test_name, []).append(issue_key)
+                else:
+                    skipped_count += 1
+                    logger.debug("Skipped (likely already exists): %s / %s", uuid[:8], metric_name)
+
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.error("Failed to create JIRA issue for %s / %s: %s", uuid[:8], metric_name, e)
+                skipped_count += 1
+
+    if created_count > 0:
+        logger.info("📝 Created %d JIRA issue(s) for regressions", created_count)
+    if skipped_count > 0:
+        logger.debug("Skipped %d issue(s) (already exist or failed)", skipped_count)
+
+    return created_count, issue_keys_by_test
+
+
+def _attach_viz_to_jira(
+    jira_provider, issue_keys_by_test: dict[str, list[str]],
+    output_base_path: str, run_type: str, logger
+) -> None:
+    """Attach generated HTML visualization files to their corresponding JIRA issues."""
+    for test_name, keys in issue_keys_by_test.items():
+        viz_file = build_viz_output_file(output_base_path, test_name, run_type)
+        if not os.path.isfile(viz_file):
+            logger.debug("Viz file not found for %s, skipping attachment", test_name)
+            continue
+        for issue_key in keys:
+            jira_provider.attach_file(issue_key, viz_file)
+
 
 class Dictionary(click.ParamType):
     """Class to define a custom click type for dictionaries
@@ -90,6 +325,109 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
     return value
 
 
+def _resolve_template_variable(value: str, input_vars: dict) -> str:
+    """Resolve template variable like {{VERSION}} from input_vars."""
+    if not value or "{{" not in str(value):
+        return str(value).strip('"')
+
+    match = re.search(r'\{\{\s*(\w+)\s*\}\}', str(value))
+    if match:
+        var_name = match.group(1)
+        return input_vars.get(var_name) or input_vars.get(var_name.lower())
+    return value
+
+
+def _extract_version_and_test(config: dict, input_vars: dict) -> tuple:
+    """Extract version and test type from config."""
+    if "tests" not in config or not config["tests"]:
+        return None, None
+
+    test = config["tests"][0]
+    metadata = test.get("metadata", {})
+
+    # Resolve version
+    version_field = test.get("version_field", "ocpVersion")
+    version = _resolve_template_variable(metadata.get(version_field, ""), input_vars)
+
+    # Resolve test type
+    test_type = _resolve_template_variable(metadata.get("benchmark.keyword", ""), input_vars)
+
+    return version, test_type
+
+
+def _create_jira_provider(kwargs: dict, config: dict, logger) -> JiraAckProvider:
+    """Create and initialize a JIRA ACK provider."""
+    jira_url = kwargs.get("jira_url") or config.get("jira_url")
+    if not jira_url:
+        logger.error("JIRA URL required when --jira-ack is enabled. Use --jira-url or set JIRA_URL env var")
+        sys.exit(1)
+
+    try:
+        provider = JiraAckProvider(
+            jira_url=jira_url,
+            project=kwargs.get("jira_project", "PERFSCALE"),
+            component=kwargs.get("jira_component", "CPT_ISSUES"),
+            token=kwargs.get("jira_token") or config.get("jira_token"),
+            email=kwargs.get("jira_email") or config.get("jira_email"),
+            uuid_field=config.get("jira_uuid_field", "description"),
+            metric_field=config.get("jira_metric_field", "labels")
+        )
+        logger.info("✓ JIRA ACK provider initialized: %s/%s",
+                   provider.project, provider.component)
+        return provider
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        logger.error("Failed to initialize JIRA provider: %s", e)
+        logger.error("See JIRA_PERMISSIONS_TROUBLESHOOTING.md for help")
+        sys.exit(1)
+
+
+def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvider], Optional[str], Optional[str]]:
+    """
+    Factory function to create ACK providers based on configuration.
+
+    Args:
+        kwargs: CLI arguments
+        config: Loaded configuration dict
+        logger: Logger instance
+
+    Returns:
+        Tuple of (list of ACK provider instances, version string, test type string)
+    """
+    providers = []
+
+    # Extract version and test type from config
+    version, test_type = _extract_version_and_test(config, kwargs["input_vars"])
+
+    # JIRA provider
+    if kwargs.get("jira_ack"):
+        providers.append(_create_jira_provider(kwargs, config, logger))
+
+    # File-based provider (auto-detect unless disabled or JIRA-only mode)
+    jira_only_mode = kwargs.get("jira_ack") and not kwargs.get("ack")
+
+    if jira_only_mode:
+        logger.info("JIRA-only mode: skipping default file-based ACKs (use --ack to enable hybrid mode)")
+    elif not kwargs.get("no_default_ack"):
+        auto_ack_file = auto_detect_ack_file_with_vars(
+            config,
+            kwargs["input_vars"],
+            ack_dir="ack"
+        )
+        if auto_ack_file:
+            providers.append(FileAckProvider(auto_ack_file))
+            logger.info("✓ File ACK provider initialized: %s", auto_ack_file)
+    else:
+        logger.info("default ACK loading disabled")
+
+    # Manual ACK files (always processed if provided)
+    if kwargs.get("ack"):
+        for ack_file in [f.strip() for f in kwargs["ack"].split(",") if f.strip()]:
+            providers.append(FileAckProvider(ack_file))
+            logger.info("✓ Manual file ACK provider initialized: %s", ack_file)
+
+    return providers, version, test_type
+
+
 # pylint: disable=too-many-locals
 @click.version_option(version=__version__, message="%(prog)s %(version)s")
 @click.command(context_settings={"show_default": True, "max_content_width": 180})
@@ -108,9 +446,16 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
     default=False,
     help="Launch interactive wizard to configure all options conversationally",
 )
-@click.option("--config", help="Path to the configuration file", required=False, default="")
+@click.option("--config", help="Path to the configuration file", required=False, default=None)
 @click.option("--ack", default="", help="Optional ack YAML to ack known regressions (can specify multiple files separated by comma)")
 @click.option("--no-default-ack", is_flag=True, default=False, help="Disable automatic default ACK file detection and loading (manual --ack files are still loaded)")
+@click.option("--jira-ack", is_flag=True, default=False, help="Use JIRA to track and retrieve acknowledgments instead of YAML files")
+@click.option("--jira-url", default="https://issues.redhat.com", envvar="JIRA_URL", help="JIRA instance URL (e.g., https://issues.redhat.com). Can be set via JIRA_URL env var")
+@click.option("--jira-project", default="PERFSCALE", help="JIRA project key for acknowledgments")
+@click.option("--jira-component", default="CPT_ISSUES", help="JIRA component name for acknowledgments (use empty string '' to skip component)")
+@click.option("--jira-token", default="", envvar="JIRA_TOKEN", help="JIRA API token (Cloud) or personal access token (on-premise). Can be set via JIRA_TOKEN env var")
+@click.option("--jira-email", default="", envvar="JIRA_EMAIL", help="Email address for Atlassian Cloud authentication (required for *.atlassian.net). Can be set via JIRA_EMAIL env var")
+@click.option("--jira-auto-create", is_flag=True, default=False, help="Automatically create JIRA issues for detected regressions (requires --jira-ack)")
 @click.option(
     "--save-data-path", default="data.csv", help="Path to save the output file"
 )
@@ -164,6 +509,11 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--display", type=List(), default=["buildUrl"], help="Add metadata field as a column in the output (e.g. ocpVirt, upstreamJob)")
 @click.option("--pr-analysis", is_flag=True, help="Analyze PRs for regressions", default=False)
 @click.option("--viz", is_flag=True, default=False, help="Generate interactive HTML visualizations alongside output")
+@click.option(
+    "--report",
+    default=None,
+    help="Generate standalone regression report from comma-separated JSON file paths.",
+)
 def main(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
@@ -178,92 +528,77 @@ def main(**kwargs):
         except ImportError as exc:
             click.echo(f"\nError: {exc}", err=True)
             sys.exit(1)
-    elif not kwargs.get("config"):
-        raise click.UsageError("Missing option '--config'. Pass --config <path> or use --interactive / -i.")
+    # Handle standalone report mode (--report with file paths)
+    report_value = kwargs.pop("report", None)
+    if report_value:
+        level = logging.DEBUG if kwargs["debug"] else logging.INFO
+        logger = SingletonLogger(debug=level, name="Orion")
+        logger.info("Orion version: %s", __version__)
+        files = [f.strip() for f in report_value.split(",") if f.strip()]
+        data = load_json_files(files)
+        has_regression = generate_report(data)
+        sys.exit(2 if has_regression else 0)
+
+    # --config is required for normal operation
+    if not kwargs.get("config"):
+        click.echo("Error: --config is required (unless using --report with JSON file paths or --interactive mode / -i)", err=True)
+        sys.exit(1)
 
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
     if kwargs['output_format'] == cnsts.JSON :
         level = logging.ERROR
     logger = SingletonLogger(debug=level, name="Orion")
-    logger.info("🏹 Starting Orion in command-line mode")
+    logger.info("🏹 Starting Orion (%s) in command-line mode", __version__)
 
     # Load config first (needed for auto-detection)
     kwargs["config"] = load_config(kwargs["config"], kwargs["input_vars"])
 
-    # Handle ACK file loading
-    # Logic: Auto-load ack/all_ack.yaml unless --no-default-ack. Manual --ack files are always loaded and merged.
-    ack_maps = []
+    # Handle ACK loading using provider system
+    providers, version, test_type = get_ack_providers(kwargs, kwargs["config"], logger)
 
-    # Step 1: Auto-detect and load consolidated ACK file (skipped when --no-default-ack)
-    if kwargs["no_default_ack"]:
-        logger.info("Automatic default ACK loading disabled (--no-default-ack flag)")
-    else:
-        auto_ack_file = auto_detect_ack_file_with_vars(
-            kwargs["config"],
-            kwargs["input_vars"],
-            ack_dir="ack"
-        )
-        if auto_ack_file:
-            # Extract version and test type from config for filtering
-            version = None
-            test_type = None
+    # Save JIRA provider reference for auto-creation later
+    jira_provider = None
+    if providers:
+        for provider in providers:
+            if isinstance(provider, JiraAckProvider):
+                jira_provider = provider
+                break
 
-            if "tests" in kwargs["config"] and len(kwargs["config"]["tests"]) > 0:
-                test = kwargs["config"]["tests"][0]
-                metadata = test.get("metadata", {})
+    # If --jira-auto-create without --jira-ack, create a Jira provider for issue creation only
+    if kwargs.get("jira_auto_create") and not jira_provider:
+        jira_provider = _create_jira_provider(kwargs, kwargs["config"], logger)
 
-                # Resolve version
-                version_field = test.get("version_field", "ocpVersion")
-                version_value = metadata.get(version_field, "")
-                if version_value and "{{" not in str(version_value):
-                    version = str(version_value).strip('"')
-                elif version_value and "{{" in str(version_value):
-                    match = re.search(r'\{\{\s*(\w+)\s*\}\}', str(version_value))
-                    if match:
-                        var_name = match.group(1)
-                        version = kwargs["input_vars"].get(var_name) or kwargs["input_vars"].get(var_name.lower())
+    if providers:
+        # Collect ACKs from all providers
+        all_acks = []
+        for provider in providers:
+            try:
+                acks = provider.get_acks(version=version, test_type=test_type)
+                if acks:
+                    all_acks.extend(acks)
+                    logger.info(
+                        "✓ Loaded %d ACK entries from %s (version=%s, test=%s)",
+                        len(acks),
+                        provider.__class__.__name__,
+                        version or "all",
+                        test_type or "all"
+                    )
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.error("Failed to load ACKs from %s: %s", provider.__class__.__name__, e)
 
-                # Resolve test type
-                test_type_value = metadata.get("benchmark.keyword", "")
-                if test_type_value and "{{" not in str(test_type_value):
-                    test_type = str(test_type_value).strip()
-                elif test_type_value and "{{" in str(test_type_value):
-                    match = re.search(r'\{\{\s*(\w+)\s*\}\}', str(test_type_value))
-                    if match:
-                        var_name = match.group(1)
-                        test_type = kwargs["input_vars"].get(var_name) or kwargs["input_vars"].get(var_name.lower())
-
-            # Load auto-detected ACK file with filtering
-            auto_ack_map = load_ack(auto_ack_file, version=version, test_type=test_type)
-            if auto_ack_map and auto_ack_map.get("ack") and len(auto_ack_map.get("ack", [])) > 0:
-                ack_maps.append(auto_ack_map)
-                logger.info("✓ Auto-loaded ACK file: %s (version=%s, test_type=%s, matching entries=%d)",
-                           auto_ack_file, version or "all", test_type or "all",
-                           len(auto_ack_map.get("ack", [])))
-            elif auto_ack_file:
-                logger.info("✓ Loaded ACK file: %s (version=%s, test_type=%s, no matching entries found)",
-                           auto_ack_file, version or "all", test_type or "all")
-
-    # Load manually specified ACK files (if any) — always runs even with --no-default-ack
-    if kwargs["ack"]:
-        # Support multiple ACK files separated by comma
-        ack_files = [f.strip() for f in kwargs["ack"].split(",") if f.strip()]
-        for ack_file in ack_files:
-            if len(ack_file) > 0:
-                manual_ack_map = load_ack(ack_file)
-                if manual_ack_map and manual_ack_map.get("ack"):
-                    ack_maps.append(manual_ack_map)
-                    logger.info("✓ Loaded manual ACK file: %s (entries=%d)",
-                               ack_file, len(manual_ack_map.get("ack", [])))
-
-    # Merge all ACK maps (auto-loaded + manual)
-    if ack_maps:
-        kwargs["ackMap"] = merge_ack_files(ack_maps)
-        total_entries = len(kwargs["ackMap"].get("ack", []))
-        logger.info("✓ Total ACK entries loaded: %d", total_entries)
+        # Merge and deduplicate
+        if all_acks:
+            # Use the base provider's merge method to deduplicate
+            merged_acks = providers[0].merge_acks([all_acks])
+            kwargs["ackMap"] = {"ack": merged_acks}
+            logger.info("✓ Total ACK entries loaded: %d (after deduplication)", len(merged_acks))
+        else:
+            kwargs["ackMap"] = None
+            logger.debug("No ACK entries loaded")
     else:
         kwargs["ackMap"] = None
-        logger.debug("No ACK entries loaded")
+        if not kwargs.get("no_default_ack"):
+            logger.info("No ACK providers configured")
 
     if not kwargs["metadata_index"] or not kwargs["es_server"]:
         logger.error("metadata-index and es-server flags must be provided")
@@ -299,211 +634,138 @@ def main(**kwargs):
             logger.error("Missing required input variables: %s", ", ".join(missing_vars))
             sys.exit(1)
     results, results_pull = run(**kwargs)
-    is_pull = False
-    if results_pull.output:
-        is_pull = True
-    if kwargs['output_format'] == cnsts.JSON:
-        has_regression = print_json(logger, kwargs, results, results_pull, is_pull)
-    elif kwargs['output_format'] == cnsts.JUNIT:
-        has_regression = print_junit(logger, kwargs, results, results_pull, is_pull)
+    is_pull = bool(results_pull.analyses)
+
+    # Auto-create JIRA issues for regressions if enabled
+    issue_keys_by_test = {}
+    issue_keys_by_test_pull = {}
+    if kwargs.get("jira_auto_create") and jira_provider:
+        formatter_for_regression = FormatterFactory.get_formatter(cnsts.JSON)
+        if results.regression_flag:
+            logger.info("Auto-creating JIRA issues for detected regressions...")
+            all_reg_data = []
+            for analysis in results.analyses:
+                all_reg_data.extend(
+                    formatter_for_regression.extract_regression_data(analysis)
+                )
+            created, issue_keys_by_test = auto_create_jira_issues(all_reg_data, jira_provider, logger)
+            if created == 0 and all_reg_data:
+                logger.warning(
+                    "No JIRA issues were created. This may be due to permissions. "
+                    "See JIRA_PERMISSIONS_TROUBLESHOOTING.md for help."
+                )
+        if is_pull and results_pull.regression_flag:
+            logger.info("Auto-creating JIRA issues for pull request regressions...")
+            pull_reg_data = []
+            for analysis in results_pull.analyses:
+                pull_reg_data.extend(
+                    formatter_for_regression.extract_regression_data(analysis)
+                )
+            created, issue_keys_by_test_pull = auto_create_jira_issues(pull_reg_data, jira_provider, logger)
+            if created == 0 and pull_reg_data:
+                logger.warning(
+                    "No JIRA issues were created. This may be due to permissions. "
+                    "See JIRA_PERMISSIONS_TROUBLESHOOTING.md for help."
+                )
+
+    formatter = FormatterFactory.get_formatter(kwargs["output_format"])
+    has_regression = False
+    all_regression_data = []
+
+    if not results.analyses:
+        logger.error("Terminating test")
+        sys.exit(0)
+
+    if is_pull:
+        pull_analyses_by_test = {
+            a.test_name: a for a in results_pull.analyses
+        }
+        for analysis in results.analyses:
+            pull_analysis = pull_analyses_by_test.get(analysis.test_name)
+            formatter.print_and_save_pr(
+                analysis,
+                pull_analysis,
+                kwargs["save_output_path"],
+                pr=results_pull.pr,
+            )
+
+            if analysis.regression_flag:
+                has_regression = True
+                regression_data = formatter.extract_regression_data(
+                    analysis
+                )
+                all_regression_data.extend(regression_data)
     else:
-        has_regression = print_output(logger, kwargs, results, is_pull)
-        if is_pull:
-            print_output(logger, kwargs, results_pull, is_pull)
+        for analysis in results.analyses:
+            formatted = formatter.format(analysis)
+            formatter.save(
+                analysis.test_name,
+                formatted[analysis.test_name],
+                kwargs["save_output_path"],
+            )
+            formatter.print_output(
+                analysis.test_name,
+                formatted[analysis.test_name],
+                analysis,
+            )
+
+            if analysis.regression_flag:
+                has_regression = True
+                regression_data = formatter.extract_regression_data(
+                    analysis
+                )
+                all_regression_data.extend(regression_data)
+
+    # Prow CI: always save JSON regardless of output format
+    prow_job_id = os.getenv("PROW_JOB_ID")
+    if (
+        prow_job_id
+        and prow_job_id.strip()
+        and kwargs["output_format"] != cnsts.JSON
+    ):
+        json_formatter = FormatterFactory.get_formatter(cnsts.JSON)
+        for analysis in results.analyses:
+            json_formatted = json_formatter.format(analysis)
+            json_formatter.save(
+                analysis.test_name,
+                json_formatted[analysis.test_name],
+                kwargs["save_output_path"],
+            )
+
+    if kwargs["output_format"] != cnsts.JSON:
+        if has_regression:
+            print_regression_summary(all_regression_data)
+        else:
+            print("No regressions found")
+
     if kwargs.get("viz"):
         try:
             output_base_path = str(Path(kwargs['save_output_path']).with_suffix(''))
-            all_viz_data = results.viz_data
-            for viz_data in all_viz_data:
-                generate_test_html(viz_data, output_base_path)
+            for viz_data in results.viz_data:
+                run_type = "periodic" if is_pull else ""
+                output_file = build_viz_output_file(
+                    output_base_path, viz_data.test_name, run_type
+                )
+                generate_test_html(viz_data, output_file)
+            if is_pull:
+                for viz_data in results_pull.viz_data:
+                    output_file = build_viz_output_file(
+                        output_base_path, viz_data.test_name, "pull"
+                    )
+                    generate_test_html(viz_data, output_file)
         except Exception as e:  # pylint: disable=broad-except
             logger.warning("Visualization generation failed: %s", e)
 
+    # Attach HTML visualizations to JIRA issues
+    if kwargs.get("viz") and kwargs.get("jira_auto_create") and jira_provider:
+        try:
+            output_base_path = str(Path(kwargs['save_output_path']).with_suffix(''))
+            _attach_viz_to_jira(jira_provider, issue_keys_by_test, output_base_path,
+                                "periodic" if is_pull else "", logger)
+            _attach_viz_to_jira(jira_provider, issue_keys_by_test_pull, output_base_path,
+                                "pull", logger)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.warning("JIRA attachment failed: %s", e)
+
     if has_regression:
-        sys.exit(2) ## regression detected
-
-def print_regression_summary(regression_data) -> None:
-    """Print regression summary: affected metrics, PRs, and GitHub context tables."""
-    print("Regression(s) found :")
-    for regression in regression_data:
-        print("-" * 50)
-        print(f"Test: {regression.get('test_name')}:")
-        print(f"{'Changepoint at:':<20} {regression['bad_ver']}")
-        print(f"{'Previous version:':<20} {regression['prev_ver']}")
-        print("\nAffected Metrics")
-        if regression['metrics_with_change']:
-            table = [
-                [m['name'], m['value'], f"{m['percentage_change']:.2f}%", m.get('labels', '')]
-                for m in regression['metrics_with_change']
-            ]
-            print(tabulate(table, headers=["Metric", "Value", "Percentage change", "Labels"], tablefmt="outline"))
-
-        if "prs" in regression:
-            formatted_prs = "\n".join([f"- {pr}" for pr in regression["prs"]])
-        else:
-            formatted_prs = "N/A"
-        print("\nRelated PRs:")
-        print(formatted_prs)
-        if "github_context" in regression and regression["github_context"] is not None:
-            print("\nGitHub context:")
-            ctx = regression["github_context"]
-            repos = ctx.get("repositories") or None
-            if repos is None or len(repos) == 0:
-                print("No GitHub context found")
-                return
-            for repo_name, repo_data in repos.items():
-                commits = repo_data.get("commits") or {}
-                releases = repo_data.get("releases") or {}
-                if (commits.get("count") or 0) > 0 or (releases.get("count") or 0) > 0:
-                    print(f"\nRepository: {repo_name}")
-                    rows = []
-                    for item in (commits.get("items") or []):
-                        date = item.get("commit_timestamp", "")
-                        msg = item.get("message", "")
-                        email = (item.get("commit_author") or {}).get("email", "")
-                        url = item.get("html_url", "")
-                        rows.append([date, msg.split("\n")[0], email, url])
-                    if len(rows) > 0:
-                        print("Commits:")
-                        print(tabulate(rows,
-                            headers=["Date", "Message", "Author email", "URL"],
-                            tablefmt="outline"))
-                    rows = []
-                    for item in (releases.get("items") or []):
-                        date = item.get("published_at") or item.get("timestamp") or item.get("date") or ""
-                        msg = item.get("body") or item.get("message") or item.get("name") or ""
-                        email = (item.get("author") or item.get("commit_author") or {})
-                        if isinstance(email, dict):
-                            email = email.get("email", "")
-                        else:
-                            email = str(email)
-                        url = item.get("html_url", "")
-                        rows.append([date, msg.split("\n")[0], email, url])
-                    if len(rows) > 0:
-                        print("Releases:")
-                        print(tabulate(rows,
-                            headers=["Date", "Message", "Author email", "URL"],
-                            tablefmt="outline"))
-
-
-def save_text_table(test_name, result_table, save_output_path):
-    """Save the text table to a file."""
-    output_file_name = f"{os.path.splitext(save_output_path)[0]}_table_{test_name}.txt"
-    with open(output_file_name, 'w', encoding="utf-8") as file:
-        file.write(str(result_table))
-
-
-def print_output(
-        logger,
-        kwargs,
-        results: TestResults,
-        is_pull: bool = False) -> bool:
-    """
-    Print the output of the tests
-
-    Args:
-        logger: logger object
-        kwargs: keyword arguments
-        results: results of the tests
-        is_pull: whether the tests are pull requests
-    """
-    output = results.output
-    regression_flag = results.regression_flag
-    regression_data = results.regression_data
-    average_values = results.average_values
-    pr = results.pr if is_pull else 0
-    if not output:
-        logger.error("Terminating test")
-        sys.exit(0)
-    for test_name, result_table in output.items():
-        save_text_table(test_name, result_table, kwargs['save_output_path'])
-        if not kwargs['collapse']:
-            text = test_name
-            if pr > 0:
-                text = test_name + " | Pull Request #" + str(pr)
-            print(text)
-            print("=" * len(text))
-            print(result_table)
-            if is_pull and pr < 1:
-                text = test_name + " | Average of above Periodic runs"
-                print("\n" + text)
-                print("=" * len(text))
-                print(average_values)
-    if regression_flag:
-        print_regression_summary(regression_data)
-        if not is_pull:
-            return True
-    else:
-        print("No regressions found")
-    return False
-
-
-def print_json(logger, kwargs, results: TestResults, results_pull: TestResults, is_pull):
-    """
-    Print the output of the tests in json format
-    """
-    logger.info("Printing json output")
-    output = results.output
-    regression_flag = results.regression_flag
-    average_values = results.average_values
-    output_pull = []
-    if not output:
-        logger.error("Terminating test")
-        sys.exit(0)
-    if is_pull and results_pull.pr:
-        output_pull = results_pull.output
-    for test_name, result_table in output.items():
-        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}_{test_name}.{get_output_extension(kwargs['output_format'])}"
-        if is_pull:
-            results_json = {
-                "periodic": json.loads(result_table),
-                "periodic_avg": json.loads(average_values),
-                "pull": json.loads(output_pull.get(test_name)),
-            }
-            print(json.dumps(results_json, indent=2))
-            with open(output_file_name, 'w', encoding="utf-8") as file:
-                file.write(json.dumps(results_json, indent=2))
-        else:
-            print(result_table)
-            with open(output_file_name, 'w', encoding="utf-8") as file:
-                file.write(str(result_table))
-        logger.info("Output saved to %s", output_file_name)
-        if regression_flag:
-            return True
-    return False
-
-def print_junit(logger, kwargs, results: TestResults, results_pull: TestResults, is_pull):
-    """
-    Print the output of the tests in junit format
-    """
-    logger.info("Printing junit output")
-    output = results.output
-    regression_flag = results.regression_flag
-    average_values = results.average_values
-    output_pull = []
-    if not output:
-        logger.error("Terminating test")
-        sys.exit(0)
-    if is_pull and results_pull.pr:
-        output_pull = results_pull.output
-    testsuites = ET.Element("testsuites")
-    for test_name, result_table in output.items():
-        if not is_pull:
-            testsuites.append(result_table)
-        else:
-            testsuites.append(result_table)
-            average_values.tag = "periodic_avg"
-            testsuites.append(average_values)
-            output_pull.get(test_name).tag = "pull"
-            testsuites.append(output_pull.get(test_name))
-        xml_str = ET.tostring(testsuites, encoding="utf8", method="xml").decode()
-        dom = xml.dom.minidom.parseString(xml_str)
-        pretty_xml_as_string = dom.toprettyxml()
-        print(pretty_xml_as_string)
-        output_file_name = f"{os.path.splitext(kwargs['save_output_path'])[0]}.{get_output_extension(kwargs['output_format'])}"
-        with open(output_file_name, 'w', encoding="utf-8") as file:
-            file.write(str(pretty_xml_as_string))
-        logger.info("Output saved to %s", output_file_name)
-        if regression_flag:
-            return True
-    return False
+        sys.exit(2)

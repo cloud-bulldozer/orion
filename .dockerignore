@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+*.egg
+.eggs/
+.venv/
+venv/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.xml
+
+# IDE / editor
+.vscode/
+.idea/
+
+# Project artifacts
+outputs/
+results.json
+*.csv
+output*.*
+docs/
+images/
+.claude/
+.github/
+
+# Misc
+*.md
+.yamlfmt
+.yamllint.yaml
+uv.lock
+Makefile

@@ -2,31 +2,44 @@ name: Image Push
 on:
   workflow_dispatch:
   push:
-    branches:
-      - master
-      - main
+    tags:
+      - 'v*'
 
 jobs:
   build_image:
     name: Image Push
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Determine image tags
+      id: tags
+      env:
+        GIT_REF: ${{ github.ref }}
+        GIT_REF_NAME: ${{ github.ref_name }}
+        GIT_SHA: ${{ github.sha }}
+      run: |
+        TAGS="latest $GIT_SHA"
+        if [[ "$GIT_REF" == refs/tags/v* ]]; then
+          TAGS="$TAGS $GIT_REF_NAME"
+        fi
+        echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
     - name: Build Orion Image
       id: build-orion
       uses: redhat-actions/buildah-build@v2
       with:
-        image: orion 
+        image: orion
         context: .
-        tags: latest ${{ github.sha }}
+        tags: ${{ steps.tags.outputs.tags }}
         containerfiles: |
           ./Dockerfile
 
     - name: Push orion image to quay.io
-      id: push-front-to-quay
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: startsWith(github.ref, 'refs/tags/v')
       uses: redhat-actions/push-to-registry@v2
       with:
         image: ${{ steps.build-orion.outputs.image }}

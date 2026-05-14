@@ -47,3 +47,24 @@ class SingletonLogger:
             logging.Logger: logger
         """
         return cls.instance.get(name, None)
+
+    @classmethod
+    def get_or_create_logger(cls, name: str) -> logging.Logger:
+        """Get logger from instance or create a fallback logger if not initialized.
+
+        Args:
+            name (str): name of the logger
+
+        Returns:
+            logging.Logger: logger instance
+        """
+        logger = cls.get_logger(name)
+        if logger is None:
+            # Fallback if logger not initialized
+            logger = logging.getLogger(name)
+            if not logger.handlers:
+                handler = logging.StreamHandler()
+                handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+                logger.addHandler(handler)
+                logger.setLevel(logging.INFO)
+        return logger

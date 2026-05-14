@@ -9,15 +9,14 @@ import json
 import re
 import urllib.parse
 import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from functools import reduce
 from typing import List, Any, Dict, Tuple
 import pandas as pd
-import pyshorteners
 import requests
 from tabulate import tabulate
 
-import orion.constants as cnsts
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
 
@@ -41,20 +40,23 @@ class Utils:
     # pylint: disable=too-many-locals
     def get_metric_data(
         self, uuids: List[str], metrics: Dict[str, Any], match: Matcher, test_threshold: int, timestamp_field: str="timestamp"
-    ) -> List[pd.DataFrame]:
+    ) -> Tuple[List[pd.DataFrame], Dict[str, Any], List[str]]:
         """Gets details metrics based on metric yaml list
 
         Args:
-            ids (list): list of all uuids
+            uuids (list): list of all uuids
             metrics (dict): metrics to gather data on
             match (Matcher): current matcher instance
-            logger (logger): log data to one output
+            test_threshold (int): default threshold for metrics
+            timestamp_field (str): field name for timestamps
 
         Returns:
-            dataframe_list: dataframe of the all metrics
+            tuple: (dataframe_list, metrics_config, metadata_columns)
         """
         dataframe_list = []
         metrics_config = {}
+        metadata_columns = []
+        global_timestamp_field = timestamp_field
 
         for metric in metrics:
             metric_name = metric["name"]
@@ -63,25 +65,32 @@ class Utils:
             labels = metric.pop("labels", None)
             direction = int(metric.pop("direction", 0))
             threshold = abs(int(metric.pop("threshold", test_threshold)))
-            timestamp_field = metric.pop("timestamp", timestamp_field)
+            timestamp_field = metric.pop("timestamp", global_timestamp_field)
             correlation = metric.pop("correlation", "")
             context = metric.pop("context", 5)
+            metric_type = metric.get("type")
             self.logger.info("Collecting %s", metric_name)
             try:
                 if "agg" in metric:
-                    metric_df, metric_dataframe_name = self.process_aggregation_metric(
+                    metric_df, metric_dataframe_names = self.process_aggregation_metric(
                         uuids, metric, match, timestamp_field
                     )
                 else:
-                    metric_df, metric_dataframe_name = self.process_standard_metric(
+                    metric_df, single_name = self.process_standard_metric(
                         uuids, metric, match, metric_value_field, timestamp_field
                     )
+                    metric_dataframe_names = [single_name]
                 metric["labels"] = labels
                 metric["direction"] = direction
                 metric["threshold"] = threshold
+                metric["timestamp"] = timestamp_field
                 metric["correlation"] = correlation
                 metric["context"] = context
-                metrics_config[metric_dataframe_name] = metric
+                if metric_type != "metadata":
+                    for metric_dataframe_name in metric_dataframe_names:
+                        metrics_config[metric_dataframe_name] = metric
+                else:
+                    metadata_columns.extend(metric_dataframe_names)
                 dataframe_list.append(metric_df)
                 self.logger.debug(metric_df)
             except Exception as e:
@@ -90,45 +99,70 @@ class Utils:
                     metric_name,
                     e,
                 )
-        return dataframe_list, metrics_config
+        return dataframe_list, metrics_config, metadata_columns
 
 
     def process_aggregation_metric(
         self, uuids: List[str],  metric: Dict[str, Any], match: Matcher, timestamp_field: str="timestamp"
     ) -> pd.DataFrame:
-        """Method to get aggregated dataframe
+        """
+        Method to get an aggregated dataframe for a given metric.
 
         Args:
-            uuids (List[str]): _description_
-            metric (Dict[str, Any]): _description_
-            match (Matcher): _description_
+            uuids (List[str]): List of UUIDs to include in the aggregation.
+            metric (Dict[str, Any]): Metric configuration dictionary.
+            match (Matcher): Matcher instance for query operations.
+            timestamp_field (str, optional): Timestamp field to use. Defaults to "timestamp".
 
         Returns:
-            pd.DataFrame: _description_
+            pd.DataFrame: Aggregated metric dataframe and list of metric column names.
         """
+        self.logger.info("process_aggregation_metric")
         aggregated_metric_data = match.get_agg_metric_query(uuids, metric, timestamp_field)
-        aggregation_value = metric["agg"]["value"]
+        self.logger.debug("aggregated_metric_data %s", aggregated_metric_data)
+        aggregation_value = metric["metric_of_interest"]
         aggregation_type = metric["agg"]["agg_type"]
-        aggregation_name = f"{aggregation_value}_{aggregation_type}"
+
+        if aggregation_type == "percentiles":
+            percentile_prefix = f"{aggregation_value}_{aggregation_type}_"
+            if aggregated_metric_data:
+                agg_columns = [k for k in aggregated_metric_data[0].keys()
+                               if k.startswith(percentile_prefix)]
+            else:
+                agg_columns = []
+            self.logger.info("percentile columns found: %s", agg_columns)
+        else:
+            agg_columns = [f"{aggregation_value}_{aggregation_type}"]
+
+        all_columns = [self.uuid_field, timestamp_field] + agg_columns
+
         if len(aggregated_metric_data) == 0:
-            aggregated_df = pd.DataFrame(columns=[self.uuid_field, timestamp_field, aggregation_name])
+            aggregated_df = pd.DataFrame(columns=all_columns)
         else:
             aggregated_df = match.convert_to_df(
-                aggregated_metric_data, columns=[self.uuid_field, timestamp_field, aggregation_name],
+                aggregated_metric_data, columns=all_columns,
                 timestamp_field=timestamp_field
             )
             aggregated_df.loc[:, timestamp_field] = aggregated_df[timestamp_field].apply(self.standardize_timestamp)
 
         aggregated_df = aggregated_df.drop_duplicates(subset=[self.uuid_field], keep="first")
-        aggregated_metric_name = f"{metric['name']}_{aggregation_type}"
-        aggregated_df = aggregated_df.rename(
-            columns={aggregation_name: aggregated_metric_name}
-        )
+
+        rename_map = {}
+        aggregated_metric_names = []
+        for col in agg_columns:
+            if aggregation_type == "percentiles":
+                suffix = col[len(f"{aggregation_value}_{aggregation_type}_"):]
+                new_name = f"{metric['name']}_{aggregation_type}_{suffix}"
+            else:
+                new_name = f"{metric['name']}_{aggregation_type}"
+            rename_map[col] = new_name
+            aggregated_metric_names.append(new_name)
+
+        aggregated_df = aggregated_df.rename(columns=rename_map)
         if timestamp_field != "timestamp":
-            aggregated_df = aggregated_df.rename(
-                columns={timestamp_field: "timestamp"}
-            )
-        return aggregated_df, aggregated_metric_name
+            aggregated_df = aggregated_df.rename(columns={timestamp_field: "timestamp"})
+
+        return aggregated_df, aggregated_metric_names
 
     def standardize_timestamp(self, timestamp: Any) -> str:
         """Method to standardize timestamp formats
@@ -144,7 +178,7 @@ class Utils:
         # Handle int timestamps and numeric strings in seconds
         if isinstance(timestamp, int) or \
             (isinstance(timestamp, str) and timestamp.isnumeric()):
-            dt = pd.to_datetime(timestamp, unit='s', utc=True)
+            dt = pd.to_datetime(int(timestamp), unit='s', utc=True)
         # Default to pd for float (millisec precision), ISO/RFC etc.
         else:
             dt = pd.to_datetime(timestamp, utc=True)
@@ -371,9 +405,10 @@ class Utils:
         )
         # get metrics data and dataframe
         metrics = test["metrics"]
-        dataframe_list, metrics_config = self.get_metric_data(
+        dataframe_list, metrics_config, metadata_columns = self.get_metric_data(
             uuids, metrics, match, test_threshold, timestamp_field
         )
+        test["metadata_columns"] = metadata_columns
         if not dataframe_list:
             return None, metrics_config
 
@@ -409,14 +444,10 @@ class Utils:
                 lambda uuid, f=field: display_data.get(uuid, {}).get(f, "N/A")
             )
         if options["convert_tinyurl"]:
-            shortener = pyshorteners.Shortener(timeout=10)
+            all_urls = {uuid: buildUrls[uuid] for uuid in merged_df[self.uuid_field]}
+            shortened = self.shorten_urls_batch(all_urls)
             merged_df.loc[:, "buildUrl"] = merged_df[self.uuid_field].apply(
-                lambda uuid: (
-                    self.shorten_url(shortener, buildUrls[uuid])
-                    if options["convert_tinyurl"]
-                    else buildUrls[uuid]
-                )
-                # pylint: disable = cell-var-from-loop
+                lambda uuid: shortened.get(uuid, buildUrls[uuid])
             )
         merged_df = merged_df.reset_index(drop=True)
         # save the dataframe
@@ -425,21 +456,36 @@ class Utils:
         return merged_df, metrics_config
 
 
-    def shorten_url(self, shortener: any, uuids: str) -> str:
-        """Shorten url if there is a list of buildUrls
+    def shorten_urls_batch(self, urls_by_uuid: Dict[str, str]) -> Dict[str, str]:
+        """Shorten all build URLs concurrently using TinyURL API directly.
 
         Args:
-            shortener (any): shortener object to use tinyrl.short on
-            uuids (List[str]): List of uuids to shorten
+            urls_by_uuid: mapping of uuid to build URL
 
         Returns:
-            str: a combined string of shortened urls
+            mapping of uuid to shortened URL
         """
-        short_url_list = []
-        for buildUrl in uuids.split(","):
-            short_url_list.append(shortener.tinyurl.short(buildUrl))
-        short_url = ",".join(short_url_list)
-        return short_url
+        unique_urls = set(urls_by_uuid.values())
+
+        url_map = {}
+        session = requests.Session()
+
+        def _shorten(url: str) -> Tuple[str, str]:
+            resp = session.get(
+                "https://tinyurl.com/api-create.php",
+                params={"url": url},
+                timeout=10,
+            )
+            resp.raise_for_status()
+            return url, resp.text.strip()
+
+        with ThreadPoolExecutor(max_workers=min(20, len(unique_urls) or 1)) as pool:
+            futures = {pool.submit(_shorten, u): u for u in unique_urls}
+            for future in as_completed(futures):
+                original, short = future.result()
+                url_map[original] = short
+
+        return {uuid: url_map.get(url, url) for uuid, url in urls_by_uuid.items()}
 
 
     def get_metadata_with_uuid(self, uuid: str, match: Matcher) -> Dict[Any, Any]:
@@ -511,9 +557,7 @@ class Utils:
         Returns:
             List[str]: list of PR URLs
         """
-        prs = []
-        for pr in pr_list:
-            prs.append(pr['url'])
+        prs = list(dict.fromkeys(pr['url'] for pr in pr_list))
         return prs
 
     def sippy_pr_search(self, version: str) -> List[str]:
@@ -681,19 +725,3 @@ def get_subtracted_timestamp(time_duration: str, start_timestamp=datetime.now(ti
     current_time = start_timestamp
     timestamp_before = current_time - duration_to_subtract
     return timestamp_before
-
-
-def get_output_extension(output_format: str) -> str:
-    """ Get file extension for a given output format
-
-    Args:
-        output_format (str): output format in junit, json, text
-
-    Returns:
-        str: one amoung xml, json, txt
-    """
-    if output_format == cnsts.JSON:
-        return "json"
-    if output_format == cnsts.JUNIT:
-        return "xml"
-    return "txt"

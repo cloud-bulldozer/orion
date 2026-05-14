@@ -47,7 +47,8 @@ parentConfig: parent.yaml
 tests:
   - name: payload-node-density
     metadata:
-      ocpVersion: "4.17"
+      wildcard:
+        ocpVersion: "4.17*"
       networkType: OVNKubernetes
       # Inherits all metadata from parent.yaml
       # Can override parent values if needed
@@ -84,7 +85,6 @@ The `metricsFile` field allows you to load metrics from an separate file. This i
   labels.namespace.keyword: openshift-kube-apiserver
   metric_of_interest: value
   agg:
-    value: cpu
     agg_type: avg
   labels:
     - "[Jira: kube-apiserver]"
@@ -116,7 +116,8 @@ metricsFile: metrics.yaml
 tests:
   - name: payload-node-density
     metadata:
-      ocpVersion: "4.17"
+      wildcard:
+        ocpVersion: "4.17*"
       # Inherits metadata from parent.yaml
     metrics:
       # Inherits metrics from metrics.yaml
@@ -164,7 +165,8 @@ tests:
     local_config: local_config.yaml
     local_metrics: local_metrics.yaml
     metadata:
-      ocpVersion: "4.17"   # Overrides or adds to local_config metadata
+      wildcard:
+        ocpVersion: "4.17*"
     metrics:
       - name: testSpecificMetric
         # ... only this test gets this metric; global metrics are not used
@@ -221,7 +223,8 @@ tests:
       workerNodesType: m6a.xlarge
       workerNodesCount: 6
       benchmark.keyword: cluster-density-v2
-      ocpVersion: 4.17
+      wildcard:
+        ocpVersion: "4.17*"
       networkType: OVNKubernetes
 
     metrics:
@@ -243,7 +246,6 @@ tests:
         labels.namespace.keyword: openshift-kube-apiserver
         metric_of_interest: value
         agg:
-          value: cpu
           agg_type: avg
         labels:
           - "[Jira: kube-apiserver]"
@@ -319,6 +321,46 @@ Works complementary to `correlation` by analyzing runs before and after the curr
 context: 5  # Analyze 5 runs before and after (default)
 ```
 
+## Metadata Metrics
+
+Metrics can be marked with `type: metadata` to fetch data from OpenSearch without including it in regression analysis. Metadata metrics are carried alongside the test results as attributes — they appear in text, JSON, and JUnit output but are not analyzed for changepoints.
+
+This is useful for attaching contextual information to each test run, such as the Kubernetes version, cluster configuration, or any other field that helps identify what changed between runs without being a performance metric itself.
+
+### Usage
+
+Add `type: metadata` to any metric definition. The metric is fetched and merged into the results dataframe like any other metric, but it is treated as an attribute (like UUID or version) rather than an analyzed metric.
+
+```yaml
+metrics:
+  - name: kubeBurnerVersion
+    metricName.keyword: jobSummary
+    metric_of_interest: k8sVersion
+    not:
+      jobConfig.name: "garbage-collection"
+    type: metadata
+
+  - name: podReadyLatency
+    metricName.keyword: podLatencyQuantilesMeasurement
+    quantileName: Ready
+    metric_of_interest: P99
+    not:
+      jobConfig.name: "garbage-collection"
+    labels:
+      - "[Jira: PerfScale]"
+    direction: 1
+    threshold: 10
+```
+
+In this example, `kubeBurnerVersion` fetches the `k8sVersion` field from `jobSummary` documents. It appears in every output row next to UUID and version, but Orion does not run changepoint detection or regression analysis on it. The `podReadyLatency` metric is analyzed normally.
+
+### Behavior
+
+- Metadata metrics use the same query fields (`metricName`, `metric_of_interest`, `not`, etc.) as regular metrics
+- They are excluded from `metrics_config`, so algorithms skip them during analysis
+- They are included as **attributes** in the output series, appearing in report tables alongside UUID and version columns
+- The `direction`, `threshold`, `labels`, and `correlation` fields are ignored for metadata metrics (they can be omitted)
+
 ## Aggregation Metrics
 
 Orion supports aggregating metric values across multiple data points per test run. This is useful for computing statistics like average CPU usage, total memory consumed, or latency percentiles.
@@ -342,7 +384,6 @@ Orion supports aggregating metric values across multiple data points per test ru
   labels.namespace.keyword: openshift-kube-apiserver
   metric_of_interest: value
   agg:
-    value: cpu
     agg_type: avg  # Calculate average CPU usage
   threshold: 10
   direction: 1
@@ -355,7 +396,6 @@ Orion supports aggregating metric values across multiple data points per test ru
   metricName: api_requests
   metric_of_interest: request_id
   agg:
-    value: request_id
     agg_type: count  # Count number of requests
   threshold: 10
   direction: 1
@@ -376,7 +416,6 @@ Percentile aggregations are particularly useful for analyzing latency distributi
   metricName: api_response_time
   metric_of_interest: latency_ms
   agg:
-    value: latency_ms
     agg_type: percentiles
   # Calculates P50, P95, P99 by default
   # Reports P95 by default
@@ -391,7 +430,6 @@ Percentile aggregations are particularly useful for analyzing latency distributi
   metricName: api_response_time
   metric_of_interest: latency_ms
   agg:
-    value: latency_ms
     agg_type: percentiles
     percents: [50, 90, 95, 99, 99.9]  # Which percentiles to calculate
     target_percentile: 99              # Which percentile to report for regression detection
@@ -418,7 +456,6 @@ Percentile aggregations are particularly useful for analyzing latency distributi
   quantileName: Ready
   metric_of_interest: latency_seconds
   agg:
-    value: latency_seconds
     agg_type: percentiles
     percents: [50, 95, 99]
     target_percentile: 99
@@ -441,6 +478,19 @@ These names are used in:
 - Output files and reports
 - Correlation references
 - JUnit test names
+
+## Wildcard Matching
+
+The `wildcard` key in metadata defines fields that are matched using wildcard queries instead of exact matches. The value is passed directly to the OpenSearch wildcard query, so you must include wildcard characters (`*`, `?`) in the value yourself.
+
+```yaml
+metadata:
+  platform: AWS
+  wildcard:
+    ocpVersion: "4.17*"
+```
+
+This matches any `ocpVersion` starting with `4.17` (e.g., `4.17.0`, `4.17.5-rc1`, etc.).
 
 ## Labels and Filtering
 
@@ -501,4 +551,120 @@ Orion validates configuration files and will report errors for:
 - Conflicting settings
 - Malformed YAML syntax
 
-Use the `--debug` flag to get detailed validation information. 
+Use the `--debug` flag to get detailed validation information.
+
+## JIRA Integration for Regression Tracking
+
+Orion supports tracking performance regressions as JIRA issues instead of (or in addition to) flat YAML files. This enables teams to manage regressions using their existing issue tracking workflows.
+
+### ACK Provider Overview
+
+ACK (Acknowledgment) providers allow Orion to query for known regressions before reporting new ones. Orion supports two types of providers:
+
+- **File-based provider**: Reads acknowledgments from YAML files (default behavior)
+- **JIRA provider**: Queries acknowledgments from JIRA issues (new in this release)
+
+You can use both providers simultaneously in "hybrid mode" to transition from file-based to JIRA-based tracking.
+
+### Basic JIRA Usage
+
+**Query existing JIRA acknowledgments:**
+
+```bash
+orion --config config.yaml --jira-ack \
+  --jira-url https://issues.example.com \
+  --jira-project PERFSCALE \
+  --jira-component CPT_ISSUES
+```
+
+**Auto-create JIRA issues for new regressions:**
+
+```bash
+orion --config config.yaml --jira-ack --jira-auto-create \
+  --jira-url https://issues.example.com \
+  --jira-project PERFSCALE \
+  --jira-component CPT_ISSUES
+```
+
+### Authentication
+
+JIRA authentication requires environment variables based on your JIRA deployment type:
+
+**On-premise JIRA (Personal Access Token):**
+
+```bash
+export JIRA_TOKEN="your_personal_access_token"
+```
+
+**Atlassian Cloud (Email + API Token):**
+
+```bash
+export JIRA_EMAIL="your@email.com"
+export JIRA_TOKEN="your_api_token"
+```
+
+### JIRA Configuration Options
+
+#### Command-line Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--jira-ack` | Enable JIRA ACK provider | `false` |
+| `--jira-auto-create` | Auto-create JIRA issues for new regressions | `false` |
+| `--jira-url` | JIRA instance URL (e.g., `https://issues.redhat.com`) | Required |
+| `--jira-project` | JIRA project key | `PERFSCALE` |
+| `--jira-component` | JIRA component name | `CPT_ISSUES` |
+
+#### Configuration File Options
+
+You can also configure JIRA settings in your YAML configuration file:
+
+```yaml
+jira_url: https://issues.example.com
+jira_project: PERFSCALE
+jira_component: CPT_ISSUES
+jira_uuid_field: description      # Field to store UUID (default)
+jira_metric_field: labels          # Field to store metric name (default)
+```
+
+### Auto-created Issue Content
+
+When `--jira-auto-create` is enabled, Orion creates rich JIRA issues that include:
+
+- **Summary**: `Regression in <metric> (<version>)`
+- **Description** (JIRA markup format):
+  - Test name and UUID
+  - Version change (e.g., `4.21 → 4.22`)
+  - Build URL and timestamp
+  - Percentage change for primary metric
+  - Table of all affected metrics
+  - Related pull requests between versions
+  - GitHub context (commits and releases)
+- **Labels**: Version, test type, and metric name
+- **Component**: Specified via `--jira-component`
+- **Issue Type**: Bug
+
+### JIRA-only Mode
+
+Skip file-based ACKs entirely:
+
+```bash
+# Use JIRA exclusively (no file ACK auto-detection)
+orion --config config.yaml --jira-ack
+```
+
+Without `--ack`, Orion won't auto-detect or load file-based acknowledgments.
+
+### Troubleshooting
+
+**Debug mode:**
+
+```bash
+orion --config config.yaml --jira-ack --debug
+```
+
+This will show:
+- JIRA connection status
+- JQL queries being executed
+- Issue parsing details
+- Permission check results 
