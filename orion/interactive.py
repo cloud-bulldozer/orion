@@ -135,7 +135,8 @@ def _get_first_env_with_key(keys: list[str], fallback: str = "") -> tuple[str, s
 def _is_sensitive_name(name: str) -> bool:
     """Best-effort detector for secret-like variable names."""
     return re.search(
-        r"(secret|token|es_server|password|passwd|api[_-]?key|client[_-]?secret|access[_-]?key|private[_-]?key)",
+        r"(secret|token|es_server|password|passwd"
+        r"|api[_-]?key|client[_-]?secret|access[_-]?key|private[_-]?key)",
         name.lower(),
     ) is not None
 
