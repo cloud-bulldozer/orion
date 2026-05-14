@@ -101,7 +101,14 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
     mutually_exclusive=["anomaly_detection","hunter_analyze"],
 )
 @click.option("--filter", is_flag=True, help="Generate percent difference in comparison")
-@click.option("--config", help="Path to the configuration file", required=True)
+@click.option(
+    "-i",
+    "--interactive",
+    is_flag=True,
+    default=False,
+    help="Launch interactive wizard to configure all options conversationally",
+)
+@click.option("--config", help="Path to the configuration file", required=False, default="")
 @click.option("--ack", default="", help="Optional ack YAML to ack known regressions (can specify multiple files separated by comma)")
 @click.option("--no-default-ack", is_flag=True, default=False, help="Disable automatic default ACK file detection and loading (manual --ack files are still loaded)")
 @click.option(
@@ -148,11 +155,11 @@ def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable =
 @click.option("--since", help="End date to bound the time range. When used with --lookback, creates a time window ending at this date. Format: YYYY-MM-DD")
 @click.option("--convert-tinyurl", is_flag=True, help="Convert buildUrls to tiny url format for better formatting")
 @click.option("--collapse", is_flag=True, help="For text output: only print regression summary to stdout (full table always saved to file). For JSON output: only include changepoint context rows.")
-@click.option("--node-count", default=False, help="Match any node iterations count")
+@click.option("--node-count", is_flag=True, default=False, help="Match any node iterations count")
 @click.option("--lookback-size", type=int, default=10000, help="Maximum number of entries to be looked back")
 @click.option("--es-server", type=str, envvar="ES_SERVER", help="Elasticsearch endpoint where test data is stored, can be set via env var ES_SERVER", default="")
-@click.option("--benchmark-index", type=str, envvar="es_benchmark_index",  help="Index where test data is stored, can be set via env var es_benchmark_index", default="")
-@click.option("--metadata-index", type=str, envvar="es_metadata_index",  help="Index where metadata is stored, can be set via env var es_metadata_index", default="")
+@click.option("--benchmark-index", type=str, envvar=["ES_BENCHMARK_INDEX", "es_benchmark_index"],  help="Index where test data is stored, can be set via env var ES_BENCHMARK_INDEX or es_benchmark_index", default="")
+@click.option("--metadata-index", type=str, envvar=["ES_METADATA_INDEX", "es_metadata_index"],  help="Index where metadata is stored, can be set via env var ES_METADATA_INDEX or es_metadata_index", default="")
 @click.option("--input-vars", type=Dictionary(), default="{}", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
 @click.option("--display", type=List(), default=["buildUrl"], help="Add metadata field as a column in the output (e.g. ocpVirt, upstreamJob)")
 @click.option("--pr-analysis", is_flag=True, help="Analyze PRs for regressions", default=False)
@@ -161,6 +168,19 @@ def main(**kwargs):
     """
     Orion runs on command line mode, and helps in detecting regressions
     """
+    if kwargs.pop("interactive", False):
+        try:
+            from orion.interactive import run_interactive  # pylint: disable=import-outside-toplevel
+            kwargs.update(run_interactive())
+        except KeyboardInterrupt:
+            click.echo("\nInteractive mode cancelled.", err=True)
+            sys.exit(0)
+        except ImportError as exc:
+            click.echo(f"\nError: {exc}", err=True)
+            sys.exit(1)
+    elif not kwargs.get("config"):
+        raise click.UsageError("Missing option '--config'. Pass --config <path> or use --interactive / -i.")
+
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
     if kwargs['output_format'] == cnsts.JSON :
         level = logging.ERROR
@@ -250,6 +270,22 @@ def main(**kwargs):
         sys.exit(1)
     if kwargs["pr_analysis"]:
         input_vars = kwargs["input_vars"]
+        required_var_env = {
+            "jobtype": ["JOBTYPE", "jobtype"],
+            "pull_number": ["PULL_NUMBER", "pull_number"],
+            "organization": ["ORGANIZATION", "organization"],
+            "repository": ["REPOSITORY", "repository"],
+        }
+
+        # Fill missing required vars from environment when available.
+        for key, env_keys in required_var_env.items():
+            if key not in input_vars or str(input_vars.get(key, "")).strip() == "":
+                for env_key in env_keys:
+                    env_val = os.getenv(env_key)
+                    if env_val is not None and str(env_val).strip() != "":
+                        input_vars[key] = str(env_val).strip()
+                        break
+
         missing_vars = []
         if "jobtype" not in input_vars:
             missing_vars.append("jobtype")
