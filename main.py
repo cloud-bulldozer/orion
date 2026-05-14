@@ -125,9 +125,14 @@ def format_jira_description(regression: dict, metric_name: str, pct_change: floa
     if regression.get("timestamp"):
         desc += f"*Timestamp:* {regression.get('timestamp')}\n"
     if regression.get("buildUrl"):
-        desc += f"*Build URL:* [View Build|{regression.get('buildUrl')}]\n"
+        desc += f"*Regressing build URL:* [View Build|{regression.get('buildUrl')}]\n"
     if build_id:
         desc += f"*Build ID:* {build_id}\n"
+
+    # If orion is running in Prow, add the current job build URL to the JIRA issue description
+    if os.getenv("PROW_JOB_ID") and os.getenv("JOB_NAME") and os.getenv("BUILD_ID"):
+        prow_base_url=f"https://prow.ci.openshift.org/view/gs/origin-ci-test/logs/{os.getenv('JOB_NAME')}/{os.getenv('BUILD_ID')}"
+        desc += f"*Jira created from job build:* [View Build|{prow_base_url}]\n"
     desc += "\n"
 
     # Primary metric for this issue
