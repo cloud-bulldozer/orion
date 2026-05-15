@@ -122,7 +122,7 @@ class TestAggBatchDispatch:
             "apiserverCPU": _agg_batch_data(),
         }
 
-        df_list, config = utils.get_metric_data(
+        df_list, config, _ = utils.get_metric_data(
             UUIDS, metrics, match_mock, test_threshold=0
         )
 
@@ -141,7 +141,7 @@ class TestAggBatchDispatch:
             "cpuMetric2": _agg_batch_data(metric_of_interest="mem", agg_type="sum"),
         }
 
-        df_list, config = utils.get_metric_data(
+        df_list, config, _ = utils.get_metric_data(
             UUIDS, metrics, match_mock, test_threshold=0
         )
 
@@ -166,7 +166,7 @@ class TestStdBatchDispatch:
             "podLatencyMetric": _std_batch_data(),
         }
 
-        df_list, config = utils.get_metric_data(
+        df_list, config, _ = utils.get_metric_data(
             UUIDS, metrics, match_mock, test_threshold=0
         )
 
@@ -185,7 +185,7 @@ class TestStdBatchDispatch:
             "latency2": _std_batch_data(metric_of_interest="ms"),
         }
 
-        df_list, config = utils.get_metric_data(
+        df_list, config, _ = utils.get_metric_data(
             UUIDS, metrics, match_mock, test_threshold=0
         )
 
@@ -208,7 +208,7 @@ class TestBatchFallback:
         match_mock.get_agg_metrics_batch.side_effect = RuntimeError("batch fail")
         match_mock.get_agg_metric_query.return_value = _agg_batch_data()
 
-        df_list, config = utils.get_metric_data(
+        df_list, config, _ = utils.get_metric_data(
             UUIDS, metrics, match_mock, test_threshold=0
         )
 
@@ -224,7 +224,7 @@ class TestBatchFallback:
         match_mock.get_results_batch.side_effect = RuntimeError("batch fail")
         match_mock.get_results.return_value = _std_batch_data()
 
-        df_list, config = utils.get_metric_data(
+        df_list, config, _ = utils.get_metric_data(
             UUIDS, metrics, match_mock, test_threshold=0
         )
 
@@ -252,7 +252,7 @@ class TestMixedMetrics:
             "stdMetric": _std_batch_data(),
         }
 
-        df_list, config = utils.get_metric_data(
+        df_list, config, _ = utils.get_metric_data(
             UUIDS, metrics, match_mock, test_threshold=0
         )
 
@@ -429,7 +429,7 @@ class TestChunkedBatching:
 
         match_mock.get_agg_metrics_batch.side_effect = batch_side_effect
 
-        df_list, config = utils.get_metric_data(
+        df_list, config, _ = utils.get_metric_data(
             UUIDS, metrics, match_mock, test_threshold=0
         )
 
@@ -447,7 +447,7 @@ class TestChunkedBatching:
 
         match_mock.get_results_batch.side_effect = batch_side_effect
 
-        df_list, config = utils.get_metric_data(
+        df_list, config, _ = utils.get_metric_data(
             UUIDS, metrics, match_mock, test_threshold=0
         )
 
@@ -471,7 +471,7 @@ class TestChunkedBatching:
         match_mock.get_agg_metrics_batch.side_effect = batch_side_effect
         match_mock.get_agg_metric_query.return_value = _agg_batch_data()
 
-        df_list, _ = utils.get_metric_data(
+        df_list, _, _meta = utils.get_metric_data(
             UUIDS, metrics, match_mock, test_threshold=0
         )
 
@@ -487,9 +487,137 @@ class TestChunkedBatching:
             m["name"]: _agg_batch_data() for m in metrics
         }
 
-        df_list, _ = utils.get_metric_data(
+        df_list, _, _meta = utils.get_metric_data(
             UUIDS, metrics, match_mock, test_threshold=0
         )
 
         assert match_mock.get_agg_metrics_batch.call_count == 1
         assert len(df_list) == 3
+
+
+# ---------------------------------------------------------------------------
+# Tests: metadata type metrics
+# ---------------------------------------------------------------------------
+
+def _agg_metadata_metric(name, metric_of_interest="version", agg_type="avg"):
+    m = _agg_metric(name, metric_of_interest, agg_type)
+    m["type"] = "metadata"
+    return m
+
+
+def _std_metadata_metric(name, metric_of_interest="value"):
+    m = _std_metric(name, metric_of_interest)
+    m["type"] = "metadata"
+    return m
+
+
+class TestMetadataTypeAgg:
+
+    def test_agg_metadata_excluded_from_metrics_config(self, utils, match_mock):
+        metrics = [copy.deepcopy(_agg_metadata_metric("k8sVersion"))]
+        match_mock.get_agg_metrics_batch.return_value = {
+            "k8sVersion": _agg_batch_data(metric_of_interest="version"),
+        }
+
+        _, config, meta_cols = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert len(config) == 0
+        assert "k8sVersion_avg" in meta_cols
+
+    def test_agg_metadata_dataframe_still_collected(self, utils, match_mock):
+        metrics = [copy.deepcopy(_agg_metadata_metric("k8sVersion"))]
+        match_mock.get_agg_metrics_batch.return_value = {
+            "k8sVersion": _agg_batch_data(metric_of_interest="version"),
+        }
+
+        df_list, _, _ = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert len(df_list) == 1
+
+
+class TestMetadataTypeStd:
+
+    def test_std_metadata_excluded_from_metrics_config(self, utils, match_mock):
+        metrics = [copy.deepcopy(_std_metadata_metric("clusterVersion"))]
+        match_mock.get_results_batch.return_value = {
+            "clusterVersion": _std_batch_data(),
+        }
+
+        _, config, meta_cols = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert len(config) == 0
+        assert "clusterVersion_value" in meta_cols
+
+    def test_std_metadata_dataframe_still_collected(self, utils, match_mock):
+        metrics = [copy.deepcopy(_std_metadata_metric("clusterVersion"))]
+        match_mock.get_results_batch.return_value = {
+            "clusterVersion": _std_batch_data(),
+        }
+
+        df_list, _, _ = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert len(df_list) == 1
+
+
+class TestMetadataTypeMixed:
+
+    def test_mixed_normal_and_metadata_routed_correctly(self, utils, match_mock):
+        normal = copy.deepcopy(_agg_metric("cpuUsage"))
+        meta = copy.deepcopy(_agg_metadata_metric("k8sVersion"))
+        metrics = [normal, meta]
+
+        match_mock.get_agg_metrics_batch.return_value = {
+            "cpuUsage": _agg_batch_data(),
+            "k8sVersion": _agg_batch_data(metric_of_interest="version"),
+        }
+
+        df_list, config, meta_cols = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert len(df_list) == 2
+        assert "cpuUsage_avg" in config
+        assert "k8sVersion_avg" not in config
+        assert "k8sVersion_avg" in meta_cols
+        assert "cpuUsage_avg" not in meta_cols
+
+    def test_mixed_std_normal_and_metadata(self, utils, match_mock):
+        normal = copy.deepcopy(_std_metric("podLatency"))
+        meta = copy.deepcopy(_std_metadata_metric("clusterVersion"))
+        metrics = [normal, meta]
+
+        match_mock.get_results_batch.return_value = {
+            "podLatency": _std_batch_data(),
+            "clusterVersion": _std_batch_data(),
+        }
+
+        df_list, config, meta_cols = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert len(df_list) == 2
+        assert "podLatency_value" in config
+        assert "clusterVersion_value" not in config
+        assert "clusterVersion_value" in meta_cols
+        assert "podLatency_value" not in meta_cols
+
+    def test_no_metadata_returns_empty_metadata_columns(self, utils, match_mock):
+        metrics = [copy.deepcopy(_agg_metric("cpuUsage"))]
+        match_mock.get_agg_metrics_batch.return_value = {
+            "cpuUsage": _agg_batch_data(),
+        }
+
+        _, config, meta_cols = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert len(meta_cols) == 0
+        assert "cpuUsage_avg" in config

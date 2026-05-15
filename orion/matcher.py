@@ -468,7 +468,7 @@ class Matcher:
             metric_filter_clauses = [
                 Q("match", **{k: v})
                 for k, v in metric.items()
-                if k not in ("name", "metric_of_interest", "not", "agg")
+                if k not in ("name", "metric_of_interest", "not", "agg", "type")
             ]
             not_clauses = [
                 ~Q("match", **{k: v})
@@ -575,7 +575,7 @@ class Matcher:
         if not metrics_list:
             return {}
 
-        excluded_keys = {"name", "metric_of_interest", "not"}
+        excluded_keys = {"name", "metric_of_interest", "not", "type"}
         filter_fields_by_metric = []
         should_clauses = []
         for metric in metrics_list:
