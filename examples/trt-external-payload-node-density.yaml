@@ -20,6 +20,13 @@ tests:
         stream: okd
 
     metrics:
+      - name: kubeBurnerVersion
+        metricName.keyword: jobSummary
+        metric_of_interest: k8sVersion
+        not:
+          jobConfig.name: "garbage-collection"
+        type: metadata
+
       - name: podReadyLatency
         metricName.keyword: podLatencyQuantilesMeasurement
         quantileName: Ready
