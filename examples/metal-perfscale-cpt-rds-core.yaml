@@ -21,7 +21,7 @@ tests:
         quantileName: Ready
         metric_of_interest: P99
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: PodReadyLatency]"
         agg:
@@ -230,7 +230,7 @@ tests:
         metricName.keyword: max-memory-masters
         metric_of_interest: value
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         agg:
           agg_type: max
         labels:
@@ -241,7 +241,7 @@ tests:
         metricName.keyword: memory-masters
         metric_of_interest: value
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         agg:
           agg_type: avg
         labels:
@@ -252,7 +252,7 @@ tests:
         metricName.keyword: max-memory-workers
         metric_of_interest: value
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         agg:
           agg_type: max
         labels:
@@ -263,7 +263,7 @@ tests:
         metricName.keyword: memory-workers
         metric_of_interest: value
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         agg:
           agg_type: avg
         labels:
@@ -274,7 +274,7 @@ tests:
         metricName.keyword: max-cpu-masters
         metric_of_interest: value
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         agg:
           agg_type: max
         labels:
@@ -285,7 +285,7 @@ tests:
         metricName.keyword: cpu-masters
         metric_of_interest: value
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         agg:
           agg_type: avg
         labels:
@@ -296,7 +296,7 @@ tests:
         metricName.keyword: max-cpu-workers
         metric_of_interest: value
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         agg:
           agg_type: max
         labels:
@@ -307,7 +307,7 @@ tests:
         metricName.keyword: cpu-workers
         metric_of_interest: value
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         agg:
           agg_type: avg
         labels:

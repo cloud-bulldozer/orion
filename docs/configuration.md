@@ -233,7 +233,7 @@ tests:
         quantileName: Ready
         metric_of_interest: P99
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: PerfScale]"
         direction: 0
@@ -337,7 +337,7 @@ metrics:
     metricName.keyword: jobSummary
     metric_of_interest: k8sVersion
     not:
-      jobConfig.name: "garbage-collection"
+      jobName.keyword: "garbage-collection"
     type: metadata
 
   - name: podReadyLatency
@@ -345,7 +345,7 @@ metrics:
     quantileName: Ready
     metric_of_interest: P99
     not:
-      jobConfig.name: "garbage-collection"
+      jobName.keyword: "garbage-collection"
     labels:
       - "[Jira: PerfScale]"
     direction: 1
@@ -508,7 +508,7 @@ Exclude specific data from metrics:
 
 ```yaml
 not:
-  jobConfig.name: "garbage-collection"
+  jobName.keyword: "garbage-collection"
 ```
 
 To exclude multiple values, use a list:

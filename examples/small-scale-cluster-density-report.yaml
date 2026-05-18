@@ -28,7 +28,7 @@ tests:
         quantileName: Ready
         metric_of_interest: P99
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
       - name: CPU_usage_masters
         metricName.keyword: cpu-masters
         metric_of_interest: value
