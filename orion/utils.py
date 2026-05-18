@@ -635,13 +635,18 @@ class Utils:
         session = requests.Session()
 
         def _shorten(url: str) -> Tuple[str, str]:
-            resp = session.get(
-                "https://tinyurl.com/api-create.php",
-                params={"url": url},
-                timeout=10,
-            )
-            resp.raise_for_status()
-            return url, resp.text.strip()
+            try:
+                resp = session.get(
+                    "https://tinyurl.com/api-create.php",
+                    params={"url": url},
+                    timeout=10,
+                )
+                resp.raise_for_status()
+                short = resp.text.strip()
+                return url, short or url
+            except requests.RequestException as exc:
+                self.logger.warning("TinyURL shortening failed for %s: %s", url, exc)
+                return url, url
 
         with ThreadPoolExecutor(max_workers=min(20, len(unique_urls) or 1)) as pool:
             futures = {pool.submit(_shorten, u): u for u in unique_urls}
