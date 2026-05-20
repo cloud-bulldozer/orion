@@ -1,4 +1,4 @@
-.PHONY: help lint fmt install uninstall test deps deps-test
+.PHONY: help lint fmt install uninstall test deps deps-test pylint
 
 help:
 	@echo "Available targets:"
@@ -6,7 +6,8 @@ help:
 	@echo "  fmt       - Automatically fix common YAML linting issues"
 	@echo "  install   - Install orion and its dependencies"
 	@echo "  uninstall - Uninstall orion"
-	@echo "  test      - Run the test suite with pytest"
+	@echo "  test      - Run unit tests"
+	@echo "  pylint    - Run pylint on production (non-test) python code"
 	@echo "  help      - Show this help message"
 
 .DEFAULT_GOAL := help
@@ -37,3 +38,7 @@ uninstall:
 
 test: deps-test lint
 	pytest orion/tests/
+
+pylint:
+	pylint -d R0915 -d R1702 -d R0913 -d R0914 -d C0103 -d R0912 -d R0911 -d R0917 -d E0102 \
+		$$(git ls-files '*/*.py' '*.py' | grep -v '/tests/')
