@@ -7,7 +7,7 @@ tests:
       masterNodesCount: 3
       workerNodesType: m5.2xlarge
       workerNodesCount: 24
-      jobConfig.name: "{{ benchmark }}"
+      jobName.keyword: "{{ benchmark }}"
       metricName.keyword: jobSummary
       wildcard:
         ocpVersion: "{{ version }}*"

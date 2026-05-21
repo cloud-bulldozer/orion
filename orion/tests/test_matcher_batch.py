@@ -394,7 +394,7 @@ def _make_standard_metrics():
             "metricName": "podLatencyQuantilesMeasurement",
             "quantileName": "Ready",
             "metric_of_interest": "P99",
-            "not": {"jobConfig.name": "garbage-collection"},
+            "not": {"jobName.keyword": "garbage-collection"},
         },
         {
             "name": "apiserverCPU",

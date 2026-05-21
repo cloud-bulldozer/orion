@@ -2,7 +2,7 @@
   metricName : catalogd_cpu_usage_cores
   metric_of_interest: value
   not: 
-    jobConfig.name: "garbage-collection"
+    jobName.keyword: "garbage-collection"
   agg:
     value: cpu
     agg_type: sum

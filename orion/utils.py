@@ -430,7 +430,7 @@ class Utils:
         Returns:
             _type_: index and uuids
         """
-        if "jobConfig.name" in metadata:
+        if "jobName.keyword" in metadata:
             return uuids
         if "benchmark.keyword" in metadata:
             if metadata["benchmark.keyword"] in ["ingress-perf", "k8s-netperf"]:

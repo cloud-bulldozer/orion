@@ -427,7 +427,7 @@ def test_filter_runs(matcher_instance, monkeypatch):
                 "metricName": "podLatencyQuantilesMeasurement",
                 "quantileName": "Ready",
                 "metric_of_interest": "P99",
-                "not": {"jobConfig.name": "garbage-collection"},
+                "not": {"jobName.keyword": "garbage-collection"},
             },
             [
                 FakeHit({"_source": {"uuid": "uuid1", "field1": "value1"}}),
@@ -489,7 +489,7 @@ def test_get_results_variants(request,
                 "metricName": "podLatencyQuantilesMeasurement",
                 "quantileName": "Ready",
                 "metric_of_interest": "P99",
-                "not": {"jobConfig.name": "garbage-collection"},
+                "not": {"jobName.keyword": "garbage-collection"},
             },
             [
                 FakeHit({"_source": {"uuid": "uuid1", "field1": "value1",

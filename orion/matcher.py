@@ -221,7 +221,7 @@ class Matcher:
             filter=[
                 Q("terms", **{self.uuid_field+".keyword": uuids}),
                 Q("match", metricName="jobSummary"),
-                ~Q("match", **{"jobConfig.name": "garbage-collection"}),
+                ~Q("match", **{"jobName.keyword": "garbage-collection"}),
             ],
         )
         search = (
