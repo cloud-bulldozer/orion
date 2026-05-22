@@ -21,7 +21,7 @@ tests:
         quantileName: Ready
         metric_of_interest: P99
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
 
       - name: apiserverCPU
         metricName.keyword: containerCPU
@@ -68,7 +68,7 @@ tests:
         quantileName: Ready
         metric_of_interest: P99
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
 
       - name: apiserverCPU
         metricName.keyword: containerCPU

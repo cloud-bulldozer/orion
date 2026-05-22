@@ -19,7 +19,7 @@ tests:
         metric_of_interest: value
         quantileName: Ready
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: OLM]"
       - name: OCP-84093_controllerMemory_GCP
@@ -27,7 +27,7 @@ tests:
         metric_of_interest: value
         quantileName: Ready
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: OLM]"
       - name: OCP-84094_catalogdCPU_GCP
@@ -35,7 +35,7 @@ tests:
         metric_of_interest: value
         labels.namespace.keyword: openshift-catalogd
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         agg:
           agg_type: avg
         labels:
@@ -45,7 +45,7 @@ tests:
         metric_of_interest: value
         labels.namespace.keyword: openshift-operator-controller
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         agg:
           agg_type: avg
         labels:
@@ -55,7 +55,7 @@ tests:
         metric_of_interest: value
         quantileName: Ready
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: OLM]"
       - name: OCP-84097_controllerDisk_GCP
@@ -63,7 +63,7 @@ tests:
         metric_of_interest: value
         quantileName: Ready
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: OLM]"
       - name: OCP-84098_catalogd_5xx_error_GCP
@@ -71,7 +71,7 @@ tests:
         metric_of_interest: value
         quantileName: Ready
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: OLM]"
       - name: OCP-84099_catalog_error_rate_GCP
@@ -79,7 +79,7 @@ tests:
         metric_of_interest: value
         quantileName: Ready
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: OLM]"
       - name: OCP-84100_extension_error_rate_GCP
@@ -87,7 +87,7 @@ tests:
         metric_of_interest: value
         quantileName: Ready
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: OLM]"
       - name: OCP-84101_catalogd_workqueue_latency_GCP
@@ -95,7 +95,7 @@ tests:
         metric_of_interest: value
         quantileName: Ready
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: OLM]"
       - name: OCP-84102_extension_workqueue_latency_GCP
@@ -103,7 +103,7 @@ tests:
         metric_of_interest: value
         quantileName: Ready
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: OLM]"
       - name: OCP-84103_controller_reconcile_p99_GCP
@@ -111,7 +111,7 @@ tests:
         metric_of_interest: value
         quantileName: Ready
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: OLM]"
       - name: OCP-84104_catalogd_reconcile_p99_GCP
@@ -119,6 +119,6 @@ tests:
         metric_of_interest: value
         quantileName: Ready
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: OLM]"

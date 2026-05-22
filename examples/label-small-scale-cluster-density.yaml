@@ -22,7 +22,7 @@ tests:
         quantileName: Ready
         metric_of_interest: P99
         not:
-          jobConfig.name: "garbage-collection"
+          jobName.keyword: "garbage-collection"
         labels:
           - "[Jira: PodLatency]"
       - name: apiserverCPU

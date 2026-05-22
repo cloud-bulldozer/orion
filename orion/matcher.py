@@ -221,7 +221,7 @@ class Matcher:
             filter=[
                 Q("terms", **{self.uuid_field+".keyword": uuids}),
                 Q("match", metricName="jobSummary"),
-                ~Q("match", **{"jobConfig.name": "garbage-collection"}),
+                ~Q("match", **{"jobName.keyword": "garbage-collection"}),
             ],
         )
         search = (
@@ -353,8 +353,13 @@ class Matcher:
         uuid_bucket.metric("time", "avg", field=timestamp_field)
          # Handle percentile aggregations differently from single-value aggregations
         if agg_type == "percentiles":
-            # Get the percentile values from config (default to [50, 95, 99])
-            percents = metrics["agg"].get("percents", [50, 95, 99])
+            percents = metrics["agg"].get("percents")
+            if not percents:
+                self.logger.error(
+                    "Metric '%s' has agg_type 'percentiles' but no 'percents' list — skipping",
+                    metrics["name"]
+                )
+                return []
             uuid_bucket.metric(
                 metric_of_interest, "percentiles",
                 field=metrics["metric_of_interest"],
@@ -419,6 +424,218 @@ class Matcher:
                 data[value_key] = uuid.get(metric_of_interest).value
             res.append(data)
         return res
+
+    def get_agg_metrics_batch(
+        self, uuids: List[str],
+        metrics_list: List[Dict[str, Any]],
+        timestamp_field: str = "timestamp"
+    ) -> Dict[str, List[Dict[Any, Any]]]:
+        """Execute a single ES query with multiple sub-aggregations, one per metric.
+
+        Args:
+            uuids: List of UUIDs to filter on.
+            metrics_list: List of metric config dicts, each with 'name',
+                          'metric_of_interest', 'agg' block, and filter fields.
+            timestamp_field: Timestamp field name.
+
+        Returns:
+            Dict mapping metric name -> list of parsed result dicts.
+        """
+        if not metrics_list:
+            return {}
+
+        query = Q(
+            "bool",
+            must=[Q("terms", **{self.uuid_field + ".keyword": uuids})],
+        )
+        search = (
+            Search(using=self.es, index=self.index)
+            .query(query)
+            .extra(size=0)
+            .sort({timestamp_field: {"order": "desc"}})
+        )
+
+        uuid_bucket = search.aggs.bucket(
+            "uuid", "terms", field=self.uuid_field + ".keyword", size=len(uuids)
+        )
+        uuid_bucket.metric("time", "avg", field=timestamp_field)
+
+        for metric in metrics_list:
+            agg_name = metric["name"]
+            agg_type = metric["agg"]["agg_type"]
+            field = metric["metric_of_interest"]
+
+            metric_filter_clauses = [
+                Q("match", **{k: v})
+                for k, v in metric.items()
+                if k not in ("name", "metric_of_interest", "not", "agg", "type")
+            ]
+            not_clauses = [
+                ~Q("match", **{k: v})
+                for k, v in metric.get("not", {}).items()
+            ]
+            metric_filter = Q("bool", must=metric_filter_clauses + not_clauses)
+            filtered_bucket = uuid_bucket.bucket(agg_name, "filter", metric_filter)
+
+            if agg_type == "percentiles":
+                percents = metric["agg"].get("percents")
+                if not percents:
+                    self.logger.error(
+                        "Metric '%s' has agg_type 'percentiles' but no 'percents' list — skipping",
+                        metric["name"]
+                    )
+                    continue
+                filtered_bucket.metric(field, "percentiles", field=field, percents=percents)
+            elif agg_type == "count":
+                filtered_bucket.metric(field, "value_count", field=field)
+            else:
+                filtered_bucket.metric(field, agg_type, field=field)
+
+        self.logger.info(
+            "Executing batched aggregation query for %d metrics against index %s",
+            len(metrics_list), self.index,
+        )
+        self.logger.debug("Executing query \r\n%s", search.to_dict())
+
+        result = search.execute()
+        return self.parse_batch_agg_results(result, metrics_list, timestamp_field)
+
+    def parse_batch_agg_results(
+        self, data, metrics_list: List[Dict[str, Any]],
+        timestamp_field: str = "timestamp"
+    ) -> Dict[str, List[Dict[Any, Any]]]:
+        """Parse a batched multi-aggregation response into per-metric result lists.
+
+        Args:
+            data: ES response object.
+            metrics_list: Same list passed to get_agg_metrics_batch.
+            timestamp_field: Timestamp field name.
+
+        Returns:
+            Dict mapping metric name -> list of result dicts (one per UUID).
+        """
+        results = {m["name"]: [] for m in metrics_list}
+
+        if "aggregations" not in data:
+            return results
+
+        uuid_buckets = data.aggregations.uuid.buckets
+
+        for uuid_bucket in uuid_buckets:
+            uuid_val = uuid_bucket.key
+            ts_val = uuid_bucket.time.value_as_string
+
+            for metric in metrics_list:
+                agg_name = metric["name"]
+                agg_type = metric["agg"]["agg_type"]
+                field = metric["metric_of_interest"]
+                filtered = uuid_bucket[agg_name]
+
+                if filtered.doc_count == 0:
+                    continue
+
+                row = {
+                    self.uuid_field: uuid_val,
+                    timestamp_field: ts_val,
+                }
+
+                if agg_type == "percentiles":
+                    pct_dict = filtered[field].to_dict().get("values", {})
+                    if "target_percentile" in metric.get("agg", {}):
+                        target = str(float(metric["agg"]["target_percentile"]))
+                        col = f"{field}_{agg_type}_{target}"
+                        row[col] = pct_dict.get(target)
+                    else:
+                        for k, v in pct_dict.items():
+                            row[f"{field}_{agg_type}_{k}"] = v
+                else:
+                    col = f"{field}_{agg_type}"
+                    row[col] = filtered[field].value
+
+                results[agg_name].append(row)
+
+        return results
+
+    def get_results_batch(
+        self,
+        uuids: List[str],
+        metrics_list: List[Dict[str, Any]],
+        timestamp_field: str = "timestamp"
+    ) -> Dict[str, List[Dict[Any, Any]]]:
+        """Fetch multiple standard metrics in a single ES query using an OR filter.
+
+        Args:
+            uuids: List of UUIDs.
+            metrics_list: List of metric config dicts.
+            timestamp_field: Timestamp field name.
+
+        Returns:
+            Dict mapping metric name -> list of hit _source dicts.
+        """
+        if not metrics_list:
+            return {}
+
+        excluded_keys = {"name", "metric_of_interest", "not", "type"}
+        filter_fields_by_metric = []
+        should_clauses = []
+        for metric in metrics_list:
+            match_fields = {
+                k: v for k, v in metric.items()
+                if k not in excluded_keys
+            }
+            filter_clauses = [Q("match", **{k: v}) for k, v in match_fields.items()]
+            not_clauses = [
+                ~Q("match", **{k: v})
+                for k, v in metric.get("not", {}).items()
+            ]
+            should_clauses.append(Q("bool", must=filter_clauses + not_clauses))
+            not_fields = metric.get("not", {})
+            filter_fields_by_metric.append((metric["name"], match_fields, not_fields))
+
+        query = Q(
+            "bool",
+            must=[Q("terms", **{self.uuid_field + ".keyword": uuids})],
+            should=should_clauses,
+            minimum_should_match=1,
+        )
+        search = (
+            Search(using=self.es, index=self.index)
+            .query(query)
+            .extra(size=self.search_size)
+            .sort({timestamp_field: {"order": "desc"}})
+        )
+
+        self.logger.info(
+            "Executing batched standard query for %d metrics against index %s",
+            len(metrics_list), self.index,
+        )
+
+        all_hits = self.query_index(search, return_all=True)
+        runs = [hit.to_dict()["_source"] for hit in all_hits]
+
+        results = {m["name"]: [] for m in metrics_list}
+        for doc in runs:
+            matched = False
+            for metric_name, match_fields, not_fields in filter_fields_by_metric:
+                matches_positive = all(
+                    doc.get(k.replace(".keyword", "")) == v
+                    for k, v in match_fields.items()
+                )
+                matches_negative = all(
+                    doc.get(k.replace(".keyword", "")) != v
+                    for k, v in not_fields.items()
+                )
+                if matches_positive and matches_negative:
+                    results[metric_name].append(doc)
+                    matched = True
+                    break
+            if not matched:
+                self.logger.debug(
+                    "Document did not match any metric filter: %s",
+                    doc.get(self.uuid_field)
+                )
+
+        return results
 
     def convert_to_df(
         self, data: Dict[Any, Any],

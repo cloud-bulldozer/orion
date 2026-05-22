@@ -85,6 +85,13 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
         for metric in test["metrics"]:
             metric_name = test["name"] + ":" + metric["name"]
             if "agg" in metric:
+                if metric["agg"]["agg_type"] == "percentiles" and "percents" not in metric["agg"]:
+                    logger.error(
+                        "Metric '%s' in test '%s' has agg_type 'percentiles' "
+                        "but no 'percents' list defined in the agg block",
+                        metric["name"], test["name"]
+                    )
+                    sys.exit(1)
                 metric_name = f"{metric_name}:{metric['agg']['agg_type']}"
             elif "metric_of_interest" in metric:
                 metric_name = f"{metric_name}:{metric['metric_of_interest']}"
