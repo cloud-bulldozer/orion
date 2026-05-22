@@ -1,5 +1,6 @@
 """
-Interactive wizard for Orion CLI.
+Interactive wizard for Orion CLI. This is a BETA feature and 
+is subjected to change based on user feedback.
 
 Guides the user through all configuration options conversationally,
 then returns a kwargs dict that is drop-in compatible with the Click
