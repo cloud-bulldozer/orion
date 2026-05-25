@@ -273,8 +273,8 @@ UUID field ensures that a set of test results from the same job are grouped toge
 ### Direction
 Controls which types of changes to detect:
 
-- `direction: 1` - Show only positive changes (increases)
-- `direction: 0` - Show both positive and negative changes (default)
+- `direction: 1` - Show only positive changes (increases) **(default)**
+- `direction: 0` - Show both positive and negative changes
 - `direction: -1` - Show only negative changes (decreases)
 
 ### Threshold
@@ -386,7 +386,7 @@ Orion supports aggregating metric values across multiple data points per test ru
   agg:
     agg_type: avg  # Calculate average CPU usage
   threshold: 10
-  direction: 1
+  direction: 1  # Optional: detect only increases (this is the default)
 ```
 
 **Count:**
