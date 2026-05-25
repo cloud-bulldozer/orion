@@ -50,7 +50,7 @@ orion --cmr
 ```
 
 - If more than 1 previous run is found, values are averaged together
-- Use with `direction: 0` in config when using `-o json` to see percent differences
+- Use with `direction: 0` in config when using `-o json` to see percent differences for both increases and decreases (default is `direction: 1` which only shows increases)
 
 ### Anomaly Detection
 Detects anomalies in your data:

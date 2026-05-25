@@ -65,7 +65,7 @@ class Utils:
 
         for metric in metrics:
             labels = metric.pop("labels", None)
-            direction = int(metric.pop("direction", 0))
+            direction = int(metric.pop("direction", 1))
             threshold = abs(int(metric.pop("threshold", test_threshold)))
             ts = metric.pop("timestamp", global_timestamp_field)
             correlation = metric.pop("correlation", "")

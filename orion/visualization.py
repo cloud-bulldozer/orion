@@ -74,7 +74,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
         cps = viz_data.change_points_by_metric.get(m, [])
         if not cps:
             return (2, m)  # stable → bottom
-        direction = viz_data.metrics_config[m].get("direction", 0)
+        direction = viz_data.metrics_config[m].get("direction", 1)
         has_regression = any(
             _classify_changepoint(cp.stats, direction)[1] for cp in cps
         )
@@ -180,7 +180,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                 continue
             cp_value = values.iloc[idx]
 
-            direction = metric_config.get("direction", 0)
+            direction = metric_config.get("direction", 1)
             pct_change, is_regression = _classify_changepoint(
                 cp.stats, direction
             )
@@ -334,7 +334,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
         for cp in cps:
             direction = viz_data.metrics_config.get(
                 metric_name, {}
-            ).get("direction", 0)
+            ).get("direction", 1)
             pct, is_regression = _classify_changepoint(
                 cp.stats, direction
             )
