@@ -217,18 +217,37 @@ class Utils:
                         self.logger.error("Couldn't get metric %s: %s", name, e2)
                         self._restore_meta(metric, meta)
 
+    @staticmethod
+    def _get_agg_columns(data: List[Dict[str, Any]], aggregation_value: str, aggregation_type: str) -> List[str]:
+        """Get aggregation column names from data, handling percentile multi-column case."""
+        if aggregation_type == "percentiles":
+            prefix = f"{aggregation_value}_{aggregation_type}_"
+            return [k for k in data[0].keys() if k.startswith(prefix)] if data else []
+        return [f"{aggregation_value}_{aggregation_type}"]
+
+    @staticmethod
+    def _build_agg_rename_map(
+        agg_columns: List[str], metric_name: str, aggregation_value: str, aggregation_type: str
+    ) -> Tuple[Dict[str, str], List[str]]:
+        """Build rename mapping from raw agg columns to display names."""
+        rename_map = {}
+        names = []
+        prefix = f"{aggregation_value}_{aggregation_type}_"
+        for col in agg_columns:
+            if aggregation_type == "percentiles":
+                new_name = f"{metric_name}_{aggregation_type}_{col[len(prefix):]}"
+            else:
+                new_name = f"{metric_name}_{aggregation_type}"
+            rename_map[col] = new_name
+            names.append(new_name)
+        return rename_map, names
+
     def _build_agg_dataframe(self, data, metric, match, timestamp_field="timestamp"):
         """Build a DataFrame from pre-fetched aggregation data."""
         aggregation_value = metric["metric_of_interest"]
         aggregation_type = metric["agg"]["agg_type"]
 
-        if aggregation_type == "percentiles":
-            percentile_prefix = f"{aggregation_value}_{aggregation_type}_"
-            agg_columns = [k for k in data[0].keys()
-                           if k.startswith(percentile_prefix)] if data else []
-        else:
-            agg_columns = [f"{aggregation_value}_{aggregation_type}"]
-
+        agg_columns = self._get_agg_columns(data, aggregation_value, aggregation_type)
         all_columns = [self.uuid_field, timestamp_field] + agg_columns
 
         if not data:
@@ -243,17 +262,9 @@ class Utils:
 
         aggregated_df = aggregated_df.drop_duplicates(subset=[self.uuid_field], keep="first")
 
-        rename_map = {}
-        names = []
-        for col in agg_columns:
-            if aggregation_type == "percentiles":
-                suffix = col[len(f"{aggregation_value}_{aggregation_type}_"):]
-                new_name = f"{metric['name']}_{aggregation_type}_{suffix}"
-            else:
-                new_name = f"{metric['name']}_{aggregation_type}"
-            rename_map[col] = new_name
-            names.append(new_name)
-
+        rename_map, names = self._build_agg_rename_map(
+            agg_columns, metric["name"], aggregation_value, aggregation_type
+        )
         aggregated_df = aggregated_df.rename(columns=rename_map)
         if timestamp_field != "timestamp":
             aggregated_df = aggregated_df.rename(columns={timestamp_field: "timestamp"})
@@ -282,16 +293,11 @@ class Utils:
         aggregation_value = metric["metric_of_interest"]
         aggregation_type = metric["agg"]["agg_type"]
 
+        agg_columns = self._get_agg_columns(
+            aggregated_metric_data, aggregation_value, aggregation_type
+        )
         if aggregation_type == "percentiles":
-            percentile_prefix = f"{aggregation_value}_{aggregation_type}_"
-            if aggregated_metric_data:
-                agg_columns = [k for k in aggregated_metric_data[0].keys()
-                               if k.startswith(percentile_prefix)]
-            else:
-                agg_columns = []
             self.logger.info("percentile columns found: %s", agg_columns)
-        else:
-            agg_columns = [f"{aggregation_value}_{aggregation_type}"]
 
         all_columns = [self.uuid_field, timestamp_field] + agg_columns
 
@@ -306,17 +312,9 @@ class Utils:
 
         aggregated_df = aggregated_df.drop_duplicates(subset=[self.uuid_field], keep="first")
 
-        rename_map = {}
-        aggregated_metric_names = []
-        for col in agg_columns:
-            if aggregation_type == "percentiles":
-                suffix = col[len(f"{aggregation_value}_{aggregation_type}_"):]
-                new_name = f"{metric['name']}_{aggregation_type}_{suffix}"
-            else:
-                new_name = f"{metric['name']}_{aggregation_type}"
-            rename_map[col] = new_name
-            aggregated_metric_names.append(new_name)
-
+        rename_map, aggregated_metric_names = self._build_agg_rename_map(
+            agg_columns, metric["name"], aggregation_value, aggregation_type
+        )
         aggregated_df = aggregated_df.rename(columns=rename_map)
         if timestamp_field != "timestamp":
             aggregated_df = aggregated_df.rename(columns={timestamp_field: "timestamp"})
