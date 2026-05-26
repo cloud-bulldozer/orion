@@ -552,7 +552,7 @@ When executing Orion with the flag `--pr-analysis` a pull request analysis will 
 
 1. An analysis section of all payload results (No PR data)
 2. An analysis section from all PR runs
-3. A comparison table summarizing AVG, changepoint values, and PR results per metric
+3. A comparison table summarizing Baseline AVG, changepoint values, and PR results per metric
 
 ### Multiple PR comparison
 
@@ -580,7 +580,7 @@ The legacy single `pull_number` in `--input-vars` continues to work for backward
 The comparison table provides a quick way to compare the PR results against the payload baseline and any detected changepoints. The columns are:
 
 - **Metric** — the metric name
-- **AVG** — the average of all periodic (payload) runs
+- **Baseline AVG** — the average of periodic (payload) runs **before** the first detected changepoint. When no changepoints are detected, it averages all runs. This excludes post-regression data so the baseline is not skewed by regressed values
 - **Pre-CP#N** — the metric value from the run **immediately before** the Nth changepoint (shown for every metric, as a baseline reference)
 - **CP#N** — the metric value **at** the Nth changepoint, but only for metrics where a regression was detected at that point. Metrics without a changepoint there show `-`
 - **PR#number** — the value from the latest run of each PR. When multiple PRs are analyzed, each gets its own column
@@ -590,7 +590,7 @@ The comparison table provides a quick way to compare the PR results against the 
 #### Single PR example
 
 ```text
-Metric                        AVG    Pre-CP#1    CP#1    PR#2394
+Metric                 Baseline AVG    Pre-CP#1    CP#1    PR#2394
 --------------------------  ------  ----------  ------  --------
 podReadyLatency_P99          15000       15000   18000     15000
 apiserverCPU_avg            4.776       4.834       -    4.7328
@@ -603,7 +603,7 @@ Here `ovnCPU_avg` jumped from `1.5497` (Pre-CP#1) to `2.4297` (CP#1), and the PR
 #### Multiple PR example
 
 ```text
-Metric                        AVG    Pre-CP#1    CP#1    PR#2394    PR#2387
+Metric                 Baseline AVG    Pre-CP#1    CP#1    PR#2394    PR#2387
 --------------------------  ------  ----------  ------  --------  --------
 podReadyLatency_P99          15000       15000   18000     15000     18000
 apiserverCPU_avg            4.776       4.834       -    4.7328    4.7328
@@ -674,7 +674,7 @@ time                       uuid                                  ocpVersion     
 
 payload-cluster-density-v2 | Comparison
 =======================================
-Metric                        AVG    Pre-CP#1    CP#1    PR#2394
+Metric                 Baseline AVG    Pre-CP#1    CP#1    PR#2394
 --------------------------  ------  ----------  ------  --------
 podReadyLatency_P99          15000       15000   15000     15000
 apiserverCPU_avg            4.776       4.834       -    4.7328

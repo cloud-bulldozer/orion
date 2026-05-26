@@ -404,6 +404,76 @@ class TestMultiPrText:
         assert "PR" not in table
         assert "cpu" in table
 
+    def test_comparison_table_header_says_baseline_avg(self):
+        periodic = _make_analysis_result()
+
+        table = _format_comparison_table(periodic, [])
+
+        assert "Baseline AVG" in table
+
+    def test_baseline_avg_excludes_post_changepoint(self):
+        df = pd.DataFrame({
+            "uuid": ["u1", "u2", "u3", "u4"],
+            "ocpVersion": ["4.17", "4.18", "4.19", "4.20"],
+            "timestamp": [1700000000, 1700100000, 1700200000, 1700300000],
+            "buildUrl": ["http://b1", "http://b2", "http://b3", "http://b4"],
+            "prs": [None, None, None, None],
+            "cpu": [10.0, 20.0, 100.0, 200.0],
+        })
+        series = Series(
+            test_name="test",
+            branch=None,
+            time=list(df["timestamp"]),
+            metrics={"cpu": Metric(1, 1.0)},
+            data={"cpu": df["cpu"]},
+            attributes={
+                "uuid": df["uuid"],
+                "ocpVersion": df["ocpVersion"],
+            },
+        )
+        # Changepoint at index 2 — baseline avg should be (10+20)/2 = 15
+        data = AnalysisResult(
+            test_name="test-workload",
+            test={"name": "test-workload", "uuid_field": "uuid",
+                  "version_field": "ocpVersion",
+                  "metadata": {"benchmark.keyword": "test"}},
+            dataframe=df,
+            metrics_config={
+                "cpu": {"direction": 1, "labels": [], "threshold": 0,
+                        "correlation": "", "context": None},
+            },
+            change_points_by_metric={"cpu": [make_change_point("cpu", index=2)]},
+            series=series,
+            regression_flag=True,
+            avg_values=pd.Series({"cpu": 15.0}),
+            collapse=False,
+            display_fields=[],
+            column_group_size=5,
+            uuid_field="uuid",
+            version_field="ocpVersion",
+            sippy_pr_search=False,
+            github_repos=[],
+        )
+
+        table = _format_comparison_table(data, [])
+
+        lines = table.strip().split("\n")
+        cpu_line = [l for l in lines if "cpu" in l][0]
+        assert "15" in cpu_line
+        assert "100" not in cpu_line or "Pre-CP" in table
+
+    def test_baseline_avg_uses_all_when_no_changepoints(self):
+        data = _make_analysis_result(
+            change_points={"cpu": []}, regression_flag=False
+        )
+        # _make_analysis_result sets avg_values to 20.0 (mean of 10,20,30)
+
+        table = _format_comparison_table(data, [])
+
+        lines = table.strip().split("\n")
+        cpu_line = [l for l in lines if "cpu" in l][0]
+        assert "20" in cpu_line
+
 
 class TestMultiPrJUnit:
     def test_junit_pr_output_has_multiple_pull_elements(self, tmp_path):

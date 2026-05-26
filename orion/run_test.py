@@ -364,7 +364,17 @@ def analyze(test, kwargs, is_pull=False):
         )
 
     series = final_algorithm.setup_series()
-    avg_values = final_algorithm.dataframe[metrics].mean()
+
+    min_cp_index = None
+    for cps in change_points_by_metric.values():
+        for cp in cps:
+            if min_cp_index is None or cp.index < min_cp_index:
+                min_cp_index = cp.index
+
+    if min_cp_index is not None and min_cp_index > 0:
+        avg_values = final_algorithm.dataframe[metrics].iloc[:min_cp_index].mean()
+    else:
+        avg_values = final_algorithm.dataframe[metrics].mean()
 
     analysis_result = AnalysisResult(
         test_name=test["name"],

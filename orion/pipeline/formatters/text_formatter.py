@@ -192,7 +192,7 @@ def _format_comparison_table(
 
     df = periodic.dataframe
 
-    headers = ["Metric", "AVG"]
+    headers = ["Metric", "Baseline AVG"]
     for cp_num, idx in enumerate(cp_indices, start=1):
         headers.append(f"Pre-CP#{cp_num}")
         headers.append(f"CP#{cp_num}")
