@@ -1,0 +1,55 @@
+name: CI PR integration tests
+on:
+  pull_request_target:
+    branches:
+      - master
+      - main
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for CI tests to succeed
+        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7
+        timeout-minutes: 30
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        with:
+          script: |
+            const sha = process.env.HEAD_SHA;
+            const interval = 30000;
+            const maxWait = 25 * 60 * 1000;
+            const start = Date.now();
+
+            while (Date.now() - start < maxWait) {
+              const runs = await github.rest.actions.listWorkflowRunsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                head_sha: sha,
+              });
+
+              const ciRun = runs.data.workflow_runs.find(r => r.name === 'CI tests');
+
+              if (ciRun) {
+                if (ciRun.conclusion === 'success') {
+                  console.log('CI tests passed');
+                  return;
+                } else if (ciRun.conclusion) {
+                  core.setFailed(`CI tests concluded with: ${ciRun.conclusion}`);
+                  return;
+                }
+              }
+
+              console.log('Waiting for CI tests to complete...');
+              await new Promise(r => setTimeout(r, interval));
+            }
+
+            core.setFailed('Timeout waiting for CI tests');
+
+  integration_tests:
+    needs: gate
+    uses: ./.github/workflows/tests.yaml
+    with:
+      checkout_ref: ${{ github.event.pull_request.base.ref }}
+      checkout_repo: ${{ github.event.pull_request.base.repo.full_name }}
+    secrets: inherit
