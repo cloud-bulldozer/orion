@@ -13,7 +13,10 @@ from orion.pipeline.formatters import FormatterFactory
 from orion.pipeline.formatters.base import BaseFormatter
 from orion.pipeline.formatters.json_formatter import JsonFormatter
 from orion.pipeline.formatters.junit_formatter import JUnitFormatter
-from orion.pipeline.formatters.text_formatter import TextFormatter
+from orion.pipeline.formatters.text_formatter import (
+    TextFormatter,
+    _format_comparison_table,
+)
 from orion.tests.conftest import make_change_point
 
 
@@ -81,7 +84,7 @@ class TestExtractRegressionData:
                 pass
             def print_output(self, test_name, formatted, data, pr=0, is_pull=False):
                 pass
-            def print_and_save_pr(self, periodic, pull, save_output_path, pr=0):
+            def print_and_save_pr(self, periodic, pulls, save_output_path):
                 pass
 
         formatter = ConcreteFormatter()
@@ -110,7 +113,7 @@ class TestExtractRegressionData:
                 pass
             def print_output(self, test_name, formatted, data, pr=0, is_pull=False):
                 pass
-            def print_and_save_pr(self, periodic, pull, save_output_path, pr=0):
+            def print_and_save_pr(self, periodic, pulls, save_output_path):
                 pass
 
         formatter = ConcreteFormatter()
@@ -130,7 +133,7 @@ class TestExtractRegressionData:
                 pass
             def print_output(self, test_name, formatted, data, pr=0, is_pull=False):
                 pass
-            def print_and_save_pr(self, periodic, pull, save_output_path, pr=0):
+            def print_and_save_pr(self, periodic, pulls, save_output_path):
                 pass
 
         formatter = ConcreteFormatter()
@@ -252,6 +255,194 @@ class TestJUnitFormatter:
         avg = formatter.format_average(data)
 
         assert isinstance(avg, ET.Element)
+
+
+def _make_pull_analysis(cpu_values, test_name="test-workload"):
+    """Build a minimal pull AnalysisResult with given cpu values."""
+    n = len(cpu_values)
+    df = pd.DataFrame({
+        "uuid": [f"pr-uuid-{i}" for i in range(n)],
+        "ocpVersion": ["4.18"] * n,
+        "timestamp": [1700000000 + i * 100000 for i in range(n)],
+        "buildUrl": [f"http://pr-b{i}" for i in range(n)],
+        "prs": [None] * n,
+        "cpu": cpu_values,
+    })
+    series = Series(
+        test_name="test",
+        branch=None,
+        time=list(df["timestamp"]),
+        metrics={"cpu": Metric(1, 1.0)},
+        data={"cpu": df["cpu"]},
+        attributes={
+            "uuid": df["uuid"],
+            "ocpVersion": df["ocpVersion"],
+        },
+    )
+    return AnalysisResult(
+        test_name=test_name,
+        test={"name": test_name, "uuid_field": "uuid",
+              "version_field": "ocpVersion", "metadata": {}},
+        dataframe=df,
+        metrics_config={
+            "cpu": {"direction": 1, "labels": ["infra"], "threshold": 0,
+                    "correlation": "", "context": None},
+        },
+        change_points_by_metric={"cpu": []},
+        series=series,
+        regression_flag=False,
+        avg_values=pd.Series({"cpu": sum(cpu_values) / len(cpu_values)}),
+        collapse=False,
+        display_fields=[],
+        column_group_size=5,
+        uuid_field="uuid",
+        version_field="ocpVersion",
+        sippy_pr_search=False,
+        github_repos=[],
+    )
+
+
+class TestMultiPrJson:
+    def test_json_pr_output_has_pulls_list(self, tmp_path):
+        periodic = _make_analysis_result()
+        pull_a = _make_pull_analysis([15.0, 25.0])
+        pull_b = _make_pull_analysis([12.0, 22.0])
+        pulls = [(1111, pull_a), (2222, pull_b)]
+
+        formatter = JsonFormatter()
+        save_path = str(tmp_path / "output.json")
+        formatter.print_and_save_pr(periodic, pulls, save_path)
+
+        with open(str(tmp_path / "output_test-workload.json"),
+                  encoding="utf-8") as f:
+            result = json.loads(f.read())
+
+        assert "pulls" in result
+        assert isinstance(result["pulls"], list)
+        assert len(result["pulls"]) == 2
+        assert result["pulls"][0]["pr"] == 1111
+        assert result["pulls"][1]["pr"] == 2222
+        assert isinstance(result["pulls"][0]["data"], list)
+        assert isinstance(result["pulls"][1]["data"], list)
+
+    def test_json_pr_output_with_none_pull(self, tmp_path):
+        periodic = _make_analysis_result()
+        pull_a = _make_pull_analysis([15.0])
+        pulls = [(1111, pull_a), (2222, None)]
+
+        formatter = JsonFormatter()
+        save_path = str(tmp_path / "output.json")
+        formatter.print_and_save_pr(periodic, pulls, save_path)
+
+        with open(str(tmp_path / "output_test-workload.json"),
+                  encoding="utf-8") as f:
+            result = json.loads(f.read())
+
+        assert len(result["pulls"]) == 2
+        assert result["pulls"][1]["pr"] == 2222
+        assert result["pulls"][1]["data"] == []
+
+    def test_json_single_pr_backward_compat(self, tmp_path):
+        periodic = _make_analysis_result()
+        pull = _make_pull_analysis([18.0, 28.0])
+        pulls = [(3333, pull)]
+
+        formatter = JsonFormatter()
+        save_path = str(tmp_path / "output.json")
+        formatter.print_and_save_pr(periodic, pulls, save_path)
+
+        with open(str(tmp_path / "output_test-workload.json"),
+                  encoding="utf-8") as f:
+            result = json.loads(f.read())
+
+        assert len(result["pulls"]) == 1
+        assert result["pulls"][0]["pr"] == 3333
+        assert "periodic" in result
+        assert "periodic_avg" in result
+
+
+class TestMultiPrText:
+    def test_comparison_table_has_multiple_pr_columns(self):
+        periodic = _make_analysis_result()
+        pull_a = _make_pull_analysis([15.0, 25.0])
+        pull_b = _make_pull_analysis([12.0, 22.0])
+        pulls = [(1111, pull_a), (2222, pull_b)]
+
+        table = _format_comparison_table(periodic, pulls)
+
+        assert "PR#1111" in table
+        assert "PR#2222" in table
+        assert "cpu" in table
+
+    def test_comparison_table_single_pr(self):
+        periodic = _make_analysis_result()
+        pull = _make_pull_analysis([18.0])
+        pulls = [(5555, pull)]
+
+        table = _format_comparison_table(periodic, pulls)
+
+        assert "PR#5555" in table
+
+    def test_comparison_table_with_none_pull(self):
+        periodic = _make_analysis_result()
+        pull_a = _make_pull_analysis([15.0])
+        pulls = [(1111, pull_a), (2222, None)]
+
+        table = _format_comparison_table(periodic, pulls)
+
+        assert "PR#1111" in table
+        assert "PR#2222" in table
+        lines = table.strip().split("\n")
+        data_line = [l for l in lines if "cpu" in l][0]
+        assert "-" in data_line
+
+    def test_comparison_table_empty_pulls_list(self):
+        periodic = _make_analysis_result()
+
+        table = _format_comparison_table(periodic, [])
+
+        assert "PR" not in table
+        assert "cpu" in table
+
+
+class TestMultiPrJUnit:
+    def test_junit_pr_output_has_multiple_pull_elements(self, tmp_path):
+        periodic = _make_analysis_result()
+        pull_a = _make_pull_analysis([15.0, 25.0])
+        pull_b = _make_pull_analysis([12.0, 22.0])
+        pulls = [(1111, pull_a), (2222, pull_b)]
+
+        formatter = JUnitFormatter()
+        save_path = str(tmp_path / "output.xml")
+        formatter.print_and_save_pr(periodic, pulls, save_path)
+
+        with open(str(tmp_path / "output_test-workload.xml"),
+                  encoding="utf-8") as f:
+            tree = ET.parse(f)
+
+        root = tree.getroot()
+        pull_elements = root.findall(".//pull")
+        assert len(pull_elements) == 2
+        assert pull_elements[0].get("pr") == "1111"
+        assert pull_elements[1].get("pr") == "2222"
+
+    def test_junit_pr_output_skips_none_pulls(self, tmp_path):
+        periodic = _make_analysis_result()
+        pull_a = _make_pull_analysis([15.0])
+        pulls = [(1111, pull_a), (2222, None)]
+
+        formatter = JUnitFormatter()
+        save_path = str(tmp_path / "output.xml")
+        formatter.print_and_save_pr(periodic, pulls, save_path)
+
+        with open(str(tmp_path / "output_test-workload.xml"),
+                  encoding="utf-8") as f:
+            tree = ET.parse(f)
+
+        root = tree.getroot()
+        pull_elements = root.findall(".//pull")
+        assert len(pull_elements) == 1
+        assert pull_elements[0].get("pr") == "1111"
 
 
 class TestFormatterFactory:

@@ -4,7 +4,7 @@ run test
 import sys
 import copy
 import concurrent.futures
-from typing import Any, Dict, NamedTuple, Tuple
+from typing import Any, Dict, List, NamedTuple, Tuple
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
 from orion.algorithms import AlgorithmFactory
@@ -20,7 +20,7 @@ class TestResults(NamedTuple):
     __test__ = False
     analyses: list
     regression_flag: bool
-    pr: int
+    prs: list
     viz_data: list
 
 
@@ -44,65 +44,84 @@ def get_algorithm_type(kwargs):
     return algorithm_name
 
 # pylint: disable=too-many-locals
-def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
+def run(**kwargs: dict[str, Any]) -> Tuple[
+    TestResults, TestResults, Dict[int, List]
+]:
     """Run tests and return raw analysis results.
 
-    Returns two TestResults: (standard_results, pull_request_results).
+    Returns (standard_results, pull_request_results, analyses_by_pr).
+    analyses_by_pr maps PR number -> list of AnalysisResult for that PR.
     """
     config = kwargs["config"]
     pr_analysis = kwargs["pr_analysis"]
+    pull_numbers = kwargs.get("pull_numbers", [])
 
     logger = SingletonLogger.get_logger("Orion")
     analyses = []
-    analyses_pull = []
+    analyses_pull = {}
     regression_flag = False
     regression_flag_pull = False
     all_viz_data = []
     all_viz_data_pull = []
-    pr = 0
 
     for test in config["tests"]:
         if "metadata" in test:
             if pr_analysis:
+                prs_to_analyze = pull_numbers or [
+                    int(test["metadata"].get("pullNumber", 0))
+                ]
+                max_workers = len(prs_to_analyze) + 1
                 with concurrent.futures.ThreadPoolExecutor(
-                    max_workers=2
+                    max_workers=max_workers
                 ) as executor:
                     logger.info("Executing tasks in parallel...")
-                    logger.info("Ensuring jobType is set to pull")
-                    test["metadata"]["jobType"] = "pull"
-                    futures_pull = executor.submit(
-                        analyze, test, kwargs, True
-                    )
-                    pr = int(test["metadata"]["pullNumber"])
+
                     test_periodic = copy.deepcopy(test)
                     test_periodic["metadata"]["jobType"] = "periodic"
                     test_periodic["metadata"]["pullNumber"] = 0
                     test_periodic["metadata"]["organization"] = ""
                     test_periodic["metadata"]["repository"] = ""
-                    futures_periodic = executor.submit(
+                    future_periodic = executor.submit(
                         analyze, test_periodic, kwargs, False
                     )
-                    concurrent.futures.wait(
-                        [futures_pull, futures_periodic]
+
+                    pull_futures = {}
+                    for pr_num in prs_to_analyze:
+                        logger.info(
+                            "Submitting pull analysis for PR#%d", pr_num
+                        )
+                        test_pull = copy.deepcopy(test)
+                        test_pull["metadata"]["jobType"] = "pull"
+                        test_pull["metadata"]["pullNumber"] = pr_num
+                        pull_futures[pr_num] = executor.submit(
+                            analyze, test_pull, kwargs, True
+                        )
+
+                    all_futures = [future_periodic] + list(
+                        pull_futures.values()
                     )
-                    pull_result_tuple = futures_pull.result()
-                    periodic_result_tuple = futures_periodic.result()
+                    concurrent.futures.wait(all_futures)
 
-                    pull_analysis, pull_viz = pull_result_tuple
-                    periodic_analysis, periodic_viz = periodic_result_tuple
-
-                    if pull_analysis is not None:
-                        analyses_pull.append(pull_analysis)
-                        if pull_analysis.regression_flag:
-                            regression_flag_pull = True
+                    periodic_analysis, periodic_viz = (
+                        future_periodic.result()
+                    )
                     if periodic_analysis is not None:
                         analyses.append(periodic_analysis)
                         if periodic_analysis.regression_flag:
                             regression_flag = True
-                    if pull_viz is not None:
-                        all_viz_data_pull.append(pull_viz)
                     if periodic_viz is not None:
                         all_viz_data.append(periodic_viz)
+
+                    for pr_num, future in pull_futures.items():
+                        pull_analysis, pull_viz = future.result()
+                        if pull_analysis is not None:
+                            analyses_pull.setdefault(
+                                pr_num, []
+                            ).append(pull_analysis)
+                            if pull_analysis.regression_flag:
+                                regression_flag_pull = True
+                        if pull_viz is not None:
+                            all_viz_data_pull.append(pull_viz)
             else:
                 result_tuple = analyze(test, kwargs)
                 analysis, viz_data = result_tuple
@@ -113,19 +132,23 @@ def run(**kwargs: dict[str, Any]) -> Tuple[TestResults, TestResults]:
                 if viz_data is not None:
                     all_viz_data.append(viz_data)
 
+    flat_pull_analyses = [
+        a for pr_analyses in analyses_pull.values()
+        for a in pr_analyses
+    ]
     results_pull = TestResults(
-        analyses=analyses_pull,
+        analyses=flat_pull_analyses,
         regression_flag=regression_flag_pull,
-        pr=pr,
+        prs=list(analyses_pull.keys()),
         viz_data=all_viz_data_pull,
     )
     results = TestResults(
         analyses=analyses,
         regression_flag=regression_flag,
-        pr=0,
+        prs=[],
         viz_data=all_viz_data,
     )
-    return results, results_pull
+    return results, results_pull, analyses_pull
 
 
 def get_start_timestamp(kwargs: Dict[str, Any], test: Dict[str, Any], is_pull: bool) -> str:

@@ -16,7 +16,7 @@ from orion.logger import SingletonLogger
 from orion.run_test import run
 from orion.pipeline.formatters import FormatterFactory
 from orion import constants as cnsts
-from orion.config import load_config, auto_detect_ack_file_with_vars
+from orion.config import load_config, auto_detect_ack_file_with_vars, collect_pull_numbers
 from orion.visualization import generate_test_html
 from orion.reporting.standalone import load_json_files, generate_report
 from orion.reporting.summary import print_regression_summary
@@ -501,6 +501,7 @@ def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvi
 @click.option("--input-vars", type=Dictionary(), default="{}", help='Arbitrary input variables to use in the config template, for example: {"version": "4.18"}')
 @click.option("--display", type=List(), default=["buildUrl"], help="Add metadata field as a column in the output (e.g. ocpVirt, upstreamJob)")
 @click.option("--pr-analysis", is_flag=True, help="Analyze PRs for regressions", default=False)
+@click.option("--pull-number", type=int, multiple=True, help="PR number(s) to analyze (repeatable, e.g. --pull-number 1234 --pull-number 5678)")
 @click.option("--viz", is_flag=True, default=False, help="Generate interactive HTML visualizations alongside output")
 @click.option(
     "--report",
@@ -591,16 +592,24 @@ def main(**kwargs):
         missing_vars = []
         if "jobtype" not in input_vars:
             missing_vars.append("jobtype")
-        if "pull_number" not in input_vars:
-            missing_vars.append("pull_number")
         if "organization" not in input_vars:
             missing_vars.append("organization")
         if "repository" not in input_vars:
             missing_vars.append("repository")
+
+        pull_numbers = collect_pull_numbers(kwargs, input_vars)
+        if not pull_numbers:
+            missing_vars.append("pull_number (via --pull-number, "
+                                "--input-vars pull_number, or pull_numbers)")
         if missing_vars:
-            logger.error("Missing required input variables: %s", ", ".join(missing_vars))
+            logger.error(
+                "Missing required input variables: %s",
+                ", ".join(missing_vars),
+            )
             sys.exit(1)
-    results, results_pull = run(**kwargs)
+        kwargs["pull_numbers"] = pull_numbers
+        logger.info("PR analysis for pull numbers: %s", pull_numbers)
+    results, results_pull, analyses_by_pr = run(**kwargs)
     is_pull = bool(results_pull.analyses)
 
     # Auto-create JIRA issues for regressions if enabled
@@ -644,16 +653,20 @@ def main(**kwargs):
         sys.exit(0)
 
     if is_pull:
-        pull_analyses_by_test = {
-            a.test_name: a for a in results_pull.analyses
-        }
         for analysis in results.analyses:
-            pull_analysis = pull_analyses_by_test.get(analysis.test_name)
+            test_name = analysis.test_name
+            pulls = []
+            for pr_num in results_pull.prs:
+                pr_analyses = analyses_by_pr.get(pr_num, [])
+                pull_analysis = next(
+                    (a for a in pr_analyses if a.test_name == test_name),
+                    None,
+                )
+                pulls.append((pr_num, pull_analysis))
             formatter.print_and_save_pr(
                 analysis,
-                pull_analysis,
+                pulls,
                 kwargs["save_output_path"],
-                pr=results_pull.pr,
             )
 
             if analysis.regression_flag:

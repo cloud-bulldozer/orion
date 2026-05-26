@@ -548,11 +548,34 @@ orion --config performance-config.yaml --hunter-analyze --ack known-issues.yaml
 ```
 
 ## Running from a pull request
-When executing Orion with the flag `--pr-analysis` a pull request analysis will executed and the output for it will contain three sections
+When executing Orion with the flag `--pr-analysis` a pull request analysis will be executed and the output for it will contain three sections
 
 1. An analysis section of all payload results (No PR data)
 2. An analysis section from all PR runs
 3. A comparison table summarizing AVG, changepoint values, and PR results per metric
+
+### Multiple PR comparison
+
+Orion supports analyzing multiple pull requests in a single run. Each PR is analyzed independently against the periodic baseline, and all results appear side-by-side in the comparison table. This is useful for comparing the performance impact of different PRs.
+
+There are three ways to specify multiple PRs (they can be combined — duplicates are automatically removed):
+
+```bash
+# Repeatable CLI flag
+orion --pr-analysis --pull-number 1234 --pull-number 5678 --config config.yaml --hunter-analyze
+
+# Comma-separated string in --input-vars
+orion --pr-analysis --input-vars='{"pull_number": "1234,5678", ...}' --config config.yaml --hunter-analyze
+
+# JSON array in --input-vars
+orion --pr-analysis --input-vars='{"pull_numbers": [1234, 5678], ...}' --config config.yaml --hunter-analyze
+```
+
+The legacy single `pull_number` in `--input-vars` continues to work for backward compatibility.
+
+> **Note:** Pull number `0` is reserved internally for periodic runs and is always filtered out.
+
+### Comparison table
 
 The comparison table provides a quick way to compare the PR results against the payload baseline and any detected changepoints. The columns are:
 
@@ -560,11 +583,11 @@ The comparison table provides a quick way to compare the PR results against the 
 - **AVG** — the average of all periodic (payload) runs
 - **Pre-CP#N** — the metric value from the run **immediately before** the Nth changepoint (shown for every metric, as a baseline reference)
 - **CP#N** — the metric value **at** the Nth changepoint, but only for metrics where a regression was detected at that point. Metrics without a changepoint there show `-`
-- **PR#number** — the value from the latest PR run
+- **PR#number** — the value from the latest run of each PR. When multiple PRs are analyzed, each gets its own column
 
 **How to read CP columns:** Changepoints are numbered in chronological order (`CP#1` is the earliest detected, `CP#2` the next, etc.). Each changepoint represents a moment in the payload history where a statistically significant shift was detected. To spot a regression, compare `Pre-CP#N` (the value just before the shift) with `CP#N` (the value at the shift). If `CP#N` shows `-`, that metric was stable at that point — only metrics that actually changed will have a value.
 
-For example, in the table below, `CP#1` corresponds to the 6th payload run (index 5). Only `podReadyLatency_P99` and `ovnCPU_avg` had changepoints detected there — so they show values, while the rest show `-`:
+#### Single PR example
 
 ```text
 Metric                        AVG    Pre-CP#1    CP#1    PR#2394
@@ -577,18 +600,18 @@ etcdCPU_avg                 3.4659      3.4602      -    3.4675
 
 Here `ovnCPU_avg` jumped from `1.5497` (Pre-CP#1) to `2.4297` (CP#1), and the PR value `1.7267` is consistent with the pre-changepoint level — so the PR is addressing this regression.
 
-On the other hand, you could have this:
+#### Multiple PR example
 
 ```text
-Metric                        AVG    Pre-CP#1    CP#1    PR#2387
---------------------------  ------  ----------  ------  --------
-podReadyLatency_P99          15000       15000   18000     18000
-apiserverCPU_avg            4.776       4.834       -    4.7328
-ovnCPU_avg                  1.4801      1.5497  2.4297    2.7267
-etcdCPU_avg                 3.4659      3.4602      -    3.4675
+Metric                        AVG    Pre-CP#1    CP#1    PR#2394    PR#2387
+--------------------------  ------  ----------  ------  --------  --------
+podReadyLatency_P99          15000       15000   18000     15000     18000
+apiserverCPU_avg            4.776       4.834       -    4.7328    4.7328
+ovnCPU_avg                  1.4801      1.5497  2.4297    1.7267    2.7267
+etcdCPU_avg                 3.4659      3.4602      -    3.4675    3.4675
 ```
 
-Here `ovnCPU_avg` jumped from `1.5497` (Pre-CP#1) to `2.4297` (CP#1), and the PR value `2.7267` is consistent with the changepoint level — so the PR is probably the culprit of the regression.
+Here you can compare two PRs at a glance: PR#2394 shows `ovnCPU_avg` at `1.7267` (close to the pre-changepoint baseline), while PR#2387 shows `2.7267` (worse than the changepoint) — suggesting PR#2387 may be the culprit.
 
 | The only section that can trigger a failure in the job is the one in section one, the payload data, and it is not related to the changes in the PR.
 
@@ -597,15 +620,41 @@ Here `ovnCPU_avg` jumped from `1.5497` (Pre-CP#1) to `2.4297` (CP#1), and the PR
 To achieve this the following input_vars should be provided
 
 - "jobtype"
-- "pull_number"
 - "organization"
 - "repository"
 
-### Input Example
+And at least one pull number via `--pull-number` flag or `pull_number`/`pull_numbers` in `--input-vars`.
 
-`--input-vars='{"jobtype": "pull","pull_number": "2790", "organization": "openshift", "repository": "test"}'`
+### Input Examples
+
+Single PR (legacy format):
+```bash
+orion --pr-analysis --input-vars='{"jobtype": "pull", "pull_number": "2790", "organization": "openshift", "repository": "test"}' --config config.yaml --hunter-analyze
+```
+
+Multiple PRs:
+```bash
+orion --pr-analysis --pull-number 2394 --pull-number 2387 --input-vars='{"jobtype": "pull", "organization": "openshift", "repository": "test"}' --config config.yaml --hunter-analyze
+```
 
 Add `--viz` to this workflow to generate interactive HTML visualizations for each analyzed dataset alongside the standard PR report output.
+
+### JSON output format
+
+When using `-o json` with `--pr-analysis`, the output structure is:
+
+```json
+{
+  "periodic": [ ... ],
+  "periodic_avg": { ... },
+  "pulls": [
+    { "pr": 2394, "data": [ ... ] },
+    { "pr": 2387, "data": [ ... ] }
+  ]
+}
+```
+
+Each entry in `pulls` contains the PR number and its full analysis data.
 
 ### Example
 ```

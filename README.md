@@ -51,7 +51,8 @@ etc.
 - **Regression Detection**: Identify performance regressions using advanced statistical methods
 - **Multiple Algorithms**: Support for Hunter, CMR, and anomaly detection
 - **Flexible Configuration**: YAML-based configuration with extensive customization options
-- **Multiple Output Formats**: JSON, CSV, and JUnit XML output support
+- **Multiple Output Formats**: JSON, text, and JUnit XML output support
+- **Multi-PR Comparison**: Analyze multiple pull requests side-by-side against the periodic baseline
 - **JIRA Integration**: Track and auto-create regression acknowledgments in JIRA
 
 ### JIRA Integration

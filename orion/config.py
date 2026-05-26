@@ -381,3 +381,30 @@ def merge_lists(metrics: List[Any], inherited_metrics: List[Any]) -> List[Any]:
 
     logger.debug(f"merged metrics: {merged}")
     return merged
+
+
+def collect_pull_numbers(kwargs: dict, input_vars: dict) -> list:
+    """Collect and deduplicate pull numbers from CLI flags and input-vars.
+
+    Zero is filtered out — pullNumber 0 means "periodic" internally.
+    """
+    numbers = set()
+    for num in kwargs.get("pull_number", ()):
+        if num:
+            numbers.add(int(num))
+    for key in ("pull_numbers", "pull_number"):
+        if key not in input_vars:
+            continue
+        val = input_vars[key]
+        if isinstance(val, list):
+            for v in val:
+                if int(v) != 0:
+                    numbers.add(int(v))
+        elif isinstance(val, str):
+            for part in val.split(","):
+                part = part.strip()
+                if part and int(part) != 0:
+                    numbers.add(int(part))
+        elif val and int(val) != 0:
+            numbers.add(int(val))
+    return sorted(numbers)
