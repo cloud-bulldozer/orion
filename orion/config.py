@@ -383,28 +383,52 @@ def merge_lists(metrics: List[Any], inherited_metrics: List[Any]) -> List[Any]:
     return merged
 
 
+def _parse_pull_number(token) -> int:
+    """Validate and convert a single pull number token.
+
+    Raises:
+        ValueError: if the token is not a positive integer.
+    """
+    try:
+        num = int(token)
+    except (ValueError, TypeError) as exc:
+        raise ValueError(f"invalid pull number: '{token}'") from exc
+    if num < 0:
+        raise ValueError(f"invalid pull number: '{token}'")
+    return num
+
+
 def collect_pull_numbers(kwargs: dict, input_vars: dict) -> list:
     """Collect and deduplicate pull numbers from CLI flags and input-vars.
 
     Zero is filtered out — pullNumber 0 means "periodic" internally.
+
+    Raises:
+        ValueError: if any token is non-numeric or negative.
     """
     numbers = set()
     for num in kwargs.get("pull_number", ()):
-        if num:
-            numbers.add(int(num))
+        parsed = _parse_pull_number(num)
+        if parsed > 0:
+            numbers.add(parsed)
     for key in ("pull_numbers", "pull_number"):
         if key not in input_vars:
             continue
         val = input_vars[key]
         if isinstance(val, list):
             for v in val:
-                if int(v) != 0:
-                    numbers.add(int(v))
+                parsed = _parse_pull_number(v)
+                if parsed > 0:
+                    numbers.add(parsed)
         elif isinstance(val, str):
             for part in val.split(","):
                 part = part.strip()
-                if part and int(part) != 0:
-                    numbers.add(int(part))
-        elif val and int(val) != 0:
-            numbers.add(int(val))
+                if part:
+                    parsed = _parse_pull_number(part)
+                    if parsed > 0:
+                        numbers.add(parsed)
+        else:
+            parsed = _parse_pull_number(val)
+            if parsed > 0:
+                numbers.add(parsed)
     return sorted(numbers)

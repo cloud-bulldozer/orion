@@ -139,7 +139,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[
     results_pull = TestResults(
         analyses=flat_pull_analyses,
         regression_flag=regression_flag_pull,
-        prs=list(analyses_pull.keys()),
+        prs=pull_numbers,
         viz_data=all_viz_data_pull,
     )
     results = TestResults(

@@ -393,7 +393,7 @@ class TestMultiPrText:
         assert "PR#1111" in table
         assert "PR#2222" in table
         lines = table.strip().split("\n")
-        data_line = [l for l in lines if "cpu" in l][0]
+        data_line = [line for line in lines if "cpu" in line][0]
         assert "-" in data_line
 
     def test_comparison_table_empty_pulls_list(self):
@@ -458,7 +458,7 @@ class TestMultiPrText:
         table = _format_comparison_table(data, [])
 
         lines = table.strip().split("\n")
-        cpu_line = [l for l in lines if "cpu" in l][0]
+        cpu_line = [line for line in lines if "cpu" in line][0]
         assert "15" in cpu_line
         assert "100" not in cpu_line or "Pre-CP" in table
 
@@ -471,7 +471,7 @@ class TestMultiPrText:
         table = _format_comparison_table(data, [])
 
         lines = table.strip().split("\n")
-        cpu_line = [l for l in lines if "cpu" in l][0]
+        cpu_line = [line for line in lines if "cpu" in line][0]
         assert "20" in cpu_line
 
 

@@ -114,8 +114,9 @@ class TextFormatter(BaseFormatter):
         for pr_num, pull in pulls:
             if pull:
                 formatted_pull = self.format(pull)
+                save_name = f"{pull.test_name}_pr_{pr_num}"
                 self.save(
-                    pull.test_name,
+                    save_name,
                     formatted_pull[pull.test_name],
                     save_output_path,
                 )

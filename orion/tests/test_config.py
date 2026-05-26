@@ -179,3 +179,23 @@ class TestCollectPullNumbers:
     def test_ignores_zero_integer_input_var(self):
         result = collect_pull_numbers({}, {"pull_number": 0})
         assert result == []
+
+    def test_rejects_non_numeric_string(self):
+        with pytest.raises(ValueError, match="invalid pull number"):
+            collect_pull_numbers({}, {"pull_number": "abc"})
+
+    def test_rejects_non_numeric_csv_token(self):
+        with pytest.raises(ValueError, match="invalid pull number"):
+            collect_pull_numbers({}, {"pull_number": "123,abc"})
+
+    def test_rejects_negative_number(self):
+        with pytest.raises(ValueError, match="invalid pull number"):
+            collect_pull_numbers({}, {"pull_number": -1})
+
+    def test_rejects_negative_in_csv(self):
+        with pytest.raises(ValueError, match="invalid pull number"):
+            collect_pull_numbers({}, {"pull_number": "-2,3"})
+
+    def test_rejects_negative_in_list(self):
+        with pytest.raises(ValueError, match="invalid pull number"):
+            collect_pull_numbers({}, {"pull_numbers": [100, -5]})

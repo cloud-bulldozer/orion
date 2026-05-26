@@ -597,7 +597,11 @@ def main(**kwargs):
         if "repository" not in input_vars:
             missing_vars.append("repository")
 
-        pull_numbers = collect_pull_numbers(kwargs, input_vars)
+        try:
+            pull_numbers = collect_pull_numbers(kwargs, input_vars)
+        except ValueError as exc:
+            logger.error("Invalid pull number: %s", exc)
+            sys.exit(1)
         if not pull_numbers:
             missing_vars.append("pull_number (via --pull-number, "
                                 "--input-vars pull_number, or pull_numbers)")
