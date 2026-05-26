@@ -132,7 +132,7 @@ def format_jira_description(regression: dict, metric_name: str, pct_change: floa
     # If orion is running in Prow, add the current job build URL to the JIRA issue description
     if os.getenv("PROW_JOB_ID") and os.getenv("JOB_NAME") and os.getenv("BUILD_ID"):
         prow_base_url=f"https://prow.ci.openshift.org/view/gs/origin-ci-test/logs/{os.getenv('JOB_NAME')}/{os.getenv('BUILD_ID')}"
-        desc += f"*Jira created from job build:* [View Build|{prow_base_url}]\n"
+        desc += f"*Created by job:* [{os.getenv('JOB_NAME')}|{prow_base_url}]\n"
     desc += "\n"
 
     # Primary metric for this issue
