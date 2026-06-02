@@ -84,18 +84,20 @@ class Utils:
                 std_metrics.append(metric)
 
         if agg_metrics:
-            self._process_agg_batch(
-                uuids, agg_metrics, match, meta_by_name,
-                dataframe_list, metrics_config, global_timestamp_field,
-                metadata_columns
-            )
+            for ts_field, group in self._group_by_timestamp(agg_metrics, meta_by_name):
+                self._process_agg_batch(
+                    uuids, group, match, meta_by_name,
+                    dataframe_list, metrics_config, ts_field,
+                    metadata_columns
+                )
 
         if std_metrics:
-            self._process_std_batch(
-                uuids, std_metrics, match, meta_by_name,
-                dataframe_list, metrics_config, global_timestamp_field,
-                metadata_columns
-            )
+            for ts_field, group in self._group_by_timestamp(std_metrics, meta_by_name):
+                self._process_std_batch(
+                    uuids, group, match, meta_by_name,
+                    dataframe_list, metrics_config, ts_field,
+                    metadata_columns
+                )
 
         return dataframe_list, metrics_config, metadata_columns
 
@@ -107,6 +109,15 @@ class Utils:
         metric["timestamp"] = meta["timestamp"]
         metric["correlation"] = meta["correlation"]
         metric["context"] = meta["context"]
+
+    @staticmethod
+    def _group_by_timestamp(metrics, meta_by_name):
+        """Group metrics by their timestamp field for correct batch queries."""
+        groups = {}
+        for metric in metrics:
+            ts = meta_by_name[metric["name"]]["timestamp"]
+            groups.setdefault(ts, []).append(metric)
+        return groups.items()
 
     def _register_columns(self, col_names, metric, meta, metrics_config, metadata_columns):
         """Route column names to metrics_config or metadata_columns based on type."""
