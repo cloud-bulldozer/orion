@@ -15,6 +15,7 @@ setup(
     py_modules=['main', 'version'],
     install_requires=[
         'click==8.1.7',
+        'questionary>=2.0.0',
         'setuptools_scm>=6.2',
         "apache-otava @ \
         git+https://github.com/apache/otava.git@3b3d59a787ea03749e972c3509241114b861c99e",
@@ -25,7 +26,7 @@ setup(
         'PyYAML==6.0.1',
         "numpy==2.2.0; python_version=='3.14'",
         'scikit-learn==1.5.0',
-        "pandas==2.3.1; python_version=='3.14'",
+        "pandas==2.3.3; python_version=='3.14'",
         'tabulate==0.9.0',
         'plotly>=5.18.0',
         'jira>=3.5.0',
