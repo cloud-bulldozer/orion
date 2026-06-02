@@ -135,3 +135,4 @@ tests:
         metric_of_interest: infra_metrics.avg_cpu_usage_router_pods
         agg:
           agg_type: avg
+
