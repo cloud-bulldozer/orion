@@ -29,6 +29,7 @@ tests:
           config.requestRate: 5000
         agg:
           agg_type: avg
+        direction: -1
 
       - name: http_avg_cpu_usage_ingress_gateway_pods
         config.termination: http
@@ -52,6 +53,7 @@ tests:
           config.requestRate: 5000
         agg:
           agg_type: avg
+        direction: -1
 
       - name: edge_avg_cpu_usage_ingress_gateway_pods
         config.termination: edge

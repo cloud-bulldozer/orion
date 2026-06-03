@@ -34,12 +34,16 @@ tests:
         direction: -1
         agg:
           agg_type: avg
+        not:
+          config.http2: true
 
       - name: passthrough_p95_lat
         config.termination: passthrough
         metric_of_interest: p95_lat_us
         agg:
           agg_type: avg
+        not:
+          config.http2: true
 
       - name: http_avg_rps
         config.termination: http
@@ -61,12 +65,16 @@ tests:
         direction: -1
         agg:
           agg_type: avg
+        not:
+          config.http2: true
 
       - name: reencrypt_p95_lat
         config.termination: reencrypt
         metric_of_interest: p95_lat_us
         agg:
           agg_type: avg
+        not:
+          config.http2: true
 
       - name: edge_avg_rps
         config.termination: edge
@@ -82,8 +90,49 @@ tests:
         agg:
           agg_type: avg
 
+      # HTTP2 metrics for passthrough and reencrypt termination
+
+      - name: passthrough_http2_avg_rps
+        config.termination: passthrough
+        metric_of_interest: total_avg_rps
+        direction: -1
+        agg:
+          agg_type: avg
+        config.http2: true
+
+      - name: passthrough_http2_p95_lat
+        config.termination: passthrough
+        metric_of_interest: p95_lat_us
+        agg:
+          agg_type: avg
+        config.http2: true
+
+      - name: reencrypt_http2_avg_rps
+        config.termination: reencrypt
+        metric_of_interest: total_avg_rps
+        direction: -1
+        agg:
+          agg_type: avg
+        config.http2: true
+
+      - name: reencrypt_http2_p95_lat
+        config.termination: reencrypt
+        metric_of_interest: p95_lat_us
+        agg:
+          agg_type: avg
+        config.http2: true
+
+    # CPU usage metrics for router pods
+
       - name: http_avg_cpu_usage_router_pods
         config.termination: http
         metric_of_interest: infra_metrics.avg_cpu_usage_router_pods
         agg:
           agg_type: avg
+
+      - name: edge_avg_cpu_usage_router_pods
+        config.termination: edge
+        metric_of_interest: infra_metrics.avg_cpu_usage_router_pods
+        agg:
+          agg_type: avg
+
