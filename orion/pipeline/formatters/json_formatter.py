@@ -2,7 +2,7 @@
 
 import json
 import os
-from typing import Any, Optional
+from typing import Any, List, Optional, Tuple
 
 from orion.pipeline.analysis_result import AnalysisResult
 from orion.pipeline.formatters.base import BaseFormatter
@@ -102,21 +102,29 @@ class JsonFormatter(BaseFormatter):
                      is_pull: bool = False) -> None:
         print(formatted)
 
-    def print_and_save_pr(self, periodic: AnalysisResult,
-                          pull: Optional[AnalysisResult],
-                          save_output_path: str,
-                          pr: int = 0) -> None:
+    def print_and_save_pr(
+        self,
+        periodic: AnalysisResult,
+        pulls: List[Tuple[int, Optional[AnalysisResult]]],
+        save_output_path: str,
+    ) -> None:
         formatted_periodic = self.format(periodic)
         avg_formatted = self.format_average(periodic)
         results_json = {
             "periodic": json.loads(formatted_periodic[periodic.test_name]),
             "periodic_avg": json.loads(avg_formatted),
         }
-        if pull:
-            formatted_pull = self.format(pull)
-            results_json["pull"] = json.loads(
-                formatted_pull[pull.test_name]
-            )
+        pulls_data = []
+        for pr_num, pull in pulls:
+            if pull:
+                formatted_pull = self.format(pull)
+                pulls_data.append({
+                    "pr": pr_num,
+                    "data": json.loads(formatted_pull[pull.test_name]),
+                })
+            else:
+                pulls_data.append({"pr": pr_num, "data": []})
+        results_json["pulls"] = pulls_data
         combined = json.dumps(results_json, indent=2)
         print(combined)
         base = os.path.splitext(save_output_path)[0]

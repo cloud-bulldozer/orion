@@ -1,7 +1,7 @@
 """Base formatter ABC with shared regression data extraction."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any, List, Optional, Tuple
 
 from orion.pipeline.analysis_result import AnalysisResult
 from orion.github_client import GitHubClient
@@ -31,11 +31,13 @@ class BaseFormatter(ABC):
         """Print formatted output to stdout."""
 
     @abstractmethod
-    def print_and_save_pr(self, periodic: AnalysisResult,
-                          pull: Optional[AnalysisResult],
-                          save_output_path: str,
-                          pr: int = 0) -> None:
-        """Format, print, and save combined PR output (periodic + pull)."""
+    def print_and_save_pr(
+        self,
+        periodic: AnalysisResult,
+        pulls: List[Tuple[int, Optional[AnalysisResult]]],
+        save_output_path: str,
+    ) -> None:
+        """Format, print, and save combined PR output (periodic + pulls)."""
 
     def extract_regression_data(self, data: AnalysisResult) -> list:
         """Extract regression data from raw change points and dataframe."""

@@ -2,7 +2,7 @@
 
 import json
 import os
-from typing import Any, Optional
+from typing import Any, List, Optional, Tuple
 
 import pandas as pd
 from tabulate import tabulate
@@ -94,10 +94,12 @@ class TextFormatter(BaseFormatter):
             print("=" * len(text))
             print(formatted)
 
-    def print_and_save_pr(self, periodic: AnalysisResult,
-                          pull: Optional[AnalysisResult],
-                          save_output_path: str,
-                          pr: int = 0) -> None:
+    def print_and_save_pr(
+        self,
+        periodic: AnalysisResult,
+        pulls: List[Tuple[int, Optional[AnalysisResult]]],
+        save_output_path: str,
+    ) -> None:
         formatted_periodic = self.format(periodic)
         self.save(
             periodic.test_name,
@@ -109,21 +111,23 @@ class TextFormatter(BaseFormatter):
             formatted_periodic[periodic.test_name],
             periodic,
         )
-        if pull:
-            formatted_pull = self.format(pull)
-            self.save(
-                pull.test_name,
-                formatted_pull[pull.test_name],
-                save_output_path,
-            )
-            self.print_output(
-                pull.test_name,
-                formatted_pull[pull.test_name],
-                pull,
-                pr=pr,
-                is_pull=True,
-            )
-        comparison = _format_comparison_table(periodic, pull, pr)
+        for pr_num, pull in pulls:
+            if pull:
+                formatted_pull = self.format(pull)
+                save_name = f"{pull.test_name}_pr_{pr_num}"
+                self.save(
+                    save_name,
+                    formatted_pull[pull.test_name],
+                    save_output_path,
+                )
+                self.print_output(
+                    pull.test_name,
+                    formatted_pull[pull.test_name],
+                    pull,
+                    pr=pr_num,
+                    is_pull=True,
+                )
+        comparison = _format_comparison_table(periodic, pulls)
         if comparison:
             text = periodic.test_name + " | Comparison"
             print("\n" + text)
@@ -169,10 +173,9 @@ def tabulate_average_values(
 
 def _format_comparison_table(
     periodic: AnalysisResult,
-    pull: Optional[AnalysisResult],
-    pr: int = 0,
+    pulls: List[Tuple[int, Optional[AnalysisResult]]],
 ) -> str:
-    """Build a metric comparison table: AVG | pre-CP | CP | ... | PR value."""
+    """Build a metric comparison table: AVG | pre-CP | CP | ... | PR values."""
     metrics = list(periodic.avg_values.index)
     if not metrics:
         return ""
@@ -190,18 +193,19 @@ def _format_comparison_table(
 
     df = periodic.dataframe
 
-    headers = ["Metric", "AVG"]
+    headers = ["Metric", "Baseline AVG"]
     for cp_num, idx in enumerate(cp_indices, start=1):
         headers.append(f"Pre-CP#{cp_num}")
         headers.append(f"CP#{cp_num}")
-    if pull is not None:
-        pr_label = f"PR#{pr}" if pr else "PR"
+
+    pull_last_rows = []
+    for pr_num, pull in pulls:
+        pr_label = f"PR#{pr_num}" if pr_num else "PR"
         headers.append(pr_label)
-        pull_last_row = (
-            pull.dataframe.iloc[-1] if len(pull.dataframe) > 0 else None
-        )
-    else:
-        pull_last_row = None
+        if pull is not None and len(pull.dataframe) > 0:
+            pull_last_rows.append(pull.dataframe.iloc[-1])
+        else:
+            pull_last_rows.append(None)
 
     rows = []
     for metric in metrics:
@@ -213,10 +217,11 @@ def _format_comparison_table(
                 row.append(df.iloc[idx][metric] if idx < len(df) else "-")
             else:
                 row.append("-")
-        if pull_last_row is not None:
-            row.append(pull_last_row.get(metric, "-"))
-        elif pull is not None:
-            row.append("-")
+        for last_row in pull_last_rows:
+            if last_row is not None:
+                row.append(last_row.get(metric, "-"))
+            else:
+                row.append("-")
         rows.append(row)
 
     num_value_cols = len(headers) - 1

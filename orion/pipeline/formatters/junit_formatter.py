@@ -4,7 +4,7 @@ import json
 import os
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
-from typing import Any, Optional
+from typing import Any, List, Optional, Tuple
 
 from orion.pipeline.analysis_result import AnalysisResult
 from orion.pipeline.formatters.base import BaseFormatter
@@ -65,21 +65,25 @@ class JUnitFormatter(BaseFormatter):
         dom = xml.dom.minidom.parseString(xml_str)
         print(dom.toprettyxml())
 
-    def print_and_save_pr(self, periodic: AnalysisResult,
-                          pull: Optional[AnalysisResult],
-                          save_output_path: str,
-                          pr: int = 0) -> None:
+    def print_and_save_pr(
+        self,
+        periodic: AnalysisResult,
+        pulls: List[Tuple[int, Optional[AnalysisResult]]],
+        save_output_path: str,
+    ) -> None:
         formatted_periodic = self.format(periodic)
         avg_formatted = self.format_average(periodic)
         testsuites = ET.Element("testsuites")
         testsuites.append(formatted_periodic[periodic.test_name])
         avg_formatted.tag = "periodic_avg"
         testsuites.append(avg_formatted)
-        if pull:
-            formatted_pull = self.format(pull)
-            pull_el = formatted_pull[pull.test_name]
-            pull_el.tag = "pull"
-            testsuites.append(pull_el)
+        for pr_num, pull in pulls:
+            if pull:
+                formatted_pull = self.format(pull)
+                pull_el = formatted_pull[pull.test_name]
+                pull_el.tag = "pull"
+                pull_el.set("pr", str(pr_num))
+                testsuites.append(pull_el)
         xml_str = ET.tostring(
             testsuites, encoding="utf8", method="xml"
         ).decode()
