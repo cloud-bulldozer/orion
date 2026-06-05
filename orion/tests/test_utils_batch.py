@@ -59,9 +59,9 @@ def match_mock():
 # Sample data helpers
 # ---------------------------------------------------------------------------
 
-def _agg_metric(name, metric_of_interest="cpu", agg_type="avg"):
+def _agg_metric(name, metric_of_interest="cpu", agg_type="avg", timestamp=None):
     """Return a metric config dict with agg key."""
-    return {
+    m = {
         "name": name,
         "metricName": "containerCPU",
         "metric_of_interest": metric_of_interest,
@@ -72,11 +72,14 @@ def _agg_metric(name, metric_of_interest="cpu", agg_type="avg"):
         "context": 5,
         "agg": {"value": metric_of_interest, "agg_type": agg_type},
     }
+    if timestamp is not None:
+        m["timestamp"] = timestamp
+    return m
 
 
-def _std_metric(name, metric_of_interest="value"):
+def _std_metric(name, metric_of_interest="value", timestamp=None):
     """Return a standard metric config dict (no agg)."""
-    return {
+    m = {
         "name": name,
         "metricName": "podLatency",
         "metric_of_interest": metric_of_interest,
@@ -86,6 +89,9 @@ def _std_metric(name, metric_of_interest="value"):
         "correlation": "corr",
         "context": 3,
     }
+    if timestamp is not None:
+        m["timestamp"] = timestamp
+    return m
 
 
 def _agg_batch_data(metric_of_interest="cpu", agg_type="avg"):
@@ -621,3 +627,107 @@ class TestMetadataTypeMixed:
 
         assert len(meta_cols) == 0
         assert "cpuUsage_avg" in config
+
+
+# ---------------------------------------------------------------------------
+# Tests: custom timestamp field passed to batch methods (GH-409)
+# ---------------------------------------------------------------------------
+
+def _flexible_convert_to_df(data, columns=None, timestamp_field="timestamp"):
+    """convert_to_df mock that tolerates any timestamp column name."""
+    df = pd.json_normalize(data)
+    sort_col = timestamp_field if timestamp_field in df.columns else "timestamp"
+    df = df.sort_values(by=[sort_col])
+    if columns is not None:
+        df = pd.DataFrame(df, columns=columns)
+    return df
+
+
+class TestCustomTimestampBatch:
+
+    def test_agg_batch_uses_custom_timestamp_field(self, utils, match_mock):
+        """Batch agg query must use the per-metric timestamp, not the default."""
+        metric = _agg_metric("cpuMetric", timestamp="iso_timestamp")
+        metrics = [copy.deepcopy(metric)]
+
+        captured_ts = {}
+
+        def capture_ts(_uuids, _chunk, ts_field):
+            captured_ts["value"] = ts_field
+            return {"cpuMetric": _agg_batch_data()}
+
+        match_mock.get_agg_metrics_batch.side_effect = capture_ts
+        match_mock.convert_to_df.side_effect = _flexible_convert_to_df
+
+        df_list, _, _ = utils.get_metric_data(UUIDS, metrics, match_mock, test_threshold=0)
+
+        assert captured_ts["value"] == "iso_timestamp"
+        assert len(df_list) == 1
+
+    def test_std_batch_uses_custom_timestamp_field(self, utils, match_mock):
+        """Batch standard query must use the per-metric timestamp."""
+        metric = _std_metric("latMetric", timestamp="iso_timestamp")
+        metrics = [copy.deepcopy(metric)]
+
+        captured_ts = {}
+
+        def capture_ts(_uuids, _chunk, ts_field):
+            captured_ts["value"] = ts_field
+            return {"latMetric": _std_batch_data()}
+
+        match_mock.get_results_batch.side_effect = capture_ts
+        match_mock.convert_to_df.side_effect = _flexible_convert_to_df
+
+        df_list, _, _ = utils.get_metric_data(UUIDS, metrics, match_mock, test_threshold=0)
+
+        assert captured_ts["value"] == "iso_timestamp"
+        assert len(df_list) == 1
+
+    def test_mixed_timestamp_fields_separate_batch_calls(self, utils, match_mock):
+        """Metrics with different timestamps must be batched separately."""
+        m1 = _agg_metric("metricA", timestamp="iso_timestamp")
+        m2 = _agg_metric("metricB")  # uses default "timestamp"
+        metrics = [copy.deepcopy(m1), copy.deepcopy(m2)]
+
+        ts_fields_seen = []
+
+        def capture_ts(_uuids, chunk, ts_field):
+            ts_fields_seen.append(ts_field)
+            return {m["name"]: _agg_batch_data() for m in chunk}
+
+        match_mock.get_agg_metrics_batch.side_effect = capture_ts
+
+        match_mock.convert_to_df.side_effect = _flexible_convert_to_df
+
+        df_list, _, _ = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert match_mock.get_agg_metrics_batch.call_count == 2
+        assert set(ts_fields_seen) == {"iso_timestamp", "timestamp"}
+        assert len(df_list) == 2
+
+    def test_all_metrics_same_custom_timestamp_single_batch(self, utils, match_mock):
+        """All metrics sharing a custom timestamp should batch together."""
+        m1 = _agg_metric("metricA", timestamp="iso_timestamp")
+        m2 = _agg_metric("metricB", metric_of_interest="mem",
+                         agg_type="sum", timestamp="iso_timestamp")
+        metrics = [copy.deepcopy(m1), copy.deepcopy(m2)]
+
+        ts_fields_seen = []
+
+        def capture_ts(_uuids, chunk, ts_field):
+            ts_fields_seen.append(ts_field)
+            return {m["name"]: _agg_batch_data() for m in chunk}
+
+        match_mock.get_agg_metrics_batch.side_effect = capture_ts
+
+        match_mock.convert_to_df.side_effect = _flexible_convert_to_df
+
+        df_list, _, _ = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        assert match_mock.get_agg_metrics_batch.call_count == 1
+        assert ts_fields_seen == ["iso_timestamp"]
+        assert len(df_list) == 2
