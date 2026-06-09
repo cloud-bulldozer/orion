@@ -5,7 +5,7 @@ tests:
       clusterType: {{ clusterType }}
       masterNodesType: {{ masterNodesType }}
       masterNodesCount: {{ masterNodesCount }}
-      workerNodesType: {{ worker_nodes_type }}
+      workerNodesType: {{ workerNodesType }}
       workerNodesCount: {{ workerNodesCount }}
       benchmark.keyword: crd-scale
       wildcard:
