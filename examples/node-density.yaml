@@ -161,3 +161,4 @@ tests:
           agg_type: avg
         direction: 1
         threshold: 10
+
