@@ -10,7 +10,7 @@ tests:
       benchmark.keyword: olm
       fips: "{{ fips | default('false') }}"
       wildcard:
-        ocpVersion: "{{ ocpMajorVersion }}*"
+        ocpVersion: "{{ version }}*"
       not:
         stream: okd
     metrics:

@@ -10,8 +10,8 @@ tests:
       jobName.keyword: "{{ benchmark }}"
       metricName.keyword: jobSummary
       wildcard:
-        ocpVersion: "{{ ocpMajorVersion }}*"
-        ocpMajorVersion: "{{ ocpMajorVersion }}*"
+        ocpVersion: "{{ version }}*"
+        ocpMajorVersion: "{{ version }}*"
       sdnType: OVNKubernetes
       fips: "{{ fips | default('false') }}"
       not:

@@ -10,7 +10,7 @@ tests:
       infraNodesType: r5.8xlarge
       benchmark.keyword: cudn-density
       wildcard:
-        ocpVersion: "{{ ocpMajorVersion }}*"
+        ocpVersion: "{{ version }}*"
       networkType: OVNKubernetes
       jobType: "{{ jobtype | default('periodic') }}"
       pullNumber: "{{ pull_number | default(0) }}"
