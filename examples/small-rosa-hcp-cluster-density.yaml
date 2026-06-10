@@ -6,7 +6,7 @@ tests:
       workerNodesType: m6i.xlarge
       workerNodesCount: 24
       benchmark.keyword: cluster-density-v2
-      ocpVersion: "{{ version }}"
+      ocpVersion: "{{ ocpMajorVersion }}"
       networkType: OVNKubernetes
       jobType: "{{ jobtype | default('periodic') }}"
       pullNumber: "{{ pull_number | default(0) }}"

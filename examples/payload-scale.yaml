@@ -9,7 +9,7 @@ tests:
       workerNodesCount: 6
       benchmark.keyword: cluster-density-v2
       wildcard:
-        ocpVersion: "{{ version }}*"
+        ocpVersion: "{{ ocpMajorVersion }}*"
       networkType: OVNKubernetes
       fips: "{{ fips | default('false') }}"
       not:
@@ -59,7 +59,7 @@ tests:
       workerNodesCount: 6
       benchmark.keyword: node-density
       wildcard:
-        ocpVersion: "{{ version }}*"
+        ocpVersion: "{{ ocpMajorVersion }}*"
       networkType: OVNKubernetes
 
     metrics:
