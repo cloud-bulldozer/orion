@@ -48,7 +48,8 @@ class JiraAckProvider(AckProvider):
         email: Optional[str] = None,  # For Atlassian Cloud
         max_results: int = 1000,
         retry_attempts: int = 3,
-        retry_delay: int = 2
+        retry_delay: int = 2,
+        status: Optional[str] = None,
     ):
         """
         Initialize JIRA ACK provider.
@@ -73,6 +74,7 @@ class JiraAckProvider(AckProvider):
         self.jira_url = jira_url
         self.project = project
         self.component = component
+        self.status_filter = status
         self.config = JiraConfig(
             uuid_field=uuid_field,
             metric_field=metric_field,
@@ -220,6 +222,9 @@ class JiraAckProvider(AckProvider):
             if test_type:
                 jql_parts.append(f"labels = '{test_type}'")
 
+            if self.status_filter:
+                jql_parts.append(f'statusCategory = "{self.status_filter}"')
+
             jql = " AND ".join(jql_parts)
             self.logger.debug("JIRA JQL query: %s", jql)
 
@@ -227,7 +232,7 @@ class JiraAckProvider(AckProvider):
             issues = self.jira.search_issues(
                 jql,
                 maxResults=self.config.max_results,
-                fields="summary,description,labels,customfield_*"
+                fields="summary,description,labels,status,customfield_*"
             )
 
             self.logger.info(
@@ -235,9 +240,6 @@ class JiraAckProvider(AckProvider):
                 len(issues),
                 self.project
             )
-
-            if len(issues) > 0:
-                self.logger.debug("Sample issue keys: %s", [i.key for i in issues[:5]])
 
             # Parse issues into ACK entries
             acks = []

@@ -277,7 +277,6 @@ def _build_cli_command(params: dict) -> str:  # pylint: disable=too-many-branche
         "anomaly_detection": "--anomaly-detection",
         "filter": "--filter",
         "node_count": "--node-count",
-        "no_default_ack": "--no-default-ack",
         "sippy_pr_search": "--sippy-pr-search",
         "convert_tinyurl": "--convert-tinyurl",
         "collapse": "--collapse",
@@ -576,36 +575,20 @@ def _section_datasource(params: dict) -> None:
 def _section_ack(params: dict) -> None:
     _header("4 / 7  —  ACK / Acknowledgements")
 
-    use_default_ack = _ask(
-        questionary.confirm,
-        "Auto-load default ACK file (ack/all_ack.yaml)?",
-        default=True,
-        style=ORION_STYLE,
-    )
-    params["no_default_ack"] = not use_default_ack
     params["ack"] = ""
 
-    if params["no_default_ack"]:
-        # Manual ACKs are required when default auto-load is disabled.
+    if _ask(
+        questionary.confirm,
+        "Provide manual ACK file(s)?",
+        default=False,
+        style=ORION_STYLE,
+    ):
         params["ack"] = _ask(
             questionary.text,
-            "  ACK file path(s) (required; comma-separated for multiple):",
+            "  ACK file path(s) (comma-separated):",
             style=ORION_STYLE,
             validate=lambda v: len(v.strip()) > 0 or "Provide at least one ACK file path",
         ).strip()
-    else:
-        # Even with default ACK, allow adding extra manual ACK files.
-        if _ask(
-            questionary.confirm,
-            "  Add extra ACK files alongside the default?",
-            default=False,
-            style=ORION_STYLE,
-        ):
-            params["ack"] = _ask(
-                questionary.text,
-                "  Extra ACK file path(s) (comma-separated):",
-                style=ORION_STYLE,
-            ).strip()
 
 
 def _section_output(params: dict) -> None:

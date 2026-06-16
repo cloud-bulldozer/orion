@@ -19,7 +19,6 @@ class FileAckProvider(AckProvider):
     File-based acknowledgment provider.
 
     Loads acknowledgments from YAML files on the filesystem.
-    Supports the existing all_ack.yaml format.
     """
 
     def __init__(self, ack_file: str):
