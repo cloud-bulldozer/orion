@@ -575,6 +575,9 @@ orion --config config.yaml --jira-ack \
   --jira-url https://issues.example.com \
   --jira-project PERFSCALE \
   --jira-component CPT_ISSUES
+
+# Only treat resolved (Done/Closed) JIRA tickets as ACKs
+orion --config config.yaml --jira-ack --jira-status-filter Done
 ```
 
 **Auto-create JIRA issues for new regressions:**
@@ -610,6 +613,7 @@ export JIRA_TOKEN="your_api_token"
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--jira-ack` | Enable JIRA ACK provider | `false` |
+| `--jira-status-filter` | Filter JIRA ACKs by statusCategory (e.g., `Done`). Maps to JIRA's universal categories: "To Do", "In Progress", "Done". If empty, all issues are used. | `""` |
 | `--jira-auto-create` | Auto-create JIRA issues for new regressions | `false` |
 | `--jira-url` | JIRA instance URL (e.g., `https://issues.redhat.com`) | Required |
 | `--jira-project` | JIRA project key | `PERFSCALE` |
@@ -646,14 +650,15 @@ When `--jira-auto-create` is enabled, Orion creates rich JIRA issues that includ
 
 ### JIRA-only Mode
 
-Skip file-based ACKs entirely:
+Use JIRA as the sole ACK source:
 
 ```bash
-# Use JIRA exclusively (no file ACK auto-detection)
+# Use JIRA exclusively
 orion --config config.yaml --jira-ack
-```
 
-Without `--ack`, Orion won't auto-detect or load file-based acknowledgments.
+# Use JIRA exclusively, only resolved tickets suppress regressions
+orion --config config.yaml --jira-ack --jira-status-filter Done
+```
 
 ### Troubleshooting
 

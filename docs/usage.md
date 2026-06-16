@@ -321,10 +321,12 @@ Apply acknowledgments:
 orion --ack ack.yaml --hunter-analyze
 ```
 
-Orion automatically loads `ack/all_ack.yaml` when present (filtered by version and test type from your config). Use `--ack` to add extra acknowledgment files; they are merged with the auto-loaded file. To disable only automatic ACK loading (manual `--ack` files are still loaded):
+Use `--ack` to provide acknowledgment files manually.
 
+For JIRA-based acknowledgments, use `--jira-ack` with an optional status filter:
 ```bash
-orion --no-default-ack --hunter-analyze
+# Only treat resolved JIRA tickets as ACKs (statusCategory = "Done")
+orion --jira-ack --jira-status-filter Done --hunter-analyze
 ```
 
 **Benefits:**

@@ -439,7 +439,7 @@ def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvi
 @click.option("--jira-token", default="", envvar="JIRA_TOKEN", help="JIRA API token (Cloud) or personal access token (on-premise). Can be set via JIRA_TOKEN env var")
 @click.option("--jira-email", default="", envvar="JIRA_EMAIL", help="Email address for Atlassian Cloud authentication (required for *.atlassian.net). Can be set via JIRA_EMAIL env var")
 @click.option("--jira-auto-create", is_flag=True, default=False, help="Automatically create JIRA issues for detected regressions (requires --jira-ack)")
-@click.option("--jira-status-filter", default="", help="Only treat JIRA issues with this status as ACKs (e.g., 'Done'). If empty, all issues are used.")
+@click.option("--jira-status-filter", default="", help="Filter JIRA ACKs by statusCategory (e.g., 'Done'). Maps to JIRA's universal categories: 'To Do', 'In Progress', 'Done'. If empty, all issues are used.")
 @click.option(
     "--save-data-path", default="data.csv", help="Path to save the output file"
 )
