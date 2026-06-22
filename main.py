@@ -769,4 +769,3 @@ def main(**kwargs):
 
     if has_regression:
         sys.exit(2)
-
