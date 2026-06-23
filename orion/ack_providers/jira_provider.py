@@ -223,7 +223,12 @@ class JiraAckProvider(AckProvider):
                 jql_parts.append(f"labels = '{test_type}'")
 
             if self.status_filter:
-                jql_parts.append(f'statusCategory = "{self.status_filter}"')
+                statuses = [s.strip() for s in self.status_filter.split(",") if s.strip()]
+                if len(statuses) == 1:
+                    jql_parts.append(f'statusCategory = "{statuses[0]}"')
+                else:
+                    quoted = ", ".join(f'"{s}"' for s in statuses)
+                    jql_parts.append(f"statusCategory IN ({quoted})")
 
             jql = " AND ".join(jql_parts)
             self.logger.debug("JIRA JQL query: %s", jql)

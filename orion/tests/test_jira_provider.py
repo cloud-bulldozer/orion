@@ -85,6 +85,25 @@ class TestJiraStatusFilter:
         provider = self._make_provider(status=None)
         assert provider.status_filter is None
 
+    def test_comma_separated_status_filter_in_jql(self):
+        provider = self._make_provider(status="Done,In Progress")
+        provider.jira.search_issues = MagicMock(return_value=[])
+
+        provider.get_acks(version="4.22")
+
+        jql = provider.jira.search_issues.call_args[0][0]
+        assert 'statusCategory IN ("Done", "In Progress")' in jql
+
+    def test_single_status_uses_equals(self):
+        provider = self._make_provider(status="Done")
+        provider.jira.search_issues = MagicMock(return_value=[])
+
+        provider.get_acks(version="4.22")
+
+        jql = provider.jira.search_issues.call_args[0][0]
+        assert 'statusCategory = "Done"' in jql
+        assert "IN" not in jql
+
 
 class TestRemovedAutoDetectFunctions:
     """Verify that removed functions are no longer importable."""
