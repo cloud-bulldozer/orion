@@ -613,7 +613,7 @@ export JIRA_TOKEN="your_api_token"
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--jira-ack` | Enable JIRA ACK provider | `false` |
-| `--jira-status-filter` | Filter JIRA ACKs by statusCategory (e.g., `Done`). Maps to JIRA's universal categories: "To Do", "In Progress", "Done". If empty, all issues are used. | `""` |
+| `--jira-status-filter` | Filter JIRA ACKs by statusCategory (e.g., `Done` or `Done,In Progress`). Supports comma-separated values. Maps to JIRA's universal categories: "To Do", "In Progress", "Done". If empty, all issues are used. | `""` |
 | `--jira-auto-create` | Auto-create JIRA issues for new regressions | `false` |
 | `--jira-url` | JIRA instance URL (e.g., `https://issues.redhat.com`) | Required |
 | `--jira-project` | JIRA project key | `PERFSCALE` |
