@@ -618,11 +618,11 @@ class Matcher:
             matched = False
             for metric_name, match_fields, not_fields in filter_fields_by_metric:
                 matches_positive = all(
-                    doc.get(k.replace(".keyword", "")) == v
+                    self._get_nested(doc, k.replace(".keyword", "")) == v
                     for k, v in match_fields.items()
                 )
                 matches_negative = all(
-                    doc.get(k.replace(".keyword", "")) != v
+                    self._get_nested(doc, k.replace(".keyword", "")) != v
                     for k, v in not_fields.items()
                 )
                 if matches_positive and matches_negative:
@@ -670,6 +670,19 @@ class Matcher:
         if columns is not None:
             df = pd.DataFrame(df, columns=columns)
         df.to_csv(csv_file_path)
+
+    @staticmethod
+    def _get_nested(doc: dict, key: str):
+        """Retrieve a value from a nested dict using dot-notation key.
+
+        Falls back to flat key lookup so plain (non-nested) fields still work.
+        """
+        if "." in key:
+            parts = key.split(".", 1)
+            sub = doc.get(parts[0])
+            if isinstance(sub, dict):
+                return Matcher._get_nested(sub, parts[1])
+        return doc.get(key)
 
     def dotDictFind(self, data: dict, find: str) -> str:
         """
