@@ -1,0 +1,69 @@
+tests:
+  - name: crd-scale
+    metadata:
+      platform: "{{ platform }}"
+      clusterType: "{{ clusterType }}"
+      masterNodesType: "{{ masterNodesType }}"
+      masterNodesCount: "{{ masterNodesCount }}"
+      workerNodesType: "{{ workerNodesType }}"
+      workerNodesCount: "{{ workerNodesCount }}"
+      benchmark.keyword: crd-scale
+      wildcard:
+        ocpVersion: "{{ version }}*"
+      networkType: OVNKubernetes
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
+      fips: "{{ fips | default('false') }}"
+      not:
+        stream: okd
+
+    metrics:
+      - name: apiserverCPU
+        metricName.keyword: podCPU-Controlplane
+        labels.container.keyword: kube-apiserver
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: kube-apiserver]"
+        direction: 1
+        threshold: 10
+
+      - name: apiserverMemory
+        metricName.keyword: podMemory-Controlplane
+        labels.container.keyword: kube-apiserver
+        metric_of_interest: value
+        agg:
+          value: memory
+          agg_type: max
+        labels:
+          - "[Jira: kube-apiserver]"
+        direction: 1
+        threshold: 10
+
+      - name: etcdCPU
+        metricName.keyword: podCPU-Controlplane
+        labels.container.keyword: etcd
+        metric_of_interest: value
+        agg:
+          value: cpu
+          agg_type: avg
+        labels:
+          - "[Jira: etcd]"
+        direction: 1
+        threshold: 10
+
+      - name: etcdMemory
+        metricName.keyword: podMemory-Controlplane
+        labels.container.keyword: etcd
+        metric_of_interest: value
+        agg:
+          value: memory
+          agg_type: max
+        labels:
+          - "[Jira: etcd]"
+        direction: 1
+        threshold: 10
