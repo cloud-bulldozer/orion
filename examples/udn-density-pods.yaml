@@ -1,12 +1,12 @@
 tests:
   - name: udn-density-pods
     metadata:
-      platform: {{ platform }}
-      clusterType: {{ clusterType }}
-      masterNodesType: {{ masterNodesType }}
-      masterNodesCount: {{ masterNodesCount }}
-      workerNodesType: {{ workerNodesType }}
-      workerNodesCount: {{ workerNodesCount }}
+      platform: "{{ platform }}"
+      clusterType: "{{ clusterType }}"
+      masterNodesType: "{{ masterNodesType }}"
+      masterNodesCount: "{{ masterNodesCount }}"
+      workerNodesType: "{{ workerNodesType }}"
+      workerNodesCount: "{{ workerNodesCount }}"
       benchmark.keyword: udn-density-pods
       wildcard:
         ocpVersion: "{{ version }}*"
