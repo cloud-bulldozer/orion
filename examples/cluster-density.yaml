@@ -19,3 +19,4 @@ tests:
       fips: "{{ fips | default('false') }}"
       not:
         stream: okd
+
