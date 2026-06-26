@@ -16,7 +16,7 @@ from orion.logger import SingletonLogger
 from orion.run_test import run
 from orion.pipeline.formatters import FormatterFactory
 from orion import constants as cnsts
-from orion.config import load_config, auto_detect_ack_file_with_vars, collect_pull_numbers
+from orion.config import load_config, collect_pull_numbers
 from orion.visualization import generate_test_html
 from orion.reporting.standalone import load_json_files, generate_report
 from orion.reporting.summary import print_regression_summary
@@ -370,7 +370,8 @@ def _create_jira_provider(kwargs: dict, config: dict, logger) -> JiraAckProvider
             token=kwargs.get("jira_token") or config.get("jira_token"),
             email=kwargs.get("jira_email") or config.get("jira_email"),
             uuid_field=config.get("jira_uuid_field", "description"),
-            metric_field=config.get("jira_metric_field", "labels")
+            metric_field=config.get("jira_metric_field", "labels"),
+            status=kwargs.get("jira_status_filter") or None,
         )
         logger.info("✓ JIRA ACK provider initialized: %s/%s",
                    provider.project, provider.component)
@@ -402,24 +403,7 @@ def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvi
     if kwargs.get("jira_ack"):
         providers.append(_create_jira_provider(kwargs, config, logger))
 
-    # File-based provider (auto-detect unless disabled or JIRA-only mode)
-    jira_only_mode = kwargs.get("jira_ack") and not kwargs.get("ack")
-
-    if jira_only_mode:
-        logger.info("JIRA-only mode: skipping default file-based ACKs (use --ack to enable hybrid mode)")
-    elif not kwargs.get("no_default_ack"):
-        auto_ack_file = auto_detect_ack_file_with_vars(
-            config,
-            kwargs["input_vars"],
-            ack_dir="ack"
-        )
-        if auto_ack_file:
-            providers.append(FileAckProvider(auto_ack_file))
-            logger.info("✓ File ACK provider initialized: %s", auto_ack_file)
-    else:
-        logger.info("default ACK loading disabled")
-
-    # Manual ACK files (always processed if provided)
+    # Manual ACK files (processed if provided via --ack)
     if kwargs.get("ack"):
         for ack_file in [f.strip() for f in kwargs["ack"].split(",") if f.strip()]:
             providers.append(FileAckProvider(ack_file))
@@ -448,7 +432,6 @@ def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvi
 )
 @click.option("--config", help="Path to the configuration file", required=False, default=None)
 @click.option("--ack", default="", help="Optional ack YAML to ack known regressions (can specify multiple files separated by comma)")
-@click.option("--no-default-ack", is_flag=True, default=False, help="Disable automatic default ACK file detection and loading (manual --ack files are still loaded)")
 @click.option("--jira-ack", is_flag=True, default=False, help="Use JIRA to track and retrieve acknowledgments instead of YAML files")
 @click.option("--jira-url", default="https://issues.redhat.com", envvar="JIRA_URL", help="JIRA instance URL (e.g., https://issues.redhat.com). Can be set via JIRA_URL env var")
 @click.option("--jira-project", default="PERFSCALE", help="JIRA project key for acknowledgments")
@@ -456,6 +439,7 @@ def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvi
 @click.option("--jira-token", default="", envvar="JIRA_TOKEN", help="JIRA API token (Cloud) or personal access token (on-premise). Can be set via JIRA_TOKEN env var")
 @click.option("--jira-email", default="", envvar="JIRA_EMAIL", help="Email address for Atlassian Cloud authentication (required for *.atlassian.net). Can be set via JIRA_EMAIL env var")
 @click.option("--jira-auto-create", is_flag=True, default=False, help="Automatically create JIRA issues for detected regressions (requires --jira-ack)")
+@click.option("--jira-status-filter", default="", help="Filter JIRA ACKs by statusCategory (e.g., 'Done' or 'Done,In Progress'). Supports comma-separated values. Maps to JIRA's universal categories: 'To Do', 'In Progress', 'Done'. If empty, all issues are used.")
 @click.option(
     "--save-data-path", default="data.csv", help="Path to save the output file"
 )
@@ -598,8 +582,7 @@ def main(**kwargs):
             logger.debug("No ACK entries loaded")
     else:
         kwargs["ackMap"] = None
-        if not kwargs.get("no_default_ack"):
-            logger.info("No ACK providers configured")
+        logger.info("No ACK providers configured")
 
     if not kwargs["metadata_index"] or not kwargs["es_server"]:
         logger.error("metadata-index and es-server flags must be provided")

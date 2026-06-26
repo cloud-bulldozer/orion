@@ -63,6 +63,9 @@ Track performance regressions as JIRA issues with automatic creation and rich co
 # Query existing JIRA acknowledgments
 orion --config config.yaml --jira-ack
 
+# Only treat resolved (Done/Closed) JIRA tickets as ACKs
+orion --config config.yaml --jira-ack --jira-status-filter Done
+
 # Auto-create JIRA issues for new regressions
 orion --config config.yaml --jira-ack --jira-auto-create \
   --jira-url https://issues.example.com \
