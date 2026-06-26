@@ -172,44 +172,6 @@ tests:
         # ... only this test gets this metric; global metrics are not used
 ```
 
-### Ignoring Global Inheritance (`IgnoreGlobal` and `IgnoreGlobalMetrics`)
-
-You can disable inheritance from the config-level `parentConfig` or `metricsFile` for specific tests without using local files.
-
-**`IgnoreGlobal`** (test-level, boolean):
-
-- When `true`, this test **does not** inherit metadata from `parentConfig`.
-- The test uses only its own `metadata` (and, if set, metadata from `local_config`).
-- Use when a test needs completely different metadata and you do not want to use a local config file.
-
-**`IgnoreGlobalMetrics`** (test-level, boolean):
-
-- When `true`, this test **does not** inherit metrics from `metricsFile`.
-- The test uses only its own `metrics` (and, if set, metrics from `local_metrics`).
-- Use when a test needs a different set of metrics and you do not want to use a local metrics file.
-
-**Example:**
-
-```yaml
-parentConfig: parent.yaml
-metricsFile: metrics.yaml
-tests:
-  - name: olm-integration-test
-    IgnoreGlobal: true
-    IgnoreGlobalMetrics: true
-    metadata:
-      jobType: periodic
-      not:
-        stream: okd
-    metrics:
-      - name: catalogdCPU
-        metricName: catalogd_cpu_usage_cores
-        metric_of_interest: value
-        threshold: 1
-```
-
-In this example, the test uses only the metadata and metrics defined in the test block; nothing is merged from `parent.yaml` or `metrics.yaml`.
-
 ## Complete Example
 
 ```yaml

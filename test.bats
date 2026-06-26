@@ -779,30 +779,6 @@ setup() {
   set -e
 }
 
-@test "orion inheriting config ignore global" {
-  set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests-inherits-ignore-global.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
-  EXIT_CODE=$?
-
-  if [ ! $EXIT_CODE -eq 2 ]; then
-    echo "no regression found"
-    exit 1
-  fi
-
-  # Check for global metric
-  if grep -q "OCP-84094_catalogdCPU_GCP_sum_sum" ./outputs/results.txt; then
-    echo "Expected string 'OCP-84094_catalogdCPU_GCP_sum_sum' found in results.txt, should not be present"
-    exit 1
-  fi
-
-  # Check for metric
-  if ! grep -q "OCP-84094_catalogdCPU_GCP_avg" ./outputs/results.txt; then
-    echo "Expected string 'OCP-84094_catalogdCPU_GCP_avg' not found in results.txt"
-    exit 1
-  fi
-
-  set -e
-}
 
 @test "orion inheriting config local metadata" {
   set +e
@@ -813,37 +789,6 @@ setup() {
     echo "no regression found"
     exit 1
   fi
-}
-
-@test "orion inheriting config local metrics with global ignore" {
-  set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests-inherits-local-metrics-with-ignore.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${QE_ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results.txt
-  EXIT_CODE=$?
-
-  if [ ! $EXIT_CODE -eq 2 ]; then
-    echo "no regression found"
-    exit 1
-  fi
-
-  # Check for local metric
-  if ! grep -q "OCP-84094_catalogdCPU_GCP_max_max" ./outputs/results.txt; then
-    echo "Expected string 'OCP-84094_catalogdCPU_GCP_max_max' not found in results.txt"
-    exit 1
-  fi
-
-  # Check for global metric
-  if grep -q "OCP-84094_catalogdCPU_GCP_sum_sum" ./outputs/results.txt; then
-    echo "Expected string 'OCP-84094_catalogdCPU_GCP_sum_sum' found in results.txt, should not be present"
-    exit 1
-  fi
-
-  # Check for metric
-  if ! grep -q "OCP-84094_catalogdCPU_GCP_avg" ./outputs/results.txt; then
-    echo "Expected string 'OCP-84094_catalogdCPU_GCP_avg' not found in results.txt"
-    exit 1
-  fi
-
-  set -e
 }
 
 @test "orion inheriting config local metrics" {
