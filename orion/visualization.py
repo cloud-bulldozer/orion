@@ -379,10 +379,25 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
         autosize=True,
     )
 
+    # Thin out x-axis ticks to avoid overcrowding
+    max_ticks = 20
+    n_points = len(x_indices)
+    if n_points > max_ticks:
+        step = n_points / max_ticks
+        shown = [int(round(i * step)) for i in range(max_ticks)]
+        shown = [i for i in shown if i < n_points]
+        if (n_points - 1) not in shown:
+            shown.append(n_points - 1)
+        shown_tickvals = [x_indices[i] for i in shown]
+        shown_ticktext = [tick_labels[i] for i in shown]
+    else:
+        shown_tickvals = x_indices
+        shown_ticktext = tick_labels
+
     for row_idx in range(1, n_metrics + 1):
         fig.update_xaxes(
-            tickvals=x_indices,
-            ticktext=tick_labels,
+            tickvals=shown_tickvals,
+            ticktext=shown_ticktext,
             tickangle=0,
             tickfont={"size": 9},
             gridcolor="rgba(255,255,255,0.08)",
