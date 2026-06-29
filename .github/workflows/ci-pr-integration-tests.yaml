@@ -50,6 +50,6 @@ jobs:
     needs: gate
     uses: ./.github/workflows/tests.yaml
     with:
-      checkout_ref: ${{ github.event.pull_request.base.ref }}
-      checkout_repo: ${{ github.event.pull_request.base.repo.full_name }}
+      checkout_ref: ${{ github.event.pull_request.head.sha }}
+      checkout_repo: ${{ github.event.pull_request.head.repo.full_name }}
     secrets: inherit

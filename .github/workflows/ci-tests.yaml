@@ -21,8 +21,3 @@ jobs:
   unit_tests:
     needs: lint
     uses: ./.github/workflows/unit_tests.yaml
-
-  integration_tests:
-    needs: [lint, build, unit_tests]
-    uses: ./.github/workflows/tests.yaml
-    secrets: inherit
