@@ -67,3 +67,53 @@ tests:
           - "[Jira: etcd]"
         direction: 1
         threshold: 10
+
+      - name: etcdWALFsyncLatency
+        metricName.keyword: 99thEtcdDiskWalFsyncDurationSeconds
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: etcd]"
+        direction: 1
+        threshold: 10
+
+      - name: TXPacketsDropped
+        metricName.keyword: nodeNetworkDeviceDropTXTotal
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: RXPacketsDropped
+        metricName.keyword: nodeNetworkDeviceDropRXTotal
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: kubeletCPU
+        metricName.keyword: kubeletCPU
+        metric_of_interest: value
+        labels:
+          - "[Jira: Node]"
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
+
+      - name: kubeletMemory
+        metricName.keyword: kubeletMemory
+        metric_of_interest: value
+        labels:
+          - "[Jira: Node]"
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
