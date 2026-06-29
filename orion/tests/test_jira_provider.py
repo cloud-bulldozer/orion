@@ -1,3 +1,4 @@
+# pylint: disable=missing-function-docstring,import-outside-toplevel
 """
 Tests for JiraAckProvider status filter and removed auto-detect functions.
 """
@@ -110,12 +111,12 @@ class TestRemovedAutoDetectFunctions:
 
     def test_fetch_remote_ack_file_removed(self):
         with pytest.raises(ImportError):
-            from orion.config import fetch_remote_ack_file  # noqa: F401
+            from orion.config import fetch_remote_ack_file  # noqa: F401 # pylint: disable=no-name-in-module,unused-import,import-outside-toplevel
 
     def test_auto_detect_ack_file_with_vars_removed(self):
         with pytest.raises(ImportError):
-            from orion.config import auto_detect_ack_file_with_vars  # noqa: F401
+            from orion.config import auto_detect_ack_file_with_vars  # noqa: F401 # pylint: disable=no-name-in-module,unused-import,import-outside-toplevel
 
     def test_remote_ack_url_removed(self):
-        from orion import config
+        from orion import config  # pylint: disable=import-outside-toplevel
         assert not hasattr(config, "REMOTE_ACK_URL")
