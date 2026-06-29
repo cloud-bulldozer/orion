@@ -4,19 +4,18 @@
 #   ols-load-generator.yaml
 
 # Common metadata for all ols-load-generator tests
-metadata:
-  olsTestWorkers: "{{ ols_test_workers }}"
-  platform: AWS
-  clusterType: self-managed
-  masterNodesType.keyword: m6a.xlarge
-  masterNodesCount: 3
-  workerNodesType.keyword: m6i.xlarge
-  workerNodesCount: 3
-  benchmark.keyword: ols-load-generator
-  wildcard:
-    ocpVersion: "{{ version }}*"
-  networkType: OVNKubernetes
-  mcpEnabled: false
-  fips: "{{ fips | default('false') }}"
-  not:
-    stream: okd
+olsTestWorkers: "{{ ols_test_workers }}"
+platform: AWS
+clusterType: self-managed
+masterNodesType.keyword: m6a.xlarge
+masterNodesCount: 3
+workerNodesType.keyword: m6i.xlarge
+workerNodesCount: 3
+benchmark.keyword: ols-load-generator
+wildcard:
+  ocpVersion: "{{ version }}*"
+networkType: OVNKubernetes
+mcpEnabled: false
+fips: "{{ fips | default('false') }}"
+not:
+  stream: okd

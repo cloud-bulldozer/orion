@@ -40,7 +40,7 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
             logger
         )
 
-    parent_metrics = {}
+    parent_metrics = []
     if "metricsFile" in rendered_config:
         parent_metrics = load_config_file(
             rendered_config["metricsFile"],
@@ -51,27 +51,21 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
 
     metrics = []
     for test in rendered_config["tests"]:
-        skip_global_config = False
-        skip_global_metrics = False
+        test.setdefault("IgnoreGlobal", False)
+        test.setdefault("IgnoreGlobalMetrics", False)
         local_config = {}
         local_metrics = {}
-        if "IgnoreGlobal" in test:
-            skip_global_config = test["IgnoreGlobal"]
-        if "IgnoreGlobalMetrics" in test:
-            skip_global_metrics = test["IgnoreGlobalMetrics"]
-        if "uuid_field" not in test:
-            test["uuid_field"] = "uuid"
-        if "version_field" not in test:
-            test["version_field"] = "ocpVersion"
+        test.setdefault("uuid_field", "uuid")
+        test.setdefault("version_field", "ocpVersion")
         if "local_config" in test:
             local_config = load_config_file(test["local_config"], config_dir, env_vars, logger)
-            test["metadata"] = merge_configs(test.get("metadata", {}), local_config["metadata"])
+            test["metadata"] = merge_configs(test.get("metadata", {}), local_config)
         if "local_metrics" in test:
             local_metrics = load_config_file(test["local_metrics"], config_dir, env_vars, logger)
             test["metrics"] = merge_lists(test.get("metrics", []), local_metrics)
-        if parent_config and not skip_global_config:
-            test["metadata"] = merge_configs(test.get("metadata", {}), parent_config["metadata"])
-        if parent_metrics and not skip_global_metrics:
+        if parent_config and not test["IgnoreGlobal"]:
+            test["metadata"] = merge_configs(test.get("metadata", {}), parent_config)
+        if parent_metrics and not test["IgnoreGlobalMetrics"]:
             test["metrics"] = merge_lists(test.get("metrics", []), parent_metrics)
 
         for metric in test["metrics"]:

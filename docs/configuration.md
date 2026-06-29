@@ -22,7 +22,7 @@ Orion supports configuration inheritance to reduce duplication and improve maint
 The `parentConfig` field allows you to inherit metadata from a parent configuration file. This is useful when multiple test configurations share common metadata settings.
 
 **How it works:**
-- The parent configuration file should contain a `metadata` section
+- The parent configuration file should contain the metadata fields that are to be inherited
 - Metadata from the parent is merged into each test's metadata
 - **Child configuration takes precedence** - if a key exists in both parent and child, the child value is used
 - Paths can be relative (to the config file directory) or absolute
@@ -31,14 +31,13 @@ The `parentConfig` field allows you to inherit metadata from a parent configurat
 
 `parent.yaml`:
 ```yaml
-metadata:
-  platform: AWS
-  clusterType: self-managed
-  masterNodesType: m6a.xlarge
-  masterNodesCount: 3
-  workerNodesType: m6a.xlarge
-  workerNodesCount: 6
-  benchmark.keyword: node-density
+platform: AWS
+clusterType: self-managed
+masterNodesType: m6a.xlarge
+masterNodesCount: 3
+workerNodesType: m6a.xlarge
+workerNodesCount: 6
+benchmark.keyword: node-density
 ```
 
 `child.yaml`:
