@@ -1,4 +1,3 @@
-metricsFile: metrics.yaml
 tests:
   - name: udn-density-pods
     metadata:
@@ -23,10 +22,350 @@ tests:
     metrics:
       - name: containersStartedLatency
         metricName.keyword: podLatencyQuantilesMeasurement
-        jobName.keyword: udn-density-l2-pods
+        jobName.keyword: udn-density-pods
         quantileName: ContainersStarted
         labels:
           - "[Jira: PodLatency]"
         metric_of_interest: P99
         direction: 1
         threshold: 25
+
+      - name: podReadyLatency
+        metricName.keyword: podLatencyQuantilesMeasurement
+        jobName.keyword: udn-density-pods
+        quantileName: Ready
+        metric_of_interest: P99
+        not:
+          jobName.keyword: "garbage-collection"
+        labels:
+          - "[Jira: PerfScale]"
+        direction: 1
+        threshold: 10
+
+      - name: apiserverCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-kube-apiserver
+        labels.container.keyword: kube-apiserver
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: kube-apiserver]"
+        direction: 1
+        threshold: 10
+
+      - name: multusCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-multus
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: multus]"
+        direction: 1
+        threshold: 10
+
+      - name: monitoringCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-monitoring
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: monitoring]"
+        direction: 1
+        threshold: 10
+
+      - name: etcdCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-etcd
+        labels.container.keyword: etcd
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: etcd]"
+        direction: 1
+        threshold: 10
+
+      - name: etcdWALFsyncLatency
+        metricName.keyword: 99thEtcdDiskWalFsyncDurationSeconds
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: etcd]"
+        direction: 1
+        threshold: 10
+
+      - name: TXPacketsDropped
+        metricName.keyword: nodeNetworkDeviceDropTXTotal
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: RXPacketsDropped
+        metricName.keyword: nodeNetworkDeviceDropRXTotal
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: kubeletCPU
+        metricName.keyword: kubeletCPU
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        labels:
+          - "[Jira: Node]"
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
+
+      - name: kubeletMemory
+        metricName.keyword: kubeletMemory
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        labels:
+          - "[Jira: Node]"
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
+
+      - name: crioCPU
+        metricName.keyword: crioCPU
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        labels:
+          - "[Jira: Node]"
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnkCPU-overall
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-ovncontroller
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovn-controller
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-northd
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: northd
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-nbdb
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: nbdb
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-sbdb
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: sbdb
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU-ovnk-controller
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovnkube-controller
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovsCPU-irate-all
+        metricName.keyword: cgroupCPU
+        labels.id.keyword: /system.slice/ovs-vswitchd.service
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovsMemory-Workers
+        metricName.keyword: cgroupMemoryRSS-Workers
+        labels.id.keyword: /system.slice/ovs-vswitchd.service
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: max
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovsMemory-Masters
+        metricName.keyword: cgroupMemoryRSS-Masters
+        labels.id.keyword: /system.slice/ovs-vswitchd.service
+        metric_of_interest: value
+        agg:
+          agg_type: max
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovsMemory-all
+        metricName.keyword: cgroupMemoryRSS
+        labels.id.keyword: /system.slice/ovs-vswitchd.service
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnkMem-overall
+        metricName.keyword: containerMemory
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-ovncontroller
+        metricName.keyword: containerMemory
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovn-controller
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-northd
+        metricName.keyword: containerMemory
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: northd
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-nbdb
+        metricName.keyword: containerMemory
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: nbdb
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-sbdb
+        metricName.keyword: containerMemory
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: sbdb
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-ovnk-controller
+        metricName.keyword: containerMemory
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovnkube-controller
+        jobName.keyword: udn-density-pods
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
