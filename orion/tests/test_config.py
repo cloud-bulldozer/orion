@@ -103,7 +103,7 @@ class TestPercentileValidation:
             assert len(result["tests"]) == 1
 
 
-class TestCollectPullNumbers:
+class TestCollectPullNumbers:  # pylint: disable=missing-class-docstring
 
     def test_single_pull_number_from_input_vars(self):
         result = collect_pull_numbers({}, {"pull_number": "1234"})
