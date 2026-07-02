@@ -17,8 +17,7 @@ setup(
         'click==8.1.7',
         'questionary>=2.0.0',
         'setuptools_scm>=6.2',
-        "apache-otava @ \
-        git+https://github.com/apache/otava.git@3b3d59a787ea03749e972c3509241114b861c99e",
+        'apache-otava==0.8.0',
         'elastic-transport==8.11.0',
         'opensearch-dsl==2.1.0',
         'opensearch-py==3.0.0',
