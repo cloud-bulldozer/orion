@@ -9,6 +9,7 @@ tests:
       benchmark.keyword: cluster-density-v2
       wildcard:
         ocpVersion: "{{ version }}*"
+        jobName.keyword: "{{ jobname | default('*') }}"
       networkType: OVNKubernetes
       fips: "{{ fips | default('false') }}"
       not:

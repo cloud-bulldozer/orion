@@ -10,6 +10,7 @@ tests:
       benchmark.keyword: cudn-density
       wildcard:
         ocpVersion: "{{ version }}*"
+        jobName.keyword: "{{ jobname | default('*') }}"
         upstreamJob.keyword: "*cudn-density-multi-ns-500*"
       networkType: OVNKubernetes
       jobType: "{{ jobtype | default('periodic') }}"
