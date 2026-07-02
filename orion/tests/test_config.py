@@ -17,7 +17,6 @@ import pytest
 import yaml
 
 from orion.config import (
-    auto_detect_ack_file_with_vars,
     collect_pull_numbers,
     load_ack,
     load_config,
@@ -512,33 +511,6 @@ class TestMergeAckFiles:
 
 
 # ---------------------------------------------------------------------------
-# auto_detect_ack_file_with_vars
-# ---------------------------------------------------------------------------
-
-class TestAutoDetectAckFileWithVars:
-    @patch("orion.config.fetch_remote_ack_file")
-    def test_uses_remote_when_available(self, mock_fetch):
-        mock_fetch.return_value = "/tmp/remote_ack.yaml"
-        result = auto_detect_ack_file_with_vars({}, {})
-        assert result == "/tmp/remote_ack.yaml"
-
-    @patch("orion.config.fetch_remote_ack_file")
-    def test_falls_back_to_local(self, mock_fetch, tmp_path):
-        mock_fetch.return_value = None
-        ack_dir = tmp_path / "ack"
-        ack_dir.mkdir()
-        (ack_dir / "all_ack.yaml").write_text("ack: []", encoding="utf-8")
-        result = auto_detect_ack_file_with_vars({}, {}, ack_dir=str(ack_dir))
-        assert result == str(ack_dir / "all_ack.yaml")
-
-    @patch("orion.config.fetch_remote_ack_file")
-    def test_returns_none_when_nothing_found(self, mock_fetch, tmp_path):
-        mock_fetch.return_value = None
-        result = auto_detect_ack_file_with_vars({}, {}, ack_dir=str(tmp_path / "missing"))
-        assert result is None
-
-
-# ---------------------------------------------------------------------------
 # load_config (integration-ish: uses real files, no network)
 # ---------------------------------------------------------------------------
 
@@ -588,7 +560,7 @@ tests:
 
     def test_parent_config_merged(self, tmp_path):
         parent = tmp_path / "parent.yaml"
-        parent.write_text(yaml.dump({"metadata": {"network": "OVN"}}), encoding="utf-8")
+        parent.write_text(yaml.dump({"network": "OVN"}), encoding="utf-8")
         child_content = yaml.dump({
             "parentConfig": str(parent),
             "tests": [{
@@ -606,7 +578,7 @@ tests:
 
     def test_ignore_global_skips_parent(self, tmp_path):
         parent = tmp_path / "parent.yaml"
-        parent.write_text(yaml.dump({"metadata": {"network": "OVN"}}), encoding="utf-8")
+        parent.write_text(yaml.dump({"network": "OVN"}), encoding="utf-8")
         child_content = yaml.dump({
             "parentConfig": str(parent),
             "tests": [{
