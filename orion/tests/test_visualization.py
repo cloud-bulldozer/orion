@@ -78,7 +78,7 @@ def test_generate_test_html_writes_expected_file_and_injects_click_handler(
     assert "contextmenu" in html
     assert "clipboard" in html
     assert "orion-toast" in html
-    assert "right-click to copy UUID" in html
+    assert "right-click" in html
     assert "stopPropagation" in html
 
 
@@ -106,7 +106,7 @@ def test_build_test_figure_renders_changepoints_and_skips_out_of_range(sample_da
     fig = _build_test_figure(viz_data)
     changepoint_traces = [
         trace for trace in fig.data
-        if isinstance(trace.hovertext, str) and "CHANGEPOINT" in trace.hovertext
+        if isinstance(trace.hovertemplate, str) and "CHANGEPOINT" in trace.hovertemplate
     ]
 
     assert len(changepoint_traces) == 2
@@ -136,7 +136,7 @@ def test_build_test_figure_renders_only_matching_ack_markers(sample_dataframe):
     fig = _build_test_figure(viz_data)
     ack_traces = [
         trace for trace in fig.data
-        if isinstance(trace.hovertext, str) and "ACKed" in trace.hovertext
+        if isinstance(trace.hovertemplate, str) and "ACKed" in trace.hovertemplate
     ]
 
     assert len(ack_traces) == 1

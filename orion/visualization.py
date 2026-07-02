@@ -121,20 +121,25 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
         change_points = viz_data.change_points_by_metric.get(metric_name, [])
         line_color = line_colors[(row_idx - 1) % len(line_colors)]
 
-        # Rich hover with all relevant metadata
-        hover_texts = []
-        for i, (ts, v, u, val) in enumerate(
-            zip(timestamps, versions, uuids, values)
-        ):
-            url = build_urls.iloc[i] if i < len(build_urls) else ""
-            hover_texts.append(
-                f"<b>{metric_name}: {val}</b><br>"
-                f"Date: {ts.strftime('%Y-%m-%d %H:%M UTC')}<br>"
-                f"Version: {v}<br>"
-                f"UUID: {u}<br>"
-                f"Build: {url[-60:]}<br>"
-                f"<i>(right-click to copy UUID)</i>"
-            )
+        # Structured customdata for hover template and click handlers
+        custom = [
+            [
+                build_urls.iloc[i] if i < len(build_urls) else "",
+                str(uuids.iloc[i]),
+                str(timestamps.iloc[i].strftime('%Y-%m-%d %H:%M UTC')),
+                str(versions.iloc[i]),
+            ]
+            for i in range(len(df))
+        ]
+
+        hover_tpl = (
+            f"<b>{metric_name}: %{{y:,.2f}}</b><br>"
+            "Date: %{customdata[2]}<br>"
+            "Version: %{customdata[3]}<br>"
+            "UUID: %{customdata[1]}<br>"
+            "<i>click → build log  |  right-click → copy UUID</i>"
+            "<extra></extra>"
+        )
 
         # Main time-series trace
         fig.add_trace(
@@ -143,12 +148,8 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                 y=values,
                 mode="lines+markers",
                 name=metric_name,
-                hovertext=hover_texts,
-                hoverinfo="text",
-                customdata=[
-                    [build_urls.iloc[i], str(uuids.iloc[i])]
-                    for i in range(len(df))
-                ],
+                hovertemplate=hover_tpl,
+                customdata=custom,
                 marker={"size": 6, "color": line_color},
                 line={"width": 2, "color": line_color},
                 connectgaps=False,
@@ -202,16 +203,15 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                         "line": {"width": 2, "color": "white"},
                     },
                     showlegend=False,
-                    hovertext=(
+                    hovertemplate=(
                         f"<b>CHANGEPOINT</b><br>"
                         f"{pct_change:+.1f}% change<br>"
                         f"Mean before: {cp.stats.mean_1:,.2f}<br>"
                         f"Mean after: {cp.stats.mean_2:,.2f}<br>"
                         f"UUID: {uuids.iloc[idx]}<br>"
-                        f"Build: {cp_build_url[-60:]}<br>"
-                        f"<i>(right-click to copy UUID)</i>"
+                        f"<i>click → build log  |  right-click → copy UUID</i>"
+                        f"<extra></extra>"
                     ),
-                    hoverinfo="text",
                     customdata=[[cp_build_url, str(uuids.iloc[idx])]],
                 ),
                 row=row_idx,
@@ -262,13 +262,13 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                         "line": {"width": 2, "color": "white"},
                     },
                     showlegend=False,
-                    hovertext=(
+                    hovertemplate=(
                         f"<b>ACKed</b><br>"
                         f"Reason: {ack['reason']}<br>"
                         f"UUID: {ack['uuid'][:8]}<br>"
-                        f"<i>(right-click to copy UUID)</i>"
+                        f"<i>click → build log  |  right-click → copy UUID</i>"
+                        f"<extra></extra>"
                     ),
-                    hoverinfo="text",
                     customdata=[[ack_build_url, ack['uuid']]],
                 ),
                 row=row_idx,
@@ -379,10 +379,25 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
         autosize=True,
     )
 
+    # Thin out x-axis ticks to avoid overcrowding
+    max_ticks = 20
+    n_points = len(x_indices)
+    if n_points > max_ticks:
+        step = n_points / max_ticks
+        shown = [int(round(i * step)) for i in range(max_ticks)]
+        shown = [i for i in shown if i < n_points]
+        if (n_points - 1) not in shown:
+            shown.append(n_points - 1)
+        shown_tickvals = [x_indices[i] for i in shown]
+        shown_ticktext = [tick_labels[i] for i in shown]
+    else:
+        shown_tickvals = x_indices
+        shown_ticktext = tick_labels
+
     for row_idx in range(1, n_metrics + 1):
         fig.update_xaxes(
-            tickvals=x_indices,
-            ticktext=tick_labels,
+            tickvals=shown_tickvals,
+            ticktext=shown_ticktext,
             tickangle=0,
             tickfont={"size": 9},
             gridcolor="rgba(255,255,255,0.08)",

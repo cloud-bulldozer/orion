@@ -748,9 +748,9 @@ def main(**kwargs):
                 )
                 generate_test_html(viz_data, output_file)
             if is_pull:
-                for viz_data in results_pull.viz_data:
+                for pr_num, viz_data in results_pull.viz_data:
                     output_file = build_viz_output_file(
-                        output_base_path, viz_data.test_name, "pull"
+                        output_base_path, viz_data.test_name, f"pull_{pr_num}"
                     )
                     generate_test_html(viz_data, output_file)
         except Exception as e:  # pylint: disable=broad-except
@@ -762,8 +762,9 @@ def main(**kwargs):
             output_base_path = str(Path(kwargs['save_output_path']).with_suffix(''))
             _attach_viz_to_jira(jira_provider, issue_keys_by_test, output_base_path,
                                 "periodic" if is_pull else "", logger)
-            _attach_viz_to_jira(jira_provider, issue_keys_by_test_pull, output_base_path,
-                                "pull", logger)
+            for pr_num in kwargs.get("pull_numbers", []):
+                _attach_viz_to_jira(jira_provider, issue_keys_by_test_pull, output_base_path,
+                                    f"pull_{pr_num}", logger)
         except Exception as e:  # pylint: disable=broad-except
             logger.warning("JIRA attachment failed: %s", e)
 

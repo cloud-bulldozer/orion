@@ -121,7 +121,7 @@ def run(**kwargs: dict[str, Any]) -> Tuple[
                             if pull_analysis.regression_flag:
                                 regression_flag_pull = True
                         if pull_viz is not None:
-                            all_viz_data_pull.append(pull_viz)
+                            all_viz_data_pull.append((pr_num, pull_viz))
             else:
                 result_tuple = analyze(test, kwargs)
                 analysis, viz_data = result_tuple
