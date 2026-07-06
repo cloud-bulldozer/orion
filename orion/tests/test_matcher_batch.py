@@ -12,6 +12,7 @@ import pytest
 from opensearch_dsl import Search
 from opensearch_dsl.response import Response
 
+from orion.matcher import Matcher
 from orion.tests.test_matcher import make_matcher_fixture
 
 
@@ -570,3 +571,100 @@ class TestGetResultsBatch:
 
         assert len(result["apiserverCPU"]) == 1
         assert result["apiserverCPU"][0]["metricName"] == "containerCPU"
+
+    def test_nested_field_filter_matches(self, matcher_instance, monkeypatch):
+        """Hits are routed correctly when the match field is a nested dict traversed by dot-notation."""
+        metrics_list = [
+            {
+                "name": "apiserverCPU",
+                "metricName": "containerCPU",
+                "labels.namespace.keyword": "openshift-kube-apiserver",
+                "metric_of_interest": "cpu",
+            },
+        ]
+
+        fake_hits = [
+            _make_fake_hit({
+                "uuid": "uuid1",
+                "metricName": "containerCPU",
+                "labels": {"namespace": "openshift-kube-apiserver"},
+                "cpu": 0.42,
+            }),
+            _make_fake_hit({
+                "uuid": "uuid1",
+                "metricName": "containerCPU",
+                "labels": {"namespace": "openshift-etcd"},
+                "cpu": 0.10,
+            }),
+        ]
+
+        monkeypatch.setattr(matcher_instance, "query_index",
+                            lambda *a, **k: fake_hits)
+
+        result = matcher_instance.get_results_batch(["uuid1"], metrics_list)
+
+        assert len(result["apiserverCPU"]) == 1
+        assert result["apiserverCPU"][0]["cpu"] == 0.42
+
+    def test_nested_field_not_filter_excludes(self, matcher_instance, monkeypatch):
+        """Hits are excluded when a not-field nested value matches the exclusion value."""
+        metrics_list = [
+            {
+                "name": "podReadyLatency",
+                "metricName": "podLatencyQuantilesMeasurement",
+                "quantileName": "Ready",
+                "metric_of_interest": "P99",
+                "not": {"labels.jobName.keyword": "garbage-collection"},
+            },
+        ]
+
+        fake_hits = [
+            _make_fake_hit({
+                "uuid": "uuid1",
+                "metricName": "podLatencyQuantilesMeasurement",
+                "quantileName": "Ready",
+                "labels": {"jobName": "normal-job"},
+                "P99": 4500,
+            }),
+            _make_fake_hit({
+                "uuid": "uuid1",
+                "metricName": "podLatencyQuantilesMeasurement",
+                "quantileName": "Ready",
+                "labels": {"jobName": "garbage-collection"},
+                "P99": 9999,
+            }),
+        ]
+
+        monkeypatch.setattr(matcher_instance, "query_index",
+                            lambda *a, **k: fake_hits)
+
+        result = matcher_instance.get_results_batch(["uuid1"], metrics_list)
+
+        assert len(result["podReadyLatency"]) == 1
+        assert result["podReadyLatency"][0]["P99"] == 4500
+
+
+class TestGetNested:
+    """Unit tests for Matcher._get_nested."""
+
+    @pytest.mark.parametrize("doc,key,expected", [
+        ({"a": 1}, "a", 1),
+        ({"a": {"b": 2}}, "a.b", 2),
+        ({"a": {"b": {"c": 3}}}, "a.b.c", 3),
+        ({"a": 1}, "missing", None),
+        ({"a": {"b": 2}}, "a.missing", None),
+        ({"a": {"b": 2}}, "missing.b", None),
+        ({"a.b": 99}, "a.b", 99),          # literal dotted key — "a" missing so falls back to doc.get("a.b")
+        ({"a": None}, "a.b", None),        # sub-value is not a dict
+        ({"a": "string"}, "a.b", None),    # sub-value is a scalar
+        ({}, "a", None),
+    ])
+    def test_get_nested(self, doc, key, expected):
+        assert Matcher._get_nested(doc, key) == expected
+
+    def test_flat_key_without_dot(self):
+        assert Matcher._get_nested({"x": 42}, "x") == 42
+
+    def test_deeply_nested(self):
+        doc = {"a": {"b": {"c": {"d": "deep"}}}}
+        assert Matcher._get_nested(doc, "a.b.c.d") == "deep"
