@@ -1,0 +1,22 @@
+metricsFile: metrics/cudn-density-metrics.yaml
+tests:
+  - name: aws-small-scale-cudn-density-single-ns-250
+    metadata:
+      platform: AWS
+      masterNodesType: m6a.2xlarge
+      masterNodesCount: 3
+      workerNodesType: m6a.2xlarge
+      workerNodesCount: 24
+      benchmark.keyword: cudn-density
+      kbCfg.iterations: "250"
+      kbCfg.churnDuration: "0s"
+      wildcard:
+        ocpVersion: "{{ version }}*"
+      networkType: OVNKubernetes
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
+      fips: "{{ fips | default('false') }}"
+      not:
+        stream: okd

@@ -1,0 +1,37 @@
+metricsFile: metrics/cudn-density-metrics.yaml
+tests:
+  - name: aws-small-scale-cudn-incremental-700
+    metadata:
+      platform: AWS
+      masterNodesType: m6a.4xlarge
+      masterNodesCount: 3
+      workerNodesType: m6a.4xlarge
+      workerNodesCount: 24
+      benchmark.keyword: cudn-density
+      kbCfg.iterations: "700"
+      kbCfg.incrementalPattern: "linear"
+      kbCfg.incrementalStepSize: "50"
+      wildcard:
+        ocpVersion: "{{ version }}*"
+      networkType: OVNKubernetes
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
+      fips: "{{ fips | default('false') }}"
+      not:
+        stream: okd
+
+    metrics:
+      - name: podReadyLatency
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName: Ready
+        metric_of_interest: P99
+        agg:
+          agg_type: max
+        not:
+          jobName.keyword: "garbage-collection"
+        labels:
+          - "[Jira: PerfScale]"
+        direction: 1
+        threshold: 10
