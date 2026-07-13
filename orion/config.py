@@ -68,6 +68,17 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
         if parent_metrics and not test["IgnoreGlobalMetrics"]:
             test["metrics"] = merge_lists(test.get("metrics", []), parent_metrics)
 
+        wildcard_fields = test.get("metadata", {}).get("wildcard", {})
+        keyword_wildcards = [f for f in wildcard_fields if f.endswith(".keyword")]
+        if keyword_wildcards:
+            logger.error(
+                "Test '%s': wildcard fields must not use .keyword suffix "
+                "(keyword fields are exact-match; put them in top-level metadata instead). "
+                "Found: %s",
+                test["name"], keyword_wildcards
+            )
+            sys.exit(1)
+
         for metric in test["metrics"]:
             metric_name = test["name"] + ":" + metric["name"]
             if "agg" in metric:

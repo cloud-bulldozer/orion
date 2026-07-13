@@ -491,6 +491,27 @@ metadata:
 
 This matches any `ocpVersion` starting with `4.17` (e.g., `4.17.0`, `4.17.5-rc1`, etc.).
 
+> **Important:** The `wildcard` section is strictly for fields that need pattern/glob matching. Do not use it as a general-purpose filter for metadata fields that can be matched exactly.
+>
+> - **Do not** use `.keyword` fields under `wildcard`. The `.keyword` suffix denotes an exact-match field in OpenSearch — combining it with wildcard patterns is contradictory. Place `.keyword` fields directly in the top-level metadata for exact matching.
+> - **Do not** use `wildcard` for fields whose value is already known exactly. Put those in top-level metadata instead.
+>
+> ```yaml
+> # WRONG — .keyword field under wildcard
+> metadata:
+>   wildcard:
+>     upstreamJob.keyword: "*my-job-name*"
+>
+> # CORRECT — exact match in top-level metadata
+> metadata:
+>   upstreamJob.keyword: periodic-ci-my-exact-job-name
+>
+> # CORRECT — wildcard on a non-keyword field for prefix matching
+> metadata:
+>   wildcard:
+>     ocpVersion: "4.17*"
+> ```
+
 ## Labels and Filtering
 
 ### Labels

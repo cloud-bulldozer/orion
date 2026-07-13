@@ -103,6 +103,67 @@ class TestPercentileValidation:
             assert len(result["tests"]) == 1
 
 
+class TestWildcardKeywordValidation:
+    """Tests that .keyword fields under wildcard: are rejected."""
+
+    def test_keyword_field_in_wildcard_exits(self):
+        config = {
+            "tests": [
+                {
+                    "name": "test1",
+                    "metadata": {
+                        "platform": "AWS",
+                        "wildcard": {
+                            "upstreamJob.keyword": "*some-job*",
+                        },
+                    },
+                    "metrics": [
+                        {
+                            "name": "m1",
+                            "metricName": "test",
+                            "metric_of_interest": "value",
+                            "threshold": 10,
+                            "direction": 1,
+                        }
+                    ],
+                }
+            ]
+        }
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = _write_config(tmp_dir, config)
+            with pytest.raises(SystemExit):
+                load_config(path, {})
+
+    def test_non_keyword_wildcard_field_passes(self):
+        config = {
+            "tests": [
+                {
+                    "name": "test1",
+                    "metadata": {
+                        "platform": "AWS",
+                        "wildcard": {
+                            "ocpVersion": "4.17*",
+                        },
+                    },
+                    "metrics": [
+                        {
+                            "name": "m1",
+                            "metricName": "test",
+                            "metric_of_interest": "value",
+                            "threshold": 10,
+                            "direction": 1,
+                        }
+                    ],
+                }
+            ]
+        }
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = _write_config(tmp_dir, config)
+            result = load_config(path, {})
+            assert result is not None
+            assert len(result["tests"]) == 1
+
+
 class TestCollectPullNumbers:  # pylint: disable=missing-class-docstring
 
     def test_single_pull_number_from_input_vars(self):
