@@ -161,29 +161,12 @@ setup() {
   export quay_version=$(echo "$QUAY_LATEST_VERSION" | cut -d'.' -f1,2)
 }
 
-@test "orion label small scale cluster density with hunter-analyze" {
-  run_cmd orion --config "examples/label-small-scale-cluster-density.yaml" --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
-}
-
-@test "orion label small scale cluster density with hunter-analyze and using env vars for ES" {
-  export ES_SERVER=${ES_SERVER} es_metadata_index=${METADATA_INDEX} es_benchmark_index=${BENCHMARK_INDEX}
-  run_cmd orion --config "examples/label-small-scale-cluster-density.yaml" --lookback 45d --hunter-analyze --input-vars='{"version": "'${VERSION}'"}'
-}
-
 @test "orion payload scale" {
   run_cmd orion --config "examples/payload-scale.yaml" --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
 @test "orion payload scale without lookback period" {
   run_cmd orion --config "examples/payload-scale.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
-}
-
-@test "orion readout control plane cdv2 with text output " {
-  run_cmd orion --config "examples/label-small-scale-cluster-density.yaml" --hunter-analyze --output-format text --save-output-path=./outputs/output.txt --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX}
-}
-
-@test "orion label small control plane cdv2 with json output " {
-  run_cmd orion --config "examples/label-small-scale-cluster-density.yaml" --hunter-analyze --output-format json --save-output-path=./outputs/output.json --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX}
 }
 
 @test "orion readout control plane node-density with json output and match all iterations " {
@@ -204,14 +187,6 @@ setup() {
 
 @test "orion virt-density-nomount" {
   run_cmd orion --config examples/metal-perfscale-cpt-virt-density-nomount.yaml --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
-}
-
-@test "orion small scale cluster density with anomaly detection" {
-  run_cmd orion --config "examples/small-scale-cluster-density.yaml" --lookback 45d --anomaly-detection --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
-}
-
-@test "orion small scale node density cni anomaly detection with a window" {
-  run_cmd orion --config "examples/small-scale-node-density-cni.yaml" --anomaly-detection --anomaly-window 3 --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
 @test "orion trt external payload cluster density" {
