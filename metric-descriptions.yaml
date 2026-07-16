@@ -1,0 +1,1081 @@
+metrics:
+
+  # ── Workload scheduling latency ───────────────────────────────────────────────
+
+  - name: podReadyLatency
+    description: ""
+    metricName.keyword: podLatencyQuantilesMeasurement
+    metric_of_interest: P99
+    direction: 1
+    threshold: 10
+    jira_component: PerfScale
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: containersStartedLatency
+    description: ""
+    metricName.keyword: podLatencyQuantilesMeasurement
+    metric_of_interest: P99
+    direction: 1
+    threshold: 25
+    jira_component: PodLatency
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: serviceReadyLatency
+    description: ""
+    metricName.keyword: serviceLatencyQuantilesMeasurement
+    metric_of_interest: P99
+    direction: 1
+    threshold: 10
+    jira_component: PerfScale
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: vmiReadyLatency
+    description: ""
+    metricName.keyword: vmiLatencyQuantilesMeasurement
+    metric_of_interest: P99
+    direction: 1
+    threshold: 10
+    jira_component: PerfScale
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: netpolReadyLatency
+    description: ""
+    metricName.keyword: netpolLatencyQuantilesMeasurement
+    metric_of_interest: P99
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: netpolMinReadyLatency
+    description: ""
+    metricName.keyword: netpolLatencyQuantilesMeasurement
+    metric_of_interest: P99
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: jobReadyLatency-Completion
+    description: ""
+    metricName.keyword: jobLatencyQuantilesMeasurement
+    metric_of_interest: P99
+    direction: 1
+    threshold: 25
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: jobReadyLatency-StartTime
+    description: ""
+    metricName.keyword: jobLatencyQuantilesMeasurement
+    metric_of_interest: P99
+    direction: 1
+    threshold: 25
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── etcd ──────────────────────────────────────────────────────────────────────
+
+  - name: etcdCPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: etcd
+    namespace: openshift-etcd
+    container: etcd
+    known_causes: []
+    related_repos: []
+
+  - name: etcdMemory
+    description: ""
+    metricName.keyword: podMemory-Controlplane
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: etcd
+    namespace: ""
+    container: etcd
+    known_causes: []
+    related_repos: []
+
+  - name: etcdDisk
+    description: ""
+    metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: etcd
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: etcdDiskCommit
+    description: ""
+    metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: etcd
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: etcdWALFsyncLatency
+    description: ""
+    metricName.keyword: 99thEtcdDiskWalFsyncDurationSeconds
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: etcd
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: 99th_WAL_fsync
+    description: ""
+    metricName.keyword: 99thEtcdDiskWalFsync
+    metric_of_interest: value
+    direction: ""
+    threshold: ""
+    jira_component: etcd
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: 99th_Backend_I/O
+    description: ""
+    metricName.keyword: 99thEtcdDiskBackendCommit
+    metric_of_interest: value
+    direction: ""
+    threshold: ""
+    jira_component: etcd
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: 99th_Roundtrip
+    description: ""
+    metricName.keyword: 99thEtcdRoundTripTime
+    metric_of_interest: value
+    direction: ""
+    threshold: ""
+    jira_component: etcd
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── kube-apiserver ────────────────────────────────────────────────────────────
+
+  - name: apiserverCPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: kube-apiserver
+    namespace: openshift-kube-apiserver
+    container: kube-apiserver
+    known_causes: []
+    related_repos: []
+
+  - name: apiserverMemory
+    description: ""
+    metricName.keyword: podMemory-Controlplane
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: kube-apiserver
+    namespace: ""
+    container: kube-apiserver
+    known_causes: []
+    related_repos: []
+
+  # ── Node ──────────────────────────────────────────────────────────────────────
+
+  - name: kubelet
+    description: ""
+    metricName.keyword: kubeletCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: Node
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: kubeletCPU
+    description: ""
+    metricName.keyword: kubeletCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: Node
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: kubeletMemory
+    description: ""
+    metricName.keyword: kubeletMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: Node
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: crioCPU
+    description: ""
+    metricName.keyword: crioCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: Node
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── Multus / Monitoring ───────────────────────────────────────────────────────
+
+  - name: multusCPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: multus
+    namespace: openshift-multus
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: monitoringCPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: monitoring
+    namespace: openshift-monitoring
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── OVN-Kubernetes CPU ────────────────────────────────────────────────────────
+
+  - name: ovnCPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnkCPU-overall
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-ovncontroller
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ovn-controller
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-ovnk-controller
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ovnkube-controller
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-northd
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: northd
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-nbdb
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: nbdb
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-sbdb
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: sbdb
+    known_causes: []
+    related_repos: []
+
+  - name: ovnkCPU-masters
+    description: ""
+    metricName.keyword: containerCPU-Masters
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnkubeCPU-workers
+    description: ""
+    metricName.keyword: containerCPU-AggregatedWorkers
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-ovnkcontroller
+    description: ""
+    metricName.keyword: containerCPU-Masters
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ovnkube-controller
+    known_causes: []
+    related_repos: []
+
+  # ── OVN-Kubernetes Memory ─────────────────────────────────────────────────────
+
+  - name: ovnkMem-overall
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-ovncontroller
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ovn-controller
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-northd
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: northd
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-nbdb
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: nbdb
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-sbdb
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: sbdb
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-ovnk-controller
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ovnkube-controller
+    known_causes: []
+    related_repos: []
+
+  - name: ovnkMem-masters
+    description: ""
+    metricName.keyword: containerMemory-Masters
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnkubeMem-workers
+    description: ""
+    metricName.keyword: containerMemory-AggregatedWorkers
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-ovnkcontroller
+    description: ""
+    metricName.keyword: containerMemory-Masters
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ovnkube-controller
+    known_causes: []
+    related_repos: []
+
+  # ── OVS cgroup ────────────────────────────────────────────────────────────────
+
+  - name: ovsCPU-irate-all
+    description: ""
+    metricName.keyword: cgroupCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsCPU
+    description: ""
+    metricName.keyword: cgroupCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsMemory-Workers
+    description: ""
+    metricName.keyword: cgroupMemoryRSS-Workers
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsMemory-Masters
+    description: ""
+    metricName.keyword: cgroupMemoryRSS-Masters
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsMemory-all
+    description: ""
+    metricName.keyword: cgroupMemoryRSS
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsMemory
+    description: ""
+    metricName.keyword: cgroupMemoryRSS
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── Network packet drops ──────────────────────────────────────────────────────
+
+  - name: TXPacketsDropped
+    description: ""
+    metricName.keyword: nodeNetworkDeviceDropTXTotal
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: RXPacketsDropped
+    description: ""
+    metricName.keyword: nodeNetworkDeviceDropRXTotal
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── NetObserv ─────────────────────────────────────────────────────────────────
+
+  - name: netobserv-flow-cpu
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: ""
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-netobserv
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: netobserv-agent-cpu
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: ""
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-netobserv-privileged
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: netobserv-flow-mem
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: ""
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-netobserv
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: netobserv-agent-mem
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: ""
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-netobserv-privileged
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── Ingress performance ───────────────────────────────────────────────────────
+
+  - name: passthrough_avg_rps
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: total_avg_rps
+    direction: ""
+    threshold: ""
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: passthrough_avg_lat
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: avg_lat_us
+    direction: ""
+    threshold: ""
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: http_avg_rps
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: total_avg_rps
+    direction: ""
+    threshold: ""
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: http_avg_lat
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: avg_lat_us
+    direction: ""
+    threshold: ""
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: reencrypt_avg_rps
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: total_avg_rps
+    direction: ""
+    threshold: ""
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: reencrypt_avg_lat
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: avg_lat_us
+    direction: ""
+    threshold: ""
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: edge_avg_rps
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: total_avg_rps
+    direction: ""
+    threshold: ""
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: edge_avg_lat
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: avg_lat_us
+    direction: ""
+    threshold: ""
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── k8s-netperf (n2n = node-to-node, p2p = pod-to-pod, p2s = pod-to-service) ─
+
+  - name: n2n-tput-64-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-64-2p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-1024-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-1024-2p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-4096-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-4096-2p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-8192-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-8192-2p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-ltcy-1024-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: latency
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-ltcy-1024-2p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: latency
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-64-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-64-2p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-1024-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-1024-2p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-4096-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-4096-2p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-8192-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-8192-2p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-ltcy-1024-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: latency
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-ltcy-1024-2p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: latency
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2s-tput-64-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2s-tput-1024-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2s-tput-4096-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2s-tput-8192-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: throughput
+    direction: -1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2s-ltcy-1024-1p
+    description: ""
+    metricName.keyword: ""
+    metric_of_interest: latency
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
