@@ -1,0 +1,997 @@
+metrics:
+
+  - name: podReadyLatency
+    description: ""
+    metricName.keyword: podLatencyQuantilesMeasurement
+    metric_of_interest: P99
+    direction: 1
+    threshold: 10
+    jira_component: PerfScale
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: containersStartedLatency
+    description: ""
+    metricName.keyword: podLatencyQuantilesMeasurement
+    metric_of_interest: P99
+    direction: 1
+    threshold: 25
+    jira_component: PodLatency
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: serviceReadyLatency
+    description: ""
+    metricName.keyword: serviceLatencyQuantilesMeasurement
+    metric_of_interest: P99
+    direction: 1
+    threshold: 10
+    jira_component: PerfScale
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: apiserverCPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: kube-apiserver
+    namespace: openshift-kube-apiserver
+    container: kube-apiserver
+    known_causes: []
+    related_repos: []
+
+  - name: kube-apiserverCPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: kube-apiserver
+    namespace: openshift-kube-apiserver
+    container: kube-apiserver
+    known_causes: []
+    related_repos: []
+
+  - name: multusCPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: multus
+    namespace: openshift-multus
+    container: kube-multus
+    known_causes: []
+    related_repos: []
+
+  - name: monitoringCPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: monitoring
+    namespace: openshift-monitoring
+    container: prometheus
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-ovncontroller
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ovn-controller
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-ovnk-controller
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ovnkube-controller
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-northd
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: northd
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-nbdb
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: nbdb
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-sbdb
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: sbdb
+    known_causes: []
+    related_repos: []
+
+  - name: etcdCPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: etcd
+    namespace: openshift-etcd
+    container: etcd
+    known_causes: []
+    related_repos: []
+
+  - name: kubelet
+    description: ""
+    metricName.keyword: kubeletCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: Node
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsCPU-irate-all
+    description: ""
+    metricName.keyword: cgroupCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsMemory-Workers
+    description: ""
+    metricName.keyword: cgroupMemoryRSS-Workers
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsMemory-Masters
+    description: ""
+    metricName.keyword: cgroupMemoryRSS-Masters
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsMemory-all
+    description: ""
+    metricName.keyword: cgroupMemoryRSS
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnkCPU-overall
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnkMem-overall
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-ovncontroller
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ovn-controller
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-northd
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: northd
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-nbdb
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: nbdb
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-sbdb
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: sbdb
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-ovnk-controller
+    description: ""
+    metricName.keyword: containerMemory
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: "Networking / ovn-kubernetes"
+    namespace: openshift-ovn-kubernetes
+    container: ovnkube-controller
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-monitoring-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-monitoring
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-ovn-kubernetes-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-cluster-csi-drivers-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-cluster-csi-drivers
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-multus-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-multus
+    container: kube-multus
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-machine-config-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-machine-config-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-etcd-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-etcd
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-e2e-loki-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-e2e-loki
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-dns-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-dns
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-kube-apiserver-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-kube-apiserver
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-machine-api-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-machine-api
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-kube-controller-manager-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-kube-controller-manager
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-insights-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-insights
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-kube-scheduler-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-kube-scheduler
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-cluster-node-tuning-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-cluster-node-tuning-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-network-diagnostics-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-network-diagnostics
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-image-registry-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-image-registry
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-operator-lifecycle-manager-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-operator-lifecycle-manager
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-apiserver-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-apiserver
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-network-node-identity-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-network-node-identity
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-network-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-network-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-marketplace-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-marketplace
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: kube-system-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: kube-system
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-cluster-storage-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-cluster-storage-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-console-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-console
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-cloud-credential-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-cloud-credential-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-ingress-canary-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-ingress-canary
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-cloud-controller-manager-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-cloud-controller-manager-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-authentication-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-authentication
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-route-controller-manager-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-route-controller-manager
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-cluster-samples-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-cluster-samples-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-dns-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-dns-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-ingress-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-ingress-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-cloud-controller-manager-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-cloud-controller-manager
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-cluster-machine-approver-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-cluster-machine-approver
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-kube-storage-version-migrator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-kube-storage-version-migrator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-authentication-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-authentication-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-oauth-apiserver-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-oauth-apiserver
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-controller-manager-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-controller-manager
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-ingress-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-ingress
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-kube-scheduler-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-kube-scheduler-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-operator-controller-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-operator-controller
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-apiserver-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-apiserver-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-cluster-olm-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-cluster-olm-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-controller-manager-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-controller-manager-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-etcd-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-etcd-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-kube-apiserver-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-kube-apiserver-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-cloud-network-config-controller-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-cloud-network-config-controller
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-cluster-version-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-cluster-version
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-kube-controller-manager-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-kube-controller-manager-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-service-ca-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-service-ca-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-console-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-console-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-service-ca-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-service-ca
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-catalogd-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-catalogd
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-config-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-config-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-kube-storage-version-migrator-operator-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-kube-storage-version-migrator-operator
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: openshift-network-console-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: openshift-network-console
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: default-ns-CPU
+    description: ""
+    metricName.keyword: containerCPU
+    metric_of_interest: value
+    direction: 1
+    threshold: 10
+    jira_component: ""
+    namespace: default
+    container: ""
+    known_causes: []
+    related_repos: []
