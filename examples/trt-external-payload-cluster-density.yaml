@@ -150,13 +150,145 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: kubelet
+      - name: kubeletCPU
         metricName.keyword: kubeletCPU
         metric_of_interest: value
         labels:
           - "[Jira: Node]"
         agg:
           agg_type: avg
+        direction: 1
+        threshold: 10
+
+      - name: kubeletMemory
+        metricName.keyword: kubeletMemory
+        metric_of_interest: value
+        labels:
+          - "[Jira: Node]"
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
+
+      - name: crioCPU
+        metricName.keyword: crioCPU
+        metric_of_interest: value
+        labels:
+          - "[Jira: Node]"
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
+
+      - name: etcdWALFsyncLatency
+        metricName.keyword: 99thEtcdDiskWalFsyncDurationSeconds
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: etcd]"
+        direction: 1
+        threshold: 10
+
+      - name: TXPacketsDropped
+        metricName.keyword: nodeNetworkDeviceDropTXTotal
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: RXPacketsDropped
+        metricName.keyword: nodeNetworkDeviceDropRXTotal
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnkCPU-overall
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnkMem-overall
+        metricName.keyword: containerMemory
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-ovncontroller
+        metricName.keyword: containerMemory
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovn-controller
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-northd
+        metricName.keyword: containerMemory
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: northd
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-nbdb
+        metricName.keyword: containerMemory
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: nbdb
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-sbdb
+        metricName.keyword: containerMemory
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: sbdb
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnMem-ovnk-controller
+        metricName.keyword: containerMemory
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        labels.container.keyword: ovnkube-controller
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
         direction: 1
         threshold: 10
 

@@ -90,7 +90,7 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: kubelet
+      - name: kubeletCPU
         metricName.keyword: kubeletCPU
         metric_of_interest: value
         labels:
@@ -99,6 +99,68 @@ tests:
           agg_type: avg
         direction: 1
         threshold: 10
+
+      - name: kubeletMemory
+        metricName.keyword: kubeletMemory
+        metric_of_interest: value
+        labels:
+          - "[Jira: Node]"
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
+
+      - name: crioCPU
+        metricName.keyword: crioCPU
+        metric_of_interest: value
+        labels:
+          - "[Jira: Node]"
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
+
+      - name: etcdWALFsyncLatency
+        metricName.keyword: 99thEtcdDiskWalFsyncDurationSeconds
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: etcd]"
+        direction: 1
+        threshold: 10
+
+      - name: TXPacketsDropped
+        metricName.keyword: nodeNetworkDeviceDropTXTotal
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: RXPacketsDropped
+        metricName.keyword: nodeNetworkDeviceDropRXTotal
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
+      - name: ovnCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+        direction: 1
+        threshold: 10
+
       - name: ovsCPU-irate-all
         metricName.keyword: cgroupCPU
         labels.id.keyword: /system.slice/ovs-vswitchd.service
