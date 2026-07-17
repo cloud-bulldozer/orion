@@ -10,6 +10,7 @@ tests:
       benchmark.keyword: udn-density-pods
       wildcard:
         ocpVersion: "{{ version }}*"
+        jobName.keyword: "{{ jobname | default('*') }}"
       networkType: OVNKubernetes
       jobType: "{{ jobtype | default('periodic') }}"
       pullNumber: "{{ pull_number | default(0) }}"

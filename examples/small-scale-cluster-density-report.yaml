@@ -3,6 +3,7 @@ tests:
     metadata:
       wildcard:
         ocpVersion: "{{ version }}*"
+        jobName.keyword: "{{ jobname | default('*') }}"
       platform: AWS
       benchmark.keyword: cluster-density-v2
       masterNodesCount: 3

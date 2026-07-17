@@ -10,6 +10,7 @@ tests:
       fips: "{{ fips | default('false') }}"
       wildcard:
         ocpVersion: "{{ version }}*"
+        jobName.keyword: "{{ jobname | default('*') }}"
       not:
         stream: okd
         # networkType: OVNKubernetes
