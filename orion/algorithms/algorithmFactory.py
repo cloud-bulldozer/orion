@@ -4,6 +4,7 @@ Algorithm Factory to choose avaiable algorithms
 import pandas as pd
 import orion.constants as cnsts
 from .edivisive import EDivisive
+from .edivisive import OrigEDivisive
 from .isolationforest import IsolationForestWeightedMean
 from .cmr import CMR
 
@@ -35,6 +36,8 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-argu
         """
         if algorithm == cnsts.EDIVISIVE:
             return EDivisive(dataframe, test, options, metrics_config)
+        if algorithm == cnsts.ORIG_EDIVISIVE:
+            return OrigEDivisive(dataframe, test, options, metrics_config)
         if algorithm == cnsts.ISOLATION_FOREST:
             return IsolationForestWeightedMean(dataframe, test, options, metrics_config)
         if algorithm == cnsts.CMR:
