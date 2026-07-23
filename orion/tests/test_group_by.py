@@ -10,6 +10,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from opensearchpy.exceptions import ConnectionError as OpenSearchConnectionError
+
 from orion.config import expand_group_by, _replace_placeholders
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
@@ -116,6 +118,25 @@ class TestDiscoverFieldValues:
         values = matcher.discover_field_values(metric, "labels.namespace.keyword", ["uuid1"])
 
         assert values == []
+
+    @patch("orion.matcher.Search")
+    def test_connection_error_returns_empty(self, mock_search_cls, logger):
+        matcher = Matcher.__new__(Matcher)
+        matcher.uuid_field = "uuid"
+        matcher.es = MagicMock()
+        matcher.index = "perf-scale-ci"
+        matcher.logger = MagicMock()
+
+        mock_search_instance = MagicMock()
+        mock_search_cls.return_value.query.return_value.extra.return_value = mock_search_instance
+        mock_search_instance.aggs = MagicMock()
+        mock_search_instance.execute.side_effect = OpenSearchConnectionError("connection refused")
+
+        metric = {"name": "test", "metricName.keyword": "containerCPU"}
+        values = matcher.discover_field_values(metric, "labels.namespace.keyword", ["uuid1"])
+
+        assert values == []
+        matcher.logger.warning.assert_called_once()
 
 
 class TestExpandGroupBy:

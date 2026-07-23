@@ -8,8 +8,10 @@ from typing import List, Dict, Any
 # pylint: disable=import-error
 import pandas as pd
 from opensearchpy import OpenSearch
+from opensearchpy.exceptions import ConnectionError as OpenSearchConnectionError
 from opensearch_dsl import Search, Q
 from orion.logger import SingletonLogger
+
 
 
 class Matcher:
@@ -753,7 +755,15 @@ class Matcher:
         search.aggs.bucket("group_values", "terms", field=field, size=1000)
 
         self.logger.debug("group_by discovery query for field '%s': %s", field, search.to_dict())
-        result = search.execute()
+        try:
+            result = search.execute()
+        except OpenSearchConnectionError as e:
+            self.logger.warning(
+                "Error discovering field values for metric '%s': %s"
+                ,metric, e
+            )
+            return []
+
 
         if not hasattr(result, "aggregations"):
             return []
