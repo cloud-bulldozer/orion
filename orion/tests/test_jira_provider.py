@@ -109,6 +109,11 @@ class TestJiraStatusFilter:
 class TestCreateAck:
     """Tests for create_ack() issue creation."""
 
+    @pytest.fixture(autouse=True)
+    def _no_sleep(self):
+        with patch("time.sleep"):
+            yield
+
     def _make_provider(self, component="CPT_ISSUES"):
         """Create a JiraAckProvider with mocked JIRA client."""
         with patch("orion.ack_providers.jira_provider.JIRA") as mock_jira_cls:
