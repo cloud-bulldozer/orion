@@ -161,6 +161,7 @@ cython_debug/
 
 # Ignore YAML files in the top folder
 /*.yaml
+!/metric-descriptions.yaml
 
 *.csv
 output*.*

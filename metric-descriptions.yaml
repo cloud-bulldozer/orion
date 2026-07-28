@@ -1,0 +1,641 @@
+metrics:
+
+  # ── Workload scheduling latency ───────────────────────────────────────────────
+
+  - name: podReadyLatency
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: containersStartedLatency
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: serviceReadyLatency
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: vmiReadyLatency
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: netpolReadyLatency
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: netpolMinReadyLatency
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: jobReadyLatency-Completion
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: jobReadyLatency-StartTime
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── etcd ──────────────────────────────────────────────────────────────────────
+
+  - name: etcdCPU
+    description: ""
+    namespace: openshift-etcd
+    container: etcd
+    known_causes: []
+    related_repos: []
+
+  - name: etcdMemory
+    description: ""
+    namespace: openshift-etcd
+    container: etcd
+    known_causes: []
+    related_repos: []
+
+  - name: etcdDisk
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: etcdDiskCommit
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: etcdWALFsyncLatency
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: 99th_WAL_fsync
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: 99th_Backend_I/O
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: 99th_Roundtrip
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── kube-apiserver ────────────────────────────────────────────────────────────
+
+  - name: apiserverCPU
+    description: ""
+    namespace: openshift-kube-apiserver
+    container: kube-apiserver
+    known_causes: []
+    related_repos: []
+
+  - name: apiserverMemory
+    description: ""
+    namespace: openshift-kube-apiserver
+    container: kube-apiserver
+    known_causes: []
+    related_repos: []
+
+  # ── Node ──────────────────────────────────────────────────────────────────────
+
+  - name: kubelet
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: kubeletCPU
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: kubeletMemory
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: crioCPU
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── Multus / Monitoring ───────────────────────────────────────────────────────
+
+  - name: multusCPU
+    description: ""
+    namespace: openshift-multus
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: monitoringCPU
+    description: ""
+    namespace: openshift-monitoring
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── OVN-Kubernetes CPU ────────────────────────────────────────────────────────
+
+  - name: ovnCPU
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnkCPU-overall
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-ovncontroller
+    description: "The CPU utilization of the ovn-controller container"
+    namespace: openshift-ovn-kubernetes
+    container: ovn-controller
+    known_causes: ["Downstream merges in github.com/openshift/ovn-kubernetes"]
+    related_repos: ["github.com/openshift/ovn-kubernetes", "github.com/ovn-kubernetes/ovn-kubernetes"]
+
+  - name: ovnCPU-ovnk-controller
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: ovnkube-controller
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-northd
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: northd
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-nbdb
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: nbdb
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-sbdb
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: sbdb
+    known_causes: []
+    related_repos: []
+
+  - name: ovnkCPU-masters
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnkubeCPU-workers
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnCPU-ovnkcontroller
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: ovnkube-controller
+    known_causes: []
+    related_repos: []
+
+  # ── OVN-Kubernetes Memory ─────────────────────────────────────────────────────
+
+  - name: ovnkMem-overall
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-ovncontroller
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: ovn-controller
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-northd
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: northd
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-nbdb
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: nbdb
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-sbdb
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: sbdb
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-ovnk-controller
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: ovnkube-controller
+    known_causes: []
+    related_repos: []
+
+  - name: ovnkMem-masters
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnkubeMem-workers
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovnMem-ovnkcontroller
+    description: ""
+    namespace: openshift-ovn-kubernetes
+    container: ovnkube-controller
+    known_causes: []
+    related_repos: []
+
+  # ── OVS cgroup ────────────────────────────────────────────────────────────────
+
+  - name: ovsCPU-irate-all
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsCPU
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsMemory-Workers
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsMemory-Masters
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsMemory-all
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: ovsMemory
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── Network packet drops ──────────────────────────────────────────────────────
+
+  - name: TXPacketsDropped
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: RXPacketsDropped
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── NetObserv ─────────────────────────────────────────────────────────────────
+
+  - name: netobserv-flow-cpu
+    description: ""
+    namespace: openshift-netobserv
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: netobserv-agent-cpu
+    description: ""
+    namespace: openshift-netobserv-privileged
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: netobserv-flow-mem
+    description: ""
+    namespace: openshift-netobserv
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: netobserv-agent-mem
+    description: ""
+    namespace: openshift-netobserv-privileged
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── Ingress performance ───────────────────────────────────────────────────────
+
+  - name: passthrough_avg_rps
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: passthrough_avg_lat
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: http_avg_rps
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: http_avg_lat
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: reencrypt_avg_rps
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: reencrypt_avg_lat
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: edge_avg_rps
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: edge_avg_lat
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  # ── k8s-netperf (n2n = node-to-node, p2p = pod-to-pod, p2s = pod-to-service) ─
+
+  - name: n2n-tput-64-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-64-2p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-1024-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-1024-2p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-4096-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-4096-2p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-8192-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-tput-8192-2p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-ltcy-1024-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: n2n-ltcy-1024-2p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-64-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-64-2p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-1024-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-1024-2p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-4096-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-4096-2p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-8192-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-tput-8192-2p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-ltcy-1024-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2p-ltcy-1024-2p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2s-tput-64-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2s-tput-1024-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2s-tput-4096-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2s-tput-8192-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
+
+  - name: p2s-ltcy-1024-1p
+    description: ""
+    namespace: ""
+    container: ""
+    known_causes: []
+    related_repos: []
