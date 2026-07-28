@@ -6,6 +6,7 @@ using plotly. Generates self-contained HTML files with embedded JS.
 """
 
 import re
+from dataclasses import dataclass
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -53,6 +54,16 @@ def _short_version(v):
     return v[:20]
 
 
+@dataclass
+class ClassifiedChangepoint:
+    """A changepoint with pre-computed classification (color, regression status)."""
+    cp: object
+    index: int
+    pct_change: float
+    is_regression: bool
+    color: str
+
+
 def _classify_changepoint(cp_stats, direction):
     """Return (pct_change, is_regression) for a single changepoint."""
     if cp_stats.mean_1 == 0:
@@ -65,19 +76,42 @@ def _classify_changepoint(cp_stats, direction):
     return pct_change, is_regression
 
 
+def _classify_changepoints(change_points_by_metric, metrics_config):
+    """Pre-compute classification for all changepoints across all metrics.
+
+    Returns dict[str, list[ClassifiedChangepoint]].
+    """
+    result = {}
+    for metric_name, cps in change_points_by_metric.items():
+        direction = metrics_config.get(metric_name, {}).get("direction", 1)
+        classified = []
+        for cp in cps:
+            pct_change, is_regression = _classify_changepoint(
+                cp.stats, direction
+            )
+            color = "#ff4444" if is_regression else "#39ff14"
+            classified.append(ClassifiedChangepoint(
+                cp=cp, index=cp.index,
+                pct_change=pct_change, is_regression=is_regression,
+                color=color,
+            ))
+        result[metric_name] = classified
+    return result
+
+
 def _build_test_figure(viz_data: VizData) -> go.Figure:
     """Build a plotly Figure for a single test with one subplot per metric."""
     df = viz_data.dataframe
     metrics = list(viz_data.metrics_config.keys())
+    classified_by_metric = _classify_changepoints(
+        viz_data.change_points_by_metric, viz_data.metrics_config
+    )
 
     def _sort_key(m):
-        cps = viz_data.change_points_by_metric.get(m, [])
+        cps = classified_by_metric.get(m, [])
         if not cps:
             return (2, m)  # stable → bottom
-        direction = viz_data.metrics_config[m].get("direction", 1)
-        has_regression = any(
-            _classify_changepoint(cp.stats, direction)[1] for cp in cps
-        )
+        has_regression = any(c.is_regression for c in cps)
         return (0, m) if has_regression else (1, m)
 
     metrics = sorted(metrics, key=_sort_key)
@@ -116,9 +150,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
     ]
 
     for row_idx, metric_name in enumerate(metrics, start=1):
-        metric_config = viz_data.metrics_config[metric_name]
         values = df[metric_name]
-        change_points = viz_data.change_points_by_metric.get(metric_name, [])
         line_color = line_colors[(row_idx - 1) % len(line_colors)]
 
         # Structured customdata for hover template and click handlers
@@ -175,44 +207,40 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
         )
 
         # Changepoint markers and annotations
-        for cp in change_points:
-            idx = cp.index
-            if idx >= len(df):
+        for cc in classified_by_metric.get(metric_name, []):
+            if not 0 <= cc.index < len(df):
                 continue
-            cp_value = values.iloc[idx]
-
-            direction = metric_config.get("direction", 1)
-            pct_change, is_regression = _classify_changepoint(
-                cp.stats, direction
-            )
-            color = "#ff4444" if is_regression else "#39ff14"
+            cp_value = values.iloc[cc.index]
             cp_build_url = (
-                build_urls.iloc[idx] if idx < len(build_urls) else ""
+                build_urls.iloc[cc.index]
+                if cc.index < len(build_urls) else ""
             )
 
             # Changepoint marker
             fig.add_trace(
                 go.Scatter(
-                    x=[idx],
+                    x=[cc.index],
                     y=[cp_value],
                     mode="markers",
                     marker={
                         "size": 14,
-                        "color": color,
+                        "color": cc.color,
                         "symbol": "diamond",
                         "line": {"width": 2, "color": "white"},
                     },
                     showlegend=False,
                     hovertemplate=(
                         f"<b>CHANGEPOINT</b><br>"
-                        f"{pct_change:+.1f}% change<br>"
-                        f"Mean before: {cp.stats.mean_1:,.2f}<br>"
-                        f"Mean after: {cp.stats.mean_2:,.2f}<br>"
-                        f"UUID: {uuids.iloc[idx]}<br>"
+                        f"{cc.pct_change:+.1f}% change<br>"
+                        f"Mean before: {cc.cp.stats.mean_1:,.2f}<br>"
+                        f"Mean after: {cc.cp.stats.mean_2:,.2f}<br>"
+                        f"UUID: {uuids.iloc[cc.index]}<br>"
                         f"<i>click → build log  |  right-click → copy UUID</i>"
                         f"<extra></extra>"
                     ),
-                    customdata=[[cp_build_url, str(uuids.iloc[idx])]],
+                    customdata=[
+                        [cp_build_url, str(uuids.iloc[cc.index])]
+                    ],
                 ),
                 row=row_idx,
                 col=1,
@@ -220,22 +248,22 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
 
             # Vertical dashed line at changepoint
             fig.add_vline(
-                x=idx,
+                x=cc.index,
                 row=row_idx,
                 col=1,
                 line_dash="dash",
-                line_color=color,
+                line_color=cc.color,
                 line_width=1.5,
             )
 
             # Percentage change annotation
             y_range = values.max() - values.min()
             fig.add_annotation(
-                x=idx,
+                x=cc.index,
                 y=values.max() + y_range * 0.08,
-                text=f"<b>{pct_change:+.1f}%</b>",
+                text=f"<b>{cc.pct_change:+.1f}%</b>",
                 showarrow=False,
-                font={"color": color, "size": 11},
+                font={"color": cc.color, "size": 11},
                 row=row_idx,
                 col=1,
             )
@@ -325,23 +353,16 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
     )
     n_runs = len(df)
     total_cps = sum(
-        len(v) for v in viz_data.change_points_by_metric.values()
+        len(v) for v in classified_by_metric.values()
     )
 
     # Build per-metric changepoint summary
     cp_parts = []
-    for metric_name, cps in viz_data.change_points_by_metric.items():
-        for cp in cps:
-            direction = viz_data.metrics_config.get(
-                metric_name, {}
-            ).get("direction", 1)
-            pct, is_regression = _classify_changepoint(
-                cp.stats, direction
-            )
-            color = "#ff4444" if is_regression else "#39ff14"
+    for metric_name, ccs in classified_by_metric.items():
+        for cc in ccs:
             cp_parts.append(
-                f"<span style='color:{color}'>"
-                f"{metric_name}: {pct:+.1f}%</span>"
+                f"<span style='color:{cc.color}'>"
+                f"{metric_name}: {cc.pct_change:+.1f}%</span>"
             )
 
     cp_summary_line = ""
