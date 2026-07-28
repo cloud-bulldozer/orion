@@ -48,8 +48,21 @@ jobs:
 
   integration_tests:
     needs: gate
-    uses: ./.github/workflows/tests.yaml
-    with:
-      checkout_ref: ${{ github.event.pull_request.head.sha }}
-      checkout_repo: ${{ github.event.pull_request.head.repo.full_name }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Trigger integration tests
+        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ci-integration-tests.yaml',
+              ref: 'main',
+              inputs: {
+                checkout_ref: '${{ github.event.pull_request.head.sha }}',
+                checkout_repo: '${{ github.event.pull_request.head.repo.full_name }}',
+              },
+            });
