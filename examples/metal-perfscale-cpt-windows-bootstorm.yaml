@@ -3,6 +3,10 @@ tests:
     metadata:
       platform: BareMetal
       clusterType: self-managed
+      masterNodesType.keyword: ""
+      masterNodesCount: 3
+      workerNodesType.keyword: ""
+      workerNodesCount: 4
       benchmark.keyword: windows-bootstorm
       networkType: OVNKubernetes
       jobType: "{{ jobtype | default('periodic') }}"
@@ -16,7 +20,31 @@ tests:
         agg:
           agg_type: avg
         threshold: 10
-        direction: -1
+        direction: 1
+        labels:
+          - "[Jira: PerfScale]"
+
+      - name: bootstormSSHTimeP50
+        metricName.keyword: bootstormSSHMeasurement
+        metric_of_interest: bootstorm_time
+        agg:
+          agg_type: percentiles
+          percents: [50]
+          target_percentile: 50
+        threshold: 10
+        direction: 1
+        labels:
+          - "[Jira: PerfScale]"
+
+      - name: bootstormSSHTimeP90
+        metricName.keyword: bootstormSSHMeasurement
+        metric_of_interest: bootstorm_time
+        agg:
+          agg_type: percentiles
+          percents: [90]
+          target_percentile: 90
+        threshold: 10
+        direction: 1
         labels:
           - "[Jira: PerfScale]"
 
