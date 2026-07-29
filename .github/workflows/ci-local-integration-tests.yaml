@@ -63,6 +63,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.14"
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -86,20 +87,9 @@ jobs:
 
       - name: Populate OpenSearch with test data
         run: |
-          export ES_SERVER="http://localhost:9200"
-
-          # Load metadata
-          bash hack/ci-tests/load_metadata_to_opensearch.sh \
-            --es-server "$ES_SERVER"
-
-          # Load metrics (standard template-based)
           python hack/ci-tests/load_metrics_to_opensearch.py \
-            --es-server "$ES_SERVER"
-
-          # Load browbeat/rhoso data
-          python hack/ci-tests/load_metrics_to_opensearch.py \
-            --es-server "$ES_SERVER" \
-            --rhoso
+            --es-server "http://localhost:9200" \
+            --all
 
           # Flush and refresh so all documents are immediately searchable
           curl -s -X POST "http://localhost:9200/_refresh"
