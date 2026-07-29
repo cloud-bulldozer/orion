@@ -10,7 +10,9 @@ import pandas as pd
 import pytest
 
 from orion.logger import SingletonLogger
-from orion.visualization import VizData, _build_test_figure, generate_test_html
+from orion.visualization import (
+    VizData, _build_test_figure, _classify_changepoints, generate_test_html,
+)
 
 
 @pytest.fixture
@@ -143,3 +145,72 @@ def test_build_test_figure_renders_only_matching_ack_markers(sample_dataframe):
     assert ack_traces[0].x[0] == 1
     assert ack_traces[0].customdata[0][0] == "https://example.com/build/2"
     assert ack_traces[0].customdata[0][1] == "uuid-2"
+
+
+def test_classify_changepoints_precomputes_direction_and_color():
+    metrics_config = {
+        "latency": {"direction": 1},
+        "throughput": {"direction": -1},
+        "any_change": {"direction": 0},
+    }
+    change_points_by_metric = {
+        "latency": [
+            _make_changepoint(index=1, mean_1=10.0, mean_2=20.0),
+        ],
+        "throughput": [
+            _make_changepoint(index=2, mean_1=100.0, mean_2=80.0),
+            _make_changepoint(index=3, mean_1=80.0, mean_2=90.0),
+        ],
+        "any_change": [
+            _make_changepoint(index=0, mean_1=50.0, mean_2=55.0),
+            _make_changepoint(index=1, mean_1=55.0, mean_2=50.0),
+        ],
+    }
+
+    result = _classify_changepoints(change_points_by_metric, metrics_config)
+
+    # latency: +100% with direction=1 → regression (red)
+    assert len(result["latency"]) == 1
+    cc = result["latency"][0]
+    assert cc.index == 1
+    assert cc.pct_change == pytest.approx(100.0)
+    assert cc.is_regression is True
+    assert cc.color == "#ff4444"
+
+    # throughput: -20% with direction=-1 → regression (red)
+    assert len(result["throughput"]) == 2
+    cc_drop = result["throughput"][0]
+    assert cc_drop.pct_change == pytest.approx(-20.0)
+    assert cc_drop.is_regression is True
+    assert cc_drop.color == "#ff4444"
+    # throughput: +12.5% with direction=-1 → improvement (green)
+    cc_rise = result["throughput"][1]
+    assert cc_rise.pct_change == pytest.approx(12.5)
+    assert cc_rise.is_regression is False
+    assert cc_rise.color == "#39ff14"
+
+    # any_change: direction=0 → always regression regardless of sign
+    cc_any_pos = result["any_change"][0]
+    assert cc_any_pos.pct_change == pytest.approx(10.0)
+    assert cc_any_pos.is_regression is True
+    assert cc_any_pos.color == "#ff4444"
+
+    cc_any_neg = result["any_change"][1]
+    assert cc_any_neg.pct_change == pytest.approx(-9.09, rel=1e-2)
+    assert cc_any_neg.is_regression is True
+    assert cc_any_neg.color == "#ff4444"
+
+
+def test_classify_changepoints_defaults_direction_to_1():
+    metrics_config = {"metric_a": {}}
+    change_points_by_metric = {
+        "metric_a": [_make_changepoint(index=0, mean_1=10.0, mean_2=5.0)],
+    }
+
+    result = _classify_changepoints(change_points_by_metric, metrics_config)
+
+    # -50% with default direction=1 → improvement (green)
+    cc = result["metric_a"][0]
+    assert cc.pct_change == pytest.approx(-50.0)
+    assert cc.is_regression is False
+    assert cc.color == "#39ff14"
