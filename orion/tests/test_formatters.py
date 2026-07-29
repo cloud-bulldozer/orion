@@ -628,6 +628,130 @@ class TestConfidenceTable:
         assert "Noise (trivial shift)" in table
 
 
+class TestJsonConfidence:
+    def test_changepoint_has_confidence_object(self):
+        data = _make_analysis_result()
+        data.confidence_by_metric = {
+            "cpu": [ConfidenceResult(
+                p_value=0.003, cohens_d=1.2,
+                confidence_label="Likely real (large shift)",
+                sufficient_data=True,
+                sample_size_before=10, sample_size_after=5,
+            )],
+        }
+        formatter = JsonFormatter()
+        result = formatter.format(data)
+        parsed = json.loads(result["test-workload"])
+        cp_record = [r for r in parsed if r["is_changepoint"]][0]
+        conf = cp_record["metrics"]["cpu"]["confidence"]
+        assert conf["p_value"] == pytest.approx(0.003)
+        assert conf["cohens_d"] == pytest.approx(1.2)
+        assert conf["label"] == "Likely real (large shift)"
+        assert conf["sufficient_data"] is True
+        assert conf["sample_size_before"] == 10
+        assert conf["sample_size_after"] == 5
+
+    def test_non_changepoint_has_no_confidence(self):
+        data = _make_analysis_result()
+        data.confidence_by_metric = {
+            "cpu": [ConfidenceResult(
+                p_value=0.003, cohens_d=1.2,
+                confidence_label="Likely real (large shift)",
+                sufficient_data=True,
+                sample_size_before=10, sample_size_after=5,
+            )],
+        }
+        formatter = JsonFormatter()
+        result = formatter.format(data)
+        parsed = json.loads(result["test-workload"])
+        non_cp = [r for r in parsed if not r["is_changepoint"]]
+        for record in non_cp:
+            assert "confidence" not in record["metrics"]["cpu"]
+
+    def test_no_confidence_data_no_key(self):
+        data = _make_analysis_result()
+        # No confidence_by_metric set (default {})
+        formatter = JsonFormatter()
+        result = formatter.format(data)
+        parsed = json.loads(result["test-workload"])
+        cp_record = [r for r in parsed if r["is_changepoint"]][0]
+        assert "confidence" not in cp_record["metrics"]["cpu"]
+
+    def test_insufficient_data_in_json(self):
+        data = _make_analysis_result()
+        data.confidence_by_metric = {
+            "cpu": [ConfidenceResult(
+                p_value=None, cohens_d=None,
+                confidence_label="Insufficient data",
+                sufficient_data=False,
+                sample_size_before=5, sample_size_after=1,
+            )],
+        }
+        formatter = JsonFormatter()
+        result = formatter.format(data)
+        parsed = json.loads(result["test-workload"])
+        cp_record = [r for r in parsed if r["is_changepoint"]][0]
+        conf = cp_record["metrics"]["cpu"]["confidence"]
+        assert conf["p_value"] is None
+        assert conf["cohens_d"] is None
+        assert conf["sufficient_data"] is False
+
+
+class TestRegressionDataConfidence:
+    def test_regression_data_includes_confidence(self):
+        data = _make_analysis_result()
+        data.confidence_by_metric = {
+            "cpu": [ConfidenceResult(
+                p_value=0.003, cohens_d=1.2,
+                confidence_label="Likely real (large shift)",
+                sufficient_data=True,
+                sample_size_before=10, sample_size_after=5,
+            )],
+        }
+
+        class ConcreteFormatter(BaseFormatter):
+            def format(self, data):
+                return {}
+            def format_average(self, data):
+                return ""
+            def save(self, test_name, formatted, save_output_path):
+                pass
+            def print_output(self, test_name, formatted, data,
+                             pr=0, is_pull=False):
+                pass
+            def print_and_save_pr(self, periodic, pulls, save_output_path):
+                pass
+
+        formatter = ConcreteFormatter()
+        regressions = formatter.extract_regression_data(data)
+        metric_entry = regressions[0]["metrics_with_change"][0]
+        assert "confidence" in metric_entry
+        assert metric_entry["confidence"]["p_value"] == pytest.approx(0.003)
+        assert metric_entry["confidence"]["label"] == "Likely real (large shift)"
+
+    def test_regression_data_no_confidence_when_empty(self):
+        data = _make_analysis_result()
+        # default confidence_by_metric = {}
+
+        class ConcreteFormatter(BaseFormatter):
+            def format(self, data):
+                return {}
+            def format_average(self, data):
+                return ""
+            def save(self, test_name, formatted, save_output_path):
+                pass
+            def print_output(self, test_name, formatted, data,
+                             pr=0, is_pull=False):
+                pass
+            def print_and_save_pr(self, periodic, pulls, save_output_path):
+                pass
+
+        formatter = ConcreteFormatter()
+        regressions = formatter.extract_regression_data(data)
+        metric_entry = regressions[0]["metrics_with_change"][0]
+        assert "confidence" not in metric_entry
+
+
 class TestFormatterFactory:
     def test_get_json_formatter(self):
         formatter = FormatterFactory.get_formatter("json")

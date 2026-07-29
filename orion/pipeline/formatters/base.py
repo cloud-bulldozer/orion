@@ -66,6 +66,10 @@ class BaseFormatter(ABC):
                                 "labels": data.metrics_config[metric].get(
                                     "labels") or [],
                             })
+                            self._maybe_add_confidence(
+                                data, metric, cp,
+                                reg["metrics_with_change"][-1]
+                            )
                     continue
 
                 seen_indices.add(index)
@@ -96,6 +100,10 @@ class BaseFormatter(ABC):
                     "uuid": row.get(data.uuid_field),
                     "timestamp": row.get("timestamp"),
                 }
+                self._maybe_add_confidence(
+                    data, metric, cp,
+                    doc["metrics_with_change"][-1]
+                )
                 prs = row.get("prs")
                 if prs is not None:
                     doc["prs"] = prs
@@ -127,6 +135,24 @@ class BaseFormatter(ABC):
                 regression_data.append(doc)
 
         return regression_data
+
+    @staticmethod
+    def _maybe_add_confidence(data, metric, cp, metric_entry):
+        """Add confidence data to a metric entry if available."""
+        confidences = data.confidence_by_metric.get(metric, [])
+        cps = data.change_points_by_metric.get(metric, [])
+        try:
+            cp_idx = cps.index(cp)
+        except ValueError:
+            return
+        if cp_idx < len(confidences):
+            conf = confidences[cp_idx]
+            metric_entry["confidence"] = {
+                "p_value": conf.p_value,
+                "cohens_d": conf.cohens_d,
+                "label": conf.confidence_label,
+                "sufficient_data": conf.sufficient_data,
+            }
 
     @staticmethod
     def _get_github_client(
