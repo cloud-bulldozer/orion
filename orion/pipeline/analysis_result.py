@@ -1,6 +1,6 @@
 """AnalysisResult dataclass and standalone utility functions."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import groupby
 from typing import Dict, List
 import pandas as pd
@@ -30,6 +30,7 @@ class AnalysisResult: # pylint: disable=too-many-instance-attributes
     version_field: str
     sippy_pr_search: bool
     github_repos: list
+    confidence_by_metric: dict = field(default_factory=dict)
 
 
 def group_change_points_by_time(
