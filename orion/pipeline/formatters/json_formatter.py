@@ -44,17 +44,9 @@ class JsonFormatter(BaseFormatter):
                 confidences = data.confidence_by_metric.get(key, [])
                 cp_idx = value.index(change_point)
                 if cp_idx < len(confidences):
-                    conf = confidences[cp_idx]
                     dataframe_json[index]["metrics"][key][
                         "confidence"
-                    ] = {
-                        "p_value": conf.p_value,
-                        "cohens_d": conf.cohens_d,
-                        "label": conf.confidence_label,
-                        "sufficient_data": conf.sufficient_data,
-                        "sample_size_before": conf.sample_size_before,
-                        "sample_size_after": conf.sample_size_after,
-                    }
+                    ] = confidences[cp_idx].to_dict()
                 if data.collapse:
                     if (
                         index > 0

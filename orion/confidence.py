@@ -21,6 +21,17 @@ class ConfidenceResult:
     sample_size_before: int
     sample_size_after: int
 
+    def to_dict(self):
+        """Return dict suitable for JSON/regression-data output."""
+        return {
+            "p_value": self.p_value,
+            "cohens_d": self.cohens_d,
+            "label": self.confidence_label,
+            "sufficient_data": self.sufficient_data,
+            "sample_size_before": self.sample_size_before,
+            "sample_size_after": self.sample_size_after,
+        }
+
 
 def _map_label(p_value, cohens_d):
     """Map p-value and Cohen's d to a human-readable confidence label."""

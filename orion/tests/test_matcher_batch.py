@@ -644,7 +644,7 @@ class TestGetResultsBatch:
         assert result["podReadyLatency"][0]["P99"] == 4500
 
 
-class TestGetNested:
+class TestGetNested: # pylint: disable=protected-access
     """Unit tests for Matcher._get_nested."""
 
     @pytest.mark.parametrize("doc,key,expected", [

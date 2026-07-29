@@ -850,6 +850,10 @@ def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uui
             "is_changepoint": bool(record["metrics"][metric_name]["percentage_change"]),
             "percentage_change": record["metrics"][metric_name]["percentage_change"],
         }
+        conf = record["metrics"][metric_name].get("confidence")
+        if conf and conf.get("label"):
+            pct = base_record["percentage_change"]
+            base_record["percentage_change"] = f"{pct:.2f}% ({conf['label']})"
         # Add metadata field if it exists in the record
         for display_field in display_fields:
             if display_field and display_field in record:

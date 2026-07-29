@@ -3,8 +3,6 @@
 
 import numpy as np
 import pandas as pd
-from otava.series import ChangePoint
-from otava.analysis import TTestStats
 
 from orion.confidence import (
     ConfidenceResult,
@@ -14,19 +12,7 @@ from orion.confidence import (
     compute_confidence,
 )
 import orion.constants as cnsts
-
-
-def _make_cp(metric, index):
-    return ChangePoint(
-        metric=metric,
-        index=index,
-        qhat=0.0,
-        time=0,
-        stats=TTestStats(
-            mean_1=100.0, mean_2=200.0,
-            std_1=0.0, std_2=0.0, pvalue=1.0,
-        ),
-    )
+from orion.tests.conftest import make_change_point as _make_cp
 
 
 class TestMapLabel:
