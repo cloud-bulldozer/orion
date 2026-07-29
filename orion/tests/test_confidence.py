@@ -179,7 +179,10 @@ class TestComputeConfidence:
         cps = {"cpu": [_make_cp("cpu", 3), _make_cp("cpu", 5)]}
         result = compute_confidence(cnsts.EDIVISIVE, df, cps)
         assert len(result["cpu"]) == 2
-
+        assert [
+            (item.sample_size_before, item.sample_size_after)
+            for item in result["cpu"]
+        ] == [(3, 7), (5, 5)]
     def test_empty_changepoints_returns_empty(self):
         df = pd.DataFrame({"cpu": [10.0, 11.0, 12.0]})
         cps = {"cpu": []}
