@@ -76,7 +76,10 @@ def _compute_stats(before, after):
     mean_after = np.mean(after)
     std_before = np.std(before, ddof=1)
     std_after = np.std(after, ddof=1)
-    pooled_std = math.sqrt((std_before ** 2 + std_after ** 2) / 2)
+    pooled_std = math.sqrt(
+        ((n_before - 1) * std_before ** 2 + (n_after - 1) * std_after ** 2)
+        / (n_before + n_after - 2)
+    )
 
     if pooled_std == 0:
         cohens_d = (
@@ -120,11 +123,13 @@ def compute_confidence(algorithm_name, dataframe, change_points_by_metric):
             result[metric] = metric_results
             continue
 
-        data = dataframe[metric].dropna().values
+        data = dataframe[metric].values
         for cp in cps:
             before, after = _get_segments(
                 algorithm_name, data, cp.index
             )
+            before = before[~np.isnan(before)]
+            after = after[~np.isnan(after)]
             metric_results.append(_compute_stats(before, after))
         result[metric] = metric_results
     return result

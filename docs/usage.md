@@ -320,7 +320,7 @@ The before/after data segments depend on the algorithm:
 
 The "Affected Metrics" summary table includes a Confidence column:
 
-```
+```text
 Affected Metrics
 +---------+-------+----------+------------------------------------------+--------+
 | Metric  | Value | % Change | Confidence                               | Labels |

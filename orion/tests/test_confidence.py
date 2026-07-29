@@ -209,3 +209,13 @@ class TestComputeConfidence:
         result = compute_confidence(cnsts.CMR, df, cps)
         assert result["cpu"][0].sufficient_data is False
         assert result["cpu"][0].confidence_label == "Insufficient data"
+
+    def test_nan_before_changepoint_preserves_alignment(self):
+        df = pd.DataFrame({
+            "cpu": [1.0, np.nan, 2.0, 10.0, 11.0],
+        })
+        cps = {"cpu": [_make_cp("cpu", 3)]}
+        result = compute_confidence(cnsts.EDIVISIVE, df, cps)
+        assert result["cpu"][0].sufficient_data is True
+        assert result["cpu"][0].sample_size_before == 2
+        assert result["cpu"][0].sample_size_after == 2
