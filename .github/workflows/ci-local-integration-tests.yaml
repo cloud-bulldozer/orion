@@ -1,0 +1,121 @@
+name: CI local integration tests
+on:
+  workflow_call:
+    inputs:
+      checkout_ref:
+        required: false
+        type: string
+        default: ''
+      checkout_repo:
+        required: false
+        type: string
+        default: ''
+  workflow_dispatch:
+    inputs:
+      checkout_ref:
+        required: false
+        type: string
+        default: ''
+      checkout_repo:
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  local-integration-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      opensearch:
+        image: opensearchproject/opensearch:2.18.0
+        ports:
+          - 9200:9200
+        env:
+          discovery.type: single-node
+          DISABLE_SECURITY_PLUGIN: "true"
+          OPENSEARCH_INITIAL_ADMIN_PASSWORD: "Admin_1234!"
+        options: >-
+          --health-cmd "curl -f http://localhost:9200/_cluster/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 30s
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          repository: ${{ inputs.checkout_repo || github.repository }}
+          ref: ${{ inputs.checkout_ref || github.sha }}
+          persist-credentials: false
+
+      - name: Install bats
+        uses: bats-core/bats-action@4.0.0
+        with:
+          bats-version: 1.10.0
+          support-install: false
+          assert-install: false
+          detik-install: false
+          file-install: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install .
+
+      - name: Wait for OpenSearch
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:9200/_cluster/health; then
+              echo ""
+              echo "OpenSearch is ready"
+              exit 0
+            fi
+            echo "Waiting for OpenSearch... ($i/30)"
+            sleep 2
+          done
+          echo "OpenSearch did not become ready in time"
+          exit 1
+
+      - name: Populate OpenSearch with test data
+        run: |
+          export ES_SERVER="http://localhost:9200"
+
+          # Load metadata
+          bash hack/ci-tests/load_metadata_to_opensearch.sh \
+            --es-server "$ES_SERVER"
+
+          # Load metrics (standard template-based)
+          python hack/ci-tests/load_metrics_to_opensearch.py \
+            --es-server "$ES_SERVER"
+
+          # Load browbeat/rhoso data
+          python hack/ci-tests/load_metrics_to_opensearch.py \
+            --es-server "$ES_SERVER" \
+            --rhoso
+
+          # Flush and refresh so all documents are immediately searchable
+          curl -s -X POST "http://localhost:9200/_refresh"
+
+      - name: Run local integration tests
+        run: |
+          bats -F pretty -T --print-output-on-failure test-local.bats \
+            --gather-test-outputs-in outputs
+        env:
+          TERM: linux
+          QE_ES_SERVER: "http://localhost:9200"
+
+      - name: Upload outputs
+        if: ${{ success() || failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-integration-outputs
+          path: outputs
+          if-no-files-found: warn

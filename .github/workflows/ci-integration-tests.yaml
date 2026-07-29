@@ -16,6 +16,13 @@ on:
       - completed
 
 jobs:
+  local-tester:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    uses: ./.github/workflows/ci-local-integration-tests.yaml
+    with:
+      checkout_ref: ${{ inputs.checkout_ref || github.event.workflow_run.head_sha || '' }}
+      checkout_repo: ${{ inputs.checkout_repo || github.event.workflow_run.head_repository.full_name || '' }}
+
   tester:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     uses: ./.github/workflows/tests.yaml
