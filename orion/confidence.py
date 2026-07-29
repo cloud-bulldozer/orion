@@ -1,7 +1,13 @@
 """Statistical confidence indicators for changepoints."""
 
+import math
 from dataclasses import dataclass
 from typing import Optional
+
+import numpy as np
+from scipy import stats
+
+import orion.constants as cnsts
 
 
 @dataclass
@@ -27,3 +33,85 @@ def _map_label(p_value, cohens_d):
     if cohens_d >= 0.2:
         return "Possible (small shift)"
     return "Statistically significant but trivial"
+
+
+def _get_segments(algorithm_name, data, changepoint_index):
+    """Split data into before/after segments based on algorithm type."""
+    if algorithm_name == cnsts.CMR:
+        return data[:-1], data[-1:]
+    return data[:changepoint_index], data[changepoint_index:]
+
+
+def _compute_stats(before, after):
+    """Compute Welch's t-test and Cohen's d for two data segments."""
+    n_before = len(before)
+    n_after = len(after)
+
+    if n_before < 2 or n_after < 2:
+        return ConfidenceResult(
+            p_value=None,
+            cohens_d=None,
+            confidence_label="Insufficient data",
+            sufficient_data=False,
+            sample_size_before=n_before,
+            sample_size_after=n_after,
+        )
+
+    _, p_value = stats.ttest_ind(before, after, equal_var=False)
+
+    mean_before = np.mean(before)
+    mean_after = np.mean(after)
+    std_before = np.std(before, ddof=1)
+    std_after = np.std(after, ddof=1)
+    pooled_std = math.sqrt((std_before ** 2 + std_after ** 2) / 2)
+
+    if pooled_std == 0:
+        cohens_d = (
+            float("inf") if mean_before != mean_after else 0.0
+        )
+    else:
+        cohens_d = abs(mean_after - mean_before) / pooled_std
+
+    if math.isnan(p_value):
+        p_value = 1.0
+
+    label = _map_label(p_value, cohens_d)
+
+    return ConfidenceResult(
+        p_value=p_value,
+        cohens_d=cohens_d,
+        confidence_label=label,
+        sufficient_data=True,
+        sample_size_before=n_before,
+        sample_size_after=n_after,
+    )
+
+
+def compute_confidence(algorithm_name, dataframe, change_points_by_metric):
+    """Compute confidence indicators for all changepoints.
+
+    Returns dict keyed by metric name, index-aligned with
+    change_points_by_metric.
+    """
+    result = {}
+    for metric, cps in change_points_by_metric.items():
+        metric_results = []
+        if metric not in dataframe.columns:
+            for _ in cps:
+                metric_results.append(ConfidenceResult(
+                    p_value=None, cohens_d=None,
+                    confidence_label="Insufficient data",
+                    sufficient_data=False,
+                    sample_size_before=0, sample_size_after=0,
+                ))
+            result[metric] = metric_results
+            continue
+
+        data = dataframe[metric].dropna().values
+        for cp in cps:
+            before, after = _get_segments(
+                algorithm_name, data, cp.index
+            )
+            metric_results.append(_compute_stats(before, after))
+        result[metric] = metric_results
+    return result
