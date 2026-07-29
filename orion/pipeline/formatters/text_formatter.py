@@ -93,11 +93,6 @@ class TextFormatter(BaseFormatter):
             print(text)
             print("=" * len(text))
             print(formatted)
-            confidence_table = _format_confidence_table(data)
-            if confidence_table:
-                print("\nChangepoint Confidence")
-                print("-" * 26)
-                print(confidence_table)
 
     def print_and_save_pr(
         self,
@@ -235,34 +230,4 @@ def _format_comparison_table(
     return tabulate(
         rows, headers=headers, tablefmt="simple",
         floatfmt=fmts, colalign=col_align,
-    )
-
-
-def _format_confidence_table(data: AnalysisResult) -> str:
-    """Build a confidence summary table for all changepoints."""
-    if not data.confidence_by_metric:
-        return ""
-
-    rows = []
-    for metric, cps in data.change_points_by_metric.items():
-        confidences = data.confidence_by_metric.get(metric, [])
-        for i, cp in enumerate(cps):
-            pct = ((cp.stats.mean_2 - cp.stats.mean_1)
-                   / cp.stats.mean_1) * 100 if cp.stats.mean_1 != 0 else 0
-            sign = "+" if pct >= 0 else ""
-            cp_num = f"CP#{i + 1}"
-            label = (
-                confidences[i].confidence_label
-                if i < len(confidences)
-                else "N/A"
-            )
-            rows.append([metric, cp_num, f"{sign}{pct:.1f}%", label])
-
-    if not rows:
-        return ""
-
-    headers = ["Metric", "CP#", "% Change", "Confidence"]
-    return tabulate(
-        rows, headers=headers, tablefmt="simple",
-        colalign=("left", "left", "right", "left"),
     )

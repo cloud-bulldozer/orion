@@ -152,6 +152,8 @@ class BaseFormatter(ABC):
                 "cohens_d": conf.cohens_d,
                 "label": conf.confidence_label,
                 "sufficient_data": conf.sufficient_data,
+                "sample_size_before": conf.sample_size_before,
+                "sample_size_after": conf.sample_size_after,
             }
 
     @staticmethod

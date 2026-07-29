@@ -24,15 +24,17 @@ class ConfidenceResult:
 
 def _map_label(p_value, cohens_d):
     """Map p-value and Cohen's d to a human-readable confidence label."""
+    d_str = f"{cohens_d:.2f}" if not math.isinf(cohens_d) else "inf"
+    p_str = f"{p_value:.2f}"
     if p_value >= 0.05:
-        return "Noise (trivial shift)"
+        return f"Noise [{d_str}] (trivial shift [{p_str}])"
     if cohens_d >= 0.8:
-        return "Likely real (large shift)"
+        return f"Likely real [{d_str}] (large shift [{p_str}])"
     if cohens_d >= 0.5:
-        return "Likely real (moderate shift)"
+        return f"Likely real [{d_str}] (moderate shift [{p_str}])"
     if cohens_d >= 0.2:
-        return "Possible (small shift)"
-    return "Statistically significant but trivial"
+        return f"Possible [{d_str}] (small shift [{p_str}])"
+    return f"Statistically significant [{d_str}] but trivial [{p_str}]"
 
 
 def _get_segments(algorithm_name, data, changepoint_index):

@@ -285,6 +285,89 @@ Today is 27 Aug:
 
 If a changepoint is detected in the first 5 data points, Orion expands the lookback window, re-runs the analysis, and reports based on that expanded result.
 
+## Confidence Indicators
+
+Every detected changepoint is automatically annotated with a statistical confidence indicator that combines two measures:
+
+- **Welch's t-test p-value** — probability of observing a difference this extreme if there were no real before/after change
+- **Cohen's d effect size** — magnitude of the difference relative to data variability
+
+These produce a human-readable label shown in the "Affected Metrics" summary table and embedded in JSON output.
+
+### Label Format
+
+Labels include the numeric Cohen's d and p-value inline:
+
+| Label | Meaning |
+|-------|---------|
+| `Likely real [1.20] (large shift [0.01])` | p < 0.05 and d >= 0.8 — strong evidence of a real, large change |
+| `Likely real [0.60] (moderate shift [0.03])` | p < 0.05 and 0.5 <= d < 0.8 — real change with moderate magnitude |
+| `Possible [0.30] (small shift [0.02])` | p < 0.05 and 0.2 <= d < 0.5 — statistically significant but small effect |
+| `Statistically significant [0.10] but trivial [0.01]` | p < 0.05 and d < 0.2 — significant but negligible practical impact |
+| `Noise [1.50] (trivial shift [0.30])` | p >= 0.05 — not statistically significant |
+| `Insufficient data` | Fewer than 2 data points on either side of the changepoint |
+
+The bracketed values are `[Cohen's d]` and `[p-value]` respectively. Cohen's d thresholds follow the standard convention: 0.2 (small), 0.5 (medium), 0.8 (large).
+
+### How Segments Are Split
+
+The before/after data segments depend on the algorithm:
+
+- **Hunter (E-Divisive)** and **Anomaly Detection**: split at the changepoint index — data before vs. data from the changepoint onward
+- **CMR**: all previous runs vs. the most recent run (CMR typically produces "Insufficient data" since the after segment has only one point)
+
+### Text Output
+
+The "Affected Metrics" summary table includes a Confidence column:
+
+```
+Affected Metrics
++---------+-------+----------+------------------------------------------+--------+
+| Metric  | Value | % Change | Confidence                               | Labels |
++---------+-------+----------+------------------------------------------+--------+
+| ovnCPU  | 2.43  | 64.14%   | Likely real [1.20] (large shift [0.00])   | [infra] |
+| etcdCPU | 3.50  | 1.18%    | Noise [0.15] (trivial shift [0.42])      | [etcd] |
++---------+-------+----------+------------------------------------------+--------+
+```
+
+### JSON Output
+
+Each changepoint entry in JSON output includes a `confidence` object:
+
+```json
+{
+  "is_changepoint": true,
+  "metrics": {
+    "ovnCPU_avg": {
+      "value": 2.43,
+      "percentage_change": 64.14,
+      "confidence": {
+        "p_value": 0.001,
+        "cohens_d": 1.2,
+        "label": "Likely real [1.20] (large shift [0.00])",
+        "sufficient_data": true,
+        "sample_size_before": 15,
+        "sample_size_after": 5
+      }
+    }
+  }
+}
+```
+
+### Standalone Reports
+
+When generating reports from JSON files with `--report`, confidence data is propagated from the JSON into the summary tables automatically — no additional flags needed.
+
+### Interpreting Results
+
+Use confidence indicators to triage changepoints:
+
+1. **Likely real (large/moderate shift)** — investigate immediately; this is a genuine regression with meaningful impact
+2. **Possible (small shift)** — real but small; may be acceptable depending on the metric
+3. **Statistically significant but trivial** — the change is real but too small to matter in practice
+4. **Noise** — likely natural variation; deprioritize, but corroborate with other signals if the metric is critical
+5. **Insufficient data** — not enough data points to compute statistics (common with CMR or very recent runs)
+
 ## Node Count Filtering
 
 ### Relaxed Matching

@@ -31,34 +31,34 @@ def _make_cp(metric, index):
 
 class TestMapLabel:
     def test_likely_real_large_shift(self):
-        assert _map_label(0.01, 1.0) == "Likely real (large shift)"
+        assert _map_label(0.01, 1.0) == "Likely real [1.00] (large shift [0.01])"
 
     def test_likely_real_moderate_shift(self):
-        assert _map_label(0.01, 0.6) == "Likely real (moderate shift)"
+        assert _map_label(0.01, 0.6) == "Likely real [0.60] (moderate shift [0.01])"
 
     def test_possible_small_shift(self):
-        assert _map_label(0.01, 0.3) == "Possible (small shift)"
+        assert _map_label(0.01, 0.3) == "Possible [0.30] (small shift [0.01])"
 
     def test_significant_but_trivial(self):
-        assert _map_label(0.01, 0.1) == "Statistically significant but trivial"
+        assert _map_label(0.01, 0.1) == "Statistically significant [0.10] but trivial [0.01]"
 
     def test_noise_high_p_value(self):
-        assert _map_label(0.3, 1.5) == "Noise (trivial shift)"
+        assert _map_label(0.3, 1.5) == "Noise [1.50] (trivial shift [0.30])"
 
     def test_boundary_p_value_at_005(self):
-        assert _map_label(0.05, 1.0) == "Noise (trivial shift)"
+        assert _map_label(0.05, 1.0) == "Noise [1.00] (trivial shift [0.05])"
 
     def test_boundary_cohens_d_at_08(self):
-        assert _map_label(0.01, 0.8) == "Likely real (large shift)"
+        assert _map_label(0.01, 0.8) == "Likely real [0.80] (large shift [0.01])"
 
     def test_boundary_cohens_d_at_05(self):
-        assert _map_label(0.01, 0.5) == "Likely real (moderate shift)"
+        assert _map_label(0.01, 0.5) == "Likely real [0.50] (moderate shift [0.01])"
 
     def test_boundary_cohens_d_at_02(self):
-        assert _map_label(0.01, 0.2) == "Possible (small shift)"
+        assert _map_label(0.01, 0.2) == "Possible [0.20] (small shift [0.01])"
 
     def test_infinity_cohens_d(self):
-        assert _map_label(0.001, float("inf")) == "Likely real (large shift)"
+        assert _map_label(0.001, float("inf")) == "Likely real [inf] (large shift [0.00])"
 
 
 class TestConfidenceResult:
@@ -130,7 +130,8 @@ class TestComputeStats:
         assert result.sufficient_data is True
         assert result.p_value < 0.05
         assert result.cohens_d > 0.8
-        assert result.confidence_label == "Likely real (large shift)"
+        assert "Likely real" in result.confidence_label
+        assert "large shift" in result.confidence_label
 
     def test_identical_data_produces_noise(self):
         before = np.array([100.0, 100.0, 100.0, 100.0, 100.0])
@@ -138,7 +139,8 @@ class TestComputeStats:
         result = _compute_stats(before, after)
         assert result.sufficient_data is True
         assert result.cohens_d == 0.0
-        assert result.confidence_label == "Noise (trivial shift)"
+        assert "Noise" in result.confidence_label
+        assert "trivial shift" in result.confidence_label
 
     def test_insufficient_data_one_point_after(self):
         before = np.array([100.0, 101.0, 99.0])

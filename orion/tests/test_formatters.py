@@ -17,8 +17,8 @@ from orion.pipeline.formatters.junit_formatter import JUnitFormatter
 from orion.pipeline.formatters.text_formatter import (
     TextFormatter,
     _format_comparison_table,
-    _format_confidence_table,
 )
+from orion.reporting.summary import print_regression_summary
 from orion.tests.conftest import make_change_point
 
 
@@ -517,115 +517,77 @@ class TestMultiPrJUnit:
         assert pull_elements[0].get("pr") == "1111"
 
 
-class TestConfidenceTable:
-    def test_table_contains_confidence_labels(self):
-        data = _make_analysis_result()
-        data.confidence_by_metric = {
-            "cpu": [ConfidenceResult(
-                p_value=0.01, cohens_d=1.2,
-                confidence_label="Likely real (large shift)",
-                sufficient_data=True,
-                sample_size_before=10, sample_size_after=5,
-            )],
-        }
-        table = _format_confidence_table(data)
-        assert "Likely real (large shift)" in table
-        assert "cpu" in table
-        assert "CP#1" in table
+class TestSummaryConfidenceColumn:
+    def test_summary_table_shows_confidence_label(self, capsys):
+        regression_data = [{
+            "test_name": "test-workload",
+            "bad_ver": "4.20",
+            "prev_ver": "4.19",
+            "build_url": None,
+            "metrics_with_change": [{
+                "name": "cpu",
+                "value": 30.0,
+                "percentage_change": 100.0,
+                "labels": ["infra"],
+                "confidence": {
+                    "p_value": 0.01,
+                    "cohens_d": 1.2,
+                    "label": "Likely real [1.20] (large shift [0.00])",
+                    "sufficient_data": True,
+                },
+            }],
+            "prs": [],
+            "github_context": None,
+        }]
+        print_regression_summary(regression_data)
+        out = capsys.readouterr().out
+        assert "Confidence" in out
+        assert "Likely real [1.20]" in out
 
-    def test_table_shows_percentage_change(self):
-        data = _make_analysis_result()
-        data.confidence_by_metric = {
-            "cpu": [ConfidenceResult(
-                p_value=0.01, cohens_d=1.2,
-                confidence_label="Likely real (large shift)",
-                sufficient_data=True,
-                sample_size_before=10, sample_size_after=5,
-            )],
-        }
-        table = _format_confidence_table(data)
-        assert "100" in table  # 100% change (mean_1=100, mean_2=200)
+    def test_summary_table_no_confidence_shows_empty(self, capsys):
+        regression_data = [{
+            "test_name": "test-workload",
+            "bad_ver": "4.20",
+            "prev_ver": "4.19",
+            "build_url": None,
+            "metrics_with_change": [{
+                "name": "cpu",
+                "value": 30.0,
+                "percentage_change": 100.0,
+                "labels": ["infra"],
+            }],
+            "prs": [],
+            "github_context": None,
+        }]
+        print_regression_summary(regression_data)
+        out = capsys.readouterr().out
+        assert "Confidence" in out
+        assert "cpu" in out
 
-    def test_table_empty_when_no_confidence(self):
-        data = _make_analysis_result(
-            change_points={"cpu": []}, regression_flag=False
-        )
-        data.confidence_by_metric = {}
-        table = _format_confidence_table(data)
-        assert table == ""
-
-    def test_table_shows_insufficient_data(self):
-        data = _make_analysis_result()
-        data.confidence_by_metric = {
-            "cpu": [ConfidenceResult(
-                p_value=None, cohens_d=None,
-                confidence_label="Insufficient data",
-                sufficient_data=False,
-                sample_size_before=5, sample_size_after=1,
-            )],
-        }
-        table = _format_confidence_table(data)
-        assert "Insufficient data" in table
-
-    def test_table_multiple_metrics_multiple_cps(self):
-        _mk = make_change_point
-        df = pd.DataFrame({
-            "uuid": [f"u{i}" for i in range(5)],
-            "ocpVersion": [f"4.{i}" for i in range(5)],
-            "timestamp": [1700000000 + i * 100000 for i in range(5)],
-            "buildUrl": [f"http://b{i}" for i in range(5)],
-            "prs": [None] * 5,
-            "cpu": [10.0, 10.5, 20.0, 20.5, 21.0],
-            "mem": [50.0, 51.0, 50.5, 100.0, 101.0],
-        })
-        series = Series(
-            test_name="test", branch=None,
-            time=list(df["timestamp"]),
-            metrics={"cpu": Metric(1, 1.0), "mem": Metric(1, 1.0)},
-            data={"cpu": df["cpu"], "mem": df["mem"]},
-            attributes={"uuid": df["uuid"], "ocpVersion": df["ocpVersion"]},
-        )
-        data = AnalysisResult(
-            test_name="test-workload",
-            test={"name": "test-workload", "uuid_field": "uuid",
-                  "version_field": "ocpVersion", "metadata": {}},
-            dataframe=df,
-            metrics_config={
-                "cpu": {"direction": 1, "labels": [], "threshold": 0,
-                        "correlation": "", "context": None},
-                "mem": {"direction": 1, "labels": [], "threshold": 0,
-                        "correlation": "", "context": None},
-            },
-            change_points_by_metric={
-                "cpu": [_mk("cpu", index=2)],
-                "mem": [_mk("mem", index=3)],
-            },
-            series=series,
-            regression_flag=True,
-            avg_values=pd.Series({"cpu": 10.25, "mem": 50.5}),
-            collapse=False, display_fields=[], column_group_size=5,
-            uuid_field="uuid", version_field="ocpVersion",
-            sippy_pr_search=False, github_repos=[],
-            confidence_by_metric={
-                "cpu": [ConfidenceResult(
-                    p_value=0.01, cohens_d=1.0,
-                    confidence_label="Likely real (large shift)",
-                    sufficient_data=True,
-                    sample_size_before=2, sample_size_after=3,
-                )],
-                "mem": [ConfidenceResult(
-                    p_value=0.2, cohens_d=0.5,
-                    confidence_label="Noise (trivial shift)",
-                    sufficient_data=True,
-                    sample_size_before=3, sample_size_after=2,
-                )],
-            },
-        )
-        table = _format_confidence_table(data)
-        assert "cpu" in table
-        assert "mem" in table
-        assert "Likely real (large shift)" in table
-        assert "Noise (trivial shift)" in table
+    def test_summary_table_insufficient_data(self, capsys):
+        regression_data = [{
+            "test_name": "test-workload",
+            "bad_ver": "4.20",
+            "prev_ver": "4.19",
+            "build_url": None,
+            "metrics_with_change": [{
+                "name": "cpu",
+                "value": 30.0,
+                "percentage_change": 100.0,
+                "labels": [],
+                "confidence": {
+                    "p_value": None,
+                    "cohens_d": None,
+                    "label": "Insufficient data",
+                    "sufficient_data": False,
+                },
+            }],
+            "prs": [],
+            "github_context": None,
+        }]
+        print_regression_summary(regression_data)
+        out = capsys.readouterr().out
+        assert "Insufficient data" in out
 
 
 class TestJsonConfidence:
@@ -634,7 +596,7 @@ class TestJsonConfidence:
         data.confidence_by_metric = {
             "cpu": [ConfidenceResult(
                 p_value=0.003, cohens_d=1.2,
-                confidence_label="Likely real (large shift)",
+                confidence_label="Likely real [1.20] (large shift [0.00])",
                 sufficient_data=True,
                 sample_size_before=10, sample_size_after=5,
             )],
@@ -646,7 +608,7 @@ class TestJsonConfidence:
         conf = cp_record["metrics"]["cpu"]["confidence"]
         assert conf["p_value"] == pytest.approx(0.003)
         assert conf["cohens_d"] == pytest.approx(1.2)
-        assert conf["label"] == "Likely real (large shift)"
+        assert conf["label"] == "Likely real [1.20] (large shift [0.00])"
         assert conf["sufficient_data"] is True
         assert conf["sample_size_before"] == 10
         assert conf["sample_size_after"] == 5
@@ -656,7 +618,7 @@ class TestJsonConfidence:
         data.confidence_by_metric = {
             "cpu": [ConfidenceResult(
                 p_value=0.003, cohens_d=1.2,
-                confidence_label="Likely real (large shift)",
+                confidence_label="Likely real [1.20] (large shift [0.00])",
                 sufficient_data=True,
                 sample_size_before=10, sample_size_after=5,
             )],
@@ -703,7 +665,7 @@ class TestRegressionDataConfidence:
         data.confidence_by_metric = {
             "cpu": [ConfidenceResult(
                 p_value=0.003, cohens_d=1.2,
-                confidence_label="Likely real (large shift)",
+                confidence_label="Likely real [1.20] (large shift [0.00])",
                 sufficient_data=True,
                 sample_size_before=10, sample_size_after=5,
             )],
@@ -727,7 +689,9 @@ class TestRegressionDataConfidence:
         metric_entry = regressions[0]["metrics_with_change"][0]
         assert "confidence" in metric_entry
         assert metric_entry["confidence"]["p_value"] == pytest.approx(0.003)
-        assert metric_entry["confidence"]["label"] == "Likely real (large shift)"
+        assert metric_entry["confidence"]["label"] == "Likely real [1.20] (large shift [0.00])"
+        assert metric_entry["confidence"]["sample_size_before"] == 10
+        assert metric_entry["confidence"]["sample_size_after"] == 5
 
     def test_regression_data_no_confidence_when_empty(self):
         data = _make_analysis_result()

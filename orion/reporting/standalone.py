@@ -81,12 +81,15 @@ def extract_regression_data(workload: str, data: list[dict]) -> list[dict]:
         metrics_with_change = []
         for name, info in entry.get("metrics", {}).items():
             if info.get("percentage_change", 0) != 0:
-                metrics_with_change.append({
+                entry_dict = {
                     "name": name,
                     "value": info.get("value"),
                     "percentage_change": info.get("percentage_change", 0),
                     "labels": info.get("labels", ""),
-                })
+                }
+                if "confidence" in info:
+                    entry_dict["confidence"] = info["confidence"]
+                metrics_with_change.append(entry_dict)
 
         if not metrics_with_change:
             continue
