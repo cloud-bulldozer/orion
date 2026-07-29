@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 from otava.series import Series, Metric
 
+from orion.confidence import ConfidenceResult
 from orion.pipeline.analysis_result import AnalysisResult
 from orion.pipeline.formatters import FormatterFactory
 from orion.pipeline.formatters.base import BaseFormatter
@@ -16,6 +17,7 @@ from orion.pipeline.formatters.junit_formatter import JUnitFormatter
 from orion.pipeline.formatters.text_formatter import (
     TextFormatter,
     _format_comparison_table,
+    _format_confidence_table,
 )
 from orion.tests.conftest import make_change_point
 
@@ -513,6 +515,117 @@ class TestMultiPrJUnit:
         pull_elements = root.findall(".//pull")
         assert len(pull_elements) == 1
         assert pull_elements[0].get("pr") == "1111"
+
+
+class TestConfidenceTable:
+    def test_table_contains_confidence_labels(self):
+        data = _make_analysis_result()
+        data.confidence_by_metric = {
+            "cpu": [ConfidenceResult(
+                p_value=0.01, cohens_d=1.2,
+                confidence_label="Likely real (large shift)",
+                sufficient_data=True,
+                sample_size_before=10, sample_size_after=5,
+            )],
+        }
+        table = _format_confidence_table(data)
+        assert "Likely real (large shift)" in table
+        assert "cpu" in table
+        assert "CP#1" in table
+
+    def test_table_shows_percentage_change(self):
+        data = _make_analysis_result()
+        data.confidence_by_metric = {
+            "cpu": [ConfidenceResult(
+                p_value=0.01, cohens_d=1.2,
+                confidence_label="Likely real (large shift)",
+                sufficient_data=True,
+                sample_size_before=10, sample_size_after=5,
+            )],
+        }
+        table = _format_confidence_table(data)
+        assert "100" in table  # 100% change (mean_1=100, mean_2=200)
+
+    def test_table_empty_when_no_confidence(self):
+        data = _make_analysis_result(
+            change_points={"cpu": []}, regression_flag=False
+        )
+        data.confidence_by_metric = {}
+        table = _format_confidence_table(data)
+        assert table == ""
+
+    def test_table_shows_insufficient_data(self):
+        data = _make_analysis_result()
+        data.confidence_by_metric = {
+            "cpu": [ConfidenceResult(
+                p_value=None, cohens_d=None,
+                confidence_label="Insufficient data",
+                sufficient_data=False,
+                sample_size_before=5, sample_size_after=1,
+            )],
+        }
+        table = _format_confidence_table(data)
+        assert "Insufficient data" in table
+
+    def test_table_multiple_metrics_multiple_cps(self):
+        _mk = make_change_point
+        df = pd.DataFrame({
+            "uuid": [f"u{i}" for i in range(5)],
+            "ocpVersion": [f"4.{i}" for i in range(5)],
+            "timestamp": [1700000000 + i * 100000 for i in range(5)],
+            "buildUrl": [f"http://b{i}" for i in range(5)],
+            "prs": [None] * 5,
+            "cpu": [10.0, 10.5, 20.0, 20.5, 21.0],
+            "mem": [50.0, 51.0, 50.5, 100.0, 101.0],
+        })
+        series = Series(
+            test_name="test", branch=None,
+            time=list(df["timestamp"]),
+            metrics={"cpu": Metric(1, 1.0), "mem": Metric(1, 1.0)},
+            data={"cpu": df["cpu"], "mem": df["mem"]},
+            attributes={"uuid": df["uuid"], "ocpVersion": df["ocpVersion"]},
+        )
+        data = AnalysisResult(
+            test_name="test-workload",
+            test={"name": "test-workload", "uuid_field": "uuid",
+                  "version_field": "ocpVersion", "metadata": {}},
+            dataframe=df,
+            metrics_config={
+                "cpu": {"direction": 1, "labels": [], "threshold": 0,
+                        "correlation": "", "context": None},
+                "mem": {"direction": 1, "labels": [], "threshold": 0,
+                        "correlation": "", "context": None},
+            },
+            change_points_by_metric={
+                "cpu": [_mk("cpu", index=2)],
+                "mem": [_mk("mem", index=3)],
+            },
+            series=series,
+            regression_flag=True,
+            avg_values=pd.Series({"cpu": 10.25, "mem": 50.5}),
+            collapse=False, display_fields=[], column_group_size=5,
+            uuid_field="uuid", version_field="ocpVersion",
+            sippy_pr_search=False, github_repos=[],
+            confidence_by_metric={
+                "cpu": [ConfidenceResult(
+                    p_value=0.01, cohens_d=1.0,
+                    confidence_label="Likely real (large shift)",
+                    sufficient_data=True,
+                    sample_size_before=2, sample_size_after=3,
+                )],
+                "mem": [ConfidenceResult(
+                    p_value=0.2, cohens_d=0.5,
+                    confidence_label="Noise (trivial shift)",
+                    sufficient_data=True,
+                    sample_size_before=3, sample_size_after=2,
+                )],
+            },
+        )
+        table = _format_confidence_table(data)
+        assert "cpu" in table
+        assert "mem" in table
+        assert "Likely real (large shift)" in table
+        assert "Noise (trivial shift)" in table
 
 
 class TestFormatterFactory:
