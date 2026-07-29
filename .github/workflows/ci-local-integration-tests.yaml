@@ -24,6 +24,8 @@ on:
 jobs:
   local-integration-tests:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     services:
       opensearch:
@@ -45,7 +47,8 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v7
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+          fetch-tags: true
           repository: ${{ inputs.checkout_repo || github.repository }}
           ref: ${{ inputs.checkout_ref || github.sha }}
           persist-credentials: false
@@ -62,7 +65,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
+          python-version: "3.11"
           cache: 'pip'
 
       - name: Install dependencies

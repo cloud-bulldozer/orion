@@ -139,7 +139,7 @@ setup() {
   fi
 
   changepoint=$(echo '404.549 | https://prow.ci/2013174937652563968 | -- changepoint')
-  if ! grep -q $changepoint ./outputs/results_olm-integration-test.xml; then
+  if ! grep -qF -- "$changepoint" ./outputs/results_olm-integration-test.xml; then
     echo "Expected string '$changepoint' not found in results_olm-integration-test.xml"
     cat ./outputs/results_olm-integration-test.xml
     exit 1
@@ -236,7 +236,7 @@ setup() {
   fi
 
   changepoint=$(echo '404.549')
-  if ! grep -q $changepoint ./outputs/results_olm-integration-test.xml; then
+  if ! grep -qF -- "$changepoint" ./outputs/results_olm-integration-test.xml; then
     echo "Expected string '$changepoint' not found in results_olm-integration-test.xml"
     cat ./outputs/results_olm-integration-test.xml
     exit 1
@@ -589,13 +589,12 @@ setup() {
 # ---------------------------------------------------------------------------
 
 @test "orion auto-loads ack/all_ack.yaml when present" {
-  set +e
-  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' 2>&1 | tee ./outputs/results-ack-auto.txt
-  EXIT_CODE=$?
-  set -e
   if [ ! -f ack/all_ack.yaml ]; then
     skip "ack/all_ack.yaml not present, skipping auto-load test"
   fi
+  set +e
+  orion --lookback 15d --since 2026-01-20 --hunter-analyze --config hack/ci-tests/configurations/ci-tests.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' 2>&1 | tee ./outputs/results-ack-auto.txt
+  set -e
   if ! grep -q "all_ack.yaml" ./outputs/results-ack-auto.txt; then
     echo "Expected orion to mention all_ack.yaml when auto-loading ACK"
     exit 1
