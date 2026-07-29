@@ -1,6 +1,15 @@
 name: CI integration tests
 on:
   workflow_dispatch:
+    inputs:
+      checkout_ref:
+        required: false
+        type: string
+        default: ''
+      checkout_repo:
+        required: false
+        type: string
+        default: ''
   workflow_run:
     workflows: ["CI tests"]
     types:
@@ -11,6 +20,6 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     uses: ./.github/workflows/tests.yaml
     with:
-      checkout_ref: ${{ github.event.workflow_run.head_sha || '' }}
-      checkout_repo: ${{ github.event.workflow_run.head_repository.full_name || '' }}
+      checkout_ref: ${{ inputs.checkout_ref || github.event.workflow_run.head_sha || '' }}
+      checkout_repo: ${{ inputs.checkout_repo || github.event.workflow_run.head_repository.full_name || '' }}
     secrets: inherit
