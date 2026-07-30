@@ -66,7 +66,7 @@ class BaseFormatter(ABC):
                                 "labels": data.metrics_config[metric].get(
                                     "labels") or [],
                             })
-                            self._maybe_add_confidence(
+                            self._add_confidence(
                                 data, metric, cp,
                                 reg["metrics_with_change"][-1]
                             )
@@ -100,7 +100,7 @@ class BaseFormatter(ABC):
                     "uuid": row.get(data.uuid_field),
                     "timestamp": row.get("timestamp"),
                 }
-                self._maybe_add_confidence(
+                self._add_confidence(
                     data, metric, cp,
                     doc["metrics_with_change"][-1]
                 )
@@ -137,7 +137,7 @@ class BaseFormatter(ABC):
         return regression_data
 
     @staticmethod
-    def _maybe_add_confidence(data, metric, cp, metric_entry):
+    def _add_confidence(data, metric, cp, metric_entry):
         """Add confidence data to a metric entry if available."""
         confidences = data.confidence_by_metric.get(metric, [])
         cps = data.change_points_by_metric.get(metric, [])
