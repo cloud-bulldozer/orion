@@ -11,7 +11,7 @@ import orion.constants as cnsts
 
 
 @dataclass
-class ConfidenceResult:
+class ConfidenceResult: # pylint: disable=too-many-instance-attributes
     """Statistical confidence for a single changepoint."""
 
     p_value: Optional[float]
@@ -20,6 +20,10 @@ class ConfidenceResult:
     sufficient_data: bool
     sample_size_before: int
     sample_size_after: int
+    mean_before: Optional[float] = None
+    mean_after: Optional[float] = None
+    std_before: Optional[float] = None
+    std_after: Optional[float] = None
 
     def to_dict(self):
         """Return dict suitable for JSON/regression-data output."""
@@ -30,6 +34,10 @@ class ConfidenceResult:
             "sufficient_data": self.sufficient_data,
             "sample_size_before": self.sample_size_before,
             "sample_size_after": self.sample_size_after,
+            "mean_before": self.mean_before,
+            "mean_after": self.mean_after,
+            "std_before": self.std_before,
+            "std_after": self.std_after,
         }
 
 
@@ -68,6 +76,10 @@ def _compute_stats(before, after):
             sufficient_data=False,
             sample_size_before=n_before,
             sample_size_after=n_after,
+            mean_before=float(np.mean(before)) if n_before > 0 else None,
+            mean_after=float(np.mean(after)) if n_after > 0 else None,
+            std_before=float(np.std(before, ddof=1)) if n_before > 1 else None,
+            std_after=float(np.std(after, ddof=1)) if n_after > 1 else None,
         )
 
     _, p_value = stats.ttest_ind(before, after, equal_var=False)
@@ -100,6 +112,10 @@ def _compute_stats(before, after):
         sufficient_data=True,
         sample_size_before=n_before,
         sample_size_after=n_after,
+        mean_before=float(mean_before),
+        mean_after=float(mean_after),
+        std_before=float(std_before),
+        std_after=float(std_after),
     )
 
 

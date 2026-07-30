@@ -601,6 +601,8 @@ class TestJsonConfidence:
                 confidence_label="Likely real [1.20] (large shift [0.00])",
                 sufficient_data=True,
                 sample_size_before=10, sample_size_after=5,
+                mean_before=100.0, mean_after=200.0,
+                std_before=10.0, std_after=12.0,
             )],
         }
         formatter = JsonFormatter()
@@ -614,6 +616,10 @@ class TestJsonConfidence:
         assert conf["sufficient_data"] is True
         assert conf["sample_size_before"] == 10
         assert conf["sample_size_after"] == 5
+        assert conf["mean_before"] == pytest.approx(100.0)
+        assert conf["mean_after"] == pytest.approx(200.0)
+        assert conf["std_before"] == pytest.approx(10.0)
+        assert conf["std_after"] == pytest.approx(12.0)
 
     def test_non_changepoint_has_no_confidence(self):
         data = _make_analysis_result()

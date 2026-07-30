@@ -3,6 +3,7 @@
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from orion.confidence import (
     ConfidenceResult,
@@ -118,6 +119,10 @@ class TestComputeStats:
         assert result.cohens_d > 0.8
         assert "Likely real" in result.confidence_label
         assert "large shift" in result.confidence_label
+        assert result.mean_before == pytest.approx(np.mean(before))
+        assert result.mean_after == pytest.approx(np.mean(after))
+        assert result.std_before == pytest.approx(np.std(before, ddof=1))
+        assert result.std_after == pytest.approx(np.std(after, ddof=1))
 
     def test_identical_data_produces_noise(self):
         before = np.array([100.0, 100.0, 100.0, 100.0, 100.0])
@@ -136,6 +141,10 @@ class TestComputeStats:
         assert result.p_value is None
         assert result.cohens_d is None
         assert result.confidence_label == "Insufficient data"
+        assert result.mean_before == pytest.approx(100.0)
+        assert result.mean_after == pytest.approx(200.0)
+        assert result.std_before is not None
+        assert result.std_after is None
 
     def test_insufficient_data_empty_before(self):
         before = np.array([])
