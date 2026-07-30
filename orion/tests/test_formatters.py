@@ -4,11 +4,13 @@
 import json
 import xml.etree.ElementTree as ET
 
+import numpy as np
 import pandas as pd
 import pytest
 from otava.series import Series, Metric
 
-from orion.confidence import ConfidenceResult
+import orion.constants as cnsts
+from orion.confidence import ConfidenceResult, compute_confidence
 from orion.pipeline.analysis_result import AnalysisResult
 from orion.pipeline.formatters import FormatterFactory
 from orion.pipeline.formatters.base import BaseFormatter
@@ -692,6 +694,100 @@ class TestRegressionDataConfidence:
         assert metric_entry["confidence"]["label"] == "Likely real [1.20] (large shift [0.00])"
         assert metric_entry["confidence"]["sample_size_before"] == 10
         assert metric_entry["confidence"]["sample_size_after"] == 5
+
+    def test_same_index_different_metrics_get_own_confidence(self):
+        np.random.seed(42) # pylint: disable=duplicate-code
+        df = pd.DataFrame({
+            "uuid": [f"uuid-{i}" for i in range(10)],
+            "ocpVersion": [f"4.{18+i//5}" for i in range(10)],
+            "timestamp": [1700000000 + i * 100000 for i in range(10)],
+            "buildUrl": [f"http://b{i}" for i in range(10)],
+            "prs": [None] * 10,
+            "ovsCPU": np.concatenate([
+                np.random.normal(0.12, 0.01, 7),
+                np.random.normal(0.155, 0.01, 3),
+            ]),
+            "podLatency": np.concatenate([
+                np.random.normal(35000, 5000, 7),
+                np.random.normal(57000, 5000, 3),
+            ]),
+        })
+        series = Series(
+            test_name="test",
+            branch=None,
+            time=list(df["timestamp"]),
+            metrics={
+                "ovsCPU": Metric(1, 1.0),
+                "podLatency": Metric(1, 1.0),
+            },
+            data={
+                "ovsCPU": df["ovsCPU"],
+                "podLatency": df["podLatency"],
+            },
+            attributes={
+                "uuid": df["uuid"],
+                "ocpVersion": df["ocpVersion"],
+            },
+        )
+        cps_by_metric = {
+            "ovsCPU": [make_change_point("ovsCPU", 7,
+                                         mean_1=0.12, mean_2=0.155)],
+            "podLatency": [make_change_point("podLatency", 7,
+                                             mean_1=35000, mean_2=57000)],
+        }
+        confidence = compute_confidence(
+            cnsts.EDIVISIVE, df, cps_by_metric
+        )
+        data = AnalysisResult(
+            test_name="test-workload",
+            test={"name": "test-workload", "uuid_field": "uuid",
+                  "version_field": "ocpVersion",
+                  "metadata": {"benchmark.keyword": "test"}},
+            dataframe=df,
+            metrics_config={
+                "ovsCPU": {"direction": 1, "labels": [],
+                           "threshold": 0, "correlation": "",
+                           "context": None},
+                "podLatency": {"direction": 1, "labels": [],
+                               "threshold": 0, "correlation": "",
+                               "context": None},
+            },
+            change_points_by_metric=cps_by_metric,
+            series=series,
+            regression_flag=True,
+            avg_values=pd.Series({"ovsCPU": 0.12, "podLatency": 35000}),
+            collapse=False,
+            display_fields=[],
+            column_group_size=5,
+            uuid_field="uuid",
+            version_field="ocpVersion",
+            sippy_pr_search=False,
+            github_repos=[],
+            confidence_by_metric=confidence,
+        )
+
+        class ConcreteFormatter(BaseFormatter):
+            def format(self, data):
+                return {}
+            def format_average(self, data):
+                return ""
+            def save(self, test_name, formatted, save_output_path):
+                pass
+            def print_output(self, test_name, formatted, data,
+                             pr=0, is_pull=False):
+                pass
+            def print_and_save_pr(self, periodic, pulls, save_output_path):
+                pass
+
+        formatter = ConcreteFormatter()
+        regressions = formatter.extract_regression_data(data)
+        assert len(regressions) == 1
+        metrics = regressions[0]["metrics_with_change"]
+        assert len(metrics) == 2
+        cpu_conf = metrics[0]["confidence"]
+        lat_conf = metrics[1]["confidence"]
+        assert cpu_conf["cohens_d"] != lat_conf["cohens_d"]
+        assert cpu_conf["p_value"] != lat_conf["p_value"]
 
     def test_regression_data_no_confidence_when_empty(self):
         data = _make_analysis_result()

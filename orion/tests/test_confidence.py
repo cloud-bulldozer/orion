@@ -204,6 +204,28 @@ class TestComputeConfidence:
         assert len(result["cpu"]) == 1
         assert len(result["mem"]) == 1
 
+    def test_same_index_different_metrics_get_different_confidence(self):
+        np.random.seed(99)
+        cpu_vals = np.concatenate([
+            np.random.normal(0.5, 0.05, 8),
+            np.random.normal(0.9, 0.05, 4),
+        ])
+        lat_vals = np.concatenate([
+            np.random.normal(40000, 4000, 8),
+            np.random.normal(70000, 4000, 4),
+        ])
+        df = pd.DataFrame({"cpu": cpu_vals, "latency": lat_vals})
+        cps = {
+            "cpu": [_make_cp("cpu", 8, mean_1=0.5, mean_2=0.9)],
+            "latency": [_make_cp("latency", 8,
+                                 mean_1=40000, mean_2=70000)],
+        }
+        result = compute_confidence(cnsts.EDIVISIVE, df, cps)
+        cpu_conf = result["cpu"][0]
+        lat_conf = result["latency"][0]
+        assert cpu_conf.cohens_d != lat_conf.cohens_d
+        assert cpu_conf.p_value != lat_conf.p_value
+
     def test_cmr_single_point_after_insufficient(self):
         df = pd.DataFrame({
             "cpu": [10.0, 10.5, 9.8, 20.0],
