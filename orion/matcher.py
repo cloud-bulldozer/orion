@@ -143,6 +143,8 @@ class Matcher:
                 continue
             if field in ("not", "wildcard"):
                 continue
+            if str(value) == "":
+                continue
             must_clause.append(Q("match", **{field: str(value)}))
         for not_field, not_value in metadata.get("not", {}).items():
             values = not_value if isinstance(not_value, list) else [not_value]
