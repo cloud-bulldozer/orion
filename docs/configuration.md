@@ -582,20 +582,6 @@ This expands into three metrics: `apiserverCPU`, `multusCPU`, and `ovnCPU`, each
 4. Each expanded metric is a deep copy — mutations to one do not affect others
 5. The `fan_out` key is removed after expansion
 
-**Field override example:**
-
-```yaml
-- name: "ovnCPU-${container}"
-  metricName.keyword: containerCPU
-  labels.container.keyword: "${container}"
-  fan_out:
-    - container: northd
-    - container: ovncontroller
-      labels.container.keyword: ovn-controller  # overrides the substituted value
-```
-
-The second entry uses the override value `ovn-controller` instead of the substituted value `ovncontroller`.
-
 ### `group_by` — Dynamic Expansion
 
 Use `group_by` when you don't know the values ahead of time and want Orion to discover them from OpenSearch. Orion queries for all distinct values of the specified field, scoped by the metric's other filters and the test's UUIDs, then creates one metric per discovered value.
