@@ -123,6 +123,11 @@ class TestComputeStats:
         assert result.mean_after == pytest.approx(np.mean(after))
         assert result.std_before == pytest.approx(np.std(before, ddof=1))
         assert result.std_after == pytest.approx(np.std(after, ddof=1))
+        assert result.ci_95 is not None
+        ci_low, ci_high = result.ci_95
+        assert ci_low > 0
+        assert ci_high > ci_low
+        assert ci_low < 100.0 < ci_high
 
     def test_identical_data_produces_noise(self):
         before = np.array([100.0, 100.0, 100.0, 100.0, 100.0])
@@ -145,6 +150,7 @@ class TestComputeStats:
         assert result.mean_after == pytest.approx(200.0)
         assert result.std_before is not None
         assert result.std_after is None
+        assert result.ci_95 is None
 
     def test_insufficient_data_empty_before(self):
         before = np.array([])

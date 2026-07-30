@@ -24,10 +24,11 @@ class ConfidenceResult: # pylint: disable=too-many-instance-attributes
     mean_after: Optional[float] = None
     std_before: Optional[float] = None
     std_after: Optional[float] = None
+    ci_95: Optional[tuple] = None
 
     def to_dict(self):
         """Return dict suitable for JSON/regression-data output."""
-        return {
+        result = {
             "p_value": self.p_value,
             "cohens_d": self.cohens_d,
             "label": self.confidence_label,
@@ -39,6 +40,9 @@ class ConfidenceResult: # pylint: disable=too-many-instance-attributes
             "std_before": self.std_before,
             "std_after": self.std_after,
         }
+        if self.ci_95 is not None:
+            result["ci_95"] = list(self.ci_95)
+        return result
 
 
 def _map_label(p_value, cohens_d):
@@ -105,6 +109,17 @@ def _compute_stats(before, after):
 
     label = _map_label(p_value, cohens_d)
 
+    mean_diff = float(mean_after - mean_before)
+    se = math.sqrt(std_before ** 2 / n_before + std_after ** 2 / n_after)
+    df_num = (std_before ** 2 / n_before + std_after ** 2 / n_after) ** 2
+    df_den = (
+        (std_before ** 2 / n_before) ** 2 / (n_before - 1)
+        + (std_after ** 2 / n_after) ** 2 / (n_after - 1)
+    )
+    welch_df = df_num / df_den if df_den > 0 else 1.0
+    t_crit = stats.t.ppf(0.975, welch_df)
+    ci_95 = (mean_diff - t_crit * se, mean_diff + t_crit * se)
+
     return ConfidenceResult(
         p_value=p_value,
         cohens_d=cohens_d,
@@ -116,6 +131,7 @@ def _compute_stats(before, after):
         mean_after=float(mean_after),
         std_before=float(std_before),
         std_after=float(std_after),
+        ci_95=ci_95,
     )
 
 

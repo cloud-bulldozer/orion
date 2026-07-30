@@ -603,6 +603,7 @@ class TestJsonConfidence:
                 sample_size_before=10, sample_size_after=5,
                 mean_before=100.0, mean_after=200.0,
                 std_before=10.0, std_after=12.0,
+                ci_95=(80.0, 120.0),
             )],
         }
         formatter = JsonFormatter()
@@ -620,6 +621,7 @@ class TestJsonConfidence:
         assert conf["mean_after"] == pytest.approx(200.0)
         assert conf["std_before"] == pytest.approx(10.0)
         assert conf["std_after"] == pytest.approx(12.0)
+        assert conf["ci_95"] == [pytest.approx(80.0), pytest.approx(120.0)]
 
     def test_non_changepoint_has_no_confidence(self):
         data = _make_analysis_result()

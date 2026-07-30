@@ -347,12 +347,37 @@ Each changepoint entry in JSON output includes a `confidence` object:
         "label": "Likely real [1.20] (large shift [0.00])",
         "sufficient_data": true,
         "sample_size_before": 15,
-        "sample_size_after": 5
+        "sample_size_after": 5,
+        "mean_before": 1.48,
+        "mean_after": 2.43,
+        "std_before": 0.12,
+        "std_after": 0.18,
+        "ci_95": [0.82, 1.08]
       }
     }
   }
 }
 ```
+
+### Confidence Fields Reference
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `p_value` | float\|null | Welch's t-test p-value. Lower means more statistically significant. Null when insufficient data. |
+| `cohens_d` | float\|null | Cohen's d effect size. Measures the magnitude of the shift relative to data variability. Null when insufficient data. |
+| `label` | string | Human-readable confidence label (see Label Format above). |
+| `sufficient_data` | bool | Whether both segments had at least 2 data points for statistical computation. |
+| `sample_size_before` | int | Number of data points before the changepoint (after NaN removal). |
+| `sample_size_after` | int | Number of data points from the changepoint onward (after NaN removal). |
+| `mean_before` | float\|null | Mean of the before-segment values. |
+| `mean_after` | float\|null | Mean of the after-segment values. |
+| `std_before` | float\|null | Sample standard deviation of the before-segment (ddof=1). Null if fewer than 2 points. |
+| `std_after` | float\|null | Sample standard deviation of the after-segment (ddof=1). Null if fewer than 2 points. |
+| `ci_95` | [float, float]\|null | 95% confidence interval for the mean difference (mean_after − mean_before), computed using the Welch-Satterthwaite degrees of freedom. Null when insufficient data. |
+
+The `mean_before`, `mean_after`, `std_before`, and `std_after` fields are the exact values used to compute both `p_value` and `cohens_d`. Combined with the sample sizes, any consumer can independently reproduce the pooled standard deviation, t-statistic, and confidence interval.
+
+The `ci_95` field gives a range for the true shift: e.g., `[12482, 20418]` means "we are 95% confident the true mean difference lies between 12,482 and 20,418." If the interval does not contain zero, the shift is statistically significant at the 5% level — consistent with `p_value < 0.05`.
 
 ### Standalone Reports
 
