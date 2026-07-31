@@ -17,6 +17,7 @@ import pandas as pd
 import requests
 from tabulate import tabulate
 
+from orion.config import expand_group_by
 from orion.matcher import Matcher
 from orion.logger import SingletonLogger
 from orion.constants import BATCH_METRIC_CHUNK_SIZE
@@ -70,6 +71,7 @@ class Utils:
             ts = metric.pop("timestamp", global_timestamp_field)
             correlation = metric.pop("correlation", "")
             context = metric.pop("context", 5)
+            metric.pop("group_by", None)
             metric_type = metric.get("type")
 
             meta_by_name[metric["name"]] = {
@@ -576,7 +578,11 @@ class Utils:
             options["baseline"],
             options["node_count"],
         )
-        # get metrics data and dataframe
+        # expand groupBy metric templates using live OpenSearch data
+        test["metrics"] = expand_group_by(
+            test["metrics"], match, uuids, self.logger
+        )
+
         metrics = test["metrics"]
         dataframe_list, metrics_config, metadata_columns = self.get_metric_data(
             uuids, metrics, match, test_threshold, timestamp_field

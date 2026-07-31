@@ -8,8 +8,10 @@ from typing import List, Dict, Any
 # pylint: disable=import-error
 import pandas as pd
 from opensearchpy import OpenSearch
+from opensearchpy.exceptions import ConnectionError as OpenSearchConnectionError
 from opensearch_dsl import Search, Q
 from orion.logger import SingletonLogger
+
 
 
 class Matcher:
@@ -282,7 +284,7 @@ class Matcher:
         metric_queries = [
             Q("match", **{metric_key: metric_value})
             for metric_key, metric_value in metrics.items()
-            if metric_key not in ["name", "metric_of_interest", "not", "type"]
+            if metric_key not in ["name", "metric_of_interest", "not", "type", "group_by"]
         ]
         exists_queries = []
         if exists_fields:
@@ -331,7 +333,7 @@ class Matcher:
         metric_queries = [
             Q("match", **{metric_key: metric_value})
             for metric_key, metric_value in metrics.items()
-            if metric_key not in ["name", "metric_of_interest", "not", "agg", "type"]
+            if metric_key not in ["name", "metric_of_interest", "not", "agg", "type", "group_by"]
         ]
         metric_query = Q("bool", must=metric_queries + not_queries)
         query = Q(
@@ -468,7 +470,7 @@ class Matcher:
             metric_filter_clauses = [
                 Q("match", **{k: v})
                 for k, v in metric.items()
-                if k not in ("name", "metric_of_interest", "not", "agg", "type")
+                if k not in ("name", "metric_of_interest", "not", "agg", "type", "group_by")
             ]
             not_clauses = [
                 ~Q("match", **{k: v})
@@ -575,7 +577,7 @@ class Matcher:
         if not metrics_list:
             return {}
 
-        excluded_keys = {"name", "metric_of_interest", "not", "type"}
+        excluded_keys = {"name", "metric_of_interest", "not", "type", "group_by"}
         filter_fields_by_metric = []
         should_clauses = []
         for metric in metrics_list:
@@ -705,3 +707,68 @@ class Matcher:
             if not isinstance(v, dict):
                 return v
         return v
+
+    def discover_field_values(
+        self,
+        metric: Dict[str, Any],
+        field: str,
+        uuids: List[str],
+    ) -> List[str]:
+        """Query OpenSearch for distinct values of a field, scoped by metric filters.
+
+        Builds a bool query from the metric's filter fields (excluding reserved
+        keys) and the UUID list, then runs a terms aggregation on the target field.
+
+        Args:
+            metric: metric dict (group_by already popped)
+            field: the OpenSearch field to aggregate on
+            uuids: UUIDs to scope the query
+
+        Returns:
+            Sorted list of distinct string values.
+        """
+        reserved_keys = {
+            "name", "metric_of_interest", "not", "agg", "type",
+            "labels", "direction", "threshold", "timestamp",
+            "correlation", "context",
+        }
+
+        must_clauses = [Q("terms", **{self.uuid_field + ".keyword": uuids})]
+
+        for key, value in metric.items():
+            if key in reserved_keys:
+                continue
+            must_clauses.append(Q("match", **{key: value}))
+
+        not_clauses = [
+            Q("match", **{k: v})
+            for k, v in metric.get("not", {}).items()
+        ]
+
+        query = Q("bool", must=must_clauses, must_not=not_clauses)
+
+        search = (
+            Search(using=self.es, index=self.index)
+            .query(query)
+            .extra(size=0)
+        )
+        search.aggs.bucket("group_values", "terms", field=field, size=1000)
+
+        self.logger.debug("group_by discovery query for field '%s': %s", field, search.to_dict())
+        try:
+            result = search.execute()
+        except OpenSearchConnectionError as e:
+            self.logger.warning(
+                "Error discovering field values for metric '%s': %s"
+                ,metric, e
+            )
+            return []
+
+
+        if not hasattr(result, "aggregations"):
+            return []
+
+        buckets = result.aggregations.group_values.buckets
+        values = sorted([bucket.key for bucket in buckets])
+        self.logger.info("Discovered %d distinct values for field '%s'", len(values), field)
+        return values
