@@ -582,6 +582,33 @@ This expands into three metrics: `apiserverCPU`, `multusCPU`, and `ovnCPU`, each
 4. Each expanded metric is a deep copy — mutations to one do not affect others
 5. The `fan_out` key is removed after expansion
 
+#### Example: Retrieve more summary statistics with less duplication
+
+Say you want to collect more than a single stastic about a metric, like mean, but also min, max. You can use `fan_out` to do this compactly:
+
+```
+tests:
+  - name: payload-cluster-density-v2
+    metadata:
+      ...
+    metrics:
+      - name: nodeMajorFaults-${ag}
+        metricName.keyword: nodeMajorFaults
+        metric_of_interest: value
+        agg:
+          agg_type: ${ag}
+        fan_out:
+          - ag: avg
+          - ag: min
+          - ag: max
+```
+
+This will return data that looks like the following table output:
+```
+time uuid ocpVersion nodeMajorFaults-avg_avg nodeMajorFaults-min_min nodeMajorFaults-max_max
+---- ---- ---------- ----------------------- ----------------------- -----------------------
+```
+
 ### `group_by` — Dynamic Expansion
 
 Use `group_by` when you don't know the values ahead of time and want Orion to discover them from OpenSearch. Orion queries for all distinct values of the specified field, scoped by the metric's other filters and the test's UUIDs, then creates one metric per discovered value.
