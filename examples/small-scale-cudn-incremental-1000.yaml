@@ -1,6 +1,6 @@
 metricsFile: metrics/cudn-density-metrics.yaml
 tests:
-  - name: aws-small-scale-cudn-incremental-700
+  - name: aws-small-scale-cudn-incremental-1000
     metadata:
       platform: AWS
       masterNodesType: m6a.4xlarge
@@ -8,9 +8,9 @@ tests:
       workerNodesType: m6a.4xlarge
       workerNodesCount: 24
       benchmark.keyword: cudn-density
-      kbCfg.iterations: "700"
+      kbCfg.iterations: "1000"
       kbCfg.incrementalPattern: "linear"
-      kbCfg.incrementalStepSize: "50"
+      kbCfg.incrementalStepSize: "200"
       wildcard:
         ocpVersion: "{{ version }}*"
       networkType: OVNKubernetes
