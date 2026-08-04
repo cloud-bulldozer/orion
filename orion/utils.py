@@ -851,11 +851,7 @@ def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uui
             "percentage_change": f"{record['metrics'][metric_name]['percentage_change']:.2f}%",
         }
         conf = record["metrics"][metric_name].get("confidence")
-        if conf and conf.get("label"):
-            base_record["percentage_change"] = (
-                f"{record['metrics'][metric_name]['percentage_change']:.2f}% "
-                f"({conf['label']})"
-            )
+        base_record["Confidence"] = conf.get("label", "") if conf else ""
         # Add metadata field if it exists in the record
         for display_field in display_fields:
             if display_field and display_field in record:

@@ -249,9 +249,6 @@ def analyze(test, kwargs, is_pull=False):
 
     _, change_points_by_metric = algorithm.get_analysis_results()
     regression_flag = algorithm.regression_flag
-    confidence_by_metric = compute_confidence(
-        algorithm_name, fingerprint_matched_df, change_points_by_metric
-    )
     final_algorithm = algorithm
     expanded_algorithm = None
 
@@ -321,10 +318,6 @@ def analyze(test, kwargs, is_pull=False):
                     test["name"],
                 )
                 change_points_by_metric = expanded_change_points
-                confidence_by_metric = compute_confidence(
-                    algorithm_name, expanded_fingerprint_matched_df,
-                    change_points_by_metric
-                )
                 regression_flag = True
                 final_algorithm = expanded_algorithm
             else:
@@ -334,10 +327,6 @@ def analyze(test, kwargs, is_pull=False):
                     test["name"],
                 )
                 change_points_by_metric = expanded_change_points
-                confidence_by_metric = compute_confidence(
-                    algorithm_name, expanded_fingerprint_matched_df,
-                    change_points_by_metric
-                )
                 regression_flag = False
                 final_algorithm = expanded_algorithm
         else:
@@ -350,10 +339,6 @@ def analyze(test, kwargs, is_pull=False):
             )
             change_points_by_metric = clear_early_changepoints_raw(
                 change_points_by_metric, cnsts.CHANGEPOINT_BUFFER
-            )
-            confidence_by_metric = compute_confidence(
-                algorithm_name, fingerprint_matched_df,
-                change_points_by_metric
             )
             regression_flag = False
 
@@ -391,6 +376,10 @@ def analyze(test, kwargs, is_pull=False):
         avg_values = final_algorithm.dataframe[metrics].iloc[:min_cp_index].mean()
     else:
         avg_values = final_algorithm.dataframe[metrics].mean()
+
+    confidence_by_metric = compute_confidence(
+        algorithm_name, final_algorithm.dataframe, change_points_by_metric
+    )
 
     analysis_result = AnalysisResult(
         test_name=test["name"],

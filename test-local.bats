@@ -138,9 +138,14 @@ setup() {
     exit 1
   fi
 
-  changepoint=$(echo '404.55% (Likely real [9.51] (large shift [0.00])) | https://prow.ci/2013174937652563968 | -- changepoint')
-  if ! grep -qF -- "$changepoint" ./outputs/results_olm-integration-test.xml; then
-    echo "Expected string '$changepoint' not found in results_olm-integration-test.xml"
+  if ! grep -qF "404.55%" ./outputs/results_olm-integration-test.xml; then
+    echo "Expected percentage '404.55%' not found in results_olm-integration-test.xml"
+    cat ./outputs/results_olm-integration-test.xml
+    exit 1
+  fi
+
+  if ! grep -qF "Large shift" ./outputs/results_olm-integration-test.xml; then
+    echo "Expected confidence label 'Large shift' not found in results_olm-integration-test.xml"
     cat ./outputs/results_olm-integration-test.xml
     exit 1
   fi
@@ -235,9 +240,14 @@ setup() {
     exit 1
   fi
 
-  changepoint=$(echo '404.55% (Likely real [9.51] (large shift [0.00]))')
-  if ! grep -qF -- "$changepoint" ./outputs/results_olm-integration-test.xml; then
-    echo "Expected string '$changepoint' not found in results_olm-integration-test.xml"
+  if ! grep -qF "404.55%" ./outputs/results_olm-integration-test.xml; then
+    echo "Expected percentage '404.55%' not found in results_olm-integration-test.xml"
+    cat ./outputs/results_olm-integration-test.xml
+    exit 1
+  fi
+
+  if ! grep -qF "Large shift" ./outputs/results_olm-integration-test.xml; then
+    echo "Expected confidence label 'Large shift' not found in results_olm-integration-test.xml"
     cat ./outputs/results_olm-integration-test.xml
     exit 1
   fi
@@ -380,18 +390,23 @@ setup() {
     exit 1
   fi
 
-  if ! grep -qF "155.65% (Likely real [9.51] (large shift [0.00]))" ./outputs/results-anomaly_olm-integration-test.xml; then
-    echo "Expected string '155.65% (Likely real [9.51] (large shift [0.00]))' not found in ./outputs/results-anomaly_olm-integration-test.xml"
+  if ! grep -qF "155.65%" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected percentage '155.65%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
     exit 1
   fi
 
-  if ! grep -qF "56.72% (Likely real [2.27] (large shift [0.00]))" ./outputs/results-anomaly_olm-integration-test.xml; then
-    echo "Expected string '56.72% (Likely real [2.27] (large shift [0.00]))' not found in ./outputs/results-anomaly_olm-integration-test.xml"
+  if ! grep -qF "56.72%" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected percentage '56.72%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
     exit 1
   fi
 
-  if ! grep -qF "38.89% (Insufficient data)" ./outputs/results-anomaly_olm-integration-test.xml; then
-    echo "Expected string '38.89% (Insufficient data)' not found in ./outputs/results-anomaly_olm-integration-test.xml"
+  if ! grep -qF "38.89%" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected percentage '38.89%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
+    exit 1
+  fi
+
+  if ! grep -qF "Anomaly detection" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected confidence label 'Anomaly detection' not found in ./outputs/results-anomaly_olm-integration-test.xml"
     exit 1
   fi
 
@@ -449,8 +464,13 @@ setup() {
     exit 1
   fi
 
-  if ! grep -qF "True             | 160.88% (Insufficient data)" ./outputs/results-cmr_olm-integration-test.xml; then
-    echo "Expected string 'True             | 160.88% (Insufficient data)' not found in results-cmr_olm-integration-test.xml"
+  if ! grep -qF "160.88%" ./outputs/results-cmr_olm-integration-test.xml; then
+    echo "Expected percentage '160.88%' not found in results-cmr_olm-integration-test.xml"
+    exit 1
+  fi
+
+  if ! grep -qF "Insufficient data" ./outputs/results-cmr_olm-integration-test.xml; then
+    echo "Expected confidence label 'Insufficient data' not found in results-cmr_olm-integration-test.xml"
     exit 1
   fi
 

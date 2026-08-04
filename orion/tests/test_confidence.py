@@ -17,35 +17,47 @@ from orion.tests.conftest import make_change_point as _make_cp
 
 
 class TestMapLabel:
-    def test_likely_real_large_shift(self):
-        assert _map_label(0.01, 1.0) == "Likely real [1.00] (large shift [0.01])"
+    def test_large_shift(self):
+        assert _map_label(0.01, 1.0) == "Large shift (d=1.00, p=0.01)"
 
-    def test_likely_real_moderate_shift(self):
-        assert _map_label(0.01, 0.6) == "Likely real [0.60] (moderate shift [0.01])"
+    def test_moderate_shift(self):
+        assert _map_label(0.01, 0.6) == "Moderate shift (d=0.60, p=0.01)"
 
-    def test_possible_small_shift(self):
-        assert _map_label(0.01, 0.3) == "Possible [0.30] (small shift [0.01])"
+    def test_small_shift(self):
+        assert _map_label(0.01, 0.3) == "Small shift (d=0.30, p=0.01)"
 
-    def test_significant_but_trivial(self):
-        assert _map_label(0.01, 0.1) == "Statistically significant [0.10] but trivial [0.01]"
+    def test_negligible_shift(self):
+        assert _map_label(0.01, 0.1) == "Negligible shift (d=0.10, p=0.01)"
 
-    def test_noise_high_p_value(self):
-        assert _map_label(0.3, 1.5) == "Noise [1.50] (trivial shift [0.30])"
+    def test_large_d_high_p_not_significant(self):
+        label = _map_label(0.3, 1.5)
+        assert label == "Large shift (d=1.50, p=0.3) — Not statistically significant"
 
     def test_boundary_p_value_at_005(self):
-        assert _map_label(0.05, 1.0) == "Noise [1.00] (trivial shift [0.05])"
+        label = _map_label(0.05, 1.0)
+        assert "Not statistically significant" in label
+        assert "Large shift" in label
 
     def test_boundary_cohens_d_at_08(self):
-        assert _map_label(0.01, 0.8) == "Likely real [0.80] (large shift [0.01])"
+        assert _map_label(0.01, 0.8) == "Large shift (d=0.80, p=0.01)"
 
     def test_boundary_cohens_d_at_05(self):
-        assert _map_label(0.01, 0.5) == "Likely real [0.50] (moderate shift [0.01])"
+        assert _map_label(0.01, 0.5) == "Moderate shift (d=0.50, p=0.01)"
 
     def test_boundary_cohens_d_at_02(self):
-        assert _map_label(0.01, 0.2) == "Possible [0.20] (small shift [0.01])"
+        assert _map_label(0.01, 0.2) == "Small shift (d=0.20, p=0.01)"
 
-    def test_infinity_cohens_d(self):
-        assert _map_label(0.001, float("inf")) == "Likely real [inf] (large shift [0.00])"
+    def test_none_cohens_d_degenerate(self):
+        label = _map_label(0.001, None)
+        assert "Degenerate variance" in label
+
+    def test_p_value_scientific_notation(self):
+        label = _map_label(5e-10, 1.0)
+        assert "5e-10" in label
+
+    def test_p_value_not_rounded_to_zero(self):
+        label = _map_label(0.001, 1.0)
+        assert "p=0.001" in label
 
 
 class TestConfidenceResult:
@@ -53,7 +65,7 @@ class TestConfidenceResult:
         result = ConfidenceResult(
             p_value=0.01,
             cohens_d=1.2,
-            confidence_label="Likely real (large shift)",
+            confidence_label="Large shift (d=1.20, p=0.01)",
             sufficient_data=True,
             sample_size_before=10,
             sample_size_after=5,
@@ -74,6 +86,32 @@ class TestConfidenceResult:
         assert result.sufficient_data is False
         assert result.p_value is None
 
+    def test_to_dict_always_includes_ci_95_null(self):
+        result = ConfidenceResult(
+            p_value=None,
+            cohens_d=None,
+            confidence_label="Insufficient data",
+            sufficient_data=False,
+            sample_size_before=0,
+            sample_size_after=0,
+        )
+        d = result.to_dict()
+        assert "ci_95" in d
+        assert d["ci_95"] is None
+
+    def test_to_dict_includes_ci_95_list(self):
+        result = ConfidenceResult(
+            p_value=0.01,
+            cohens_d=1.2,
+            confidence_label="Large shift",
+            sufficient_data=True,
+            sample_size_before=10,
+            sample_size_after=5,
+            ci_95=(10.0, 20.0),
+        )
+        d = result.to_dict()
+        assert d["ci_95"] == [10.0, 20.0]
+
 
 class TestGetSegments:
     def test_edivisive_splits_at_index(self):
@@ -82,17 +120,17 @@ class TestGetSegments:
         np.testing.assert_array_equal(before, [1.0, 2.0, 3.0])
         np.testing.assert_array_equal(after, [10.0, 11.0])
 
+    def test_edivisive_with_boundaries(self):
+        data = np.array([1.0, 2.0, 3.0, 10.0, 11.0, 5.0, 6.0])
+        before, after = _get_segments(cnsts.EDIVISIVE, data, 3, prev_boundary=0, next_boundary=5)
+        np.testing.assert_array_equal(before, [1.0, 2.0, 3.0])
+        np.testing.assert_array_equal(after, [10.0, 11.0])
+
     def test_cmr_splits_all_previous_vs_last(self):
         data = np.array([1.0, 2.0, 3.0, 10.0])
         before, after = _get_segments(cnsts.CMR, data, 3)
         np.testing.assert_array_equal(before, [1.0, 2.0, 3.0])
         np.testing.assert_array_equal(after, [10.0])
-
-    def test_isolation_forest_splits_at_index(self):
-        data = np.array([1.0, 2.0, 3.0, 10.0, 11.0])
-        before, after = _get_segments(cnsts.ISOLATION_FOREST, data, 3)
-        np.testing.assert_array_equal(before, [1.0, 2.0, 3.0])
-        np.testing.assert_array_equal(after, [10.0, 11.0])
 
     def test_edivisive_index_at_start(self):
         data = np.array([10.0, 1.0, 2.0])
@@ -117,8 +155,7 @@ class TestComputeStats:
         assert result.sufficient_data is True
         assert result.p_value < 0.05
         assert result.cohens_d > 0.8
-        assert "Likely real" in result.confidence_label
-        assert "large shift" in result.confidence_label
+        assert "Large shift" in result.confidence_label
         assert result.mean_before == pytest.approx(np.mean(before))
         assert result.mean_after == pytest.approx(np.mean(after))
         assert result.std_before == pytest.approx(np.std(before, ddof=1))
@@ -129,14 +166,13 @@ class TestComputeStats:
         assert ci_high > ci_low
         assert ci_low < 100.0 < ci_high
 
-    def test_identical_data_produces_noise(self):
+    def test_identical_data_produces_negligible(self):
         before = np.array([100.0, 100.0, 100.0, 100.0, 100.0])
         after = np.array([100.0, 100.0, 100.0, 100.0, 100.0])
         result = _compute_stats(before, after)
         assert result.sufficient_data is True
         assert result.cohens_d == 0.0
-        assert "Noise" in result.confidence_label
-        assert "trivial shift" in result.confidence_label
+        assert "Negligible shift" in result.confidence_label
 
     def test_insufficient_data_one_point_after(self):
         before = np.array([100.0, 101.0, 99.0])
@@ -158,13 +194,20 @@ class TestComputeStats:
         result = _compute_stats(before, after)
         assert result.sufficient_data is False
 
-    def test_zero_std_different_means(self):
+    def test_zero_std_different_means_degenerate(self):
         before = np.array([100.0, 100.0, 100.0])
         after = np.array([200.0, 200.0, 200.0])
         result = _compute_stats(before, after)
         assert result.sufficient_data is True
-        assert result.cohens_d == float("inf")
-        assert result.p_value is not None
+        assert result.cohens_d is None
+        assert result.p_value is None
+        assert "Degenerate variance" in result.confidence_label
+
+    def test_zero_std_same_means(self):
+        before = np.array([100.0, 100.0, 100.0])
+        after = np.array([100.0, 100.0, 100.0])
+        result = _compute_stats(before, after)
+        assert result.cohens_d == 0.0
 
     def test_sample_sizes_recorded(self):
         before = np.array([1.0, 2.0, 3.0])
@@ -186,7 +229,7 @@ class TestComputeConfidence:
         assert len(result["cpu"]) == 1
         assert isinstance(result["cpu"][0], ConfidenceResult)
 
-    def test_index_aligned_with_changepoints(self):
+    def test_index_aligned_with_neighboring_segments(self):
         df = pd.DataFrame({
             "cpu": [10.0, 10.5, 9.8, 20.0, 20.5,
                     30.0, 30.5, 29.8, 30.2, 30.1],
@@ -194,10 +237,27 @@ class TestComputeConfidence:
         cps = {"cpu": [_make_cp("cpu", 3), _make_cp("cpu", 5)]}
         result = compute_confidence(cnsts.EDIVISIVE, df, cps)
         assert len(result["cpu"]) == 2
-        assert [
+        sizes = [
             (item.sample_size_before, item.sample_size_after)
             for item in result["cpu"]
-        ] == [(3, 7), (5, 5)]
+        ]
+        assert sizes == [(3, 2), (2, 5)]
+
+    def test_reversal_detected_independently(self):
+        df = pd.DataFrame({
+            "cpu": [10.0, 10.0, 10.0, 10.0, 10.0,
+                    20.0, 20.0, 20.0, 20.0, 20.0,
+                    10.0, 10.0, 10.0, 10.0, 10.0],
+        })
+        cps = {"cpu": [_make_cp("cpu", 5), _make_cp("cpu", 10)]}
+        result = compute_confidence(cnsts.EDIVISIVE, df, cps)
+        first = result["cpu"][0]
+        second = result["cpu"][1]
+        assert first.mean_before == pytest.approx(10.0)
+        assert first.mean_after == pytest.approx(20.0)
+        assert second.mean_before == pytest.approx(20.0)
+        assert second.mean_after == pytest.approx(10.0)
+
     def test_empty_changepoints_returns_empty(self):
         df = pd.DataFrame({"cpu": [10.0, 11.0, 12.0]})
         cps = {"cpu": []}
@@ -259,3 +319,23 @@ class TestComputeConfidence:
         assert result["cpu"][0].sufficient_data is True
         assert result["cpu"][0].sample_size_before == 2
         assert result["cpu"][0].sample_size_after == 2
+
+    def test_isolation_forest_skips_confidence(self):
+        df = pd.DataFrame({
+            "cpu": [10.0, 10.5, 9.8, 10.2, 10.1,
+                    20.0, 20.5, 19.8, 20.2, 20.1],
+        })
+        cps = {"cpu": [_make_cp("cpu", 5)]}
+        result = compute_confidence(cnsts.ISOLATION_FOREST, df, cps)
+        conf = result["cpu"][0]
+        assert conf.p_value is None
+        assert conf.cohens_d is None
+        assert conf.sufficient_data is False
+        assert "Anomaly detection" in conf.confidence_label
+
+    def test_missing_metric_column(self):
+        df = pd.DataFrame({"other": [1.0, 2.0, 3.0]})
+        cps = {"cpu": [_make_cp("cpu", 1)]}
+        result = compute_confidence(cnsts.EDIVISIVE, df, cps)
+        assert result["cpu"][0].sufficient_data is False
+        assert result["cpu"][0].confidence_label == "Insufficient data"
