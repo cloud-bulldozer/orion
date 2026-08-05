@@ -64,7 +64,19 @@ class Utils:
         std_metrics = []
         meta_by_name = {}
 
+        seen_names = set()
         for metric in metrics:
+            name = metric["name"]
+            if name in seen_names:
+                self.logger.warning(
+                    "Duplicate metric name '%s' — skipping. "
+                    "Each metric must have a unique name to avoid "
+                    "column collisions in the merged dataframe.",
+                    name,
+                )
+                continue
+            seen_names.add(name)
+
             labels = metric.pop("labels", None)
             direction = int(metric.pop("direction", 1))
             threshold = abs(int(metric.pop("threshold", test_threshold)))

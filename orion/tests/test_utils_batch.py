@@ -731,3 +731,28 @@ class TestCustomTimestampBatch:
         assert match_mock.get_agg_metrics_batch.call_count == 1
         assert ts_fields_seen == ["iso_timestamp"]
         assert len(df_list) == 2
+
+
+class TestDuplicateMetricNames:
+
+    def test_duplicate_agg_metric_name_is_skipped(self, utils, match_mock):
+        m1 = _agg_metric("apiserverCPU")
+        m1["labels.namespace.keyword"] = "openshift-apiserver"
+        m2 = _agg_metric("apiserverCPU")
+        m2["labels.container.keyword"] = "openshift-apiserver"
+        metrics = [copy.deepcopy(m1), copy.deepcopy(m2)]
+
+        match_mock.get_agg_metrics_batch.return_value = {
+            "apiserverCPU": _agg_batch_data(),
+        }
+
+        df_list, metrics_config, _ = utils.get_metric_data(
+            UUIDS, metrics, match_mock, test_threshold=0
+        )
+
+        # Only one dataframe produced — duplicate was skipped
+        assert len(df_list) == 1
+        assert "apiserverCPU_avg" in metrics_config
+        # Batch called once with single metric, not two
+        batch_call_metrics = match_mock.get_agg_metrics_batch.call_args[0][1]
+        assert len(batch_call_metrics) == 1
