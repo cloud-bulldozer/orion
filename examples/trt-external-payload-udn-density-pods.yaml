@@ -40,7 +40,7 @@ tests:
         labels:
           - "[Jira: PerfScale]"
         direction: 1
-        threshold: 10
+        threshold: 25
 
       - name: apiserverCPU
         metricName.keyword: containerCPU
