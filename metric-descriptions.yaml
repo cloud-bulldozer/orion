@@ -162,6 +162,29 @@ metrics:
     known_causes: []
     related_repos: []
 
+  - name: nodeMajorFaults
+    description: "Node-level major page faults — pages that had to be fetched from disk rather than served from the page cache"
+    namespace: ""
+    container: ""
+    known_causes:
+      - "Regression in payload-cluster-density-v2 at 5.0.0-0.nightly-2026-06-14-105938 (12030% avg / 25100% max increase). Candidate PRs: openshift/installer#10533, openshift/installer#10621, openshift/machine-config-operator#6185, openshift/monitoring-plugin#995"
+    related_repos:
+      - "github.com/openshift/installer"
+      - "github.com/openshift/machine-config-operator"
+      - "github.com/openshift/monitoring-plugin"
+
+  # ── API calls latency ────────────────────────────────────────────────
+
+  - name: max-ro-apicalls-latency
+    description: "Maximum latency of read-only kube-apiserver API calls"
+    namespace: ""
+    container: ""
+    known_causes:
+      - "Regression in payload-cluster-density-v2 at 5.0.0-0.nightly-2026-06-14-221055 (1150% avg / 625% max increase). Candidate PRs: openshift/network-tools#182, openshift/driver-toolkit#193"
+    related_repos:
+      - "github.com/openshift/network-tools"
+      - "github.com/openshift/driver-toolkit"
+
   # ── Multus / Monitoring ───────────────────────────────────────────────────────
 
   - name: multusCPU
