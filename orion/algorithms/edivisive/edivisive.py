@@ -5,6 +5,7 @@ import logging
 from typing import Dict, List
 import pandas as pd
 from otava.analysis import ChangePoint
+from otava.series import AnalysisOptions
 from orion.algorithms.algorithm import Algorithm
 
 logger = logging.getLogger("Orion")
@@ -18,12 +19,16 @@ class EDivisive(Algorithm):
     """
 
 
+    def _get_analysis_options(self):
+        """Return AnalysisOptions for otava analysis. Override in subclasses to customize."""
+        return AnalysisOptions()
+
     def _analyze(self):
         if not (pd.api.types.is_numeric_dtype(self.dataframe["timestamp"]) and self.dataframe["timestamp"].astype(int).min() > 1e9):
             self.dataframe["timestamp"] = pd.to_datetime(self.dataframe["timestamp"])
             self.dataframe["timestamp"] = self.dataframe["timestamp"].astype(int) // 10**9
         series = self.setup_series()
-        change_points_by_metric = series.analyze().change_points
+        change_points_by_metric = series.analyze(self._get_analysis_options()).change_points
 
         # Process if we have ack'ed regression
         ackSet = set()
@@ -43,7 +48,7 @@ class EDivisive(Algorithm):
             for i in range(len(changepoint_list)-1, -1, -1):
                 deleted = False
                 if (self._has_changepoint(metric, changepoint_list, i) or
-                    self._is_acked(ackSet, changepoint_list, i) or
+                    self._is_acked(ackSet, metric, changepoint_list, i) or
                     self._is_under_threshold(metric, changepoint_list, i)):
                     deleted=True
                     del changepoint_list[i]
@@ -70,7 +75,7 @@ class EDivisive(Algorithm):
         for i in range(len(changepoint_list)-1, -1, -1):
             if (changepoint_list[i].index >= index-context) and (changepoint_list[i].index <= index+context):
                 if (self._has_changepoint(depending_metric, changepoint_list, i) or
-                    self._is_acked(ackSet, changepoint_list, i) or
+                    self._is_acked(ackSet, depending_metric, changepoint_list, i) or
                     self._is_under_threshold(depending_metric, changepoint_list, i)):
                     return False
                 return True
@@ -81,8 +86,8 @@ class EDivisive(Algorithm):
         return self.metrics_config[metric]["threshold"] > abs((changepoint_list[i].stats.mean_1 - changepoint_list[i].stats.mean_2)/changepoint_list[i].stats.mean_1)*100
 
 
-    def _is_acked(self, ackSet, changepoint_list, i):
-        return str(changepoint_list[i].index) + "_" + changepoint_list[i].metric in ackSet
+    def _is_acked(self, ackSet, metric, changepoint_list, i):
+        return str(changepoint_list[i].index) + "_" + metric in ackSet
 
 
     def _has_changepoint(self, metric, changepoint_list, i):

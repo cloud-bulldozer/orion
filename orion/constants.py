@@ -10,6 +10,7 @@ JSON="json"
 TEXT="text"
 JUNIT="junit"
 CMR="cmr"
+ORIG_EDIVISIVE="OrigEDivisive"
 
 # Window expansion: when a changepoint is in the first 5 points, we re-validate by
 # fetching up to 5 more data points from the past. These values are fixed for consistency.

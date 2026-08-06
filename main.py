@@ -294,20 +294,21 @@ class MutuallyExclusiveOption(click.Option):
 
     def __init__(self, *args: tuple, **kwargs: dict[str, dict]) -> None:
         self.mutually_exclusive = set(kwargs.pop("mutually_exclusive", []))
-        help = kwargs.get("help", "")  # pylint: disable=redefined-builtin
-        if self.mutually_exclusive:
-            ex_str = ", ".join(self.mutually_exclusive)
-            kwargs["help"] = help + (
+        super().__init__(*args, **kwargs)
+        others = self.mutually_exclusive - {self.name}
+        if others:
+            ex_str = ", ".join(sorted(others))
+            self.help = (self.help or "") + (
                 " NOTE: This argument is mutually exclusive with "
                 " arguments: [" + ex_str + "]."
             )
-        super().__init__(*args, **kwargs)
 
     def handle_parse_result(self, ctx, opts, args):
-        if self.mutually_exclusive.intersection(opts) and self.name in opts:
+        others = self.mutually_exclusive - {self.name}
+        if others.intersection(opts) and self.name in opts:
             raise click.UsageError(
                 f"Illegal usage: `{self.name}` is mutually exclusive with "
-                f"arguments `{', '.join(self.mutually_exclusive)}`."
+                f"arguments `{', '.join(others)}`."
             )
         return super().handle_parse_result(ctx, opts, args)
 
@@ -412,6 +413,8 @@ def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvi
     return providers, version, test_type
 
 
+ALGORITHM_FLAGS = ["hunter_analyze", "cmr", "anomaly_detection", "orig_analyze"]
+
 # pylint: disable=too-many-locals
 @click.version_option(version=__version__, message="%(prog)s %(version)s")
 @click.command(context_settings={"show_default": True, "max_content_width": 180})
@@ -420,7 +423,7 @@ def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvi
     is_flag=True,
     help="Generate percent difference in comparison",
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["anomaly_detection","hunter_analyze"],
+    mutually_exclusive=ALGORITHM_FLAGS,
 )
 @click.option("--filter", is_flag=True, help="Generate percent difference in comparison")
 @click.option(
@@ -452,11 +455,18 @@ def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvi
 @click.option("--sippy-pr-search", is_flag=True, help="Search for PRs in sippy")
 @click.option("--debug", default=False, is_flag=True, help="log level")
 @click.option(
+    "--orig-analyze",
+    is_flag=True,
+    help="run original e-divisive analysis from apache-otava",
+    cls=MutuallyExclusiveOption,
+    mutually_exclusive=ALGORITHM_FLAGS,
+)
+@click.option(
     "--hunter-analyze",
     is_flag=True,
     help="run hunter analyze",
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["anomaly_detection","cmr"],
+    mutually_exclusive=ALGORITHM_FLAGS,
 )
 @click.option("--anomaly-window", type=int, callback=validate_anomaly_options, help="set window size for moving average for anomaly-detection")
 @click.option("--min-anomaly-percent", type=int, callback=validate_anomaly_options, help="set minimum percentage difference from moving average for data point to be detected as anomaly")
@@ -465,7 +475,7 @@ def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvi
     is_flag=True,
     help="run anomaly detection algorithm powered by isolation forest",
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["hunter_analyze","cmr"],
+    mutually_exclusive=ALGORITHM_FLAGS,
 )
 @click.option(
     "-o",
