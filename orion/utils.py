@@ -614,7 +614,6 @@ class Utils:
             merged_df.loc[:, self.version_field] = merged_df[self.uuid_field].apply(
                 lambda uuid: versions[uuid]
             )
-            merged_df.loc[:, "prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
 
         # Add display field data if requested
         display_data = {run[self.uuid_field]: {field: run.get(field) for field in options["display"]} for run in runs}
@@ -628,6 +627,9 @@ class Utils:
             merged_df.loc[:, "buildUrl"] = merged_df[self.uuid_field].apply(
                 lambda uuid: shortened.get(uuid, buildUrls[uuid])
             )
+        # Print PRs at the end, since they include commas and confuse other tools
+        merged_df.loc[:, "prs"] = merged_df[self.uuid_field].apply(lambda uuid: prs[uuid])
+
         merged_df = merged_df.reset_index(drop=True)
         # save the dataframe
         output_file_path = f"{options['save_data_path'].split('.')[0]}-{test['name']}.csv"
