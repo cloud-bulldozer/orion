@@ -104,35 +104,47 @@ class TestPercentileValidation:
 
 
 class TestWildcardKeywordValidation:
-    """Tests that .keyword fields under wildcard: are rejected."""
+    """Tests that leading '*' on .keyword wildcard fields triggers a warning."""
 
-    def test_keyword_field_in_wildcard_exits(self):
-        config = {
-            "tests": [
-                {
+    def test_leading_star_keyword_warns_but_passes(self):
+        config = { "tests": [ {
                     "name": "test1",
                     "metadata": {
                         "platform": "AWS",
-                        "wildcard": {
-                            "upstreamJob.keyword": "*some-job*",
-                        },
+                        "wildcard": { "upstreamJob.keyword": "*some-job*", },
                     },
-                    "metrics": [
-                        {
+                    "metrics": [ {
                             "name": "m1",
                             "metricName": "test",
                             "metric_of_interest": "value",
                             "threshold": 10,
                             "direction": 1,
-                        }
-                    ],
-                }
-            ]
-        }
+                        } ], } ] }
         with tempfile.TemporaryDirectory() as tmp_dir:
             path = _write_config(tmp_dir, config)
-            with pytest.raises(SystemExit):
-                load_config(path, {})
+            result = load_config(path, {})
+            assert result is not None
+            assert len(result["tests"]) == 1
+
+    def test_trailing_star_keyword_passes(self):
+        config = { "tests": [ {
+                    "name": "test1",
+                    "metadata": {
+                        "platform": "AWS",
+                        "wildcard": { "upstreamJob.keyword": "some-job*", },
+                    },
+                    "metrics": [ {
+                            "name": "m1",
+                            "metricName": "test",
+                            "metric_of_interest": "value",
+                            "threshold": 10,
+                            "direction": 1,
+                        } ], } ] }
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = _write_config(tmp_dir, config)
+            result = load_config(path, {})
+            assert result is not None
+            assert len(result["tests"]) == 1
 
     def test_non_keyword_wildcard_field_passes(self):
         config = {

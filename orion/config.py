@@ -71,15 +71,16 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
             test["metrics"] = merge_lists(test.get("metrics", []), parent_metrics)
 
         wildcard_fields = test.get("metadata", {}).get("wildcard", {})
-        keyword_wildcards = [f for f in wildcard_fields if f.endswith(".keyword")]
-        if keyword_wildcards:
-            logger.error(
-                "Test '%s': wildcard fields must not use .keyword suffix "
-                "(keyword fields are exact-match; put them in top-level metadata instead). "
-                "Found: %s",
-                test["name"], keyword_wildcards
+        leading_star_keywords = [
+            f for f in wildcard_fields
+            if f.endswith(".keyword") and str(wildcard_fields[f]).startswith("*")
+        ]
+        if leading_star_keywords:
+            logger.warning(
+                "Test '%s': leading '*' on .keyword wildcard fields is an "
+                "anti-pattern (see docs/configuration.md). Found: %s",
+                test["name"], leading_star_keywords
             )
-            sys.exit(1)
 
         # Expand fan_out metric templates into individual metrics
         test["metrics"] = expand_fan_out(test["metrics"], logger)

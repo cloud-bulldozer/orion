@@ -493,14 +493,19 @@ This matches any `ocpVersion` starting with `4.17` (e.g., `4.17.0`, `4.17.5-rc1`
 
 > **Important:** The `wildcard` section is strictly for fields that need pattern/glob matching. Do not use it as a general-purpose filter for metadata fields that can be matched exactly.
 >
-> - **Do not** use `.keyword` fields under `wildcard`. The `.keyword` suffix denotes an exact-match field in OpenSearch — combining it with wildcard patterns is contradictory. Place `.keyword` fields directly in the top-level metadata for exact matching.
+> - **Avoid** a leading `*` on `.keyword` fields under `wildcard`. OpenSearch expands leading wildcards against every unique token in the index, which can be very slow or hit the max-expansion limit. Orion will emit a warning when it detects this pattern. See the [OpenSearch wildcard expressions docs](https://docs.opensearch.org/latest/query-dsl/full-text/query-string/#wildcard-expressions) for details.
 > - **Do not** use `wildcard` for fields whose value is already known exactly. Put those in top-level metadata instead.
 >
 > ```yaml
-> # WRONG — .keyword field under wildcard
+> # WARNING — leading '*' on .keyword field triggers a warning
 > metadata:
 >   wildcard:
 >     upstreamJob.keyword: "*my-job-name*"
+>
+> # OK — .keyword with trailing wildcard only
+> metadata:
+>   wildcard:
+>     upstreamJob.keyword: "my-job-name*"
 >
 > # CORRECT — exact match in top-level metadata
 > metadata:
