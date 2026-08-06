@@ -2,6 +2,8 @@
 This is the cli file for orion, tool to detect regressions using hunter
 """
 
+from __future__ import annotations
+
 # pylint: disable = import-error, line-too-long, no-member
 import json
 import logging
@@ -13,14 +15,6 @@ import warnings
 from typing import Any, Optional
 import click
 from orion.logger import SingletonLogger
-from orion.run_test import run
-from orion.pipeline.formatters import FormatterFactory
-from orion import constants as cnsts
-from orion.config import load_config, collect_pull_numbers
-from orion.visualization import generate_test_html
-from orion.reporting.standalone import load_json_files, generate_report
-from orion.reporting.summary import print_regression_summary
-from orion.ack_providers import AckProvider, FileAckProvider, JiraAckProvider
 from version import __version__
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request.*")
@@ -180,6 +174,7 @@ def auto_create_jira_issues(regression_data: list, provider: AckProvider, logger
         Tuple of (created_count, issue_keys_by_test) where issue_keys_by_test
         maps test_name to a list of created JIRA issue keys.
     """
+    from orion.ack_providers import AckProvider
     issue_keys_by_test: dict[str, list[str]] = {}
     if not regression_data:
         return 0, issue_keys_by_test
@@ -357,6 +352,7 @@ def _extract_version_and_test(config: dict, input_vars: dict) -> tuple:
 
 def _create_jira_provider(kwargs: dict, config: dict, logger) -> JiraAckProvider:
     """Create and initialize a JIRA ACK provider."""
+    from orion.ack_providers import JiraAckProvider
     jira_url = kwargs.get("jira_url") or config.get("jira_url")
     if not jira_url:
         logger.error("JIRA URL required when --jira-ack is enabled. Use --jira-url or set JIRA_URL env var")
@@ -394,6 +390,7 @@ def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvi
     Returns:
         Tuple of (list of ACK provider instances, version string, test type string)
     """
+    from orion.ack_providers import AckProvider, FileAckProvider, JiraAckProvider
     providers = []
 
     # Extract version and test type from config
@@ -470,8 +467,8 @@ def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvi
 @click.option(
     "-o",
     "--output-format",
-    type=click.Choice([cnsts.JSON, cnsts.TEXT, cnsts.JUNIT]),
-    default=cnsts.TEXT,
+    type=click.Choice(["json", "text", "junit"]),
+    default="text",
     help="Choose output format (json, text or junit)",
 )
 @click.option("--save-output-path", default="output.txt", help="path to save output file with regressions")
@@ -516,6 +513,7 @@ def main(**kwargs):
     # Handle standalone report mode (--report with file paths)
     report_value = kwargs.pop("report", None)
     if report_value:
+        from orion.reporting.standalone import load_json_files, generate_report
         level = logging.DEBUG if kwargs["debug"] else logging.INFO
         logger = SingletonLogger(debug=level, name="Orion")
         logger.info("Orion version: %s", __version__)
@@ -528,6 +526,15 @@ def main(**kwargs):
     if not kwargs.get("config"):
         click.echo("Error: --config is required (unless using --report with JSON file paths or --interactive mode / -i)", err=True)
         sys.exit(1)
+
+    # Import heavy modules only when actually running (not for --help)
+    from orion import constants as cnsts
+    from orion.config import load_config, collect_pull_numbers
+    from orion.reporting.summary import print_regression_summary
+    from orion.run_test import run
+    from orion.pipeline.formatters import FormatterFactory
+    from orion.visualization import generate_test_html
+    from orion.ack_providers import JiraAckProvider
 
     level = logging.DEBUG if kwargs["debug"] else logging.INFO
     if kwargs['output_format'] == cnsts.JSON :
