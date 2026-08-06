@@ -31,7 +31,8 @@ class JsonFormatter(BaseFormatter):
         github_client = BaseFormatter._get_github_client(data.github_repos)
 
         for key, value in data.change_points_by_metric.items():
-            for change_point in value:
+            confidences = data.confidence_by_metric.get(key, [])
+            for cp_idx, change_point in enumerate(value):
                 index = change_point.index
                 percentage_change = (
                     (change_point.stats.mean_2 - change_point.stats.mean_1)
@@ -41,6 +42,10 @@ class JsonFormatter(BaseFormatter):
                     "percentage_change"
                 ] = percentage_change
                 dataframe_json[index]["is_changepoint"] = True
+                if cp_idx < len(confidences):
+                    dataframe_json[index]["metrics"][key][
+                        "confidence"
+                    ] = confidences[cp_idx].to_dict()
                 if data.collapse:
                     if (
                         index > 0

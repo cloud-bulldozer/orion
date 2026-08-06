@@ -49,7 +49,7 @@ class BaseFormatter(ABC):
         github_client = self._get_github_client(data.github_repos)
 
         for metric, cps in data.change_points_by_metric.items():
-            for cp in cps:
+            for cp_idx, cp in enumerate(cps):
                 index = cp.index
                 percentage_change = (
                     (cp.stats.mean_2 - cp.stats.mean_1)
@@ -66,6 +66,10 @@ class BaseFormatter(ABC):
                                 "labels": data.metrics_config[metric].get(
                                     "labels") or [],
                             })
+                            self._add_confidence(
+                                data, metric, cp_idx,
+                                reg["metrics_with_change"][-1]
+                            )
                     continue
 
                 seen_indices.add(index)
@@ -96,6 +100,10 @@ class BaseFormatter(ABC):
                     "uuid": row.get(data.uuid_field),
                     "timestamp": row.get("timestamp"),
                 }
+                self._add_confidence(
+                    data, metric, cp_idx,
+                    doc["metrics_with_change"][-1]
+                )
                 prs = row.get("prs")
                 if prs is not None:
                     doc["prs"] = prs
@@ -127,6 +135,13 @@ class BaseFormatter(ABC):
                 regression_data.append(doc)
 
         return regression_data
+
+    @staticmethod
+    def _add_confidence(data, metric, cp_idx, metric_entry):
+        """Add confidence data to a metric entry if available."""
+        confidences = data.confidence_by_metric.get(metric, [])
+        if cp_idx < len(confidences):
+            metric_entry["confidence"] = confidences[cp_idx].to_dict()
 
     @staticmethod
     def _get_github_client(

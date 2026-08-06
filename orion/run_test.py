@@ -13,6 +13,7 @@ from orion.utils import Utils, get_subtracted_timestamp
 from orion.github_client import GitHubClient
 from orion.visualization import VizData
 from orion.pipeline.analysis_result import AnalysisResult
+from orion.confidence import compute_confidence
 
 
 class TestResults(NamedTuple):
@@ -376,6 +377,10 @@ def analyze(test, kwargs, is_pull=False):
     else:
         avg_values = final_algorithm.dataframe[metrics].mean()
 
+    confidence_by_metric = compute_confidence(
+        algorithm_name, final_algorithm.dataframe, change_points_by_metric
+    )
+
     analysis_result = AnalysisResult(
         test_name=test["name"],
         test=test,
@@ -392,5 +397,6 @@ def analyze(test, kwargs, is_pull=False):
         version_field=test["version_field"],
         sippy_pr_search=kwargs.get("sippy_pr_search", False),
         github_repos=kwargs.get("github_repos", []),
+        confidence_by_metric=confidence_by_metric,
     )
     return analysis_result, viz_data

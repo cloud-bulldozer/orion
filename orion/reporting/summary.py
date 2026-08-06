@@ -31,13 +31,19 @@ def print_regression_summary(regression_data) -> None:
             print(f"{'Build:':<20} {regression['build_url']}")
         print("\nAffected Metrics")
         if regression['metrics_with_change']:
-            table = [
-                [m['name'], m['value'], f"{m['percentage_change']:.2f}%", m.get('labels', '')]
-                for m in regression['metrics_with_change']
-            ]
+            table = []
+            for m in regression['metrics_with_change']:
+                conf = m.get('confidence', {})
+                table.append([
+                    m['name'], m['value'],
+                    f"{m['percentage_change']:.2f}%",
+                    conf.get('label', ''),
+                    m.get('labels', ''),
+                ])
             print(tabulate(
                 table,
-                headers=["Metric", "Value", "Percentage change", "Labels"],
+                headers=["Metric", "Value", "% Change",
+                         "Confidence", "Labels"],
                 tablefmt="outline"
             ))
 

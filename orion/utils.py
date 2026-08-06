@@ -854,8 +854,10 @@ def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uui
             ),
             metric_name: record["metrics"][metric_name]["value"],
             "is_changepoint": bool(record["metrics"][metric_name]["percentage_change"]),
-            "percentage_change": record["metrics"][metric_name]["percentage_change"],
+            "percentage_change": f"{record['metrics'][metric_name]['percentage_change']:.2f}%",
         }
+        conf = record["metrics"][metric_name].get("confidence")
+        base_record["Confidence"] = conf.get("label", "") if conf else ""
         # Add metadata field if it exists in the record
         for display_field in display_fields:
             if display_field and display_field in record:
@@ -871,7 +873,7 @@ def generate_tabular_output(data: list, metric_name: str, uuid_field: str = "uui
     if lines:
         highlighted_lines += lines[0:3]
     for i, line in enumerate(lines[3:-1]):
-        if df["percentage_change"][
+        if df["is_changepoint"][
             i
         ]:  # Offset by 3 to account for header and separator
             highlighted_line = f"{lines[i+3]} -- changepoint"

@@ -4,10 +4,13 @@
 import json
 import xml.etree.ElementTree as ET
 
+import numpy as np
 import pandas as pd
 import pytest
 from otava.series import Series, Metric
 
+import orion.constants as cnsts
+from orion.confidence import ConfidenceResult, compute_confidence
 from orion.pipeline.analysis_result import AnalysisResult
 from orion.pipeline.formatters import FormatterFactory
 from orion.pipeline.formatters.base import BaseFormatter
@@ -17,6 +20,7 @@ from orion.pipeline.formatters.text_formatter import (
     TextFormatter,
     _format_comparison_table,
 )
+from orion.reporting.summary import print_regression_summary
 from orion.tests.conftest import make_change_point
 
 
@@ -513,6 +517,307 @@ class TestMultiPrJUnit:
         pull_elements = root.findall(".//pull")
         assert len(pull_elements) == 1
         assert pull_elements[0].get("pr") == "1111"
+
+
+class TestSummaryConfidenceColumn:
+    def test_summary_table_shows_confidence_label(self, capsys):
+        regression_data = [{
+            "test_name": "test-workload",
+            "bad_ver": "4.20",
+            "prev_ver": "4.19",
+            "build_url": None,
+            "metrics_with_change": [{
+                "name": "cpu",
+                "value": 30.0,
+                "percentage_change": 100.0,
+                "labels": ["infra"],
+                "confidence": {
+                    "p_value": 0.01,
+                    "cohens_d": 1.2,
+                    "label": "Likely real [1.20] (large shift [0.00])",
+                    "sufficient_data": True,
+                },
+            }],
+            "prs": [],
+            "github_context": None,
+        }]
+        print_regression_summary(regression_data)
+        out = capsys.readouterr().out
+        assert "Confidence" in out
+        assert "Likely real [1.20]" in out
+
+    def test_summary_table_no_confidence_shows_empty(self, capsys):
+        regression_data = [{
+            "test_name": "test-workload",
+            "bad_ver": "4.20",
+            "prev_ver": "4.19",
+            "build_url": None,
+            "metrics_with_change": [{
+                "name": "cpu",
+                "value": 30.0,
+                "percentage_change": 100.0,
+                "labels": ["infra"],
+            }],
+            "prs": [],
+            "github_context": None,
+        }]
+        print_regression_summary(regression_data)
+        out = capsys.readouterr().out
+        assert "Confidence" in out
+        assert "cpu" in out
+
+    def test_summary_table_insufficient_data(self, capsys):
+        regression_data = [{
+            "test_name": "test-workload",
+            "bad_ver": "4.20",
+            "prev_ver": "4.19",
+            "build_url": None,
+            "metrics_with_change": [{
+                "name": "cpu",
+                "value": 30.0,
+                "percentage_change": 100.0,
+                "labels": [],
+                "confidence": {
+                    "p_value": None,
+                    "cohens_d": None,
+                    "label": "Insufficient data",
+                    "sufficient_data": False,
+                },
+            }],
+            "prs": [],
+            "github_context": None,
+        }]
+        print_regression_summary(regression_data)
+        out = capsys.readouterr().out
+        assert "Insufficient data" in out
+
+
+class TestJsonConfidence:
+    def test_changepoint_has_confidence_object(self):
+        data = _make_analysis_result()
+        data.confidence_by_metric = {
+            "cpu": [ConfidenceResult(
+                p_value=0.003, cohens_d=1.2,
+                confidence_label="Likely real [1.20] (large shift [0.00])",
+                sufficient_data=True,
+                sample_size_before=10, sample_size_after=5,
+                mean_before=100.0, mean_after=200.0,
+                std_before=10.0, std_after=12.0,
+                ci_95=(80.0, 120.0),
+            )],
+        }
+        formatter = JsonFormatter()
+        result = formatter.format(data)
+        parsed = json.loads(result["test-workload"])
+        cp_record = [r for r in parsed if r["is_changepoint"]][0]
+        conf = cp_record["metrics"]["cpu"]["confidence"]
+        assert conf["p_value"] == pytest.approx(0.003)
+        assert conf["cohens_d"] == pytest.approx(1.2)
+        assert conf["label"] == "Likely real [1.20] (large shift [0.00])"
+        assert conf["sufficient_data"] is True
+        assert conf["sample_size_before"] == 10
+        assert conf["sample_size_after"] == 5
+        assert conf["mean_before"] == pytest.approx(100.0)
+        assert conf["mean_after"] == pytest.approx(200.0)
+        assert conf["std_before"] == pytest.approx(10.0)
+        assert conf["std_after"] == pytest.approx(12.0)
+        assert conf["ci_95"] == [pytest.approx(80.0), pytest.approx(120.0)]
+
+    def test_non_changepoint_has_no_confidence(self):
+        data = _make_analysis_result()
+        data.confidence_by_metric = {
+            "cpu": [ConfidenceResult(
+                p_value=0.003, cohens_d=1.2,
+                confidence_label="Likely real [1.20] (large shift [0.00])",
+                sufficient_data=True,
+                sample_size_before=10, sample_size_after=5,
+            )],
+        }
+        formatter = JsonFormatter()
+        result = formatter.format(data)
+        parsed = json.loads(result["test-workload"])
+        non_cp = [r for r in parsed if not r["is_changepoint"]]
+        for record in non_cp:
+            assert "confidence" not in record["metrics"]["cpu"]
+
+    def test_no_confidence_data_no_key(self):
+        data = _make_analysis_result()
+        # No confidence_by_metric set (default {})
+        formatter = JsonFormatter()
+        result = formatter.format(data)
+        parsed = json.loads(result["test-workload"])
+        cp_record = [r for r in parsed if r["is_changepoint"]][0]
+        assert "confidence" not in cp_record["metrics"]["cpu"]
+
+    def test_insufficient_data_in_json(self):
+        data = _make_analysis_result()
+        data.confidence_by_metric = {
+            "cpu": [ConfidenceResult(
+                p_value=None, cohens_d=None,
+                confidence_label="Insufficient data",
+                sufficient_data=False,
+                sample_size_before=5, sample_size_after=1,
+            )],
+        }
+        formatter = JsonFormatter()
+        result = formatter.format(data)
+        parsed = json.loads(result["test-workload"])
+        cp_record = [r for r in parsed if r["is_changepoint"]][0]
+        conf = cp_record["metrics"]["cpu"]["confidence"]
+        assert conf["p_value"] is None
+        assert conf["cohens_d"] is None
+        assert conf["sufficient_data"] is False
+
+
+class TestRegressionDataConfidence:
+    def test_regression_data_includes_confidence(self):
+        data = _make_analysis_result()
+        data.confidence_by_metric = {
+            "cpu": [ConfidenceResult(
+                p_value=0.003, cohens_d=1.2,
+                confidence_label="Likely real [1.20] (large shift [0.00])",
+                sufficient_data=True,
+                sample_size_before=10, sample_size_after=5,
+            )],
+        }
+
+        class ConcreteFormatter(BaseFormatter):
+            def format(self, data):
+                return {}
+            def format_average(self, data):
+                return ""
+            def save(self, test_name, formatted, save_output_path):
+                pass
+            def print_output(self, test_name, formatted, data,
+                             pr=0, is_pull=False):
+                pass
+            def print_and_save_pr(self, periodic, pulls, save_output_path):
+                pass
+
+        formatter = ConcreteFormatter()
+        regressions = formatter.extract_regression_data(data)
+        metric_entry = regressions[0]["metrics_with_change"][0]
+        assert "confidence" in metric_entry
+        assert metric_entry["confidence"]["p_value"] == pytest.approx(0.003)
+        assert metric_entry["confidence"]["label"] == "Likely real [1.20] (large shift [0.00])"
+        assert metric_entry["confidence"]["sample_size_before"] == 10
+        assert metric_entry["confidence"]["sample_size_after"] == 5
+
+    def test_same_index_different_metrics_get_own_confidence(self):
+        np.random.seed(42) # pylint: disable=duplicate-code
+        df = pd.DataFrame({
+            "uuid": [f"uuid-{i}" for i in range(10)],
+            "ocpVersion": [f"4.{18+i//5}" for i in range(10)],
+            "timestamp": [1700000000 + i * 100000 for i in range(10)],
+            "buildUrl": [f"http://b{i}" for i in range(10)],
+            "prs": [None] * 10,
+            "ovsCPU": np.concatenate([
+                np.random.normal(0.12, 0.01, 7),
+                np.random.normal(0.155, 0.01, 3),
+            ]),
+            "podLatency": np.concatenate([
+                np.random.normal(35000, 5000, 7),
+                np.random.normal(57000, 5000, 3),
+            ]),
+        })
+        series = Series(
+            test_name="test",
+            branch=None,
+            time=list(df["timestamp"]),
+            metrics={
+                "ovsCPU": Metric(1, 1.0),
+                "podLatency": Metric(1, 1.0),
+            },
+            data={
+                "ovsCPU": df["ovsCPU"],
+                "podLatency": df["podLatency"],
+            },
+            attributes={
+                "uuid": df["uuid"],
+                "ocpVersion": df["ocpVersion"],
+            },
+        )
+        cps_by_metric = {
+            "ovsCPU": [make_change_point("ovsCPU", 7,
+                                         mean_1=0.12, mean_2=0.155)],
+            "podLatency": [make_change_point("podLatency", 7,
+                                             mean_1=35000, mean_2=57000)],
+        }
+        confidence = compute_confidence(
+            cnsts.EDIVISIVE, df, cps_by_metric
+        )
+        data = AnalysisResult(
+            test_name="test-workload",
+            test={"name": "test-workload", "uuid_field": "uuid",
+                  "version_field": "ocpVersion",
+                  "metadata": {"benchmark.keyword": "test"}},
+            dataframe=df,
+            metrics_config={
+                "ovsCPU": {"direction": 1, "labels": [],
+                           "threshold": 0, "correlation": "",
+                           "context": None},
+                "podLatency": {"direction": 1, "labels": [],
+                               "threshold": 0, "correlation": "",
+                               "context": None},
+            },
+            change_points_by_metric=cps_by_metric,
+            series=series,
+            regression_flag=True,
+            avg_values=pd.Series({"ovsCPU": 0.12, "podLatency": 35000}),
+            collapse=False,
+            display_fields=[],
+            column_group_size=5,
+            uuid_field="uuid",
+            version_field="ocpVersion",
+            sippy_pr_search=False,
+            github_repos=[],
+            confidence_by_metric=confidence,
+        )
+
+        class ConcreteFormatter(BaseFormatter):
+            def format(self, data):
+                return {}
+            def format_average(self, data):
+                return ""
+            def save(self, test_name, formatted, save_output_path):
+                pass
+            def print_output(self, test_name, formatted, data,
+                             pr=0, is_pull=False):
+                pass
+            def print_and_save_pr(self, periodic, pulls, save_output_path):
+                pass
+
+        formatter = ConcreteFormatter()
+        regressions = formatter.extract_regression_data(data)
+        assert len(regressions) == 1
+        metrics = regressions[0]["metrics_with_change"]
+        assert len(metrics) == 2
+        cpu_conf = metrics[0]["confidence"]
+        lat_conf = metrics[1]["confidence"]
+        assert cpu_conf["cohens_d"] != lat_conf["cohens_d"]
+        assert cpu_conf["p_value"] != lat_conf["p_value"]
+
+    def test_regression_data_no_confidence_when_empty(self):
+        data = _make_analysis_result()
+        # default confidence_by_metric = {}
+
+        class ConcreteFormatter(BaseFormatter):
+            def format(self, data):
+                return {}
+            def format_average(self, data):
+                return ""
+            def save(self, test_name, formatted, save_output_path):
+                pass
+            def print_output(self, test_name, formatted, data,
+                             pr=0, is_pull=False):
+                pass
+            def print_and_save_pr(self, periodic, pulls, save_output_path):
+                pass
+
+        formatter = ConcreteFormatter()
+        regressions = formatter.extract_regression_data(data)
+        metric_entry = regressions[0]["metrics_with_change"][0]
+        assert "confidence" not in metric_entry
 
 
 class TestFormatterFactory:

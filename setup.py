@@ -24,6 +24,7 @@ setup(
         'Jinja2==3.1.3',
         'PyYAML==6.0.1',
         "numpy==2.2.0; python_version=='3.14'",
+        'scipy>=1.14.0,<2.0',
         'scikit-learn==1.5.0',
         "pandas==2.3.3; python_version=='3.14'",
         'tabulate==0.9.0',

@@ -285,6 +285,149 @@ Today is 27 Aug:
 
 If a changepoint is detected in the first 5 data points, Orion expands the lookback window, re-runs the analysis, and reports based on that expanded result.
 
+## Confidence Indicators
+
+Every detected changepoint is automatically annotated with a statistical confidence indicator that combines two measures:
+
+- **Cohen's d effect size** (primary) — magnitude of the difference relative to data variability. This drives the label classification.
+- **Welch's t-test p-value** (descriptive) — probability of observing a difference this extreme if there were no real before/after change. Reported alongside the effect size but does not gate the label.
+
+Cohen's d is used as the primary indicator because the changepoint was already detected by the analysis algorithm — re-testing the same data with a t-test would inflate significance (post-selection bias). The effect size describes *how large* the shift is, independent of the detection method.
+
+These produce a human-readable label shown in the "Affected Metrics" summary table and embedded in JSON output.
+
+### Label Format
+
+Labels are driven by Cohen's d effect size thresholds (Cohen 1988: 0.2 small, 0.5 medium, 0.8 large), with p-value as supplementary context:
+
+| Label | Meaning |
+|-------|---------|
+| `Large shift (d=1.20, p=0.001)` | d >= 0.8 — strong evidence of a meaningful metric shift |
+| `Moderate shift (d=0.60, p=0.03)` | 0.5 <= d < 0.8 — moderate-magnitude shift |
+| `Small shift (d=0.30, p=0.02)` | 0.2 <= d < 0.5 — small but detectable effect |
+| `Negligible shift (d=0.10, p=0.01)` | d < 0.2 — negligible practical impact |
+| `Large shift (d=1.50, p=0.3) — Not statistically significant` | d >= 0.8 but p >= 0.05 — large effect size but insufficient statistical evidence |
+| `Degenerate variance — shift detected but effect size undefined` | Both segments have zero variance with different means; Cohen's d is undefined |
+| `Insufficient data` | Fewer than 2 data points on either side of the changepoint |
+| `Anomaly detection — shift confidence not applicable` | IsolationForest detects outliers, not sustained shifts |
+
+The p-value is formatted with `:.2g` to preserve precision (e.g., `5e-10` instead of `0.00`). When `p >= 0.05`, " — Not statistically significant" is appended to the label.
+
+### Effect Size (Cohen's d)
+
+Cohen's d is computed using a pooled standard deviation, which assumes the before and after segments have roughly similar variance. This is appropriate for CI performance data where the variance structure tends to be stable across a shift. An alternative (Glass's delta, using only the before-segment standard deviation) could be considered if shifts are expected to also change variance.
+
+When both segments have zero variance but different means, Cohen's d is mathematically undefined. In this case, `cohens_d` is reported as `null` with a "Degenerate variance" label.
+
+### How Segments Are Split
+
+The before/after data segments depend on the algorithm:
+
+- **Hunter (E-Divisive)**: segments are bounded by neighboring changepoints. For a changepoint at index *i* with previous changepoint at *p* and next changepoint at *n*, the before-segment is `data[p:i]` and the after-segment is `data[i:n]`. If there is no previous changepoint, `p` defaults to 0 (start of data). If there is no next changepoint, `n` defaults to the end of data. This prevents a later recovery or reversal from masking an earlier genuine shift.
+- **CMR**: all previous runs vs. the most recent run (CMR typically produces "Insufficient data" since the after segment has only one point)
+- **Anomaly Detection (IsolationForest)**: confidence is not computed. IsolationForest identifies unusual individual observations, not sustained before/after shifts. A separate "Anomaly detection" label is assigned.
+
+### Text Output
+
+The "Affected Metrics" summary table includes a Confidence column:
+
+```text
+Affected Metrics
++---------+-------+----------+------------------------------------------+--------+
+| Metric  | Value | % Change | Confidence                               | Labels |
++---------+-------+----------+------------------------------------------+--------+
+| ovnCPU  | 2.43  | 64.14%   | Large shift (d=1.20, p=0.001)            | [infra] |
+| etcdCPU | 3.50  | 1.18%    | Negligible shift (d=0.15, p=0.42)        | [etcd] |
++---------+-------+----------+------------------------------------------+--------+
+```
+
+### JSON Output
+
+Each changepoint entry in JSON output includes a `confidence` object (illustrative values):
+
+```json
+{
+  "is_changepoint": true,
+  "metrics": {
+    "ovnCPU_avg": {
+      "value": 2.43,
+      "percentage_change": 64.14,
+      "confidence": {
+        "p_value": 0.001,
+        "cohens_d": 1.2,
+        "label": "Large shift (d=1.20, p=0.001)",
+        "sufficient_data": true,
+        "sample_size_before": 15,
+        "sample_size_after": 5,
+        "mean_before": 1.48,
+        "mean_after": 2.43,
+        "std_before": 0.12,
+        "std_after": 0.18,
+        "ci_95": [0.82, 1.08]
+      }
+    }
+  }
+}
+```
+
+The `ci_95` field is always present. When confidence cannot be computed, it is `null`:
+
+```json
+{
+  "confidence": {
+    "p_value": null,
+    "cohens_d": null,
+    "label": "Insufficient data",
+    "sufficient_data": false,
+    "sample_size_before": 3,
+    "sample_size_after": 1,
+    "mean_before": 10.5,
+    "mean_after": 20.0,
+    "std_before": 0.5,
+    "std_after": null,
+    "ci_95": null
+  }
+}
+```
+
+### Confidence Fields Reference
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `p_value` | float\|null | Welch's t-test p-value. Lower means more statistically significant. Null when insufficient data or degenerate variance. |
+| `cohens_d` | float\|null | Cohen's d effect size (pooled std). Measures the magnitude of the shift relative to data variability. Null when insufficient data, degenerate variance, or IsolationForest. |
+| `label` | string | Human-readable confidence label (see Label Format above). |
+| `sufficient_data` | bool | Whether both segments had at least 2 data points for statistical computation. |
+| `sample_size_before` | int | Number of data points before the changepoint (after NaN removal). |
+| `sample_size_after` | int | Number of data points from the changepoint onward (after NaN removal). |
+| `mean_before` | float\|null | Mean of the before-segment values. |
+| `mean_after` | float\|null | Mean of the after-segment values. |
+| `std_before` | float\|null | Sample standard deviation of the before-segment (ddof=1). Null if fewer than 2 points. |
+| `std_after` | float\|null | Sample standard deviation of the after-segment (ddof=1). Null if fewer than 2 points. |
+| `ci_95` | [float, float]\|null | 95% confidence interval for the mean difference (mean_after − mean_before), computed using the Welch-Satterthwaite degrees of freedom. Null when insufficient data or when standard error is zero. Always present in the output (never omitted). |
+
+The `mean_before`, `mean_after`, `std_before`, and `std_after` fields are the exact values used to compute both `p_value` and `cohens_d`. Combined with the sample sizes, any consumer can independently reproduce the pooled standard deviation, t-statistic, and confidence interval.
+
+The `ci_95` field gives a range for the true shift: e.g., `[12482, 20418]` means "we are 95% confident the true mean difference lies between 12,482 and 20,418." If the interval does not contain zero, the shift is statistically significant at the 5% level — consistent with `p_value < 0.05`.
+
+### Standalone Reports
+
+When generating reports from JSON files with `--report`, confidence data is propagated from the JSON into the summary tables automatically — no additional flags needed.
+
+### Interpreting Results
+
+Use confidence indicators to triage changepoints for evidence of meaningful metric shifts:
+
+1. **Large shift** — investigate immediately; strong evidence of a meaningful metric shift with significant impact
+2. **Moderate shift** — investigate; meaningful shift that warrants attention
+3. **Small shift** — detectable but small; may be acceptable depending on the metric's sensitivity
+4. **Negligible shift** — the detected change is too small to matter in practice
+5. **Not statistically significant** — when appended to any label, indicates the p-value is >= 0.05; interpret the effect size with caution
+6. **Insufficient data** — not enough data points to compute statistics (common with CMR or very recent runs)
+7. **Anomaly detection** — IsolationForest results; the algorithm detects outliers, not sustained shifts
+
+A confidence label indicates evidence of a metric shift, not necessarily that product code caused a regression. Environment changes, workload variations, or measurement differences could also explain the shift — always investigate the cause.
+
 ## Node Count Filtering
 
 ### Relaxed Matching
