@@ -460,3 +460,43 @@
   metric_of_interest: value
   agg:
     agg_type: avg
+
+- name: max-mutating-apicalls-latency-${ag}
+  metricName.keyword: max-mutating-apicalls-latency
+  metric_of_interest: value
+  agg:
+    agg_type: ${ag}
+  direction: 1
+  fan_out:
+    - ag: avg
+    - ag: max
+
+- name: max-ro-apicalls-latency-${ag}
+  metricName.keyword: max-ro-apicalls-latency
+  metric_of_interest: value
+  agg:
+    agg_type: ${ag}
+  direction: 1
+  fan_out:
+    - ag: avg
+    - ag: max
+
+- name: 99thEtcdCompaction-${ag}
+  metricName.keyword: 99thEtcdCompaction
+  metric_of_interest: value
+  agg:
+    agg_type: ${ag}
+  direction: 1
+  fan_out:
+    - ag: sum
+    - ag: max
+
+- name: nodeMajorFaults-${ag}
+  metricName.keyword: nodeMajorFaults
+  metric_of_interest: value
+  agg:
+    agg_type: ${ag}
+  direction: 1
+  fan_out:
+    - ag: max
+    - ag: sum
