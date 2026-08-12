@@ -9,6 +9,8 @@ tests:
       workerNodesType: "{{ workerNodesType }}"
       workerNodesCount: "{{ workerNodesCount }}"
       benchmark.keyword: node-density
+      ipsec: "{{ ipsec | default('false') }}"
+      encrypted: "{{ encrypted | default('false') }}"
       wildcard:
         ocpVersion: "{{ version }}*"
       networkType: OVNKubernetes
