@@ -44,10 +44,8 @@ class IsolationForestWeightedMean(Algorithm):
 
         # Calculate moving average for each metric
         window_size = (5 if self.options.get("anomaly_window",None) is None else int(self.options.get("anomaly_window",None)))
-        clean_metrics = dataframe_with_metrics.copy()
-        clean_metrics[dataframe["is_anomaly"] == -1] = float("nan")
-        moving_averages = clean_metrics.rolling(window=window_size, min_periods=1).mean()
-        moving_averages = moving_averages.ffill()
+        healthy_metrics = dataframe_with_metrics.loc[dataframe["is_anomaly"].ne(-1)]
+        moving_averages = healthy_metrics.rolling(window=window_size, min_periods=1).mean().reindex(dataframe.index).ffill()
 
         # Initialize percentage change columns for all metrics
         for feature in dataframe_with_metrics.columns:

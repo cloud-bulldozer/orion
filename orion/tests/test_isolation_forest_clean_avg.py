@@ -52,3 +52,6 @@ def test_single_anomaly_does_not_poison_window_for_next_run():
         "Run 8 (index 7, rps=500) should be detected as a regression; "
         "the anomalous run 7 (rps=0) must not drag down the moving average"
     )
+    change_point = next(cp for cp in change_points["rps"] if cp.index == 7)
+    assert change_point.stats.mean_1 == 705.0
+
