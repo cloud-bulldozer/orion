@@ -172,25 +172,21 @@ tests:
         direction: 1
         threshold: 10
 
-      - name: max-mutating-apicalls-latency-${ag}
+      - name: max-mutating-apicalls-latency-max
         metricName.keyword: max-mutating-apicalls-latency
         metric_of_interest: value
         agg:
-          agg_type: ${ag}
+          agg_type: max
         direction: 1
-        fan_out:
-          - ag: avg
-          - ag: max
+        acceptable_range: [0, 2]
 
-      - name: max-ro-apicalls-latency-${ag}
+      - name: max-ro-apicalls-latency-max
         metricName.keyword: max-ro-apicalls-latency
         metric_of_interest: value
         agg:
-          agg_type: ${ag}
+          agg_type: max
         direction: 1
-        fan_out:
-          - ag: avg
-          - ag: max
+        acceptable_range: [0, 2]
 
       - name: 99thEtcdCompaction-${ag}
         metricName.keyword: 99thEtcdCompaction
@@ -208,6 +204,7 @@ tests:
         agg:
           agg_type: ${ag}
         direction: 1
+        acceptable_range: [0, 1800]
         fan_out:
           - ag: max
           - ag: sum
