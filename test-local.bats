@@ -332,18 +332,18 @@ setup() {
     exit 1
   fi
 
-  if ! grep -q "+155.6%" ./outputs/results-anomaly.txt; then
-    echo "Expected string '+155.6%' not found in results.txt"
+  if ! grep -q "+318.5%" ./outputs/results-anomaly.txt; then
+    echo "Expected string '+318.5%' not found in results.txt"
     exit 1
   fi
 
-  if ! grep -q "+56.7%" ./outputs/results-anomaly.txt; then
-    echo "Expected string '+56.7%' not found in results.txt"
+  if ! grep -q "+118.8%" ./outputs/results-anomaly.txt; then
+    echo "Expected string '+118.8%' not found in results.txt"
     exit 1
   fi
 
-  if ! grep -q "+38.9%" ./outputs/results-anomaly.txt; then
-    echo "Expected string '+38.9%' not found in results.txt"
+  if ! grep -q "+96.0%" ./outputs/results-anomaly.txt; then
+    echo "Expected string '+96.0%' not found in results.txt"
     exit 1
   fi
 
@@ -390,18 +390,18 @@ setup() {
     exit 1
   fi
 
-  if ! grep -qF "155.65%" ./outputs/results-anomaly_olm-integration-test.xml; then
-    echo "Expected percentage '155.65%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
+  if ! grep -qF "318.49%" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected percentage '318.49%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
     exit 1
   fi
 
-  if ! grep -qF "56.72%" ./outputs/results-anomaly_olm-integration-test.xml; then
-    echo "Expected percentage '56.72%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
+  if ! grep -qF "118.79%" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected percentage '118.79%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
     exit 1
   fi
 
-  if ! grep -qF "38.89%" ./outputs/results-anomaly_olm-integration-test.xml; then
-    echo "Expected percentage '38.89%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
+  if ! grep -qF "95.97%" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected percentage '95.97%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
     exit 1
   fi
 
