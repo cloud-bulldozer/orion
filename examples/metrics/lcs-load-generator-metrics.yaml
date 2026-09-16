@@ -1,12 +1,12 @@
 # ==========================================================================
 # LCS Load Generator — Orion Metrics Configuration
 #
-# 27 KPIs across 8 categories:
-#   - P99 Latency (2)       - P95 Latency (2)
-#   - TTFT (2)              - Stream Time (2)
-#   - Throughput 200s (2)   - Throughput RPS (2)
-#   - Error Rates (8)       - Prometheus / System (6)
-#   - Total: 27 (expands to ~40 when /v1/responses endpoints are added)
+# 46 KPIs across 8 categories:
+#   - P99 Latency (4)       - P95 Latency (4)
+#   - TTFT (4)              - Stream Time (4)
+#   - Throughput 200s (4)   - Throughput RPS (4)
+#   - Error Rates (16)      - Prometheus / System (6)
+#   - /v1/query (20) + /v1/responses (20) + Prometheus (6) = 46 total
 #
 # direction: 1 = lower is better (latency, errors, resource usage)
 # direction: -1 = higher is better (throughput, success counts)
@@ -15,7 +15,7 @@
 
 
 # ==========================================================================
-# CATEGORY 1: P99 LATENCY (2 metrics)
+# CATEGORY 1: P99 LATENCY (4 metrics)
 # Primary regression indicators — lower is better.
 # Correlated with throughput to distinguish real regressions from load drops.
 # ==========================================================================
@@ -36,9 +36,25 @@
   context: 10
   correlation: postStreamingQuery_statusCodes.200
 
+- name: postResponses
+  metricName.keyword: post_responses
+  metric_of_interest: p99Latency
+  direction: 1
+  threshold: 10
+  context: 10
+  correlation: postResponses_statusCodes.200
+
+- name: postStreamingResponses
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: p99Latency
+  direction: 1
+  threshold: 10
+  context: 10
+  correlation: postStreamingResponses_statusCodes.200
+
 
 # ==========================================================================
-# CATEGORY 2: P95 LATENCY (2 metrics)
+# CATEGORY 2: P95 LATENCY (4 metrics)
 # Catches regressions that affect the 95th percentile but not the 99th.
 # ==========================================================================
 
@@ -56,9 +72,23 @@
   threshold: 10
   correlation: postStreamingQuery_p95_statusCodes.200
 
+- name: postResponses_p95
+  metricName.keyword: post_responses
+  metric_of_interest: p95Latency
+  direction: 1
+  threshold: 10
+  correlation: postResponses_p95_statusCodes.200
+
+- name: postStreamingResponses_p95
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: p95Latency
+  direction: 1
+  threshold: 10
+  correlation: postStreamingResponses_p95_statusCodes.200
+
 
 # ==========================================================================
-# CATEGORY 3: TTFT — Time to First Token (2 metrics, streaming only)
+# CATEGORY 3: TTFT — Time to First Token (4 metrics, streaming only)
 # Unique to LCS — OLS does NOT track this.
 # Critical UX metric: how long the user waits before seeing the first token.
 # ==========================================================================
@@ -75,9 +105,21 @@
   direction: 1
   threshold: 10
 
+- name: postStreamingResponses_TTFT
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: ttft_p99
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_TTFT_P95
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: ttft_p95
+  direction: 1
+  threshold: 10
+
 
 # ==========================================================================
-# CATEGORY 4: STREAM TIME (2 metrics, streaming only)
+# CATEGORY 4: STREAM TIME (4 metrics, streaming only)
 # Total time from request to last SSE event.
 # Unique to LCS — OLS does NOT track this.
 # ==========================================================================
@@ -94,9 +136,21 @@
   direction: 1
   threshold: 10
 
+- name: postStreamingResponses_StreamTime
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: streamTime_p99
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_StreamTime_P95
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: streamTime_p95
+  direction: 1
+  threshold: 10
+
 
 # ==========================================================================
-# CATEGORY 5: THROUGHPUT — Success Count (2 metrics)
+# CATEGORY 5: THROUGHPUT — Success Count (4 metrics)
 # Successful request count — a drop means fewer 200s under the same load.
 # Higher is better → direction: -1
 # ==========================================================================
@@ -113,9 +167,21 @@
   direction: -1
   threshold: 10
 
+- name: postResponses_statusCodes200
+  metricName.keyword: post_responses
+  metric_of_interest: statusCodes.200
+  direction: -1
+  threshold: 10
+
+- name: postStreamingResponses_statusCodes200
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: statusCodes.200
+  direction: -1
+  threshold: 10
+
 
 # ==========================================================================
-# CATEGORY 6: THROUGHPUT — Requests Per Second (2 metrics)
+# CATEGORY 6: THROUGHPUT — Requests Per Second (4 metrics)
 # Direct measure of service capacity.
 # Unique to LCS — OLS does NOT track RPS in Orion.
 # Higher is better → direction: -1
@@ -133,9 +199,21 @@
   direction: -1
   threshold: 10
 
+- name: postResponses_throughput
+  metricName.keyword: post_responses
+  metric_of_interest: throughput
+  direction: -1
+  threshold: 10
+
+- name: postStreamingResponses_throughput
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: throughput
+  direction: -1
+  threshold: 10
+
 
 # ==========================================================================
-# CATEGORY 7: ERROR RATES (8 metrics)
+# CATEGORY 7: ERROR RATES (16 metrics)
 # Track error status codes — a spike means something broke.
 # Lower is better → direction: 1
 #
@@ -192,6 +270,56 @@
 
 - name: postStreamingQuery_500
   metricName.keyword: post_streaming_query
+  metric_of_interest: statusCodes.500
+  direction: 1
+  threshold: 10
+
+# --- /v1/responses errors ---
+- name: postResponses_403
+  metricName.keyword: post_responses
+  metric_of_interest: statusCodes.403
+  direction: 1
+  threshold: 10
+
+- name: postResponses_413
+  metricName.keyword: post_responses
+  metric_of_interest: statusCodes.413
+  direction: 1
+  threshold: 10
+
+- name: postResponses_422
+  metricName.keyword: post_responses
+  metric_of_interest: statusCodes.422
+  direction: 1
+  threshold: 10
+
+- name: postResponses_500
+  metricName.keyword: post_responses
+  metric_of_interest: statusCodes.500
+  direction: 1
+  threshold: 10
+
+# --- /v1/responses stream errors ---
+- name: postStreamingResponses_403
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: statusCodes.403
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_413
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: statusCodes.413
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_422
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: statusCodes.422
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_500
+  metricName.keyword: post_streaming_responses
   metric_of_interest: statusCodes.500
   direction: 1
   threshold: 10
