@@ -1,0 +1,53 @@
+# Shared metrics for node-density workloads (small/med/large scale).
+# The per-namespace container CPU metrics are collapsed with fan_out.
+
+- name: podReadyLatency
+  metricName.keyword: podLatencyQuantilesMeasurement
+  quantileName: Ready
+  metric_of_interest: P99
+  not:
+    jobName.keyword: garbage-collection
+  labels:
+    - "[Jira: PerfScale]"
+  direction: 1
+  threshold: 10
+
+- name: containersStartedLatency
+  metricName.keyword: podLatencyQuantilesMeasurement
+  quantileName: ContainersStarted
+  labels:
+    - "[Jira: PodLatency]"
+  metric_of_interest: P99
+  direction: 1
+  threshold: 25
+
+- name: "${name}"
+  metricName.keyword: containerCPU
+  labels.namespace.keyword: "${namespace}"
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  labels:
+    - "[Jira: ${jira}]"
+  direction: 1
+  threshold: 10
+  fan_out:
+    - name: apiserverCPU
+      namespace: openshift-kube-apiserver
+      jira: kube-apiserver
+    - name: ovnCPU
+      namespace: openshift-ovn-kubernetes
+      jira: Networking / ovn-kubernetes
+    - name: etcdCPU
+      namespace: openshift-etcd
+      jira: etcd
+
+- name: kubelet
+  metricName.keyword: kubeletCPU
+  metric_of_interest: value
+  labels:
+    - "[Jira: Node]"
+  agg:
+    agg_type: avg
+  direction: 1
+  threshold: 10

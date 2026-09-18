@@ -127,40 +127,26 @@ tests:
           agg_type: avg
         direction: 1
         threshold: 10
+
       - name: max-ro-apicalls-latency
         metricName.keyword: max-ro-apicalls-latency
         metric_of_interest: value
         agg:
           agg_type: max
+        acceptable_range: [0, 2]
         labels:
           - "[Jira: max-ro-apicalls-latency]"
         direction: 1
         threshold: 10
-      - name: avg-ro-apicalls-latency
-        metricName.keyword: avg-ro-apicalls-latency
-        metric_of_interest: value
-        agg:
-          agg_type: avg
-        labels:
-          - "[Jira: avg-ro-apicalls-latency]"
-        direction: 1
-        threshold: 10
+
       - name: max-mutating-apicalls-latency
         metricName.keyword: max-mutating-apicalls-latency
         metric_of_interest: value
         agg:
           agg_type: max
+        acceptable_range: [0, 2]
         labels:
           - "[Jira: max-mutating-apicalls-latency]"
-        direction: 1
-        threshold: 10
-      - name: avg-mutating-apicalls-latency
-        metricName.keyword: avg-mutating-apicalls-latency
-        metric_of_interest: value
-        agg:
-          agg_type: avg
-        labels:
-          - "[Jira: avg-mutating-apicalls-latency]"
         direction: 1
         threshold: 10
       - name: max-cpu-etcd

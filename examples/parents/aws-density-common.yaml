@@ -1,0 +1,14 @@
+# Shared metadata for AWS udn/cudn density workloads.
+# Inherited via `parentConfig:`; child metadata (node types/counts,
+# benchmark.keyword, clusterType, ...) is merged on top and wins on conflict.
+platform: AWS
+networkType: OVNKubernetes
+jobType: "{{ jobtype | default('periodic') }}"
+pullNumber: "{{ pull_number | default(0) }}"
+organization: "{{ organization | default('') }}"
+repository: "{{ repository | default('') }}"
+fips: "{{ fips | default('false') }}"
+wildcard:
+  ocpVersion: "{{ version }}*"
+not:
+  stream: okd
