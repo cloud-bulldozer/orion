@@ -1,25 +1,8 @@
-# ==========================================================================
 # LCS Load Generator — Orion Metrics Configuration
-#
-# 46 KPIs across 8 categories:
-#   - P99 Latency (4)       - P95 Latency (4)
-#   - TTFT (4)              - Stream Time (4)
-#   - Throughput 200s (4)   - Throughput RPS (4)
-#   - Error Rates (16)      - Prometheus / System (6)
-#   - /v1/query (20) + /v1/responses (20) + Prometheus (6) = 46 total
-#
-# direction: 1 = lower is better (latency, errors, resource usage)
-# direction: -1 = higher is better (throughput, success counts)
+# direction: 1 = lower is better | -1 = higher is better
 # threshold: 10 = flag changepoints with >= 10% change
-# ==========================================================================
 
-
-# ==========================================================================
-# CATEGORY 1: P99 LATENCY (4 metrics)
-# Primary regression indicators — lower is better.
-# Correlated with throughput to distinguish real regressions from load drops.
-# ==========================================================================
-
+# P99 LATENCY
 - name: postQuery
   metricName.keyword: post_query
   metric_of_interest: p99Latency
@@ -52,12 +35,7 @@
   context: 10
   correlation: postStreamingResponses_statusCodes.200
 
-
-# ==========================================================================
-# CATEGORY 2: P95 LATENCY (4 metrics)
-# Catches regressions that affect the 95th percentile but not the 99th.
-# ==========================================================================
-
+# P95 LATENCY
 - name: postQuery_p95
   metricName.keyword: post_query
   metric_of_interest: p95Latency
@@ -86,13 +64,7 @@
   threshold: 10
   correlation: postStreamingResponses_p95_statusCodes.200
 
-
-# ==========================================================================
-# CATEGORY 3: TTFT — Time to First Token (4 metrics, streaming only)
-# Unique to LCS — OLS does NOT track this.
-# Critical UX metric: how long the user waits before seeing the first token.
-# ==========================================================================
-
+# TTFT
 - name: postStreamingQuery_TTFT
   metricName.keyword: post_streaming_query
   metric_of_interest: ttft_p99
@@ -117,13 +89,7 @@
   direction: 1
   threshold: 10
 
-
-# ==========================================================================
-# CATEGORY 4: STREAM TIME (4 metrics, streaming only)
-# Total time from request to last SSE event.
-# Unique to LCS — OLS does NOT track this.
-# ==========================================================================
-
+# STREAM TIME
 - name: postStreamingQuery_StreamTime
   metricName.keyword: post_streaming_query
   metric_of_interest: streamTime_p99
@@ -148,13 +114,7 @@
   direction: 1
   threshold: 10
 
-
-# ==========================================================================
-# CATEGORY 5: THROUGHPUT — Success Count (4 metrics)
-# Successful request count — a drop means fewer 200s under the same load.
-# Higher is better → direction: -1
-# ==========================================================================
-
+# THROUGHPUT — Success Count
 - name: postQuery_statusCodes200
   metricName.keyword: post_query
   metric_of_interest: statusCodes.200
@@ -179,14 +139,7 @@
   direction: -1
   threshold: 10
 
-
-# ==========================================================================
-# CATEGORY 6: THROUGHPUT — Requests Per Second (4 metrics)
-# Direct measure of service capacity.
-# Unique to LCS — OLS does NOT track RPS in Orion.
-# Higher is better → direction: -1
-# ==========================================================================
-
+# THROUGHPUT — RPS
 - name: postQuery_throughput
   metricName.keyword: post_query
   metric_of_interest: throughput
@@ -211,20 +164,7 @@
   direction: -1
   threshold: 10
 
-
-# ==========================================================================
-# CATEGORY 7: ERROR RATES (16 metrics)
-# Track error status codes — a spike means something broke.
-# Lower is better → direction: 1
-#
-# 403 = auth failure
-# 413 = request entity too large (prompt exceeds max — important for
-#        growing conversations that approach the context window limit)
-# 422 = validation error
-# 500 = server error
-# ==========================================================================
-
-# --- /v1/query errors ---
+# ERROR RATES
 - name: postQuery_403
   metricName.keyword: post_query
   metric_of_interest: statusCodes.403
@@ -249,7 +189,6 @@
   direction: 1
   threshold: 10
 
-# --- /v1/streaming_query errors ---
 - name: postStreamingQuery_403
   metricName.keyword: post_streaming_query
   metric_of_interest: statusCodes.403
@@ -274,7 +213,6 @@
   direction: 1
   threshold: 10
 
-# --- /v1/responses errors ---
 - name: postResponses_403
   metricName.keyword: post_responses
   metric_of_interest: statusCodes.403
@@ -299,7 +237,6 @@
   direction: 1
   threshold: 10
 
-# --- /v1/responses stream errors ---
 - name: postStreamingResponses_403
   metricName.keyword: post_streaming_responses
   metric_of_interest: statusCodes.403
@@ -324,15 +261,7 @@
   direction: 1
   threshold: 10
 
-
-# ==========================================================================
-# CATEGORY 8: PROMETHEUS / SYSTEM METRICS (6 metrics)
-# Scraped by kube-burner, indexed separately from Locust results.
-# These track lightspeed-core container resource usage and LLM health.
-# Lower is better → direction: 1
-# ==========================================================================
-
-# --- Container CPU usage (avg across pods) ---
+# PROMETHEUS / SYSTEM
 - name: lightSpeedCPU
   metricName.keyword: avg-cpu-lcs
   metric_of_interest: value
@@ -341,7 +270,6 @@
   direction: 1
   threshold: 10
 
-# --- Container Memory usage (avg across pods) ---
 - name: lightSpeedMemory
   metricName.keyword: avg-memory-lcs
   metric_of_interest: value
@@ -350,7 +278,6 @@
   direction: 1
   threshold: 10
 
-# --- CPU Throttling (containers hitting CPU limits) ---
 - name: lightSpeedCPUThrottle
   metricName.keyword: max-cpu-throttled-lcs
   metric_of_interest: value
@@ -359,7 +286,6 @@
   direction: 1
   threshold: 10
 
-# --- Pod Restarts (stability issue indicator) ---
 - name: lightSpeedPodRestarts
   metricName.keyword: pod-restarts
   metric_of_interest: value
@@ -368,7 +294,6 @@
   direction: 1
   threshold: 10
 
-# --- LLM Call Failures ---
 - name: LLMCallFailures
   metricName.keyword: avg-llm-call-failures
   metric_of_interest: value
@@ -377,7 +302,6 @@
   direction: 1
   threshold: 10
 
-# --- LLM Validation Errors ---
 - name: LLMValidationErrors
   metricName.keyword: avg-llm-validation-errors
   metric_of_interest: value
