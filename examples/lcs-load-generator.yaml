@@ -1,17 +1,5 @@
 parentConfig: config/lcs-load-generator-config.yaml
 metricsFile: metrics/lcs-load-generator-metrics.yaml
 tests:
-  - name: lcs-load-generator-{{ lcs_test_workers }}w-5m
-    metadata:
-      lcsTestDuration: "5m"
-    metrics:
-
-  - name: lcs-load-generator-{{ lcs_test_workers }}w-10m
-    metadata:
-      lcsTestDuration: "10m"
-    metrics:
-
-  - name: lcs-load-generator-{{ lcs_test_workers }}w-20m
-    metadata:
-      lcsTestDuration: "20m"
+  - name: lcs-load-generator-{{ lcs_test_workers }}w-{{ duration }}
     metrics:

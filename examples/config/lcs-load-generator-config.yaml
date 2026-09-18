@@ -4,6 +4,7 @@
 # Orion uses them to filter ES results to the correct test run.
 
 lcsTestWorkers: "{{ lcs_test_workers }}"
+lcsTestDuration: "{{ duration }}"
 platform: AWS
 clusterType: self-managed
 masterNodesType.keyword: m6a.xlarge
