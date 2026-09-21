@@ -1,0 +1,311 @@
+# LCS Load Generator — Orion Metrics Configuration
+# direction: 1 = lower is better | -1 = higher is better
+# threshold: 10 = flag changepoints with >= 10% change
+
+# P99 LATENCY
+- name: postQuery
+  metricName.keyword: post_query
+  metric_of_interest: p99Latency
+  direction: 1
+  threshold: 10
+  context: 10
+  correlation: postQuery_statusCodes.200
+
+- name: postStreamingQuery
+  metricName.keyword: post_streaming_query
+  metric_of_interest: p99Latency
+  direction: 1
+  threshold: 10
+  context: 10
+  correlation: postStreamingQuery_statusCodes.200
+
+- name: postResponses
+  metricName.keyword: post_responses
+  metric_of_interest: p99Latency
+  direction: 1
+  threshold: 10
+  context: 10
+  correlation: postResponses_statusCodes.200
+
+- name: postStreamingResponses
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: p99Latency
+  direction: 1
+  threshold: 10
+  context: 10
+  correlation: postStreamingResponses_statusCodes.200
+
+# P95 LATENCY
+- name: postQuery_p95
+  metricName.keyword: post_query
+  metric_of_interest: p95Latency
+  direction: 1
+  threshold: 10
+  correlation: postQuery_p95_statusCodes.200
+
+- name: postStreamingQuery_p95
+  metricName.keyword: post_streaming_query
+  metric_of_interest: p95Latency
+  direction: 1
+  threshold: 10
+  correlation: postStreamingQuery_p95_statusCodes.200
+
+- name: postResponses_p95
+  metricName.keyword: post_responses
+  metric_of_interest: p95Latency
+  direction: 1
+  threshold: 10
+  correlation: postResponses_p95_statusCodes.200
+
+- name: postStreamingResponses_p95
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: p95Latency
+  direction: 1
+  threshold: 10
+  correlation: postStreamingResponses_p95_statusCodes.200
+
+# TTFT
+- name: postStreamingQuery_TTFT
+  metricName.keyword: post_streaming_query
+  metric_of_interest: ttft_p99
+  direction: 1
+  threshold: 10
+
+- name: postStreamingQuery_TTFT_P95
+  metricName.keyword: post_streaming_query
+  metric_of_interest: ttft_p95
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_TTFT
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: ttft_p99
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_TTFT_P95
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: ttft_p95
+  direction: 1
+  threshold: 10
+
+# STREAM TIME
+- name: postStreamingQuery_StreamTime
+  metricName.keyword: post_streaming_query
+  metric_of_interest: streamTime_p99
+  direction: 1
+  threshold: 10
+
+- name: postStreamingQuery_StreamTime_P95
+  metricName.keyword: post_streaming_query
+  metric_of_interest: streamTime_p95
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_StreamTime
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: streamTime_p99
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_StreamTime_P95
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: streamTime_p95
+  direction: 1
+  threshold: 10
+
+# THROUGHPUT — Success Count
+- name: postQuery_statusCodes200
+  metricName.keyword: post_query
+  metric_of_interest: statusCodes.200
+  direction: -1
+  threshold: 10
+
+- name: postStreamingQuery_statusCodes200
+  metricName.keyword: post_streaming_query
+  metric_of_interest: statusCodes.200
+  direction: -1
+  threshold: 10
+
+- name: postResponses_statusCodes200
+  metricName.keyword: post_responses
+  metric_of_interest: statusCodes.200
+  direction: -1
+  threshold: 10
+
+- name: postStreamingResponses_statusCodes200
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: statusCodes.200
+  direction: -1
+  threshold: 10
+
+# THROUGHPUT — RPS
+- name: postQuery_throughput
+  metricName.keyword: post_query
+  metric_of_interest: throughput
+  direction: -1
+  threshold: 10
+
+- name: postStreamingQuery_throughput
+  metricName.keyword: post_streaming_query
+  metric_of_interest: throughput
+  direction: -1
+  threshold: 10
+
+- name: postResponses_throughput
+  metricName.keyword: post_responses
+  metric_of_interest: throughput
+  direction: -1
+  threshold: 10
+
+- name: postStreamingResponses_throughput
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: throughput
+  direction: -1
+  threshold: 10
+
+# ERROR RATES
+- name: postQuery_403
+  metricName.keyword: post_query
+  metric_of_interest: statusCodes.403
+  direction: 1
+  threshold: 10
+
+- name: postQuery_413
+  metricName.keyword: post_query
+  metric_of_interest: statusCodes.413
+  direction: 1
+  threshold: 10
+
+- name: postQuery_422
+  metricName.keyword: post_query
+  metric_of_interest: statusCodes.422
+  direction: 1
+  threshold: 10
+
+- name: postQuery_500
+  metricName.keyword: post_query
+  metric_of_interest: statusCodes.500
+  direction: 1
+  threshold: 10
+
+- name: postStreamingQuery_403
+  metricName.keyword: post_streaming_query
+  metric_of_interest: statusCodes.403
+  direction: 1
+  threshold: 10
+
+- name: postStreamingQuery_413
+  metricName.keyword: post_streaming_query
+  metric_of_interest: statusCodes.413
+  direction: 1
+  threshold: 10
+
+- name: postStreamingQuery_422
+  metricName.keyword: post_streaming_query
+  metric_of_interest: statusCodes.422
+  direction: 1
+  threshold: 10
+
+- name: postStreamingQuery_500
+  metricName.keyword: post_streaming_query
+  metric_of_interest: statusCodes.500
+  direction: 1
+  threshold: 10
+
+- name: postResponses_403
+  metricName.keyword: post_responses
+  metric_of_interest: statusCodes.403
+  direction: 1
+  threshold: 10
+
+- name: postResponses_413
+  metricName.keyword: post_responses
+  metric_of_interest: statusCodes.413
+  direction: 1
+  threshold: 10
+
+- name: postResponses_422
+  metricName.keyword: post_responses
+  metric_of_interest: statusCodes.422
+  direction: 1
+  threshold: 10
+
+- name: postResponses_500
+  metricName.keyword: post_responses
+  metric_of_interest: statusCodes.500
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_403
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: statusCodes.403
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_413
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: statusCodes.413
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_422
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: statusCodes.422
+  direction: 1
+  threshold: 10
+
+- name: postStreamingResponses_500
+  metricName.keyword: post_streaming_responses
+  metric_of_interest: statusCodes.500
+  direction: 1
+  threshold: 10
+
+# PROMETHEUS / SYSTEM
+- name: lightSpeedCPU
+  metricName.keyword: avg-cpu-lcs
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  direction: 1
+  threshold: 10
+
+- name: lightSpeedMemory
+  metricName.keyword: avg-memory-lcs
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  direction: 1
+  threshold: 10
+
+- name: lightSpeedCPUThrottle
+  metricName.keyword: max-cpu-throttled-lcs
+  metric_of_interest: value
+  agg:
+    agg_type: max
+  direction: 1
+  threshold: 10
+
+- name: lightSpeedPodRestarts
+  metricName.keyword: pod-restarts
+  metric_of_interest: value
+  agg:
+    agg_type: max
+  direction: 1
+  threshold: 10
+
+- name: LLMCallFailures
+  metricName.keyword: avg-llm-call-failures
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  direction: 1
+  threshold: 10
+
+- name: LLMValidationErrors
+  metricName.keyword: avg-llm-validation-errors
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  direction: 1
+  threshold: 10

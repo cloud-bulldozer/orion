@@ -1,0 +1,20 @@
+# Metadata configuration for lcs-load-generator Orion tests.
+#
+# These fields must match the ES document fields indexed by the load generator.
+# Orion uses them to filter ES results to the correct test run.
+
+lcsTestWorkers: "{{ lcs_test_workers }}"
+lcsTestDuration: "{{ duration }}"
+platform: AWS
+clusterType: self-managed
+masterNodesType.keyword: m6a.xlarge
+masterNodesCount: 3
+workerNodesType.keyword: m6i.xlarge
+workerNodesCount: 3
+benchmark.keyword: lcs-load-generator
+wildcard:
+  ocpVersion: "{{ version }}*"
+networkType: OVNKubernetes
+fips: "{{ fips | default('false') }}"
+not:
+  stream: okd

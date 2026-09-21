@@ -1,0 +1,5 @@
+parentConfig: config/lcs-load-generator-config.yaml
+metricsFile: metrics/lcs-load-generator-metrics.yaml
+tests:
+  - name: lcs-load-generator-{{ lcs_test_workers }}w-{{ duration }}
+    metrics:
