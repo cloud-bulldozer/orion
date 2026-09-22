@@ -1,4 +1,4 @@
-metricsFile: metrics.yaml
+metricsFile: metrics/build-farm-metrics.yaml
 tests:
   - name: build-farm
     metadata:
@@ -10,7 +10,7 @@ tests:
       workerNodesCount: "{{ workerNodesCount }}"
       benchmark.keyword: build-farm
       ipsec: "{{ ipsec | default('false') }}"
-      encrypted: "{{ encrypted | default('false') }}"
+      encrypted: "{{ encrypted | default('true') }}"
       wildcard:
         ocpVersion: "{{ version }}*"
       networkType: OVNKubernetes
