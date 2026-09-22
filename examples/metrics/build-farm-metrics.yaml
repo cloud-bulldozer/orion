@@ -1,0 +1,230 @@
+# Metrics for the build-farm workload.
+#
+# Build-farm stresses the control plane through job/pod watchers and list
+# operations, resource churn, and repeated metadata updates. Keep this file
+# scoped to kube-apiserver and etcd signals.
+
+# kube-apiserver
+- name: apiserverCPU
+  metricName.keyword: containerCPU
+  labels.namespace.keyword: openshift-kube-apiserver
+  labels.container.keyword: kube-apiserver
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  labels:
+    - "[Jira: kube-apiserver]"
+  direction: 1
+  threshold: 10
+
+- name: apiserverMemory
+  metricName.keyword: containerMemory
+  labels.namespace.keyword: openshift-kube-apiserver
+  labels.container.keyword: kube-apiserver
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  labels:
+    - "[Jira: kube-apiserver]"
+  direction: 1
+  threshold: 10
+
+- name: max-ro-apicalls-latency-max
+  metricName.keyword: max-ro-apicalls-latency
+  metric_of_interest: value
+  agg:
+    agg_type: max
+  labels:
+    - "[Jira: kube-apiserver]"
+  direction: 1
+  acceptable_range: [0, 2]
+
+- name: max-mutating-apicalls-latency-max
+  metricName.keyword: max-mutating-apicalls-latency
+  metric_of_interest: value
+  agg:
+    agg_type: max
+  labels:
+    - "[Jira: kube-apiserver]"
+  direction: 1
+  acceptable_range: [0, 2]
+
+- name: apiRequestRate
+  metricName.keyword: APIRequestRate
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  labels:
+    - "[Jira: kube-apiserver]"
+  direction: 1
+  threshold: 10
+
+# etcd control-plane health
+- name: etcdCPU
+  metricName.keyword: containerCPU
+  labels.namespace.keyword: openshift-etcd
+  labels.container.keyword: etcd
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+- name: etcdMemory
+  metricName.keyword: containerMemory
+  labels.namespace.keyword: openshift-etcd
+  labels.container.keyword: etcd
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+- name: etcdBackendCommitLatency
+  metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
+  metric_of_interest: value
+  agg:
+    agg_type: max
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+- name: etcdWALFsyncLatency
+  metricName.keyword: 99thEtcdDiskWalFsyncDurationSeconds
+  metric_of_interest: value
+  agg:
+    agg_type: max
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+- name: etcdRoundTripLatency
+  metricName.keyword: 99thEtcdRoundTripTimeSeconds
+  metric_of_interest: value
+  agg:
+    agg_type: max
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+- name: etcdLeaderChangesRate
+  metricName.keyword: etcdLeaderChangesRate
+  metric_of_interest: value
+  agg:
+    agg_type: max
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+- name: 99thEtcdCompaction-${ag}
+  metricName.keyword: 99thEtcdCompaction
+  metric_of_interest: value
+  agg:
+    agg_type: ${ag}
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  fan_out:
+    - ag: sum
+    - ag: max
+
+- name: etcdDefrag
+  metricName.keyword: 99thEtcdDefrag
+  metric_of_interest: value
+  agg:
+    agg_type: max
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+# Node memory pressure
+- name: nodeMajorFaults-${ag}
+  metricName.keyword: nodeMajorFaults
+  metric_of_interest: value
+  agg:
+    agg_type: ${ag}
+  direction: 1
+  acceptable_range: [0, 1800]
+  fan_out:
+    - ag: max
+    - ag: sum
+
+# Build-farm-specific etcd database and event metrics
+- name: etcdDBTotalSize
+  metricName.keyword: etcdDBTotalSize
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+- name: etcdDBSizeInUse
+  metricName.keyword: etcdDBSizeInUse
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+- name: etcdDBFragmentationBytes
+  metricName.keyword: etcdDBFragmentationBytes
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+- name: etcdDBMemberSize
+  metricName.keyword: etcd-mvcc-db-total-size
+  metric_of_interest: value
+  agg:
+    agg_type: max
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+- name: clusterEventCount
+  metricName.keyword: clusterEventCount
+  metric_of_interest: value
+  agg:
+    agg_type: max
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+- name: etcdEventWriteRate
+  metricName.keyword: etcdEventWriteRate
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
+
+- name: etcdEventReadRate
+  metricName.keyword: etcdEventReadRate
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  labels:
+    - "[Jira: etcd]"
+  direction: 1
+  threshold: 10
