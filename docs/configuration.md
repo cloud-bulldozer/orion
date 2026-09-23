@@ -644,7 +644,7 @@ This expands into three metrics: `apiserverCPU`, `multusCPU`, and `ovnCPU`, each
 
 1. Each `fan_out` entry is a dict of variable names to values
 2. All `${var}` placeholders in string values are replaced recursively (including nested dicts and lists)
-3. If a `fan_out` entry key matches an existing metric field, the entry value overrides it directly
+3. A `fan_out` entry key that matches a non-reserved metric field overrides it directly; Orion configuration keys (such as `name`, `agg`, and `direction`) cannot be used as entry keys
 4. Each expanded metric is a deep copy — mutations to one do not affect others
 5. The `fan_out` key is removed after expansion
 

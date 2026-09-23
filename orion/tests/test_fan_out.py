@@ -7,7 +7,12 @@ Unit tests for fan_out metric expansion in config.py
 import logging
 import pytest
 
-from orion.config import expand_fan_out, _substitute_vars, _replace_placeholders
+from orion.config import (
+    RESERVED_METRIC_CONFIG_KEYS,
+    expand_fan_out,
+    _substitute_vars,
+    _replace_placeholders,
+)
 from orion.logger import SingletonLogger
 
 
@@ -137,12 +142,12 @@ class TestExpandFanOut:
 
     def test_substitution_in_labels_list(self, logger):
         metrics = [{
-            "name": "${name}",
+            "name": "${label}",
             "metricName.keyword": "containerCPU",
             "direction": 1,
             "labels": ["[Jira: ${jira}]"],
             "fan_out": [
-                {"name": "apiserverCPU", "jira": "kube-apiserver"},
+                {"label": "apiserverCPU", "jira": "kube-apiserver"},
             ]
         }]
         result = expand_fan_out(metrics, logger)
@@ -178,6 +183,24 @@ class TestExpandFanOut:
         }]
         result = expand_fan_out(metrics, logger)
         assert len(result) == 0
+
+    @pytest.mark.parametrize("reserved_key", sorted(RESERVED_METRIC_CONFIG_KEYS))
+    def test_reserved_config_key_in_entry_errors(self, logger, reserved_key):
+        metrics = [{
+            "name": "${label}CPU",
+            "metricName.keyword": "containerCPU",
+            "direction": 1,
+            "fan_out": [
+                {"label": "apiserver", reserved_key: "not-allowed"},
+            ]
+        }]
+
+        with pytest.raises(SystemExit):
+            expand_fan_out(metrics, logger)
+
+        assert metrics[0]["fan_out"] == [
+            {"label": "apiserver", reserved_key: "not-allowed"}
+        ]
 
     def test_unmatched_placeholders_preserved(self, logger):
         metrics = [{

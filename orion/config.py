@@ -14,6 +14,15 @@ import yaml
 from orion.logger import SingletonLogger
 
 
+# Metric settings interpreted by Orion rather than sent to OpenSearch as filters.
+# These cannot be used as fan_out variable names or direct overrides.
+RESERVED_METRIC_CONFIG_KEYS = {
+    "acceptable_range", "agg", "context", "correlation", "direction", "dry_run",
+    "fan_out", "group_by", "labels", "metric_of_interest", "name", "not",
+    "threshold", "timestamp", "type",
+}
+
+
 def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
     """Loads config file
 
@@ -390,7 +399,18 @@ def expand_fan_out(metrics: List[Dict[str, Any]], logger: SingletonLogger) -> Li
             expanded.append(metric)
             continue
 
-        fan_out_entries = metric.pop("fan_out")
+        fan_out_entries = metric["fan_out"]
+        for entry in fan_out_entries:
+            reserved_keys = RESERVED_METRIC_CONFIG_KEYS.intersection(entry)
+            if reserved_keys:
+                logger.error(
+                    "%s cannot be used in a fan_out entry for metric template '%s'; "
+                    "these are reserved metric configuration keys",
+                    ", ".join(sorted(reserved_keys)), metric.get("name", "<unnamed>")
+                )
+                sys.exit(1)
+
+        metric.pop("fan_out")
         template = metric
 
         for entry in fan_out_entries:
