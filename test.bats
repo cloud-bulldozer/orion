@@ -135,6 +135,43 @@ setup() {
   export ols_version=$(echo "$OLS_LATEST_VERSION" | cut -d'.' -f1,2)
   cp hack/ci-tests/ack/ols_all.yaml /tmp/4.16_ols-load-generator-10w_ack.yaml
 
+  MAAS_LATEST_VERSION=$(curl -s -X POST "$ES_SERVER/perf_scale_ci*/_search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "size": 0,
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "range": {
+              "timestamp": {
+                "gte": "now-1M/M",
+                "lt": "now/M"
+              }
+            }
+          },
+          {
+          "match_phrase": {
+            "benchmark.keyword": "maas-gateway-perf"
+          }
+        }
+        ]
+      }
+    },
+    "aggs": {
+      "distinct_versions": {
+        "terms": {
+          "field": "ocpVersion.keyword",
+          "order": { "_key": "desc" }
+        }
+      }
+    }
+  }' | jq -r '.aggregations.distinct_versions.buckets[0].key')
+  # Latest OCP version that has MaaS data. Can be replaced with a MaaS-specific
+  # version field later if the benchmark starts publishing one.
+  export maas_version=$(echo "$MAAS_LATEST_VERSION" | cut -d'.' -f1,2)
+  echo "maas version $maas_version"
+
   QUAY_LATEST_VERSION=$(curl -s -X POST "$QUAY_QE_ES_SERVER/perf_scale_ci*/_search" \
   -H "Content-Type: application/json" \
   -d '{
@@ -285,5 +322,26 @@ setup() {
   export quay_image_push_pull_index="quay-push-pull*"
   export es_metadata_index=${METADATA_INDEX}
   run_cmd orion --node-count false --config "examples/quay-load-test-stable-stage.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=./outputs/junit.xml --collapse --input-vars='{"quay_version": "quayio-stage", "ocp_version": "4.18"}'
+}
+
+# MaaS AI Gateway. One test per periodic in openshift/release; providers and
+# payload sizes mirror each job's ci-operator config, so a drift between the
+# two shows up here as an empty result set.
+@test "orion maas gateway perf odh anthropic" {
+  run_cmd orion --config "examples/maas-gateway-perf-odh-anthropic.yaml" --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --output-format text --input-vars='{"version": "'${maas_version}'", "providers": "claude-sonnet-anthropic", "payload_sizes": "small,medium,large,very-large"}'
+}
+
+@test "orion maas gateway perf odh vertex" {
+  run_cmd orion --config "examples/maas-gateway-perf-odh-vertex.yaml" --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --output-format json --save-output-path=./outputs/output.json --input-vars='{"version": "'${maas_version}'", "providers": "claude-sonnet-vertex", "payload_sizes": "small,medium,large,very-large"}'
+}
+
+@test "orion maas gateway perf odh nil small" {
+  run_cmd orion --config "examples/maas-gateway-perf-odh-nil-small.yaml" --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --output-format junit --save-output-path=./outputs/output.xml --input-vars='{"version": "'${maas_version}'", "providers": "gpt-4o-openai,gpt-4o-azure,gpt-4o-bedrock", "payload_sizes": "small"}'
+}
+
+# Also exercises the concurrency override, which every other MaaS test leaves
+# at the config default of 8,64,512.
+@test "orion maas gateway perf odh nil bulk" {
+  run_cmd orion --config "examples/maas-gateway-perf-odh-nil-bulk.yaml" --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --collapse --input-vars='{"version": "'${maas_version}'", "providers": "gpt-4o-openai,gpt-4o-azure,gpt-4o-bedrock", "payload_sizes": "medium,large,very-large", "orion_concurrency_levels": "8,512"}'
 }
 

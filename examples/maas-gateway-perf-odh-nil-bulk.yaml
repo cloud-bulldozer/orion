@@ -1,0 +1,10 @@
+# See docs/maas-gateway-perf.md for the job matrix, the inherited metadata and
+# metrics, why upstreamJob is pinned, and how to run this locally.
+parentConfig: config/maas-gateway-perf-config.yaml
+metricsFile: metrics/maas-gateway-perf-metrics.yaml
+tests:
+  - name: maas-perf-odh-nil-bulk
+    metadata:
+      wildcard:
+        ocpVersion: "{{ version }}*"
+        upstreamJob.keyword: "*maas-perf-odh-nil-bulk*"

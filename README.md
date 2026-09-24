@@ -90,6 +90,7 @@ Auto-created issues include full regression details, affected metrics, related P
 - **[Installation Guide](docs/installation.md)** - Detailed setup and build instructions
 - **[Configuration](docs/configuration.md)** - Configuration format and metrics options
 - **[Usage Guide](docs/usage.md)** - Command-line options, examples, and configurations
+- **[MaaS AI Gateway Performance](docs/maas-gateway-perf.md)** - The MaaS gateway periodics and their configs
 - **[CI Tests](hack/ci-tests/ci-tests.md)** - CI Tests data generation
 
 ## Compatibility

@@ -1,0 +1,216 @@
+# MaaS AI Gateway performance - shared Orion metrics.
+#
+# Pulled in through `metricsFile:` by every per-job config in examples/.
+#
+# The job list below is the cross product of the four dimensions the CI job
+# sweeps, read from the job's own environment (gateway_modes, payload_sizes,
+# providers, orion_concurrency_levels). See docs/maas-gateway-perf.md for the
+# kube-burner job-name format, where those values come from, and the full
+# metric inventory.
+#
+# The Jinja control statements are kept behind a `#` so the raw template still
+# parses as YAML for `make lint`; they render down to empty comment lines.
+#
+# direction: 1 = lower is better | -1 = higher is better | 0 = flag both ways
+# threshold: 10 = only flag changepoints of 10% or more
+#
+# {%- set maas_modes = (gateway_modes | default('gateway,baseline', true)).split(',') %}
+# {%- set maas_sizes = (payload_sizes | default('small', true)).split(',') %}
+# {%- set maas_providers = (providers | default('gpt-4o-openai', true)).split(',') %}
+# {%- set maas_levels = (orion_concurrency_levels | default('8,64,512', true)).split(',') %}
+# {%- set maas_jobs = [] %}
+# {%- for mode in maas_modes %}
+# {%- for size in maas_sizes %}
+# {%- for provider in maas_providers %}
+# {%- for level in maas_levels %}
+# {%- set job = '%s-%s-%s-c%s' | format(mode | trim, size | trim, provider | trim, level | trim) %}
+# {%- set _ = maas_jobs.append(job) %}
+# {%- endfor %}
+# {%- endfor %}
+# {%- endfor %}
+# {%- endfor %}
+
+# Container CPU and memory across every MaaS component namespace.
+# fan_out expands job x component x resource at config-load time, group_by
+# discovers the containers from OpenSearch at run time.
+- name: ${job}-${comp}Container${kind}-${labels.container.keyword}
+  metricName.keyword: ${comp}Container${kind}
+  jobName: ${job}
+  metric_of_interest: value
+  group_by:
+    - labels.container.keyword
+  agg:
+    agg_type: avg
+  direction: 1
+  threshold: 10
+  fan_out:
+# {%- for job in maas_jobs %}
+# {%- for comp in ['maas', 'kuadrant', 'testInfra', 'maasAPI'] %}
+# {%- for kind in ['CPU', 'Memory'] %}
+    - comp: {{ comp }}
+      kind: {{ kind }}
+      job: {{ job }}
+# {%- endfor %}
+# {%- endfor %}
+# {%- endfor %}
+
+# Network receive / transmit for the MaaS ingress components
+- name: ${job}-maasNetwork${dir}Rate
+  metricName.keyword: maasNetwork${dir}Rate
+  jobName: ${job}
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  direction: 0
+  threshold: 10
+  fan_out:
+# {%- for job in maas_jobs %}
+# {%- for dir in ['Receive', 'Transmit'] %}
+    - dir: {{ dir }}
+      job: {{ job }}
+# {%- endfor %}
+# {%- endfor %}
+
+# Istio/Envoy gateway request duration percentiles
+- name: ${job}-gatewayRequestDuration${pct}
+  metricName.keyword: gatewayRequestDuration${pct}
+  jobName: ${job}
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  direction: 1
+  threshold: 10
+  fan_out:
+# {%- for job in maas_jobs %}
+# {%- for pct in ['P50', 'P95', 'P99'] %}
+    - pct: {{ pct }}
+      job: {{ job }}
+# {%- endfor %}
+# {%- endfor %}
+
+# Istio gateway request rate (per response code)
+- name: ${job}-gatewayRequestRate
+  metricName.keyword: gatewayRequestRate
+  jobName: ${job}
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  direction: 0
+  threshold: 10
+  fan_out:
+# {%- for job in maas_jobs %}
+    - job: {{ job }}
+# {%- endfor %}
+
+# Istio gateway cumulative request count
+- name: ${job}-gatewayRequestCount
+  metricName.keyword: gatewayRequestCount
+  jobName: ${job}
+  metric_of_interest: value
+  agg:
+    agg_type: max
+  direction: 0
+  threshold: 10
+  fan_out:
+# {%- for job in maas_jobs %}
+    - job: {{ job }}
+# {%- endfor %}
+
+# Limitador authorized calls gauge
+- name: ${job}-limitadorAuthorizedCalls
+  metricName.keyword: limitadorAuthorizedCalls
+  jobName: ${job}
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  direction: 0
+  threshold: 10
+  fan_out:
+# {%- for job in maas_jobs %}
+    - job: {{ job }}
+# {%- endfor %}
+
+# Limitador authorized hits rate
+- name: ${job}-limitadorAuthorizedHitsRate
+  metricName.keyword: limitadorAuthorizedHitsRate
+  jobName: ${job}
+  metric_of_interest: value
+  agg:
+    agg_type: avg
+  direction: 1
+  threshold: 10
+  fan_out:
+# {%- for job in maas_jobs %}
+    - job: {{ job }}
+# {%- endfor %}
+
+# guidellm benchmark latencies - lower is better.
+# These documents key the iteration off job_name.keyword, not jobName.
+# TTFT (time to first token), ITL (inter-token latency), TPOT (time per output
+# token) and end-to-end request latency all share one template.
+- name: ${job}-${label}-${pct}
+  metricName.keyword: guidellmBenchmarkSummary
+  job_name.keyword: ${job}
+  metric_of_interest: ${field}
+  agg:
+    agg_type: avg
+  direction: 1
+  threshold: 10
+  fan_out:
+# {%- for job in maas_jobs %}
+# {%- for pct in ['mean', 'p90', 'p95', 'p99'] %}
+    - label: ttft
+      field: ttft_{{ pct }}_ms
+      pct: {{ pct }}
+      job: {{ job }}
+    - label: itl
+      field: itl_{{ pct }}_ms
+      pct: {{ pct }}
+      job: {{ job }}
+    - label: tpot
+      field: time_per_output_token_{{ pct }}_ms
+      pct: {{ pct }}
+      job: {{ job }}
+    - label: request-latency
+      field: request_latency_{{ pct }}_seconds
+      pct: {{ pct }}
+      job: {{ job }}
+# {%- endfor %}
+# {%- endfor %}
+
+# guidellm benchmark throughput - higher is better
+- name: ${job}-${label}-${pct}
+  metricName.keyword: guidellmBenchmarkSummary
+  job_name.keyword: ${job}
+  metric_of_interest: ${field}
+  agg:
+    agg_type: avg
+  direction: -1
+  threshold: 10
+  fan_out:
+# {%- for job in maas_jobs %}
+# {%- for pct in ['mean', 'p90', 'p95', 'p99'] %}
+    - label: output-tps
+      field: output_tokens_per_second_{{ pct }}
+      pct: {{ pct }}
+      job: {{ job }}
+    - label: throughput
+      field: throughput_{{ pct }}_rps
+      pct: {{ pct }}
+      job: {{ job }}
+# {%- endfor %}
+# {%- endfor %}
+
+# guidellm benchmark error count - lower is better
+- name: ${job}-errored-requests
+  metricName.keyword: guidellmBenchmarkSummary
+  job_name.keyword: ${job}
+  metric_of_interest: errored_requests
+  agg:
+    agg_type: sum
+  threshold: 0
+  direction: 1
+  fan_out:
+# {%- for job in maas_jobs %}
+    - job: {{ job }}
+# {%- endfor %}
