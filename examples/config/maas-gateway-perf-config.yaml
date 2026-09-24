@@ -1,0 +1,28 @@
+# Shared metadata for every MaaS AI Gateway performance Orion config.
+#
+# Pulled in through `parentConfig:` by the per-job configs:
+#   examples/maas-gateway-perf-odh-anthropic.yaml
+#   examples/maas-gateway-perf-odh-vertex.yaml
+#   examples/maas-gateway-perf-odh-nil-small.yaml
+#   examples/maas-gateway-perf-odh-nil-bulk.yaml
+#
+# See docs/maas-gateway-perf.md for what these jobs measure and why each
+# per-job config also has to pin upstreamJob.
+
+platform: AWS
+clusterType: self-managed
+masterNodesType: m6a.xlarge
+masterNodesCount: 3
+workerNodesType: m6i.4xlarge
+workerNodesCount: 3
+benchmark.keyword: maas-gateway-perf
+networkType: OVNKubernetes
+wildcard:
+  ocpVersion: "{{ version }}*"
+jobType: "{{ jobtype | default('periodic') }}"
+pullNumber: "{{ pull_number | default(0) }}"
+organization: "{{ organization | default('') }}"
+repository: "{{ repository | default('') }}"
+fips: "{{ fips | default('false') }}"
+not:
+  stream: okd

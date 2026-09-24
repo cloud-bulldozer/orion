@@ -22,6 +22,15 @@ def _write_config(tmp_dir, config_dict, filename="config.yaml"):
     return path
 
 
+_METRIC = {
+    "name": "m1",
+    "metricName": "test",
+    "metric_of_interest": "value",
+    "threshold": 10,
+    "direction": 1,
+}
+
+
 def _minimal_config(metrics):
     """Return a minimal valid config dict with the given metrics list."""
     return {
@@ -174,6 +183,135 @@ class TestWildcardKeywordValidation:
             result = load_config(path, {})
             assert result is not None
             assert len(result["tests"]) == 1
+
+
+class TestParentConfigMerge:
+    """Tests for parentConfig / metricsFile inheritance."""
+
+    @staticmethod
+    def _child(metadata=None, **extra):
+        test = {"name": "test1", "metrics": [_METRIC]}
+        if metadata is not None:
+            test["metadata"] = metadata
+        test.update(extra)
+        return {"parentConfig": "parent.yaml", "tests": [test]}
+
+    def _load_with_parent(self, tmp_dir, child, parent):
+        _write_config(tmp_dir, parent, filename="parent.yaml")
+        path = _write_config(tmp_dir, child)
+        return load_config(path, {})["tests"][0]
+
+    def test_parent_metadata_inherited_when_child_has_none(self):
+        parent = {"platform": "AWS", "benchmark.keyword": "test-bench"}
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            test = self._load_with_parent(tmp_dir, self._child(), parent)
+            assert test["metadata"]["platform"] == "AWS"
+            assert test["metadata"]["benchmark.keyword"] == "test-bench"
+
+    def test_child_metadata_takes_precedence(self):
+        parent = {"platform": "AWS", "workerNodesType": "m6i.2xlarge"}
+        child = self._child({"workerNodesType": "m6i.4xlarge"})
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            test = self._load_with_parent(tmp_dir, child, parent)
+            assert test["metadata"]["workerNodesType"] == "m6i.4xlarge"
+            assert test["metadata"]["platform"] == "AWS"
+
+    def test_child_wildcard_replaces_parent_wildcard_wholesale(self):
+        # merge_configs is a shallow merge, so a child that defines `wildcard`
+        # drops every key the parent had under it. A config narrowing on
+        # upstreamJob must therefore restate ocpVersion or it silently widens
+        # its query to every OCP version.
+        parent = {"platform": "AWS", "wildcard": {"ocpVersion": "4.17*"}}
+        child = self._child({"wildcard": {"upstreamJob.keyword": "*my-job*"}})
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            test = self._load_with_parent(tmp_dir, child, parent)
+            assert test["metadata"]["wildcard"] == {"upstreamJob.keyword": "*my-job*"}
+            assert "ocpVersion" not in test["metadata"]["wildcard"]
+
+    def test_child_wildcard_may_restate_inherited_keys(self):
+        parent = {"platform": "AWS", "wildcard": {"ocpVersion": "4.17*"}}
+        child = self._child(
+            {"wildcard": {"ocpVersion": "4.17*", "upstreamJob.keyword": "*my-job*"}}
+        )
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            test = self._load_with_parent(tmp_dir, child, parent)
+            assert test["metadata"]["wildcard"] == {
+                "ocpVersion": "4.17*",
+                "upstreamJob.keyword": "*my-job*",
+            }
+
+    def test_ignore_global_skips_parent_metadata(self):
+        parent = {"platform": "AWS"}
+        child = self._child({"platform": "GCP"}, IgnoreGlobal=True)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            test = self._load_with_parent(tmp_dir, child, parent)
+            assert test["metadata"] == {"platform": "GCP"}
+
+
+class TestMetricsFileMerge:
+    """Tests for metrics inherited through metricsFile."""
+
+    @staticmethod
+    def _child(metrics=None, **extra):
+        test = {"name": "test1", "metadata": {"platform": "AWS"}}
+        if metrics is not None:
+            test["metrics"] = metrics
+        test.update(extra)
+        return {"metricsFile": "metrics.yaml", "tests": [test]}
+
+    def _load(self, tmp_dir, child, shared_metrics):
+        path = os.path.join(tmp_dir, "metrics.yaml")
+        with open(path, "w", encoding="utf-8") as handle:
+            yaml.dump(shared_metrics, handle)
+        return load_config(_write_config(tmp_dir, child), {})["tests"][0]
+
+    def test_shared_metrics_are_inherited(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            test = self._load(tmp_dir, self._child(), [_METRIC])
+            assert [m["name"] for m in test["metrics"]] == ["m1"]
+
+    def test_ignore_global_metrics_skips_shared_list(self):
+        local = dict(_METRIC, name="local-only")
+        child = self._child([local], IgnoreGlobalMetrics=True)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            test = self._load(tmp_dir, child, [_METRIC])
+            assert [m["name"] for m in test["metrics"]] == ["local-only"]
+
+    def test_shared_metrics_expand_fan_out(self):
+        shared = [
+            {
+                "name": "${job}-latency",
+                "metricName": "test",
+                "jobName": "${job}",
+                "metric_of_interest": "value",
+                "direction": 1,
+                "threshold": 10,
+                "fan_out": [{"job": "job-a"}, {"job": "job-b"}],
+            }
+        ]
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            test = self._load(tmp_dir, self._child(), shared)
+            assert [m["name"] for m in test["metrics"]] == ["job-a-latency", "job-b-latency"]
+            assert [m["jobName"] for m in test["metrics"]] == ["job-a", "job-b"]
+
+    def test_fan_out_template_with_constant_name_exits(self):
+        # A fan_out template whose `name` omits the varying placeholder expands
+        # to duplicates; the loader rejects that rather than silently
+        # collapsing the series.
+        shared = [
+            {
+                "name": "constant-name",
+                "metricName": "test",
+                "jobName": "${job}",
+                "metric_of_interest": "value",
+                "direction": 1,
+                "threshold": 10,
+                "fan_out": [{"job": "job-a"}, {"job": "job-b"}],
+            }
+        ]
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            with pytest.raises(SystemExit):
+                self._load(tmp_dir, self._child(), shared)
 
 
 class TestCollectPullNumbers:  # pylint: disable=missing-class-docstring
