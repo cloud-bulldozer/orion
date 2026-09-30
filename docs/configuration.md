@@ -644,9 +644,36 @@ This expands into three metrics: `apiserverCPU`, `multusCPU`, and `ovnCPU`, each
 
 1. Each `fan_out` entry is a dict of variable names to values
 2. All `${var}` placeholders in string values are replaced recursively (including nested dicts and lists)
-3. If a `fan_out` entry key matches an existing metric field, the entry value overrides it directly
+3. A `fan_out` entry key that matches a non-reserved metric field overrides it directly; Orion configuration keys (such as `name`, `agg`, and `direction`) cannot be used as entry keys
 4. Each expanded metric is a deep copy — mutations to one do not affect others
 5. The `fan_out` key is removed after expansion
+
+#### Example: Retrieve more summary statistics with less duplication
+
+Say you want to collect more than a single stastic about a metric, like mean, but also min, max. You can use `fan_out` to do this compactly:
+
+```
+tests:
+  - name: payload-cluster-density-v2
+    metadata:
+      ...
+    metrics:
+      - name: nodeMajorFaults-${ag}
+        metricName.keyword: nodeMajorFaults
+        metric_of_interest: value
+        agg:
+          agg_type: ${ag}
+        fan_out:
+          - ag: avg
+          - ag: min
+          - ag: max
+```
+
+This will return data that looks like the following table output:
+```
+time uuid ocpVersion nodeMajorFaults-avg_avg nodeMajorFaults-min_min nodeMajorFaults-max_max
+---- ---- ---------- ----------------------- ----------------------- -----------------------
+```
 
 ### `group_by` — Dynamic Expansion
 
