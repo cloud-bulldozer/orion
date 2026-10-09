@@ -1,5 +1,10 @@
+# LCS load-generator Orion tests.
+# Required input-vars / env: lcs_test_workers, lcs_test_duration, version
+# Example: --input-vars '{"lcs_test_workers":"100","lcs_test_duration":"20m","version":"4.22"}'
 parentConfig: config/lcs-load-generator-config.yaml
 metricsFile: metrics/lcs-load-generator-metrics.yaml
 tests:
-  - name: lcs-load-generator-{{ lcs_test_workers }}w-{{ duration }}
+  - name: lcs-load-generator-{{ lcs_test_workers }}w-{{ lcs_test_duration }}
+    metadata:
+      lcsTestDuration: "{{ lcs_test_duration }}"
     metrics:
