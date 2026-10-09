@@ -1,10 +1,18 @@
 # LCS load-generator Orion tests.
-# Required input-vars / env: lcs_test_workers, lcs_test_duration, version
-# Example: --input-vars '{"lcs_test_workers":"100","lcs_test_duration":"20m","version":"4.22"}'
+# Required input-vars / env: lcs_test_workers, version
+# Optional: lcs_test_durations (comma-separated, default 5m,10m,20m)
+# Example:
+#   --input-vars '{"lcs_test_workers":"100","lcs_test_durations":"5m,10m,20m","version":"4.22"}'
+#
+# Jinja control statements are kept behind a `#` so the raw template still
+# parses as YAML for lint (same pattern as MaaS metrics configs).
 parentConfig: config/lcs-load-generator-config.yaml
 metricsFile: metrics/lcs-load-generator-metrics.yaml
 tests:
-  - name: lcs-load-generator-{{ lcs_test_workers }}w-{{ lcs_test_duration }}
+# {%- set durations = (lcs_test_durations | default('5m,10m,20m', true)).split(',') %}
+# {%- for d in durations %}
+  - name: lcs-load-generator-{{ lcs_test_workers }}w-{{ d | trim }}
     metadata:
-      lcsTestDuration: "{{ lcs_test_duration }}"
+      lcsTestDuration: "{{ d | trim }}"
     metrics:
+# {%- endfor %}
