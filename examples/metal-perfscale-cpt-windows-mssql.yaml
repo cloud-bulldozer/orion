@@ -1,0 +1,107 @@
+tests:
+  - name: metal-perfscale-cpt-windows-mssql
+    metadata:
+      platform.keyword: BareMetal
+      clusterType.keyword: self-managed
+      masterNodesType.keyword: ""
+      masterNodesCount: 3
+      workerNodesType.keyword: ""
+      workerNodesCount: 4
+      benchmark.keyword: windows-mssql
+      networkType.keyword: OVNKubernetes
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
+    metrics:
+      - name: mssqlTPM-${workers}workers
+        metricName.keyword: mssqlTPCCMeasurement
+        metric_of_interest: tpm
+        workers: ${workers}
+        agg:
+          agg_type: avg
+        threshold: 10
+        direction: -1
+        labels:
+          - "[Jira: PerfScale]"
+        fan_out:
+          - workers: 1
+          - workers: 2
+          - workers: 4
+          - workers: 8
+          - workers: 16
+          - workers: 32
+
+      - name: apiserverCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-kube-apiserver
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        threshold: 10
+        direction: 1
+        labels:
+          - "[Jira: kube-apiserver]"
+
+      - name: multusCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-multus
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        threshold: 10
+        direction: 1
+        labels:
+          - "[Jira: multus]"
+
+      - name: monitoringCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-monitoring
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        threshold: 10
+        direction: 1
+        labels:
+          - "[Jira: monitoring]"
+
+      - name: ovnCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-ovn-kubernetes
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        threshold: 10
+        direction: 1
+        labels:
+          - "[Jira: Networking / ovn-kubernetes]"
+
+      - name: etcdCPU
+        metricName.keyword: containerCPU
+        labels.namespace.keyword: openshift-etcd
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        threshold: 10
+        direction: 1
+        labels:
+          - "[Jira: etcd]"
+
+      - name: etcdDisk
+        metricName.keyword: 99thEtcdDiskBackendCommitDurationSeconds
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        threshold: 10
+        labels:
+          - "[Jira: etcd]"
+
+      - name: kubelet
+        metricName.keyword: kubeletCPU
+        metric_of_interest: value
+        agg:
+          agg_type: avg
+        threshold: 10
+        direction: 1
+        labels:
+          - "[Jira: Node]"
