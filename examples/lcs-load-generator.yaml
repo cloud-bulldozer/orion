@@ -3,9 +3,6 @@
 # Optional: lcs_test_durations (comma-separated, default 5m,10m,20m)
 # Example:
 #   --input-vars '{"lcs_test_workers":"100","lcs_test_durations":"5m,10m,20m","version":"4.22"}'
-#
-# Jinja control statements are kept behind a `#` so the raw template still
-# parses as YAML for lint (same pattern as MaaS metrics configs).
 parentConfig: config/lcs-load-generator-config.yaml
 metricsFile: metrics/lcs-load-generator-metrics.yaml
 tests:
