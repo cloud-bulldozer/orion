@@ -6,7 +6,7 @@
 lcsTestWorkers: "{{ lcs_test_workers }}"
 platform: AWS
 clusterType: self-managed
-masterNodesType.keyword: m6a.xlarge
+masterNodesType.keyword: m6i.xlarge
 masterNodesCount: 3
 workerNodesType.keyword: m6i.xlarge
 workerNodesCount: 3
