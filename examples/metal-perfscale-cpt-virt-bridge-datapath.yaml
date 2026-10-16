@@ -1,0 +1,192 @@
+# Linux-bridge VM k8s-netperf from daily-virt-6nodes (openshift/release#83431).
+#
+# VM --bridge is indexed as bridgeInfo = "VM Bridge (<serverIP>)" from
+# bridgeNetwork.json (default 10.10.10.12). The Prow step does not pass
+# --across, so acrossAZ is false. Override if ES differs:
+#   --input-vars='{"version": "5.0", "bridge_info": "VM Bridge (10.10.10.12)"}'
+# Use --benchmark-index=k8s-netperf --metadata-index=perf_scale_ci*
+# Keep dry_run until there are enough daily points for Hunter.
+tests:
+  - name: metal-perfscale-cpt-virt-bridge-datapath
+    metadata:
+      platform: BareMetal
+      clusterType: self-managed
+      masterNodesType.keyword: ""
+      masterNodesCount: 3
+      workerNodesType.keyword: ""
+      workerNodesCount: 4
+      benchmark.keyword: k8s-netperf
+      wildcard:
+        ocpVersion: "{{ version }}*"
+      networkType: OVNKubernetes
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
+      fips: "{{ fips | default('false') }}"
+      not:
+        stream: okd
+        serviceMeshMode:
+          - ambient
+          - sidecar
+
+    metrics:
+      - name: p2p-tput-64-1p
+        parallelism: 1
+        profile: TCP_STREAM
+        messageSize: 64
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: false
+        virt: true
+        bridgeInfo.keyword: "{{ bridge_info | default('VM Bridge (10.10.10.12)') }}"
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          agg_type: avg
+        threshold: 10
+        dry_run: true
+
+      - name: p2p-tput-64-2p
+        parallelism: 2
+        profile: TCP_STREAM
+        messageSize: 64
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: false
+        virt: true
+        bridgeInfo.keyword: "{{ bridge_info | default('VM Bridge (10.10.10.12)') }}"
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          agg_type: avg
+        threshold: 10
+        dry_run: true
+
+      - name: p2p-tput-1024-1p
+        parallelism: 1
+        profile: TCP_STREAM
+        messageSize: 1024
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: false
+        virt: true
+        bridgeInfo.keyword: "{{ bridge_info | default('VM Bridge (10.10.10.12)') }}"
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          agg_type: avg
+        threshold: 10
+        dry_run: true
+
+      - name: p2p-tput-1024-2p
+        parallelism: 2
+        profile: TCP_STREAM
+        messageSize: 1024
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: false
+        virt: true
+        bridgeInfo.keyword: "{{ bridge_info | default('VM Bridge (10.10.10.12)') }}"
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          agg_type: avg
+        threshold: 10
+        dry_run: true
+
+      - name: p2p-tput-4096-1p
+        parallelism: 1
+        profile: TCP_STREAM
+        messageSize: 4096
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: false
+        virt: true
+        bridgeInfo.keyword: "{{ bridge_info | default('VM Bridge (10.10.10.12)') }}"
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          agg_type: avg
+        threshold: 10
+        dry_run: true
+
+      - name: p2p-tput-4096-2p
+        parallelism: 2
+        profile: TCP_STREAM
+        messageSize: 4096
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: false
+        virt: true
+        bridgeInfo.keyword: "{{ bridge_info | default('VM Bridge (10.10.10.12)') }}"
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          agg_type: avg
+        threshold: 10
+        dry_run: true
+
+      - name: p2p-tput-8192-1p
+        parallelism: 1
+        profile: TCP_STREAM
+        messageSize: 8192
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: false
+        virt: true
+        bridgeInfo.keyword: "{{ bridge_info | default('VM Bridge (10.10.10.12)') }}"
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          agg_type: avg
+        threshold: 10
+        dry_run: true
+
+      - name: p2p-tput-8192-2p
+        parallelism: 2
+        profile: TCP_STREAM
+        messageSize: 8192
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: false
+        virt: true
+        bridgeInfo.keyword: "{{ bridge_info | default('VM Bridge (10.10.10.12)') }}"
+        metric_of_interest: throughput
+        direction: -1
+        agg:
+          agg_type: avg
+        threshold: 10
+        dry_run: true
+
+      - name: p2p-ltcy-1024-1p
+        parallelism: 1
+        profile: TCP_RR
+        messageSize: 1024
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: false
+        virt: true
+        bridgeInfo.keyword: "{{ bridge_info | default('VM Bridge (10.10.10.12)') }}"
+        metric_of_interest: latency
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
+        dry_run: true
+
+      - name: p2p-ltcy-1024-2p
+        parallelism: 2
+        profile: TCP_RR
+        messageSize: 1024
+        driver.keyword: netperf
+        hostNetwork: false
+        acrossAZ: false
+        virt: true
+        bridgeInfo.keyword: "{{ bridge_info | default('VM Bridge (10.10.10.12)') }}"
+        metric_of_interest: latency
+        agg:
+          agg_type: avg
+        direction: 1
+        threshold: 10
+        dry_run: true
