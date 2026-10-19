@@ -2,6 +2,10 @@
 # metrics, why upstreamJob is pinned, and how to run this locally.
 parentConfig: config/maas-gateway-perf-config.yaml
 metricsFile: metrics/maas-gateway-perf-metrics.yaml
+# Provider and payload configuration - automatically injected into metrics template
+providers: claude-sonnet-anthropic
+payload_sizes: small,medium,large,very-large
+orion_concurrency_levels: 64,128,256,512,1024
 tests:
   - name: maas-perf-odh-anthropic
     metadata:

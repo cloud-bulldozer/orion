@@ -11,6 +11,7 @@ import re
 import sys
 import warnings
 from typing import Any, Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import click
 from orion.logger import SingletonLogger
 from orion.run_test import run
@@ -765,31 +766,60 @@ def main(**kwargs):
     if kwargs.get("viz"):
         try:
             output_base_path = str(Path(kwargs['save_output_path']).with_suffix(''))
+
+            # Prepare all visualization tasks
+            viz_tasks = []
             for viz_data in results.viz_data:
                 run_type = "periodic" if is_pull else ""
                 output_file = build_viz_output_file(
                     output_base_path, viz_data.test_name, run_type
                 )
-                generate_test_html(viz_data, output_file)
+                viz_tasks.append((viz_data, output_file))
+
             if is_pull:
                 for pr_num, viz_data in results_pull.viz_data:
                     output_file = build_viz_output_file(
                         output_base_path, viz_data.test_name, f"pull_{pr_num}"
                     )
-                    generate_test_html(viz_data, output_file)
+                    viz_tasks.append((viz_data, output_file))
+
+            # Generate visualizations in parallel (4 workers for optimal I/O)
+            logger.info("📊 Generating %d visualization(s) in parallel...", len(viz_tasks))
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                futures = {
+                    executor.submit(generate_test_html, viz_data, output_file): (viz_data.test_name, output_file)
+                    for viz_data, output_file in viz_tasks
+                }
+                for future in as_completed(futures):
+                    test_name, output_file = futures[future]
+                    try:
+                        future.result()
+                        logger.info("✓ Generated: %s", output_file)
+                    except Exception as e:  # pylint: disable=broad-except
+                        logger.warning("Failed to generate viz for %s: %s", test_name, e)
         except Exception as e:  # pylint: disable=broad-except
             logger.warning("Visualization generation failed: %s", e)
 
-    # Attach HTML visualizations to JIRA issues
+    # Attach HTML visualizations to JIRA issues (in parallel)
     if kwargs.get("viz") and kwargs.get("jira_auto_create") and jira_provider:
         try:
             output_base_path = str(Path(kwargs['save_output_path']).with_suffix(''))
-            _attach_viz_to_jira(jira_provider, issue_keys_by_test, output_base_path,
-                                "periodic" if is_pull else "", logger)
+
+            jira_tasks = [
+                (issue_keys_by_test, output_base_path, "periodic" if is_pull else "")
+            ]
             for pr_num in kwargs.get("pull_numbers", []):
                 issue_keys_for_pr = issue_keys_by_test_pull_by_pr.get(pr_num, {})
-                _attach_viz_to_jira(jira_provider, issue_keys_for_pr, output_base_path,
-                                    f"pull_{pr_num}", logger)
+                jira_tasks.append((issue_keys_for_pr, output_base_path, f"pull_{pr_num}"))
+
+            logger.info("📎 Attaching %d visualization(s) to JIRA in parallel...", len(jira_tasks))
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                futures = [
+                    executor.submit(_attach_viz_to_jira, jira_provider, keys, path, run_type, logger)
+                    for keys, path, run_type in jira_tasks
+                ]
+                for future in futures:
+                    future.result()
         except Exception as e:  # pylint: disable=broad-except
             logger.warning("JIRA attachment failed: %s", e)
 

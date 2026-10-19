@@ -2,6 +2,10 @@
 # metrics, why upstreamJob is pinned, and how to run this locally.
 parentConfig: config/maas-gateway-perf-config.yaml
 metricsFile: metrics/maas-gateway-perf-metrics.yaml
+# Provider and payload configuration - automatically injected into metrics template
+providers: gpt-4o-openai,gpt-4o-azure,gpt-4o-bedrock
+payload_sizes: small
+orion_concurrency_levels: 64,128,256,512,1024
 tests:
   - name: maas-perf-odh-nil-small
     metadata:
