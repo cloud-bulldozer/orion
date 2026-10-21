@@ -153,6 +153,19 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
         return (0, m) if has_regression else (1, m)
 
     metrics = sorted(metrics, key=_sort_key)
+
+    # Cap at 200 metrics (prioritize regressions first, which are already sorted to top)
+    # This prevents massive slow visualizations with 1000+ metrics
+    MAX_METRICS = 200
+    if len(metrics) > MAX_METRICS:
+        logger = SingletonLogger.get_logger("Orion")
+        logger.warning(
+            "Capping visualization to %d of %d metrics (prioritizing regressions). "
+            "Use filters or reduce lookback period to visualize specific metrics.",
+            MAX_METRICS, len(metrics)
+        )
+        metrics = metrics[:MAX_METRICS]
+
     n_metrics = len(metrics)
 
     if n_metrics == 0:
@@ -713,6 +726,8 @@ def generate_test_html(viz_data: VizData, output_file: str) -> str:
         fig = _build_cmr_figure(viz_data)
     else:
         fig = _build_test_figure(viz_data)
+
+    # Use CDN mode (loads Plotly from CDN, faster than inline embed)
     fig.write_html(
         output_file, include_plotlyjs="cdn", full_html=True,
         default_width="100%",

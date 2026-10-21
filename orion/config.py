@@ -51,12 +51,19 @@ def load_config(config_path: str, input_vars: Dict[str, Any]) -> Dict[str, Any]:
             logger
         )
 
+    # Inject test-specific config values into env_vars for metrics template
+    # This allows metrics to use providers, payload_sizes, orion_concurrency_levels from config
+    metrics_env_vars = env_vars.copy()
+    for key in ["providers", "payload_sizes", "orion_concurrency_levels"]:
+        if key in rendered_config:
+            metrics_env_vars[key] = rendered_config[key]
+
     parent_metrics = []
     if "metricsFile" in rendered_config:
         parent_metrics = load_config_file(
             rendered_config["metricsFile"],
             config_dir,
-            env_vars,
+            metrics_env_vars,
             logger
         )
 
