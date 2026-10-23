@@ -24,9 +24,22 @@ tests:
       - name: containersStartedLatency
         metricName.keyword: podLatencyQuantilesMeasurement
         quantileName: ContainersStarted
+        jobName.keyword: udn-density-pods
         labels:
           - "[Jira: PodLatency]"
         metric_of_interest: P99
+        direction: 1
+        threshold: 25
+
+      - name: podReadyLatency
+        metricName.keyword: podLatencyQuantilesMeasurement
+        quantileName: Ready
+        jobName.keyword: udn-density-pods
+        metric_of_interest: P99
+        not:
+          jobName.keyword: "garbage-collection"
+        labels:
+          - "[Jira: PerfScale]"
         direction: 1
         threshold: 25
 
