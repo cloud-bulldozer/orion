@@ -332,7 +332,34 @@ def test_get_uuid_by_metadata_variants(matcher_instance,
         lookback_date=lookback_date,
         lookback_size=lookback_size,
     )
+    expected = [
+        {**doc, "buildTag": "N/A"} for doc in expected
+    ]
     assert result == expected
+
+
+def test_get_uuid_by_metadata_normalizes_build_tag_values(matcher_instance, monkeypatch):
+    monkeypatch.setattr(
+        matcher_instance,
+        "query_index",
+        lambda *a, **k: [
+            FakeHit({"_source": {"uuid": "u1", "buildUrl": "url1", "ocpVersion": "4.15",
+                                 "timestamp": "2024-07-10T13:46:24Z", "buildTag": None}}),
+            FakeHit({"_source": {"uuid": "u2", "buildUrl": "url2", "ocpVersion": "4.15",
+                                 "timestamp": "2024-07-09T13:46:24Z", "build_tag": "nightly-42"}}),
+            FakeHit({"_source": {"uuid": "u3", "buildUrl": "url3", "ocpVersion": "4.15",
+                                 "timestamp": "2024-07-08T13:46:24Z", "buildTag": "nightly-43"}}),
+        ],
+    )
+    result = matcher_instance.get_uuid_by_metadata(
+        metadata={"ocpVersion": "4.15"},
+        lookback_date=datetime.datetime.strptime("2024-07-10T13:46:24Z", "%Y-%m-%dT%H:%M:%SZ"),
+        lookback_size=10,
+    )
+    tags = {doc["uuid"]: doc["buildTag"] for doc in result}
+    assert tags["u1"] == "N/A", "explicit null buildTag must not leak None into the pipeline"
+    assert tags["u2"] == "nightly-42", "snake_case build_tag alias must be honored"
+    assert tags["u3"] == "nightly-43"
 
 
 def test_match_kube_burner(matcher_instance, monkeypatch):
