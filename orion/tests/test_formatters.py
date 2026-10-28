@@ -105,6 +105,28 @@ class TestExtractRegressionData:
         assert reg["metrics_with_change"][0]["percentage_change"] == pytest.approx(100.0)
         assert reg["metrics_with_change"][0]["labels"] == ["infra"]
 
+    def test_zero_baseline_changepoint_emits_zero_percentage(self):
+        data = _make_analysis_result(change_points={
+            "cpu": [make_change_point("cpu", index=2,
+                                      mean_1=0.0, mean_2=30.0)]})
+
+        class ConcreteFormatter(BaseFormatter):
+            def format(self, data):
+                return {}
+            def format_average(self, data):
+                return ""
+            def save(self, test_name, formatted, save_output_path):
+                pass
+            def print_output(self, test_name, formatted, data, pr=0, is_pull=False):
+                pass
+            def print_and_save_pr(self, periodic, pulls, save_output_path):
+                pass
+
+        formatter = ConcreteFormatter()
+        regressions = formatter.extract_regression_data(data)
+
+        assert regressions[0]["metrics_with_change"][0]["percentage_change"] == 0.0
+
     def test_no_regressions_when_no_changepoints(self):
         data = _make_analysis_result(change_points={"cpu": []}, regression_flag=False)
 
@@ -261,6 +283,17 @@ class TestJsonFormatter:
         assert "cpu" in cp_record["metrics"]
         assert cp_record["metrics"]["cpu"]["percentage_change"] == pytest.approx(100.0)
         assert cp_record["metrics"]["cpu"]["labels"] == ["infra"]
+
+    def test_format_zero_baseline_changepoint_emits_zero_percentage(self):
+        data = _make_analysis_result(change_points={
+            "cpu": [make_change_point("cpu", index=2,
+                                      mean_1=0.0, mean_2=30.0)]})
+        formatter = JsonFormatter()
+        result = formatter.format(data)
+        parsed = json.loads(result["test-workload"])
+
+        cp_record = [r for r in parsed if r["is_changepoint"]][0]
+        assert cp_record["metrics"]["cpu"]["percentage_change"] == 0.0
 
     def test_format_non_changepoint_has_zero_percentage(self):
         data = _make_analysis_result()

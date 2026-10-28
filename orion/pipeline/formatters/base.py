@@ -51,10 +51,13 @@ class BaseFormatter(ABC):
         for metric, cps in data.change_points_by_metric.items():
             for cp_idx, cp in enumerate(cps):
                 index = cp.index
-                percentage_change = (
-                    (cp.stats.mean_2 - cp.stats.mean_1)
-                    / cp.stats.mean_1
-                ) * 100
+                if cp.stats.mean_1 == 0:
+                    percentage_change = 0.0
+                else:
+                    percentage_change = (
+                        (cp.stats.mean_2 - cp.stats.mean_1)
+                        / cp.stats.mean_1
+                    ) * 100
 
                 if index in seen_indices:
                     for reg in regression_data:
