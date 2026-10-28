@@ -197,11 +197,19 @@ class Matcher:
 
             # Handle buildUrl with fallback to build_url
             if "buildUrl" in source_data:
-                doc["buildUrl"] = source_data["buildUrl"]
+                doc["buildUrl"] = source_data["buildUrl"] or "N/A"
             elif "build_url" in source_data:
-                doc["buildUrl"] = source_data["build_url"]
+                doc["buildUrl"] = source_data["build_url"] or "N/A"
             else:
                 doc["buildUrl"] = "http://bogus-url"
+
+            # Handle buildTag with fallback to build_tag
+            if "buildTag" in source_data:
+                doc["buildTag"] = source_data["buildTag"] or "N/A"
+            elif "build_tag" in source_data:
+                doc["buildTag"] = source_data["build_tag"] or "N/A"
+            else:
+                doc["buildTag"] = "N/A"
 
             # Add additional fields if requested
             if additional_fields:

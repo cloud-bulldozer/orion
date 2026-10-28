@@ -27,7 +27,8 @@ class VizData:  # pylint: disable=too-few-public-methods,too-many-instance-attri
         uuid_field: str,
         version_field: str,
         acked_entries: list = None,
-        algorithm_name: str = ""
+        algorithm_name: str = "",
+        build_tag_field: str = "buildTag",
     ):
         self.test_name = test_name
         self.dataframe = dataframe
@@ -37,6 +38,7 @@ class VizData:  # pylint: disable=too-few-public-methods,too-many-instance-attri
         self.version_field = version_field
         self.algorithm_name = algorithm_name
         self.acked_entries = acked_entries or []
+        self.build_tag_field = build_tag_field
 
 
 def _prepare_timestamps(df: pd.DataFrame):
@@ -54,6 +56,15 @@ def _short_version(v):
     if m:
         return f"nightly-{m.group(1)}"
     return v[:20]
+
+
+def _build_tag(viz_data: VizData, df: pd.DataFrame, idx: int) -> str:
+    """Return the build tag for row idx, or 'N/A' if missing."""
+    if viz_data.build_tag_field in df.columns:
+        val = df[viz_data.build_tag_field].iloc[idx]
+        if pd.notna(val) and str(val) != "":
+            return str(val)
+    return "N/A"
 
 
 @dataclass
@@ -177,6 +188,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
     versions = df.get(viz_data.version_field, pd.Series(["N/A"] * len(df)))
     uuids = df.get(viz_data.uuid_field, pd.Series(["N/A"] * len(df)))
     build_urls = df.get("buildUrl", pd.Series([""] * len(df)))
+    build_tags = [_build_tag(viz_data, df, i) for i in range(len(df))]
 
     # Evenly spaced x-axis
     x_indices = list(range(len(df)))
@@ -215,6 +227,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                 str(uuids.iloc[i]),
                 str(timestamps.iloc[i].strftime('%Y-%m-%d %H:%M UTC')),
                 str(versions.iloc[i]),
+                build_tags[i],
             ]
             for i in range(len(df))
         ]
@@ -223,6 +236,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
             f"<b>{metric_name}: %{{y:,.2f}}</b><br>"
             "Date: %{customdata[2]}<br>"
             "Version: %{customdata[3]}<br>"
+            "Build Tag: %{customdata[4]}<br>"
             "UUID: %{customdata[1]}<br>"
             "<i>click → build log  |  right-click → copy UUID</i>"
             "<extra></extra>"
@@ -361,6 +375,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                         f"{cc.pct_change:+.1f}% change<br>"
                         f"Mean before: {cc.cp.stats.mean_1:,.2f}<br>"
                         f"Mean after: {cc.cp.stats.mean_2:,.2f}<br>"
+                        f"Build Tag: {build_tags[cc.index]}<br>"
                         f"UUID: {uuids.iloc[cc.index]}<br>"
                         f"<i>click → build log  |  right-click → copy UUID</i>"
                         f"<extra></extra>"
@@ -420,6 +435,7 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
                     hovertemplate=(
                         f"<b>ACKed</b><br>"
                         f"Reason: {ack['reason']}<br>"
+                        f"Build Tag: {build_tags[ack_idx]}<br>"
                         f"UUID: {ack['uuid'][:8]}<br>"
                         f"<i>click → build log  |  right-click → copy UUID</i>"
                         f"<extra></extra>"
@@ -574,6 +590,7 @@ def _build_cmr_figure(viz_data: VizData) -> go.Figure:
         return fig
 
     versions = df.get(viz_data.version_field, pd.Series(["N/A"] * len(df)))
+    build_tags = [_build_tag(viz_data, df, i) for i in range(len(df))]
     baseline_label = f"Baseline ({_short_version(versions.iloc[0])})"
     latest_label = f"Latest ({_short_version(versions.iloc[-1])})"
 
@@ -624,7 +641,8 @@ def _build_cmr_figure(viz_data: VizData) -> go.Figure:
                 textfont={"color": "#00d4ff", "size": 12},
                 hovertemplate=(
                     f"<b>{metric_name}</b><br>"
-                    f"Baseline: {baseline_val:,.2f}"
+                    f"Baseline: {baseline_val:,.2f}<br>"
+                    f"Build Tag (baseline run): {build_tags[0]}"
                     "<extra></extra>"
                 ),
             ),
@@ -645,10 +663,12 @@ def _build_cmr_figure(viz_data: VizData) -> go.Figure:
                 hovertemplate=(
                     f"<b>{metric_name}</b><br>"
                     f"Latest: {latest_val:,.2f}<br>"
+                    f"Build Tag (latest run): {build_tags[-1]}<br>"
                     f"Change: {pct_change:+.1f}%"
                     if pct_change is not None else
                     f"<b>{metric_name}</b><br>"
                     f"Latest: {latest_val:,.2f}<br>"
+                    f"Build Tag (latest run): {build_tags[-1]}<br>"
                     "Change: N/A (zero baseline)"
                 ) + "<extra></extra>",
             ),

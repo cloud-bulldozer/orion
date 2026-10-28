@@ -11,7 +11,7 @@ import pytest
 
 from orion.logger import SingletonLogger
 from orion.visualization import (
-    VizData, _build_test_figure, _classify_changepoints, generate_test_html,
+    VizData, _build_cmr_figure, _build_test_figure, _classify_changepoints, generate_test_html,
 )
 
 
@@ -36,6 +36,7 @@ def sample_dataframe():
                 "https://example.com/build/2",
                 "https://example.com/build/3",
             ],
+            "buildTag": ["tag-1", "tag-2", "tag-3"],
             "latency": [10.0, 20.0, 30.0],
             "cpu": [30.0, 20.0, 10.0],
         }
@@ -118,6 +119,8 @@ def test_build_test_figure_renders_changepoints_and_skips_out_of_range(sample_da
         cd = trace.customdata[0]
         assert len(cd) == 2, "customdata should contain [build_url, uuid]"
         assert cd[1].startswith("uuid-"), "second element should be the UUID"
+        # Changepoint hover tooltip shows the run's build tag
+        assert f"Build Tag: tag-{trace.x[0] + 1}" in trace.hovertemplate
 
 
 def test_build_test_figure_renders_only_matching_ack_markers(sample_dataframe):
@@ -145,6 +148,65 @@ def test_build_test_figure_renders_only_matching_ack_markers(sample_dataframe):
     assert ack_traces[0].x[0] == 1
     assert ack_traces[0].customdata[0][0] == "https://example.com/build/2"
     assert ack_traces[0].customdata[0][1] == "uuid-2"
+    # ACK marker hover tooltip shows the run's build tag
+    assert "Build Tag: tag-2" in ack_traces[0].hovertemplate
+
+
+def test_build_test_figure_main_trace_includes_build_tag(sample_dataframe):
+    viz_data = VizData(
+        test_name="node-density",
+        dataframe=sample_dataframe,
+        metrics_config={"latency": {"direction": 1}},
+        change_points_by_metric={},
+        uuid_field="uuid",
+        version_field="ocpVersion",
+    )
+
+    fig = _build_test_figure(viz_data)
+    main_traces = [
+        trace for trace in fig.data
+        if isinstance(trace.hovertemplate, str)
+        and "Date: %{customdata[2]}" in trace.hovertemplate
+        and "CHANGEPOINT" not in trace.hovertemplate
+        and "ACKed" not in trace.hovertemplate
+    ]
+
+    assert len(main_traces) == 1
+    trace = main_traces[0]
+    assert "Build Tag: %{customdata[4]}" in trace.hovertemplate
+    for row in trace.customdata:
+        assert len(row) == 5, "customdata should be [build_url, uuid, date, version, build_tag]"
+        assert row[4] in ("tag-1", "tag-2", "tag-3")
+
+
+def test_build_cmr_figure_labels_build_tags_as_run_tags(sample_dataframe):
+    """Baseline bar is the mean of baseline runs; the tag shown is only the
+    baseline run's, so the label must identify it as such."""
+    cmr_df = sample_dataframe.iloc[[0, -1]].reset_index(drop=True)
+    viz_data = VizData(
+        test_name="node-density",
+        dataframe=cmr_df,
+        metrics_config={"latency": {"direction": 1}},
+        change_points_by_metric={},
+        uuid_field="uuid",
+        version_field="ocpVersion",
+    )
+
+    fig = _build_cmr_figure(viz_data)
+    baseline_hover = None
+    latest_hover = None
+    for trace in fig.data:
+        if not isinstance(trace.hovertemplate, str):
+            continue
+        if trace.name == "Baseline":
+            baseline_hover = trace.hovertemplate
+        elif trace.name == "Latest":
+            latest_hover = trace.hovertemplate
+
+    assert baseline_hover is not None
+    assert latest_hover is not None
+    assert "Build Tag (baseline run): tag-1" in baseline_hover
+    assert "Build Tag (latest run): tag-3" in latest_hover
 
 
 def test_classify_changepoints_precomputes_direction_and_color():
