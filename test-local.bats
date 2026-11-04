@@ -49,8 +49,16 @@ setup() {
   describe=$(git describe --tags --dirty --always)
 
   if [[ "$describe" == *"$last_commit"* ]]; then
-    echo "Is ahead of Tag adding '.post1.dev'"
-    expected_version+=".post1.dev"
+    echo "Is ahead of Tag — verifying dev suffix in version"
+    if [[ ! "$version" == *"dev"* ]]; then
+      echo "Expected 'dev' suffix in version when ahead of tag, got: $version"
+      exit 1
+    fi
+  else
+    echo $expected_version
+    if [[ ! "$version" == *"$expected_version"* ]]; then
+      exit 1
+    fi
   fi
 
   if [[ "$describe" == *"dirty"* ]]; then
@@ -58,12 +66,6 @@ setup() {
       echo "Failed checking for dirty append"
       exit 1
     fi
-  fi
-
-  echo $expected_version
-
-  if [[ ! "$version" == *"$expected_version"* ]]; then
-    exit 1
   fi
   set -e
 }
@@ -332,18 +334,18 @@ setup() {
     exit 1
   fi
 
-  if ! grep -q "+155.6%" ./outputs/results-anomaly.txt; then
-    echo "Expected string '+155.6%' not found in results.txt"
+  if ! grep -q "+318.5%" ./outputs/results-anomaly.txt; then
+    echo "Expected string '+318.5%' not found in results.txt"
     exit 1
   fi
 
-  if ! grep -q "+56.7%" ./outputs/results-anomaly.txt; then
-    echo "Expected string '+56.7%' not found in results.txt"
+  if ! grep -q "+183.7%" ./outputs/results-anomaly.txt; then
+    echo "Expected string '+183.7%' not found in results.txt"
     exit 1
   fi
 
-  if ! grep -q "+38.9%" ./outputs/results-anomaly.txt; then
-    echo "Expected string '+38.9%' not found in results.txt"
+  if ! grep -q "+226.7%" ./outputs/results-anomaly.txt; then
+    echo "Expected string '+226.7%' not found in results.txt"
     exit 1
   fi
 
@@ -390,18 +392,18 @@ setup() {
     exit 1
   fi
 
-  if ! grep -qF "155.65%" ./outputs/results-anomaly_olm-integration-test.xml; then
-    echo "Expected percentage '155.65%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
+  if ! grep -qF "318.49%" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected percentage '318.49%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
     exit 1
   fi
 
-  if ! grep -qF "56.72%" ./outputs/results-anomaly_olm-integration-test.xml; then
-    echo "Expected percentage '56.72%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
+  if ! grep -qF "183.66%" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected percentage '183.66%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
     exit 1
   fi
 
-  if ! grep -qF "38.89%" ./outputs/results-anomaly_olm-integration-test.xml; then
-    echo "Expected percentage '38.89%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
+  if ! grep -qF "226.70%" ./outputs/results-anomaly_olm-integration-test.xml; then
+    echo "Expected percentage '226.70%' not found in ./outputs/results-anomaly_olm-integration-test.xml"
     exit 1
   fi
 

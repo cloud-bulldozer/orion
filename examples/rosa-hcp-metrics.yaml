@@ -37,7 +37,7 @@
   labels:
     - "[Jira: kube-apiserver]"
   direction: 1
-  threshold: 10
+  threshold: 15
 
 - name: etcdCPU
   metricName.keyword: podCPU-Controlplane
@@ -61,7 +61,7 @@
   labels:
     - "[Jira: etcd]"
   direction: 1
-  threshold: 10
+  threshold: 15
 
 - name: ovnCPU-controlplane
   metricName.keyword: podCPU-Controlplane
@@ -83,8 +83,7 @@
     agg_type: avg
   labels:
     - "[Jira: etcd]"
-  direction: 1
-  threshold: 10
+  acceptable_range: [0, 0.030]
 
 - name: etcdLeaderChanges
   metricName.keyword: etcdLeaderChangesRate

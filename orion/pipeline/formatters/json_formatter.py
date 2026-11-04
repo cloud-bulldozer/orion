@@ -35,10 +35,13 @@ class JsonFormatter(BaseFormatter):
             confidences = data.confidence_by_metric.get(key, [])
             for cp_idx, change_point in enumerate(value):
                 index = change_point.index
-                percentage_change = (
-                    (change_point.stats.mean_2 - change_point.stats.mean_1)
-                    / change_point.stats.mean_1
-                ) * 100
+                if change_point.stats.mean_1 == 0:
+                    percentage_change = 0.0
+                else:
+                    percentage_change = (
+                        (change_point.stats.mean_2 - change_point.stats.mean_1)
+                        / change_point.stats.mean_1
+                    ) * 100
                 dataframe_json[index]["metrics"][key][
                     "percentage_change"
                 ] = percentage_change

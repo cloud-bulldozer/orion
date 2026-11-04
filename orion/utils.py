@@ -533,22 +533,25 @@ class Utils:
             }
         return {run[self.uuid_field]: run[self.version_field] for run in test}
 
-    def get_build_urls(self, uuids: List[str], match: Matcher, timestamp_field: str):
-        """Gets metadata of the run from each test
-            to get the build url
+    def get_build_meta(self, uuids: List[str], match: Matcher, timestamp_field: str):
+        """Gets the build URL and build tag for each run
 
         Args:
-            uuids (list): str list of uuid to find build urls of
+            uuids (list): str list of uuid to find build meta of
             match: the fmatch instance
             timestamp_field (str): timestamp field in data
 
         Returns:
-            dict: dictionary of the metadata
+            dict: {uuid: {"buildUrl": ..., "buildTag": ...}}
         """
-
         test = match.get_results("", uuids, {}, ["buildUrl"], timestamp_field=timestamp_field)
-        buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in test}
-        return buildUrls
+        return {
+            run[self.uuid_field]: {
+                "buildUrl": run.get("buildUrl") or "N/A",
+                "buildTag": run.get("buildTag") or run.get("build_tag") or "N/A",
+            }
+            for run in test
+        }
 
     def map_prs_version(self, uuids: List[str], match: Matcher, ftimestamp: str="timestamp") -> Tuple[dict, Dict[str, List[str]]]:
         """
@@ -619,13 +622,19 @@ class Utils:
             since_date=since_date
         )
         uuids = list(set(run[self.uuid_field] for run in runs))
-        buildUrls = {run[self.uuid_field]: run["buildUrl"] for run in runs}
+        build_meta = {
+            run[self.uuid_field]: {
+                "buildUrl": run.get("buildUrl") or "N/A",
+                "buildTag": run.get("buildTag") or "N/A",
+            }
+            for run in runs
+        }
         versions, prs = self.map_prs_version(uuids, match, timestamp_field)
         # get uuids if there is a baseline
         if options["baseline"] not in ("", None):
             uuids = [uuid for uuid in re.split(r" |,", options["baseline"]) if uuid]
             uuids.append(options["uuid"])
-            buildUrls = self.get_build_urls(uuids, match, timestamp_field)
+            build_meta = self.get_build_meta(uuids, match, timestamp_field)
             versions, prs = self.map_prs_version(uuids, match, timestamp_field)
         elif not uuids:
             self.logger.info("No UUID present for given metadata")
@@ -678,16 +687,26 @@ class Utils:
             )
 
         # Add display field data if requested
-        display_data = {run[self.uuid_field]: {field: run.get(field) for field in options["display"]} for run in runs}
+        display_data = {run[self.uuid_field]: {field: (run.get(field) or "N/A") for field in options["display"]} for run in runs}
         for field in options.get("display", []):
             merged_df.loc[:, field] = merged_df[self.uuid_field].apply(
-                lambda uuid, f=field: display_data.get(uuid, {}).get(f, "N/A")
+                lambda uuid, f=field: display_data.get(uuid, {}).get(f) or "N/A"
+            )
+
+        # Add build metadata columns (buildUrl, buildTag) used by the viz hover tooltip
+        if "buildUrl" not in merged_df.columns:
+            merged_df.loc[:, "buildUrl"] = merged_df[self.uuid_field].apply(
+                lambda uuid: build_meta.get(uuid, {}).get("buildUrl") or "N/A"
+            )
+        if "buildTag" not in merged_df.columns:
+            merged_df.loc[:, "buildTag"] = merged_df[self.uuid_field].apply(
+                lambda uuid: build_meta.get(uuid, {}).get("buildTag") or "N/A"
             )
         if options["convert_tinyurl"]:
-            all_urls = {uuid: buildUrls[uuid] for uuid in merged_df[self.uuid_field]}
+            all_urls = {uuid: build_meta[uuid]["buildUrl"] for uuid in merged_df[self.uuid_field]}
             shortened = self.shorten_urls_batch(all_urls)
             merged_df.loc[:, "buildUrl"] = merged_df[self.uuid_field].apply(
-                lambda uuid: shortened.get(uuid, buildUrls[uuid])
+                lambda uuid: shortened.get(uuid, build_meta[uuid]["buildUrl"])
             )
         # Print PRs at the end, since they include commas and confuse other tools
         if len(prs) > 0:

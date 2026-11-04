@@ -396,6 +396,7 @@ def analyze(test, kwargs, is_pull=False):
             version_field=test["version_field"],
             algorithm_name=algorithm_name,
             acked_entries=acked_entries,
+            build_tag_field=test.get("build_tag_field", "buildTag"),
         )
 
     if regression_flag:
