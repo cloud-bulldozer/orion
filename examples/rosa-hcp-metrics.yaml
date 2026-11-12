@@ -209,7 +209,7 @@
     value: memory
     agg_type: avg
   direction: 1
-  threshold: 10
+  threshold: 50
 
 - name: max-mutating-apicalls-latency-max
   metricName.keyword: max-mutating-apicalls-latency
