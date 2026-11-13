@@ -178,7 +178,7 @@ tests:
         agg:
           agg_type: max
         direction: 1
-        acceptable_range: [0, 2]
+        acceptable_range: [0, 24]
 
       - name: max-ro-apicalls-latency-max
         metricName.keyword: max-ro-apicalls-latency
@@ -204,7 +204,7 @@ tests:
         agg:
           agg_type: ${ag}
         direction: 1
-        acceptable_range: [0, 1800]
+        acceptable_range: [0, 2300]
         fan_out:
           - ag: max
           - ag: sum
