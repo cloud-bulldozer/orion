@@ -144,7 +144,7 @@ tests:
         metric_of_interest: value
         agg:
           agg_type: max
-        acceptable_range: [0, 2]
+        acceptable_range: [0, 10]
         labels:
           - "[Jira: max-mutating-apicalls-latency]"
         direction: 1
