@@ -1,0 +1,14 @@
+# File to acknowledge known LCS (Lightspeed Core Service) regressions.
+# Used by CI via ACK_FILE env var → --ack flag passed to Orion.
+# UUID comes from the changepoint entry in junit_lcs-load-generator-*.json artifacts.
+---
+ack:
+  - uuid: c06d319e-f7ff-48f0-b2d0-e0b3070009b5
+    metric: lightSpeedMemory_avg
+    reason: "Known memory increase from faiss-cpu 1.15.1 to 1.16.0 dependency bump (LCORE-5402)"
+  - uuid: 72ca12e3-96c9-4079-a050-6e582264e030
+    metric: lightSpeedMemory_avg
+    reason: "Known memory increase from faiss-cpu 1.15.1 to 1.16.0 dependency bump (LCORE-5402)"
+  - uuid: d46f9927-f416-444c-b4d8-31b607c9cdec
+    metric: lightSpeedMemory_avg
+    reason: "Known memory increase from faiss-cpu 1.15.1 to 1.16.0 dependency bump (LCORE-5402)"
