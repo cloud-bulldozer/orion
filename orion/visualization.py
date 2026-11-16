@@ -27,7 +27,6 @@ class VizData:  # pylint: disable=too-few-public-methods,too-many-instance-attri
         uuid_field: str,
         version_field: str,
         acked_entries: list = None,
-        algorithm_name: str = "",
         build_tag_field: str = "buildTag",
     ):
         self.test_name = test_name
@@ -36,7 +35,6 @@ class VizData:  # pylint: disable=too-few-public-methods,too-many-instance-attri
         self.change_points_by_metric = change_points_by_metric
         self.uuid_field = uuid_field
         self.version_field = version_field
-        self.algorithm_name = algorithm_name
         self.acked_entries = acked_entries or []
         self.build_tag_field = build_tag_field
 
@@ -572,164 +570,6 @@ def _build_test_figure(viz_data: VizData) -> go.Figure:
     return fig
 
 
-def _build_cmr_figure(viz_data: VizData) -> go.Figure:
-    """Build a bar comparison figure for CMR (2-row baseline vs latest)."""
-    df = viz_data.dataframe
-    metrics = list(viz_data.metrics_config.keys())
-    n_metrics = len(metrics)
-
-    if n_metrics == 0 or len(df) < 2:
-        fig = go.Figure()
-        label = "no metrics" if n_metrics == 0 else "insufficient data"
-        fig.update_layout(
-            title_text=f"Orion: {viz_data.test_name} ({label})",
-            template="plotly_dark",
-            paper_bgcolor="#1a1a2e",
-            plot_bgcolor="#16213e",
-        )
-        return fig
-
-    versions = df.get(viz_data.version_field, pd.Series(["N/A"] * len(df)))
-    build_tags = [_build_tag(viz_data, df, i) for i in range(len(df))]
-    baseline_label = f"Baseline ({_short_version(versions.iloc[0])})"
-    latest_label = f"Latest ({_short_version(versions.iloc[-1])})"
-
-    fig = make_subplots(
-        rows=n_metrics,
-        cols=1,
-        shared_xaxes=False,
-        subplot_titles=metrics,
-        vertical_spacing=80 / (300 * n_metrics + 100),
-    )
-
-    for row_idx, metric_name in enumerate(metrics, start=1):
-        if (
-            not _metric_has_data(df, metric_name)
-            or pd.isna(df[metric_name].iloc[0])
-            or pd.isna(df[metric_name].iloc[-1])
-        ):
-            _add_no_data_placeholder(fig, metric_name, row_idx)
-            continue
-
-        baseline_val = float(df[metric_name].iloc[0])
-        latest_val = float(df[metric_name].iloc[-1])
-
-        if baseline_val == 0:
-            pct_change = None
-        else:
-            pct_change = ((latest_val - baseline_val) / baseline_val) * 100
-
-        direction = viz_data.metrics_config.get(
-            metric_name, {}
-        ).get("direction", 1)
-        if pct_change is not None:
-            is_regression = (pct_change * direction > 0) or direction == 0
-        else:
-            is_regression = False
-
-        latest_color = "#ff4444" if is_regression else "#39ff14"
-
-        fig.add_trace(
-            go.Bar(
-                x=[baseline_label],
-                y=[baseline_val],
-                name="Baseline",
-                marker_color="#00d4ff",
-                showlegend=(row_idx == 1),
-                text=[f"{baseline_val:,.2f}"],
-                textposition="outside",
-                textfont={"color": "#00d4ff", "size": 12},
-                hovertemplate=(
-                    f"<b>{metric_name}</b><br>"
-                    f"Baseline: {baseline_val:,.2f}<br>"
-                    f"Build Tag (baseline run): {build_tags[0]}"
-                    "<extra></extra>"
-                ),
-            ),
-            row=row_idx,
-            col=1,
-        )
-
-        fig.add_trace(
-            go.Bar(
-                x=[latest_label],
-                y=[latest_val],
-                name="Latest",
-                marker_color=latest_color,
-                showlegend=(row_idx == 1),
-                text=[f"{latest_val:,.2f}"],
-                textposition="outside",
-                textfont={"color": latest_color, "size": 12},
-                hovertemplate=(
-                    f"<b>{metric_name}</b><br>"
-                    f"Latest: {latest_val:,.2f}<br>"
-                    f"Build Tag (latest run): {build_tags[-1]}<br>"
-                    f"Change: {pct_change:+.1f}%"
-                    if pct_change is not None else
-                    f"<b>{metric_name}</b><br>"
-                    f"Latest: {latest_val:,.2f}<br>"
-                    f"Build Tag (latest run): {build_tags[-1]}<br>"
-                    "Change: N/A (zero baseline)"
-                ) + "<extra></extra>",
-            ),
-            row=row_idx,
-            col=1,
-        )
-
-        pct_color = "#ff4444" if is_regression else "#39ff14"
-        pct_label = f"{pct_change:+.1f}%" if pct_change is not None else "N/A"
-        y_top = max(baseline_val, latest_val)
-        fig.add_annotation(
-            x=latest_label,
-            y=y_top,
-            text=f"<b>{pct_label}</b>",
-            showarrow=False,
-            font={"color": pct_color, "size": 14},
-            yshift=30,
-            row=row_idx,
-            col=1,
-        )
-
-        y_pad = max(abs(baseline_val), abs(latest_val)) * 0.25 or 1
-        fig.update_yaxes(
-            title_text=metric_name,
-            title_font={"size": 11},
-            gridcolor="rgba(255,255,255,0.08)",
-            range=[0, max(baseline_val, latest_val) + y_pad],
-            row=row_idx,
-            col=1,
-        )
-
-    title = (
-        f"<b>Orion CMR: {viz_data.test_name}</b><br>"
-        f"<span style='font-size:12px; color:#aaa'>"
-        f"Baseline vs Latest | {n_metrics} metrics</span>"
-    )
-
-    fig.update_layout(
-        title_text=title,
-        title_x=0.5,
-        barmode="group",
-        height=300 * n_metrics + 100,
-        showlegend=True,
-        legend={"orientation": "h", "yanchor": "bottom",
-                "y": 1.02, "xanchor": "center", "x": 0.5},
-        template="plotly_dark",
-        paper_bgcolor="#1a1a2e",
-        plot_bgcolor="#16213e",
-        hoverlabel={
-            "bgcolor": "#1e1e3a",
-            "bordercolor": "#666",
-            "font_size": 12,
-            "font_color": "#ffffff",
-        },
-        margin={"t": 120, "b": 40, "l": 80, "r": 40},
-        autosize=True,
-    )
-
-    return fig
-
-
 def generate_test_html(viz_data: VizData, output_file: str) -> str:
     """Generate a self-contained HTML file for one test.
 
@@ -742,10 +582,7 @@ def generate_test_html(viz_data: VizData, output_file: str) -> str:
     """
     logger = SingletonLogger.get_logger("Orion")
 
-    if viz_data.algorithm_name == "cmr":
-        fig = _build_cmr_figure(viz_data)
-    else:
-        fig = _build_test_figure(viz_data)
+    fig = _build_test_figure(viz_data)
 
     # Use CDN mode (loads Plotly from CDN, faster than inline embed)
     fig.write_html(

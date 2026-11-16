@@ -3,25 +3,11 @@ Algorithm Factory to choose avaiable algorithms
 """
 import pandas as pd
 import orion.constants as cnsts
-from orion.logger import SingletonLogger
 from .edivisive import EDivisive
 from .edivisive import OrigEDivisive
-from .isolationforest import IsolationForestWeightedMean
-from .cmr import CMR
-
-_DEPRECATED_ALGORITHMS = {
-    cnsts.ISOLATION_FOREST,
-    cnsts.CMR,
-}
-
-_DEPRECATION_MSG = (
-    "WARNING: The '%s' algorithm is deprecated and will be removed in v1.4.0. "
-    "No further updates or fixes will be made. "
-    "If you depend on this algorithm, please pin to the last release that includes it."
-)
 
 
-class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-arguments, line-too-long
+class AlgorithmFactory: # pylint: disable= too-few-public-methods
     """Algorithm Factory to choose algorithm
     """
     def instantiate_algorithm(  # pylint: disable = too-many-arguments
@@ -50,15 +36,4 @@ class AlgorithmFactory: # pylint: disable= too-few-public-methods, too-many-argu
             return EDivisive(dataframe, test, options, metrics_config)
         if algorithm == cnsts.ORIG_EDIVISIVE:
             return OrigEDivisive(dataframe, test, options, metrics_config)
-        if algorithm == cnsts.ISOLATION_FOREST:
-            self._warn_deprecated(algorithm)
-            return IsolationForestWeightedMean(dataframe, test, options, metrics_config)
-        if algorithm == cnsts.CMR:
-            self._warn_deprecated(algorithm)
-            return CMR(dataframe, test, options, metrics_config)
         raise ValueError("Invalid algorithm called")
-
-    @staticmethod
-    def _warn_deprecated(algorithm: str):
-        logger = SingletonLogger.get_or_create_logger("Orion")
-        logger.warning(_DEPRECATION_MSG, algorithm)

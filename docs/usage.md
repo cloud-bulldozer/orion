@@ -34,23 +34,13 @@ uvx --from git+https://github.com/cloud-bulldozer/orion.git -p 3.11 orion --hunt
 
 ## Core Algorithms
 
-Orion supports three main algorithms that are **mutually exclusive**:
+Orion supports two main algorithms that are **mutually exclusive**:
 
 ### Hunter Analysis
 Uses statistical changepoint detection:
 ```bash
 orion --hunter-analyze
 ```
-
-### CMR (Compare Most Recent)
-Compares the most recent run with previous matching runs:
-
-```bash
-orion --cmr
-```
-
-- If more than 1 previous run is found, values are averaged together
-- Use with `direction: 0` in config when using `-o json` to see percent differences for both increases and decreases (default is `direction: 1` which only shows increases)
 
 ### Original E-Divisive Analysis
 Uses the original E-Divisive changepoint detection method from apache-otava:
@@ -71,12 +61,6 @@ E-Divisive statistical test directly. This makes it better suited for:
 When in doubt, start with `--hunter-analyze` (the default). Switch to
 `--orig-analyze` if you suspect the sliding-window heuristic is masking
 genuine regressions in short or edge-heavy data.
-
-### Anomaly Detection
-Detects anomalies in your data:
-```bash
-orion --anomaly-detection
-```
 
 ## Configuration Options
 
@@ -328,7 +312,6 @@ Labels are driven by Cohen's d effect size thresholds (Cohen 1988: 0.2 small, 0.
 | `Negligible shift (d=0.10, p=0.01)` | d < 0.2 — negligible practical impact |
 | `Degenerate variance — shift detected but effect size undefined` | Both segments have zero variance with different means; Cohen's d is undefined |
 | `Insufficient data` | Fewer than 2 data points on either side of the changepoint |
-| `Anomaly detection — shift confidence not applicable` | IsolationForest detects outliers, not sustained shifts |
 
 The p-value is formatted with `:.2g` to preserve precision (e.g., `5e-10` instead of `0.00`).
 
@@ -343,8 +326,7 @@ When both segments have zero variance but different means, Cohen's d is mathemat
 The before/after data segments depend on the algorithm:
 
 - **Hunter (E-Divisive)**: segments are bounded by neighboring changepoints. For a changepoint at index *i* with previous changepoint at *p* and next changepoint at *n*, the before-segment is `data[p:i]` and the after-segment is `data[i:n]`. If there is no previous changepoint, `p` defaults to 0 (start of data). If there is no next changepoint, `n` defaults to the end of data. This prevents a later recovery or reversal from masking an earlier genuine shift.
-- **CMR**: all previous runs vs. the most recent run (CMR typically produces "Insufficient data" since the after segment has only one point)
-- **Anomaly Detection (IsolationForest)**: confidence is not computed. IsolationForest identifies unusual individual observations, not sustained before/after shifts. A separate "Anomaly detection" label is assigned.
+- **Original E-Divisive**: same segment logic as Hunter.
 
 ### Text Output
 
@@ -414,7 +396,7 @@ The `ci_95` field is always present. When confidence cannot be computed, it is `
 | Field | Type | Description |
 |-------|------|-------------|
 | `p_value` | float\|null | Welch's t-test p-value (descriptive only — not calibrated for post-selection inference). Null when insufficient data or degenerate variance. |
-| `cohens_d` | float\|null | Cohen's d effect size (pooled std). Measures the magnitude of the shift relative to data variability. Null when insufficient data, degenerate variance, or IsolationForest. |
+| `cohens_d` | float\|null | Cohen's d effect size (pooled std). Measures the magnitude of the shift relative to data variability. Null when insufficient data or degenerate variance. |
 | `label` | string | Human-readable confidence label (see Label Format above). |
 | `sufficient_data` | bool | Whether both segments had at least 2 data points for statistical computation. |
 | `sample_size_before` | int | Number of data points before the changepoint (after NaN removal). |
@@ -441,8 +423,7 @@ Use confidence indicators to triage changepoints for evidence of meaningful metr
 2. **Moderate shift** — investigate; meaningful shift that warrants attention
 3. **Small shift** — detectable but small; may be acceptable depending on the metric's sensitivity
 4. **Negligible shift** — the detected change is too small to matter in practice
-5. **Insufficient data** — not enough data points to compute statistics (common with CMR or very recent runs)
-6. **Anomaly detection** — IsolationForest results; the algorithm detects outliers, not sustained shifts
+5. **Insufficient data** — not enough data points to compute statistics (common with very recent runs)
 
 A confidence label indicates evidence of a metric shift, not necessarily that product code caused a regression. Environment changes, workload variations, or measurement differences could also explain the shift — always investigate the cause.
 
@@ -643,12 +624,21 @@ orion --config performance-config.yaml --hunter-analyze --lookback 24h --lookbac
 # Analyze specific run against historical data
 orion --config metrics-only.yaml --uuid "abc123-def456-ghi789" --hunter-analyze
 
-# Compare specific run against baselines
+# Compare specific run against baselines.
+# --hunter-analyze keeps the first 5 points as a buffer, so pass at least 5
+# baseline runs to place the current run outside that window:
 orion --config metrics-only.yaml \
   --uuid "current-run-uuid" \
-  --baseline "baseline1,baseline2,baseline3" \
-  --cmr
+  --baseline "baseline1,baseline2,baseline3,baseline4,baseline5,baseline6" \
+  --hunter-analyze
 ```
+
+> **Minimum sample size (Hunter).** With `--hunter-analyze`, a regression is
+> only retained if the run under test falls outside the first 5 data points.
+> When selecting explicit runs via `--baseline`, pass **at least 5 baseline
+> runs** so the current run sits past that buffer — otherwise window expansion
+> cannot add rows and the changepoint is dropped. `--orig-analyze` has no such
+> restriction and works with fewer runs.
 
 ### Output Formatting
 ```bash
@@ -672,21 +662,13 @@ orion \
 
 ### Baseline Comparison with JSON Output
 ```bash
+# At least 5 baseline runs so the current run sits past the Hunter buffer
 orion \
   --uuid "current-run-uuid" \
-  --baseline "baseline1,baseline2" \
-  --cmr \
+  --baseline "baseline1,baseline2,baseline3,baseline4,baseline5,baseline6" \
+  --hunter-analyze \
   -o json \
   --collapse
-```
-
-### Quick Anomaly Check
-```bash
-orion \
-  --config quick-check.yaml \
-  --anomaly-detection \
-  --lookback 24h \
-  --save-output-path anomalies.txt
 ```
 
 ## Acknowledgment Examples
@@ -856,5 +838,4 @@ kubelet_avg                 22.656      22.990      -    21.564
 5. **Acknowledge known issues** to reduce noise in results
 6. **Use appropriate algorithms** for your use case:
    - Hunter: General changepoint detection
-   - CMR: Recent vs historical comparison
-   - Anomaly: Outlier detection, does not support NaN in their values, all rows with NaN in any column is dropped to secure proper algorithm execution
+   - Original E-Divisive: Short time series where the Hunter window may discard edge changepoints

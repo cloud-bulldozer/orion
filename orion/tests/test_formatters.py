@@ -9,7 +9,6 @@ import pandas as pd
 import pytest
 from otava.series import Series, Metric
 
-import orion.constants as cnsts
 from orion.confidence import ConfidenceResult, compute_confidence
 from orion.pipeline.analysis_result import AnalysisResult
 from orion.pipeline.formatters import FormatterFactory
@@ -875,7 +874,7 @@ class TestRegressionDataConfidence:
                                              mean_1=35000, mean_2=57000)],
         }
         confidence = compute_confidence(
-            cnsts.EDIVISIVE, df, cps_by_metric
+            df, cps_by_metric
         )
         data = AnalysisResult(
             test_name="test-workload",

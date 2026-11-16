@@ -23,14 +23,6 @@ class Algorithm(ABC): # pylint: disable = too-many-arguments, too-many-instance-
         self._acked_logged = False
         self._cached_analysis = None
         self.raw_change_points_by_metric = None
-        self._original_dataframe = None
-
-    @property
-    def original_dataframe(self):
-        """Pre-analysis dataframe. CMR sets _original_dataframe before collapsing."""
-        if self._original_dataframe is not None:
-            return self._original_dataframe
-        return self.dataframe
 
     def get_analysis_results(self):
         """Return (series, change_points_by_metric) from _analyze(),
