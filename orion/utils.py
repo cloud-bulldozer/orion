@@ -42,7 +42,7 @@ class Utils:
 
     # pylint: disable=too-many-locals
     def get_metric_data(
-        self, uuids: List[str], metrics: Dict[str, Any], match: Matcher, test_threshold: int, timestamp_field: str="timestamp"
+        self, uuids: List[str], metrics: Dict[str, Any], match: Matcher, test_threshold: float, timestamp_field: str="timestamp"
     ) -> Tuple[List[pd.DataFrame], Dict[str, Any], List[str]]:
         """Gets details metrics based on metric yaml list
 
@@ -50,7 +50,7 @@ class Utils:
             uuids (list): list of all uuids
             metrics (dict): metrics to gather data on
             match (Matcher): current matcher instance
-            test_threshold (int): default threshold for metrics
+            test_threshold (float): default threshold for metrics
             timestamp_field (str): field name for timestamps
 
         Returns:
@@ -81,7 +81,7 @@ class Utils:
 
             labels = metric.pop("labels", None)
             direction = int(metric.pop("direction", 1))
-            threshold = abs(int(metric.pop("threshold", test_threshold)))
+            threshold = abs(float(metric.pop("threshold", test_threshold)))
             acceptable_range = metric.pop("acceptable_range", None)
             if acceptable_range is not None:
                 acceptable_range = self._parse_acceptable_range(acceptable_range)

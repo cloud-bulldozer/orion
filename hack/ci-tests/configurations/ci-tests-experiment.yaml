@@ -1,0 +1,42 @@
+# Experiment config: synthetic 15-point slow-ramp dataset.
+#
+# Data (see hack/ci-tests/experiment_data.py, loaded via
+# load_metrics_to_opensearch.py --experiment):
+#   runs  1-5  (2026-01-12 .. 2026-01-16): flat at 100.0
+#   runs  6-15 (2026-01-17 .. 2026-01-26): steady +1% per run
+#                                            (101.0 .. 110.0)
+#
+# Each run carries exactly one metric document, so the series Orion
+# analyzes has 15 data points.
+tests:
+  - name: olm-integration-test-experiment
+    metadata:
+      platform: GCP
+      clusterType: self-managed
+      masterNodesType: e2-custom-6-16384
+      masterNodesCount: 3
+      workerNodesType: e2-custom-6-16384
+      workerNodesCount: 3
+      benchmark.keyword: olm
+      wildcard:
+        ocpVersion: "{{ version }}*"
+      networkType: OVNKubernetes
+      jobType: {{ jobtype | default('periodic') }}
+      pullNumber: {{ pull_number | default(0) }}
+      organization: {{ organization | default('') }}
+      repository: {{ repository | default('') }}
+      not:
+        stream: okd
+
+    metrics:
+    - name: OCP-84094_catalogdCPU_GCP_experiment
+      metricName.keyword: catalogd_cpu_usage_cores_experiment
+      metric_of_interest: value
+      not:
+        jobName.keyword: "garbage-collection"
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: OLM]"
+      threshold: 0.7

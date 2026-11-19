@@ -321,6 +321,87 @@ setup() {
 }
 
 # ---------------------------------------------------------------------------
+# Experiment: 15-point slow ramp (5 flat, then steady +1% per run)
+# ---------------------------------------------------------------------------
+
+@test "orion experiment slow-ramp metric - 15 points, 5 flat then +1% per run" {
+  set +e
+  orion --lookback 30d --since 2026-01-27 --hunter-analyze --config hack/ci-tests/configurations/ci-tests-experiment.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${ES_SERVER} --node-count true --input-vars='{"version": "4.20"}' > ./outputs/results-experiment.txt
+  EXIT_CODE=$?
+
+  # A regression should be detected: the rise crosses the 1% threshold.
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "Expected exit code 2 (regression detected), got $EXIT_CODE"
+    cat ./outputs/results-experiment.txt
+    exit 1
+  fi
+
+  # All 15 data points (5 flat + 10 rising) should be present in the table.
+  ROWS=$(grep -c "^2026-01-" ./outputs/results-experiment.txt)
+  if [ "$ROWS" -ne 15 ]; then
+    echo "Expected 15 data point rows in the results table, got $ROWS"
+    cat ./outputs/results-experiment.txt
+    exit 1
+  fi
+
+  # E-Divisive pinpoints the ramp (a gradual slope, not a step) in the middle
+  # of the rise, at 4.20.0-0.nightly-2026-01-22-195655 (value 107.0). The
+  # dataset is deterministic, so this is stable across runs.
+  if ! grep -q "Changepoint at:      4.20.0-0.nightly-2026-01-22-195655" ./outputs/results-experiment.txt; then
+    echo "Expected changepoint at 4.20.0-0.nightly-2026-01-22-195655 not found in results"
+    cat ./outputs/results-experiment.txt
+    exit 1
+  fi
+
+  set -e
+}
+
+@test "orion experiment acceptable_range breaching - changepoint value 107.0 outside [0, 105]" {
+  set +e
+  orion --lookback 30d --since 2026-01-27 --hunter-analyze --config hack/ci-tests/configurations/ci-tests-experiment-range.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${ES_SERVER} --node-count true --input-vars='{"version": "4.20", "range_min": 0, "range_max": 105}' > ./outputs/results-experiment-range.txt
+  EXIT_CODE=$?
+
+  # acceptable_range replaces threshold: the changepoint's actual value (107.0)
+  # is outside [0, 105], so the regression is reported.
+  if [ ! $EXIT_CODE -eq 2 ]; then
+    echo "Expected exit code 2 (regression detected), got $EXIT_CODE"
+    cat ./outputs/results-experiment-range.txt
+    exit 1
+  fi
+
+  if ! grep -q "Changepoint at:      4.20.0-0.nightly-2026-01-22-195655" ./outputs/results-experiment-range.txt; then
+    echo "Expected changepoint at 4.20.0-0.nightly-2026-01-22-195655 not found in results"
+    cat ./outputs/results-experiment-range.txt
+    exit 1
+  fi
+
+  set -e
+}
+
+@test "orion experiment acceptable_range respected - changepoint value 107.0 inside [0, 110]" {
+  set +e
+  orion --lookback 30d --since 2026-01-27 --hunter-analyze --config hack/ci-tests/configurations/ci-tests-experiment-range.yaml --metadata-index "orion-integration-test-data*" --benchmark-index "orion-integration-test-metrics*" --es-server=${ES_SERVER} --node-count true --input-vars='{"version": "4.20", "range_min": 0, "range_max": 110}' > ./outputs/results-experiment-range.txt
+  EXIT_CODE=$?
+
+  # The same changepoint is detected by E-Divisive, but its actual value
+  # (107.0) is inside [0, 110], so it is filtered out and no regression
+  # is reported (exit 0).
+  if [ ! $EXIT_CODE -eq 0 ]; then
+    echo "Expected exit code 0 (changepoint inside acceptable range, no regression), got $EXIT_CODE"
+    cat ./outputs/results-experiment-range.txt
+    exit 1
+  fi
+
+  if grep -q "Changepoint at" ./outputs/results-experiment-range.txt; then
+    echo "Expected no changepoint in output for an in-range value"
+    cat ./outputs/results-experiment-range.txt
+    exit 1
+  fi
+
+  set -e
+}
+
+# ---------------------------------------------------------------------------
 # Anomaly detection (text / json / junit)
 # ---------------------------------------------------------------------------
 

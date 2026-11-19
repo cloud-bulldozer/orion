@@ -1,0 +1,42 @@
+# Experiment config: same 15-point slow-ramp dataset as ci-tests-experiment.yaml,
+# but the metric uses acceptable_range instead of threshold.
+#
+# The range bounds are templated so a single config covers both scenarios:
+#   range_min=0, range_max=105 -> breach (changepoint value 107.0 > 105) -> regression
+#   range_min=0, range_max=110 -> no breach (107.0 inside [0, 110])     -> no regression
+#
+# acceptable_range replaces both threshold and direction for that metric:
+# a detected changepoint is reported iff the actual value at the changepoint
+# row falls outside the inclusive [range_min, range_max] band.
+tests:
+  - name: olm-integration-test-experiment-range
+    metadata:
+      platform: GCP
+      clusterType: self-managed
+      masterNodesType: e2-custom-6-16384
+      masterNodesCount: 3
+      workerNodesType: e2-custom-6-16384
+      workerNodesCount: 3
+      benchmark.keyword: olm
+      wildcard:
+        ocpVersion: "{{ version }}*"
+      networkType: OVNKubernetes
+      jobType: {{ jobtype | default('periodic') }}
+      pullNumber: {{ pull_number | default(0) }}
+      organization: {{ organization | default('') }}
+      repository: {{ repository | default('') }}
+      not:
+        stream: okd
+
+    metrics:
+    - name: OCP-84094_catalogdCPU_GCP_experiment_range
+      metricName.keyword: catalogd_cpu_usage_cores_experiment
+      metric_of_interest: value
+      not:
+        jobName.keyword: "garbage-collection"
+      agg:
+        value: cpu
+        agg_type: avg
+      labels:
+        - "[Jira: OLM]"
+      acceptable_range: [{{ range_min }}, {{ range_max }}]
