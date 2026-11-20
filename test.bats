@@ -171,31 +171,6 @@ setup() {
   # version field later if the benchmark starts publishing one.
   export maas_version=$(echo "$MAAS_LATEST_VERSION" | cut -d'.' -f1,2)
   echo "maas version $maas_version"
-
-  QUAY_LATEST_VERSION=$(curl -s -X POST "$QUAY_QE_ES_SERVER/perf_scale_ci*/_search" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "size": 0,
-    "query": {
-      "range": {
-        "timestamp": {
-          "gte": "now-3M/M",
-          "lt": "now"
-        }
-      }
-    },
-    "aggs": {
-      "latest_version": {
-        "terms": {
-          "field": "quayVersion.keyword",
-          "size": 1,
-          "order": { "_key": "desc" },
-          "exclude": "quayio-stage.*"
-        }
-      }
-    }
-  }' | jq -r '.aggregations.latest_version.buckets[0].key')
-  export quay_version=$(echo "$QUAY_LATEST_VERSION" | cut -d'.' -f1,2)
 }
 
 @test "orion label small scale cluster density with hunter-analyze" {
@@ -243,12 +218,8 @@ setup() {
   run_cmd orion --config examples/metal-perfscale-cpt-virt-density-nomount.yaml --lookback 45d --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
-@test "orion small scale cluster density with anomaly detection" {
-  run_cmd orion --config "examples/small-scale-cluster-density.yaml" --lookback 45d --anomaly-detection --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
-}
-
-@test "orion small scale node density cni anomaly detection with a window" {
-  run_cmd orion --config "examples/small-scale-node-density-cni.yaml" --anomaly-detection --anomaly-window 3 --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
+@test "orion small scale node density cni" {
+  run_cmd orion --config "examples/small-scale-node-density-cni.yaml" --hunter-analyze --es-server=${ES_SERVER} --metadata-index=${METADATA_INDEX} --benchmark-index=${BENCHMARK_INDEX} --input-vars='{"version": "'${VERSION}'"}'
 }
 
 @test "orion trt external payload cluster density" {
@@ -309,19 +280,6 @@ setup() {
   export ols_test_workers=10
   es_metadata_index="perf_scale_ci*" es_benchmark_index="ols-load-test-results*" run_cmd orion --config "examples/ols-load-generator.yaml" --hunter-analyze --ack /tmp/4.16_ols-load-generator-10w_ack.yaml --es-server=${ES_SERVER}
   VERSION=$before_version
-}
-
-@test "orion with quay config " {
-  export quay_image_push_pull_index="quay-push-pull*"
-  export quay_load_test_index="quay-vegeta-results*"
-  export es_metadata_index=${METADATA_INDEX}
-  run_cmd orion --node-count false --config "examples/quay-load-test-stable.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=./outputs/junit.xml --collapse --input-vars='{"quay_version": "'${quay_version}'", "ocp_version": "4.18"}'
-}
-
-@test "orion with quay stage config " {
-  export quay_image_push_pull_index="quay-push-pull*"
-  export es_metadata_index=${METADATA_INDEX}
-  run_cmd orion --node-count false --config "examples/quay-load-test-stable-stage.yaml" --hunter-analyze --es-server=${QUAY_QE_ES_SERVER} --output-format junit --save-output-path=./outputs/junit.xml --collapse --input-vars='{"quay_version": "quayio-stage", "ocp_version": "4.18"}'
 }
 
 # MaaS AI Gateway. One test per periodic in openshift/release; providers and

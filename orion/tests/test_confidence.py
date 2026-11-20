@@ -14,7 +14,6 @@ from orion.confidence import (
     _compute_stats,
     compute_confidence,
 )
-import orion.constants as cnsts
 from orion.tests.conftest import make_change_point as _make_cp
 
 
@@ -118,31 +117,25 @@ class TestConfidenceResult:
 class TestGetSegments:
     def test_edivisive_splits_at_index(self):
         data = np.array([1.0, 2.0, 3.0, 10.0, 11.0])
-        before, after = _get_segments(cnsts.EDIVISIVE, data, 3)
+        before, after = _get_segments(data, 3)
         np.testing.assert_array_equal(before, [1.0, 2.0, 3.0])
         np.testing.assert_array_equal(after, [10.0, 11.0])
 
     def test_edivisive_with_boundaries(self):
         data = np.array([1.0, 2.0, 3.0, 10.0, 11.0, 5.0, 6.0])
-        before, after = _get_segments(cnsts.EDIVISIVE, data, 3, prev_boundary=0, next_boundary=5)
+        before, after = _get_segments(data, 3, prev_boundary=0, next_boundary=5)
         np.testing.assert_array_equal(before, [1.0, 2.0, 3.0])
         np.testing.assert_array_equal(after, [10.0, 11.0])
 
-    def test_cmr_splits_all_previous_vs_last(self):
-        data = np.array([1.0, 2.0, 3.0, 10.0])
-        before, after = _get_segments(cnsts.CMR, data, 3)
-        np.testing.assert_array_equal(before, [1.0, 2.0, 3.0])
-        np.testing.assert_array_equal(after, [10.0])
-
     def test_edivisive_index_at_start(self):
         data = np.array([10.0, 1.0, 2.0])
-        before, after = _get_segments(cnsts.EDIVISIVE, data, 0)
+        before, after = _get_segments(data, 0)
         assert len(before) == 0
         np.testing.assert_array_equal(after, [10.0, 1.0, 2.0])
 
     def test_edivisive_index_at_end(self):
         data = np.array([1.0, 2.0, 10.0])
-        before, after = _get_segments(cnsts.EDIVISIVE, data, 2)
+        before, after = _get_segments(data, 2)
         np.testing.assert_array_equal(before, [1.0, 2.0])
         np.testing.assert_array_equal(after, [10.0])
 
@@ -238,7 +231,7 @@ class TestComputeConfidence:
                     20.0, 20.5, 19.8, 20.2, 20.1],
         })
         cps = {"cpu": [_make_cp("cpu", 5)]}
-        result = compute_confidence(cnsts.EDIVISIVE, df, cps)
+        result = compute_confidence(df, cps)
         assert "cpu" in result
         assert len(result["cpu"]) == 1
         assert isinstance(result["cpu"][0], ConfidenceResult)
@@ -249,7 +242,7 @@ class TestComputeConfidence:
                     30.0, 30.5, 29.8, 30.2, 30.1],
         })
         cps = {"cpu": [_make_cp("cpu", 3), _make_cp("cpu", 5)]}
-        result = compute_confidence(cnsts.EDIVISIVE, df, cps)
+        result = compute_confidence(df, cps)
         assert len(result["cpu"]) == 2
         sizes = [
             (item.sample_size_before, item.sample_size_after)
@@ -264,7 +257,7 @@ class TestComputeConfidence:
                     10.0, 10.0, 10.0, 10.0, 10.0],
         })
         cps = {"cpu": [_make_cp("cpu", 5), _make_cp("cpu", 10)]}
-        result = compute_confidence(cnsts.EDIVISIVE, df, cps)
+        result = compute_confidence(df, cps)
         first = result["cpu"][0]
         second = result["cpu"][1]
         assert first.mean_before == pytest.approx(10.0)
@@ -275,7 +268,7 @@ class TestComputeConfidence:
     def test_empty_changepoints_returns_empty(self):
         df = pd.DataFrame({"cpu": [10.0, 11.0, 12.0]})
         cps = {"cpu": []}
-        result = compute_confidence(cnsts.EDIVISIVE, df, cps)
+        result = compute_confidence(df, cps)
         assert result["cpu"] == []
 
     def test_multiple_metrics(self):
@@ -287,7 +280,7 @@ class TestComputeConfidence:
             "cpu": [_make_cp("cpu", 2)],
             "mem": [_make_cp("mem", 2)],
         }
-        result = compute_confidence(cnsts.EDIVISIVE, df, cps)
+        result = compute_confidence(df, cps)
         assert "cpu" in result
         assert "mem" in result
         assert len(result["cpu"]) == 1
@@ -309,48 +302,26 @@ class TestComputeConfidence:
             "latency": [_make_cp("latency", 8,
                                  mean_1=40000, mean_2=70000)],
         }
-        result = compute_confidence(cnsts.EDIVISIVE, df, cps)
+        result = compute_confidence(df, cps)
         cpu_conf = result["cpu"][0]
         lat_conf = result["latency"][0]
         assert cpu_conf.cohens_d != lat_conf.cohens_d
         assert cpu_conf.p_value != lat_conf.p_value
-
-    def test_cmr_single_point_after_insufficient(self):
-        df = pd.DataFrame({
-            "cpu": [10.0, 10.5, 9.8, 20.0],
-        })
-        cps = {"cpu": [_make_cp("cpu", 3)]}
-        result = compute_confidence(cnsts.CMR, df, cps)
-        assert result["cpu"][0].sufficient_data is False
-        assert result["cpu"][0].confidence_label == "Insufficient data"
 
     def test_nan_before_changepoint_preserves_alignment(self):
         df = pd.DataFrame({
             "cpu": [1.0, np.nan, 2.0, 10.0, 11.0],
         })
         cps = {"cpu": [_make_cp("cpu", 3)]}
-        result = compute_confidence(cnsts.EDIVISIVE, df, cps)
+        result = compute_confidence(df, cps)
         assert result["cpu"][0].sufficient_data is True
         assert result["cpu"][0].sample_size_before == 2
         assert result["cpu"][0].sample_size_after == 2
 
-    def test_isolation_forest_skips_confidence(self):
-        df = pd.DataFrame({
-            "cpu": [10.0, 10.5, 9.8, 10.2, 10.1,
-                    20.0, 20.5, 19.8, 20.2, 20.1],
-        })
-        cps = {"cpu": [_make_cp("cpu", 5)]}
-        result = compute_confidence(cnsts.ISOLATION_FOREST, df, cps)
-        conf = result["cpu"][0]
-        assert conf.p_value is None
-        assert conf.cohens_d is None
-        assert conf.sufficient_data is False
-        assert "Anomaly detection" in conf.confidence_label
-
     def test_missing_metric_column(self):
         df = pd.DataFrame({"other": [1.0, 2.0, 3.0]})
         cps = {"cpu": [_make_cp("cpu", 1)]}
-        result = compute_confidence(cnsts.EDIVISIVE, df, cps)
+        result = compute_confidence(df, cps)
         assert result["cpu"][0].sufficient_data is False
         assert result["cpu"][0].confidence_label == "Insufficient data"
 
@@ -364,7 +335,7 @@ class TestComputeConfidence:
         filtered_cps = {"cpu": [_make_cp("cpu", 5)]}
         raw_cps = {"cpu": [_make_cp("cpu", 5), _make_cp("cpu", 10)]}
         result = compute_confidence(
-            cnsts.EDIVISIVE, df, filtered_cps,
+            df, filtered_cps,
             raw_change_points_by_metric=raw_cps,
         )
         conf = result["cpu"][0]
@@ -381,21 +352,7 @@ class TestComputeConfidence:
                     10.0, 10.0, 10.0, 10.0, 10.0],
         })
         filtered_cps = {"cpu": [_make_cp("cpu", 5)]}
-        result = compute_confidence(cnsts.EDIVISIVE, df, filtered_cps)
+        result = compute_confidence(df, filtered_cps)
         conf = result["cpu"][0]
         assert conf.sample_size_after == 10
         assert conf.mean_after == pytest.approx(15.0)
-
-    def test_cmr_original_dataframe_preserves_before_stats(self):
-        """CMR with original (uncollapsed) dataframe preserves before-segment stats."""
-        df = pd.DataFrame({
-            "cpu": [10.0, 10.5, 9.8, 20.0],
-        })
-        cps = {"cpu": [_make_cp("cpu", 3)]}
-        result = compute_confidence(cnsts.CMR, df, cps)
-        conf = result["cpu"][0]
-        assert conf.sample_size_before == 3
-        assert conf.sample_size_after == 1
-        assert conf.mean_before == pytest.approx(np.mean([10.0, 10.5, 9.8]))
-        assert conf.std_before is not None
-        assert conf.sufficient_data is False

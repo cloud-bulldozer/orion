@@ -11,7 +11,7 @@ import pytest
 
 from orion.logger import SingletonLogger
 from orion.visualization import (
-    VizData, _build_cmr_figure, _build_test_figure, _classify_changepoints, generate_test_html,
+    VizData, _build_test_figure, _classify_changepoints, generate_test_html,
 )
 
 
@@ -177,36 +177,6 @@ def test_build_test_figure_main_trace_includes_build_tag(sample_dataframe):
     for row in trace.customdata:
         assert len(row) == 5, "customdata should be [build_url, uuid, date, version, build_tag]"
         assert row[4] in ("tag-1", "tag-2", "tag-3")
-
-
-def test_build_cmr_figure_labels_build_tags_as_run_tags(sample_dataframe):
-    """Baseline bar is the mean of baseline runs; the tag shown is only the
-    baseline run's, so the label must identify it as such."""
-    cmr_df = sample_dataframe.iloc[[0, -1]].reset_index(drop=True)
-    viz_data = VizData(
-        test_name="node-density",
-        dataframe=cmr_df,
-        metrics_config={"latency": {"direction": 1}},
-        change_points_by_metric={},
-        uuid_field="uuid",
-        version_field="ocpVersion",
-    )
-
-    fig = _build_cmr_figure(viz_data)
-    baseline_hover = None
-    latest_hover = None
-    for trace in fig.data:
-        if not isinstance(trace.hovertemplate, str):
-            continue
-        if trace.name == "Baseline":
-            baseline_hover = trace.hovertemplate
-        elif trace.name == "Latest":
-            latest_hover = trace.hovertemplate
-
-    assert baseline_hover is not None
-    assert latest_hover is not None
-    assert "Build Tag (baseline run): tag-1" in baseline_hover
-    assert "Build Tag (latest run): tag-3" in latest_hover
 
 
 def test_classify_changepoints_precomputes_direction_and_color():

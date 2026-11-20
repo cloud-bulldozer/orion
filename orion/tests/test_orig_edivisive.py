@@ -89,8 +89,6 @@ def test_get_algorithm_type_orig_analyze():
     """get_algorithm_type should return ORIG_EDIVISIVE when orig_analyze is True."""
     kwargs = {
         "hunter_analyze": False,
-        "anomaly_detection": False,
-        "cmr": False,
         "orig_analyze": True,
     }
     assert get_algorithm_type(kwargs) == cnsts.ORIG_EDIVISIVE
@@ -100,8 +98,6 @@ def test_get_algorithm_type_no_algorithm():
     """get_algorithm_type should return None when no algorithm flag is set."""
     kwargs = {
         "hunter_analyze": False,
-        "anomaly_detection": False,
-        "cmr": False,
         "orig_analyze": False,
     }
     assert get_algorithm_type(kwargs) is None

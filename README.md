@@ -54,7 +54,7 @@ etc.
 ## Features
 
 - **Regression Detection**: Identify performance regressions using advanced statistical methods
-- **Multiple Algorithms**: Support for Hunter, CMR, and anomaly detection
+- **Multiple Algorithms**: Support for Hunter and original E-Divisive changepoint detection
 - **Flexible Configuration**: YAML-based configuration with extensive customization options
 - **Multiple Output Formats**: JSON, text, and JUnit XML output support
 - **Multi-PR Comparison**: Analyze multiple pull requests side-by-side against the periodic baseline
