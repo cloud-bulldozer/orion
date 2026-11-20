@@ -1,0 +1,33 @@
+tests:
+  - name: metal-perfscale-cpt-windows-mssql
+    metadata:
+      platform.keyword: BareMetal
+      clusterType.keyword: self-managed
+      masterNodesType.keyword: ""
+      masterNodesCount: 3
+      workerNodesType.keyword: ""
+      workerNodesCount: 4
+      benchmark.keyword: windows-mssql
+      networkType.keyword: OVNKubernetes
+      jobType: "{{ jobtype | default('periodic') }}"
+      pullNumber: "{{ pull_number | default(0) }}"
+      organization: "{{ organization | default('') }}"
+      repository: "{{ repository | default('') }}"
+    metrics:
+      - name: mssqlTPM-${users}users
+        metricName.keyword: mssqlTPCCMeasurement
+        metric_of_interest: tpm
+        users: ${users}
+        agg:
+          agg_type: avg
+        threshold: 10
+        direction: -1
+        labels:
+          - "[Jira: PerfScale]"
+        fan_out:
+          - users: 1
+          - users: 2
+          - users: 4
+          - users: 8
+          - users: 16
+          - users: 32
