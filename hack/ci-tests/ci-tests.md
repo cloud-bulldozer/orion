@@ -8,6 +8,7 @@ This directory contains a script and data files for loading test data into OpenS
 - `metric_data.json` - Template for metric documents used in testing
 - `rhoso.json` - Pre-built dataset with `metadata` and `metrics` arrays for RHOSO/Browbeat-style integration tests
 - `load_metrics_to_opensearch.py` - Python script to load all test data into OpenSearch (metadata, generated metrics, and rhoso data)
+- `experiment_data.py` - Synthetic 15-run slow-ramp experiment dataset (5 flat points, then +1% per run)
 
 ## Prerequisites
 
@@ -38,7 +39,47 @@ python hack/ci-tests/load_metrics_to_opensearch.py
 
 # Load rhoso data only
 python hack/ci-tests/load_metrics_to_opensearch.py --rhoso
+
+# Load the 15-point slow-ramp experiment dataset
+python hack/ci-tests/load_metrics_to_opensearch.py --experiment
+
+# Analyze it (15 points: 5 flat, then +1% per run)
+orion --lookback 30d --since 2026-01-27 --hunter-analyze \
+  --config hack/ci-tests/configurations/ci-tests-experiment.yaml \
+  --metadata-index "orion-integration-test-data*" \
+  --benchmark-index "orion-integration-test-metrics*" \
+  --es-server http://localhost:9200 --node-count true \
+  --input-vars='{"version": "4.20"}'
 ```
+
+### Analyze the same ramp with `acceptable_range`
+
+The same 15-point ramp can be analyzed with an `acceptable_range` (an
+inclusive absolute value band) instead of `threshold`. The bounds are
+templated, so one config covers both outcomes:
+
+```bash
+# Band [0, 105]: the detected changepoint's value (107.0) is OUTSIDE -> regression (exit 2)
+orion --lookback 30d --since 2026-01-27 --hunter-analyze \
+  --config hack/ci-tests/configurations/ci-tests-experiment-range.yaml \
+  --metadata-index "orion-integration-test-data*" \
+  --benchmark-index "orion-integration-test-metrics*" \
+  --es-server http://localhost:9200 --node-count true \
+  --input-vars='{"version": "4.20", "range_min": 0, "range_max": 105}'
+
+# Band [0, 110]: the same changepoint's value (107.0) is INSIDE -> filtered out (exit 0)
+orion --lookback 30d --since 2026-01-27 --hunter-analyze \
+  --config hack/ci-tests/configurations/ci-tests-experiment-range.yaml \
+  --metadata-index "orion-integration-test-data*" \
+  --benchmark-index "orion-integration-test-metrics*" \
+  --es-server http://localhost:9200 --node-count true \
+  --input-vars='{"version": "4.20", "range_min": 0, "range_max": 110}'
+```
+
+A metric with `acceptable_range` ignores both `threshold` and `direction`:
+a detected changepoint is reported iff the **actual value at the changepoint
+row** falls outside the inclusive `[range_min, range_max]` band (segment means
+are not used for the check).
 
 ### Custom OpenSearch Server
 
@@ -61,6 +102,7 @@ The script supports four modes:
 | **Metrics** | *(default)* | Generates metric documents from `metadata_data.json` + `metric_data.json` template. Creates 50 docs per UUID (500 total) with 30s-spaced timestamps. |
 | **Metadata** | `--metadata` | Loads `metadata_data.json` into the metadata index. |
 | **Rhoso** | `--rhoso` | Loads `rhoso.json` as-is: metadata to metadata index, metrics to metrics index. |
+| **Experiment** | `--experiment` | Loads the synthetic 15-run slow-ramp dataset from `experiment_data.py`: 15 metadata docs + 15 metric docs (one metric per run → 15 data points). Runs 1-5 are flat at 100.0; runs 6-15 rise +1% per run (101.0 .. 110.0). |
 | **All** | `--all` | Runs metadata, metrics, and rhoso in sequence. |
 
 All modes use the OpenSearch `_bulk` API for fast indexing.
@@ -95,6 +137,17 @@ Template for metric documents. The script generates documents with UUIDs from me
 ### RHOSO Data (`rhoso.json`)
 
 Single JSON object with `metadata` and `metrics` arrays for Browbeat/Rally-style tests. Loaded as-is without transformation.
+
+### Experiment Data (`experiment_data.py`)
+
+Synthetic slow-ramp dataset used by the `--experiment` mode and `configurations/ci-tests-experiment.yaml`. 15 runs (`ci-exp-01` .. `ci-exp-15`), one per day from 2026-01-12 to 2026-01-26, each carrying a single `catalogd_cpu_usage_cores_experiment` metric document:
+
+| Runs | Dates | Values |
+|------|-------|--------|
+| 1-5 | 01-12 .. 01-16 | 100.0 (flat, no change) |
+| 6-15 | 01-17 .. 01-26 | 101.0 .. 110.0 (steady +1% per run) |
+
+Because each run contributes exactly one metric document, the aggregated series Orion analyzes has exactly 15 data points.
 
 ## Integration with Orion
 
