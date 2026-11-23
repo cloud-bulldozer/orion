@@ -7,8 +7,6 @@ from typing import Optional
 import numpy as np
 from scipy import stats
 
-import orion.constants as cnsts
-
 
 @dataclass
 class ConfidenceResult: # pylint: disable=too-many-instance-attributes
@@ -64,17 +62,15 @@ def _map_label(p_value, cohens_d):
     return f"Negligible shift (d={d_str}, p={p_str})"
 
 
-def _get_segments(algorithm_name, data, changepoint_index,
+def _get_segments(data, changepoint_index,
                   prev_boundary=0, next_boundary=None):
-    """Split data into before/after segments based on algorithm type.
+    """Split data into before/after segments.
 
     Segments are bounded by neighboring changepoints to prevent
     a later recovery from masking an earlier genuine shift.
     """
     if next_boundary is None:
         next_boundary = len(data)
-    if algorithm_name == cnsts.CMR:
-        return data[:-1], data[-1:]
     return data[prev_boundary:changepoint_index], data[changepoint_index:next_boundary]
 
 
@@ -159,7 +155,7 @@ def _compute_stats(before, after):
     )
 
 
-def compute_confidence(algorithm_name, dataframe, change_points_by_metric,
+def compute_confidence(dataframe, change_points_by_metric,
                        raw_change_points_by_metric=None):
     """Compute confidence indicators for all changepoints.
 
@@ -171,20 +167,6 @@ def compute_confidence(algorithm_name, dataframe, change_points_by_metric,
     change_points_by_metric.
     """
     result = {}
-
-    if algorithm_name == cnsts.ISOLATION_FOREST:
-        for metric, cps in change_points_by_metric.items():
-            result[metric] = [
-                ConfidenceResult(
-                    p_value=None, cohens_d=None,
-                    confidence_label=(
-                        "Anomaly detection — shift confidence not applicable"
-                    ),
-                    sufficient_data=False,
-                    sample_size_before=0, sample_size_after=0,
-                ) for _ in cps
-            ]
-        return result
 
     for metric, cps in change_points_by_metric.items():
         if metric not in dataframe.columns:
@@ -213,7 +195,7 @@ def compute_confidence(algorithm_name, dataframe, change_points_by_metric,
                     next_boundary = b
                     break
             before, after = _get_segments(
-                algorithm_name, data, cp.index, prev_boundary, next_boundary
+                data, cp.index, prev_boundary, next_boundary
             )
             before = before[~np.isnan(before)]
             after = after[~np.isnan(after)]

@@ -273,8 +273,6 @@ def _build_cli_command(params: dict) -> str:  # pylint: disable=too-many-branche
     # Boolean flags
     flag_map = {
         "hunter_analyze": "--hunter-analyze",
-        "cmr": "--cmr",
-        "anomaly_detection": "--anomaly-detection",
         "filter": "--filter",
         "node_count": "--node-count",
         "sippy_pr_search": "--sippy-pr-search",
@@ -314,8 +312,6 @@ def _build_cli_command(params: dict) -> str:  # pylint: disable=too-many-branche
 
     # Integer options (only if non-default)
     int_map = {
-        "anomaly_window": ("--anomaly-window", None),
-        "min_anomaly_percent": ("--min-anomaly-percent", None),
         "column_group_size": ("--column-group-size", 5),
         "lookback_size": ("--lookback-size", 10000),
     }
@@ -455,12 +451,6 @@ def _section_algorithm(params: dict) -> None:
                 "Hunter Analyze  — changepoint detection  (default)", "hunter_analyze"
             ),
             questionary.Choice(
-                "CMR             — comparative metric regression", "cmr"
-            ),
-            questionary.Choice(
-                "Anomaly Detect  — isolation forest", "anomaly_detection"
-            ),
-            questionary.Choice(
                 "Filter          — percent difference only", "filter"
             ),
         ],
@@ -468,19 +458,7 @@ def _section_algorithm(params: dict) -> None:
     )
 
     params["hunter_analyze"] = algorithm == "hunter_analyze"
-    params["cmr"] = algorithm == "cmr"
-    params["anomaly_detection"] = algorithm == "anomaly_detection"
     params["filter"] = algorithm == "filter"
-    params["anomaly_window"] = None
-    params["min_anomaly_percent"] = None
-
-    if params["anomaly_detection"]:
-        params["anomaly_window"] = _ask_int(
-            "  Moving-average window size:", default=5, style=ORION_STYLE
-        )
-        params["min_anomaly_percent"] = _ask_int(
-            "  Minimum anomaly percentage:", default=5, style=ORION_STYLE
-        )
 
 
 def _section_datasource(params: dict) -> None:

@@ -322,19 +322,6 @@ class MutuallyExclusiveOption(click.Option):
         return super().handle_parse_result(ctx, opts, args)
 
 
-def validate_anomaly_options(ctx, param, value: Any) -> Any: # pylint: disable = W0613
-    """ validate options so that can only be used with certain flags
-    """
-    if value or (
-        ctx.params.get("anomaly_window") or ctx.params.get("min_anomaly_percent")
-    ):
-        if not ctx.params.get("anomaly_detection"):
-            raise click.UsageError(
-                "`--anomaly-window` and `--min-anomaly-percent` can only be used when `--anomaly-detection` is enabled."
-            )
-    return value
-
-
 def _resolve_template_variable(value: str, input_vars: dict) -> str:
     """Resolve template variable like {{VERSION}} from input_vars."""
     if not value or "{{" not in str(value):
@@ -422,18 +409,11 @@ def get_ack_providers(kwargs: dict, config: dict, logger) -> tuple[list[AckProvi
     return providers, version, test_type
 
 
-ALGORITHM_FLAGS = ["hunter_analyze", "cmr", "anomaly_detection", "orig_analyze"]
+ALGORITHM_FLAGS = ["hunter_analyze", "orig_analyze"]
 
 # pylint: disable=too-many-locals
 @click.version_option(version=__version__, message="%(prog)s %(version)s")
 @click.command(context_settings={"show_default": True, "max_content_width": 180})
-@click.option(
-    "--cmr",
-    is_flag=True,
-    help="Generate percent difference in comparison",
-    cls=MutuallyExclusiveOption,
-    mutually_exclusive=ALGORITHM_FLAGS,
-)
 @click.option("--filter", is_flag=True, help="Generate percent difference in comparison")
 @click.option(
     "-i",
@@ -474,15 +454,6 @@ ALGORITHM_FLAGS = ["hunter_analyze", "cmr", "anomaly_detection", "orig_analyze"]
     "--hunter-analyze",
     is_flag=True,
     help="run hunter analyze",
-    cls=MutuallyExclusiveOption,
-    mutually_exclusive=ALGORITHM_FLAGS,
-)
-@click.option("--anomaly-window", type=int, callback=validate_anomaly_options, help="set window size for moving average for anomaly-detection")
-@click.option("--min-anomaly-percent", type=int, callback=validate_anomaly_options, help="set minimum percentage difference from moving average for data point to be detected as anomaly")
-@click.option(
-    "--anomaly-detection",
-    is_flag=True,
-    help="run anomaly detection algorithm powered by isolation forest",
     cls=MutuallyExclusiveOption,
     mutually_exclusive=ALGORITHM_FLAGS,
 )

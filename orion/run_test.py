@@ -36,10 +36,6 @@ def get_algorithm_type(kwargs):
     """
     if kwargs["hunter_analyze"]:
         algorithm_name = cnsts.EDIVISIVE
-    elif kwargs["anomaly_detection"]:
-        algorithm_name = cnsts.ISOLATION_FOREST
-    elif kwargs['cmr']:
-        algorithm_name = cnsts.CMR
     elif kwargs["orig_analyze"]:
         algorithm_name = cnsts.ORIG_EDIVISIVE
     else:
@@ -190,6 +186,18 @@ def has_early_changepoint_raw(
     return False
 
 
+def all_changepoints_dry_run(
+    change_points_by_metric: dict,
+    metrics_config: dict,
+) -> bool:
+    """Check if every metric with a remaining changepoint is dry_run-only."""
+    return all(
+        metrics_config.get(metric, {}).get("dry_run", False)
+        for metric, cps in change_points_by_metric.items()
+        if cps
+    )
+
+
 def clear_early_changepoints_raw(
     change_points_by_metric: dict,
     max_early_index: int,
@@ -237,26 +245,6 @@ def analyze(test, kwargs, is_pull=False):
 
     logger.info("Comparison algorithm: %s", algorithm_name)
 
-    iforest_nan_cols = []
-    iforest_nan_configs = {}
-    if algorithm_name == cnsts.ISOLATION_FOREST:
-        iforest_nan_cols = fingerprint_matched_df.columns[
-            fingerprint_matched_df.isna().all()
-        ].tolist()
-        if iforest_nan_cols:
-            logger.warning(
-                "Dropping all-NaN columns before Isolation Forest: %s",
-                iforest_nan_cols,
-            )
-            fingerprint_matched_df = fingerprint_matched_df.drop(
-                columns=iforest_nan_cols
-            )
-            for col in iforest_nan_cols:
-                if col in metrics_config:
-                    iforest_nan_configs[col] = metrics_config.pop(col)
-        fingerprint_matched_df = fingerprint_matched_df.dropna().reset_index(drop=True)
-        metrics = list(metrics_config.keys())
-
     algorithm_factory = AlgorithmFactory()
     algorithm = algorithm_factory.instantiate_algorithm(
         algorithm_name,
@@ -271,10 +259,9 @@ def analyze(test, kwargs, is_pull=False):
     final_algorithm = algorithm
     expanded_algorithm = None
 
-    # CMR compares fixed run pairs, so expansion is N/A. Orig E-Divisive does not
-    # use the Hunter sliding-window heuristic, so early changepoints are genuine
-    # signals, not window-edge artifacts — no expansion needed.
-    skip_expansion = (cnsts.CMR, cnsts.ORIG_EDIVISIVE)
+    # Orig E-Divisive does not use the Hunter sliding-window heuristic, so early
+    # changepoints are genuine signals, not window-edge artifacts — no expansion needed.
+    skip_expansion = (cnsts.ORIG_EDIVISIVE,)
     if regression_flag and algorithm_name not in skip_expansion and has_early_changepoint_raw(
         change_points_by_metric, max_early_index=cnsts.CHANGEPOINT_BUFFER
     ):
@@ -316,21 +303,6 @@ def analyze(test, kwargs, is_pull=False):
             expanded_fingerprint_matched_df is not None
             and expanded_points > len(fingerprint_matched_df)
         ):
-            if algorithm_name == cnsts.ISOLATION_FOREST:
-                exp_nan = expanded_fingerprint_matched_df.columns[
-                    expanded_fingerprint_matched_df.isna().all()
-                ].tolist()
-                if exp_nan:
-                    expanded_fingerprint_matched_df = (
-                        expanded_fingerprint_matched_df.drop(columns=exp_nan)
-                    )
-                    iforest_nan_cols = list(
-                        set(iforest_nan_cols) | set(exp_nan)
-                    )
-                expanded_fingerprint_matched_df = (
-                    expanded_fingerprint_matched_df.dropna().reset_index(drop=True)
-                )
-
             expanded_algorithm = algorithm_factory.instantiate_algorithm(
                 algorithm_name,
                 expanded_fingerprint_matched_df,
@@ -394,29 +366,19 @@ def analyze(test, kwargs, is_pull=False):
             change_points_by_metric=viz_change_points,
             uuid_field=test["uuid_field"],
             version_field=test["version_field"],
-            algorithm_name=algorithm_name,
             acked_entries=acked_entries,
             build_tag_field=test.get("build_tag_field", "buildTag"),
         )
 
-    if regression_flag:
-        has_only_dry_run = all(
-            metrics_config.get(metric, {}).get("dry_run", False)
-            for metric, cps in change_points_by_metric.items()
-            if cps
+    if regression_flag and all_changepoints_dry_run(
+        change_points_by_metric, metrics_config
+    ):
+        logger.info(
+            "All changepoints are from dry-run metrics; "
+            "suppressing regression flag for test=%s",
+            test["name"],
         )
-        if has_only_dry_run:
-            logger.info(
-                "All changepoints are from dry-run metrics; "
-                "suppressing regression flag for test=%s",
-                test["name"],
-            )
-            regression_flag = False
-
-    if iforest_nan_configs:
-        for col, cfg in iforest_nan_configs.items():
-            final_algorithm.dataframe[col] = float("nan")
-            metrics_config[col] = cfg
+        regression_flag = False
 
     series = final_algorithm.setup_series()
 
@@ -432,8 +394,7 @@ def analyze(test, kwargs, is_pull=False):
         avg_values = final_algorithm.dataframe[metrics].mean()
 
     confidence_by_metric = compute_confidence(
-        algorithm_name,
-        final_algorithm.original_dataframe,
+        final_algorithm.dataframe,
         change_points_by_metric,
         raw_change_points_by_metric=final_algorithm.raw_change_points_by_metric,
     )

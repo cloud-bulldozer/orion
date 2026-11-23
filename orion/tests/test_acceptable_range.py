@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 
 from orion.algorithms.edivisive.edivisive import EDivisive
-from orion.algorithms.cmr.cmr import CMR
 from orion.tests.conftest import make_change_point
 from orion.utils import Utils
 
@@ -59,38 +58,6 @@ def test_range_bounds_are_inclusive(mean_1, mean_2, actual_value, expected):
     change_point = make_change_point("metric", 1, mean_1=mean_1, mean_2=mean_2)
 
     assert bool(algorithm._steps_outside_acceptable_range("metric", change_point)) is expected
-
-
-def _cmr_config():
-    """Build the metric configuration used by the CMR integration test."""
-    return {
-        "metric": {
-            "direction": 1,
-            "threshold": 100,
-            "correlation": "",
-            "context": 5,
-            "acceptable_range": (0.0, 10.0),
-        }
-    }
-
-
-def test_cmr_analyze_uses_range_instead_of_direction():
-    """CMR keeps a downward range violation despite direction=1."""
-    algorithm = CMR(
-        dataframe=pd.DataFrame({
-            "uuid": ["baseline", "current"],
-            "ocpVersion": ["4.20", "4.20"],
-            "timestamp": [1700000000, 1700000060],
-            "metric": [5.0, -1.0],
-        }),
-        test={"name": "test", "uuid_field": "uuid", "version_field": "ocpVersion"},
-        options={"ackMap": None, "collapse": False},
-        metrics_config=_cmr_config(),
-    )
-
-    _, change_points = algorithm._analyze()
-
-    assert len(change_points["metric"]) == 1
 
 
 def test_edivisive_irrelevant_filter_uses_actual_value():

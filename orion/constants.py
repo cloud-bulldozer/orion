@@ -5,11 +5,9 @@ Module for storing constants across orion.
 """
 
 EDIVISIVE="EDivisive"
-ISOLATION_FOREST="IsolationForest"
 JSON="json"
 TEXT="text"
 JUNIT="junit"
-CMR="cmr"
 ORIG_EDIVISIVE="OrigEDivisive"
 
 # Window expansion: when a changepoint is in the first 5 points, we re-validate by
