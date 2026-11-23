@@ -17,6 +17,11 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 from urllib.parse import urlparse
 
+from experiment_data import (
+    exp_metadata_docs,
+    exp_metric_docs,
+)
+
 try:
     import requests
 except ImportError:
@@ -407,6 +412,58 @@ def _run_metrics_flow(args, base_url: str, auth: tuple) -> None:
     print("✓ Metrics loaded successfully!")
 
 
+def _run_experiment_flow(args, base_url: str, auth: tuple) -> None:
+    """Load the synthetic 15-point slow-ramp experiment dataset.
+
+    Writes 15 metadata docs (orion-integration-test-data) and 15 metric
+    docs (orion-integration-test-metrics), one per run, so the series
+    Orion analyzes has exactly 15 data points: 5 flat, then +1%/run.
+    """
+    print(f"OpenSearch server: {base_url}")
+    print(f"Metadata index: {args.metadata_index}")
+    print(f"Metrics index: {args.index}")
+    print("\n")
+
+    metadata_list = exp_metadata_docs()
+    metrics_list = exp_metric_docs()
+
+    print(f"Found {len(metadata_list)} experiment metadata documents and "
+          f"{len(metrics_list)} experiment metric documents")
+
+    # Load metadata
+    if not ensure_index_exists(base_url, args.metadata_index, auth, args.verify_ssl):
+        print(f"Warning: Index '{args.metadata_index}' creation may have failed, continuing...")
+    metadata_success, metadata_fail = bulk_index(
+        base_url,
+        args.metadata_index,
+        metadata_list,
+        auth=auth,
+        verify_ssl=args.verify_ssl,
+        doc_ids=[doc['uuid'] for doc in metadata_list]
+    )
+
+    # Load metrics
+    if not ensure_index_exists(base_url, args.index, auth, args.verify_ssl):
+        print(f"Warning: Index '{args.index}' creation may have failed, continuing...")
+    metrics_ids = [f"{m['uuid']}-{m['timestamp'].replace(':', '').replace('.', '')}"
+                   for m in metrics_list]
+    metrics_success, metrics_fail = bulk_index(
+        base_url,
+        args.index,
+        metrics_list,
+        auth=auth,
+        verify_ssl=args.verify_ssl,
+        doc_ids=metrics_ids
+    )
+
+    total_success = metadata_success + metrics_success
+    total_fail = metadata_fail + metrics_fail
+    print(f"\nExperiment data - Success: {total_success}, Failed: {total_fail}")
+    if total_fail > 0:
+        sys.exit(1)
+    print("✓ Experiment data loaded successfully!")
+
+
 def _run_all(args, base_url: str, auth: tuple) -> None:
     """Load metadata, metrics, and rhoso data in one invocation."""
     print(f"OpenSearch server: {base_url}")
@@ -536,6 +593,13 @@ Examples:
         default=False,
         help='Load metadata, metrics, and rhoso data in one invocation'
     )
+    parser.add_argument(
+        '--experiment',
+        action='store_true',
+        default=False,
+        help='Load the synthetic 15-point slow-ramp experiment dataset '
+             '(5 flat points, then +1% per run; see experiment_data.py)'
+    )
 
     args = parser.parse_args()
 
@@ -555,6 +619,11 @@ Examples:
     # Handle metadata-only mode
     if args.metadata:
         _run_metadata_flow(args, base_url, auth)
+        return
+
+    # Handle experiment dataset mode
+    if args.experiment:
+        _run_experiment_flow(args, base_url, auth)
         return
 
     # Default mode: generate and load metrics
